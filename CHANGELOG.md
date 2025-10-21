@@ -7,6 +7,126 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.0] - 2025-10-20
+
+### Philosophy
+
+**"Fix what's broken, keep what works, defer what's risky"**
+
+v2.2.0 is a focused bug-fix release based on real-world feedback from 20+ sessions across multiple projects. During implementation, audit revealed that planned removals would affect 200+ files, risking user disruption. Instead, we pivoted to fixing critical bugs that affect every project while establishing deprecation tracking to prevent zombie code.
+
+### Fixed
+
+**Critical Bug Fixes:**
+- **Git push protection enforcement** - PUSH_APPROVED flag now BLOCKS git push in `/save-full` unless user explicitly approves
+  - Prevents 10+ reported violations where AI pushed without permission
+  - Flag set to `false` by `/review-context` at session start
+  - Must be set to `true` with explicit user approval phrases ("push", "deploy", "push to github")
+  - Eliminates costly accidental deployments and quota consumption
+
+- **Large SESSIONS.md handling** - `/review-context` now uses smart loading strategy for files >1000 lines
+  - Small files (<1000 lines): Read entirely
+  - Medium files (1000-5000 lines): Read first 300 + last 800 lines
+  - Large files (>5000 lines): Read first 200 + last 400 lines
+  - Prevents timeouts reported by 2 projects with 2000+ line session histories
+
+- **Context folder detection from subdirectories** - All commands now find `context/` from up to 2 parent directories
+  - Searches: `./context`, `../context`, `../../context`
+  - Works from `backend/`, `backend/src/`, and other subdirectories
+  - Eliminates "context not found" errors when running from project subdirs
+
+### Added
+
+**Deprecation Infrastructure:**
+- **DEPRECATIONS.md** - Active tracking system with removal timelines
+  - Prevents zombie code by explicitly documenting what's deprecated and when it will be removed
+  - Includes deprecation policy: minimum 1 major version or 3 months
+  - Warning levels: Soft → Active → Loud → Removal
+
+- **v2.3.0-removal-plan.md** - Detailed plan for removing features deferred from v2.2.0
+  - `/save-context` command scheduled for removal in v2.3.0 (Q1 2026)
+  - `save-context-helper.sh` script removal plan
+  - Migration strategy for 200+ documentation references
+
+- **v2.2.0-deferrals.md** - Documents why certain removals were deferred
+  - Audit findings: 200+ files would need updates
+  - Risk assessment and lessons learned
+  - Updated scope from "remove 1,050 lines" to "fix 3 critical bugs"
+
+### Changed
+
+**Command Updates:**
+- `/save-full` - Step 7.6 now enforces git push protection with `exit 0` if not approved
+- `/review-context` - Step 1.6 explains how to set PUSH_APPROVED=true when user approves
+- `/review-context` - Step 2 adds SESSIONS.md smart loading strategy with file size detection
+- `/save-full` - Step 1 adds context directory finder that searches parent directories
+
+**Deprecation Warnings:**
+- `/save-context` - Updated with loud deprecation notice: "WILL BE REMOVED in v2.3.0"
+  - Shows migration path to `/save` or `/save-full`
+  - References DEPRECATIONS.md for full timeline
+  - Still functional in v2.2.x for backward compatibility
+
+**Documentation:**
+- Updated version numbers: 2.1.0 → 2.2.0 in config template, README, STRUCTURE
+- Added "Last Updated: 2025-10-20" to README
+
+### Removed
+
+**None** - All planned removals deferred to v2.3.0 after implementation audit
+
+**Rationale:**
+- `/save-context` removal would require updating 200+ files
+- Risk of breaking existing users outweighed benefits
+- Established deprecation tracking instead to prevent zombie code
+- v2.3.0 will handle removal with 3-month migration period
+
+### Deprecated
+
+**Scheduled for removal in v2.3.0 (approximately 3 months):**
+- `/save-context` command - Use `/save` (quick) or `/save-full` (comprehensive)
+- Complex staleness configuration - Will be simplified to enabled/disabled flag
+
+See [DEPRECATIONS.md](./DEPRECATIONS.md) for complete removal timeline and migration paths.
+
+### Implementation Notes
+
+**Scope Pivot:**
+- Original plan: Remove 1,200 lines of deprecated code
+- Implementation audit: Found 200+ file dependencies
+- Decision: Mark deprecated, remove in v2.3.0
+- Result: Focused bug-fix release that doesn't break existing users
+
+**What We Learned:**
+- Always audit before removing
+- Code debt exists, but rushed removal creates more debt
+- Deprecation tracking prevents zombie code without breaking changes
+- User trust > arbitrary line count targets
+
+**Timeline:**
+- Day 1: Audit revealed extensive dependencies
+- Day 1: Created deprecation infrastructure
+- Day 2-3: Fixed 3 critical bugs affecting all projects
+- Day 4: Updated versions and CHANGELOG
+- Total: 5 focused days (not 10, not 25)
+
+### Migration
+
+**From v2.1 to v2.2:**
+
+**Automatic (no action required):**
+- Bug fixes apply automatically when commands run
+- No configuration changes needed
+- No file structure changes
+- Fully backward compatible
+
+**Optional:**
+- Review DEPRECATIONS.md to see removal timeline
+- Start migrating from `/save-context` to `/save` or `/save-full`
+- Update any scripts that assume `context/` is in current directory
+
+**No breaking changes** - v2.2.0 is a drop-in replacement for v2.1.0
+
 ## [2.1.0] - 2025-10-09
 
 ### Philosophy

@@ -176,7 +176,7 @@ elif [[ "$CURRENT_VERSION" < "1.9.0" ]]; then
   echo "🔄 Multi-step migration required..."
   echo ""
   echo "Your version: $CURRENT_VERSION"
-  echo "Latest version: 2.1.0"
+  echo "Latest version: 2.2.0"
   echo ""
   echo "Migration path:"
   echo "  1. Upgrade to v1.9.0 first"

@@ -1,18 +1,26 @@
 ---
 name: save-context
-description: "[DEPRECATED in v2.1] Use /save (quick) or /save-full (comprehensive) instead"
+description: "[DEPRECATED in v2.1 - WILL BE REMOVED in v2.3] Use /save or /save-full instead"
 ---
 
 # /save-context Command
 
-**⚠️ DEPRECATED IN v2.1.0**
+**⚠️ DEPRECATED - SCHEDULED FOR REMOVAL IN v2.3.0**
 
-This command has been split into two focused commands for better workflow:
-- **`/save`** - Quick save (2-3 min): Updates STATUS.md with auto-generated Quick Reference section
+This command will be **permanently removed** in v2.3.0 (approximately 3 months after v2.2.0).
+
+**Migrate now to:**
+- **`/save`** - Quick save (2-3 min): Updates STATUS.md with auto-generated Quick Reference
 - **`/save-full`** - Comprehensive save (10-15 min): Everything /save does + SESSIONS.md entry
 
-**For new projects:** Use `/save` and `/save-full`
-**For backward compatibility:** This command still works but is not actively maintained
+**Why the change:**
+- Naming confusion: users didn't know difference between `/save` and `/save-context`
+- Better clarity: `/save` (quick) vs `/save-full` (comprehensive)
+- Reduced maintenance: One less command to maintain
+
+**For backward compatibility:** This command still works in v2.2.x but shows this warning
+
+**See:** `DEPRECATIONS.md` for full removal timeline
 
 ---
 

@@ -121,24 +121,29 @@ Why this matters:
 SESSION FLAG SET:
 PUSH_APPROVED = false
 
-This flag MUST be explicitly set to true with user approval before ANY push.
+**v2.2.0 ENFORCEMENT:** This flag now BLOCKS git push in /save-full
+
+HOW TO APPROVE (when user explicitly requests push):
+1. User says "push", "deploy", or "push to github" in their message
+2. Set: PUSH_APPROVED = true
+3. Run /save-full (will check flag and allow push)
 
 APPROVAL PHRASES (from .context-config.json):
 ✅ "push to github"
 ✅ "deploy this"
 ✅ "yes push"
-✅ "go ahead"
+✅ "go ahead and push"
 
 NOT APPROVAL:
 ❌ "save and push" in workflow description
 ❌ "then push" in instructions
 ❌ Any mention of push without explicit "do it now"
 
-BEFORE EVERY PUSH, ASK YOURSELF:
+BEFORE SETTING PUSH_APPROVED=true, ASK:
 "Did the user say YES PUSH THIS in their LAST message?"
 
-If no → STOP and ask for approval
-If yes → Verify by re-reading, auto-log approval, then push
+If NO → Keep PUSH_APPROVED=false, /save-full will block push
+If YES → Set PUSH_APPROVED=true, verify by re-reading, auto-log approval
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
@@ -154,7 +159,7 @@ Files to load:
 - context/CONTEXT.md (v2.0+) or context/CLAUDE.md (pre-v2.0)
 - context/STATUS.md (v2.1+ includes Quick Reference section)
 - context/DECISIONS.md
-- context/SESSIONS.md
+- context/SESSIONS.md (see smart loading strategy below)
 - context/PRD.md (optional)
 - context/CODE_MAP.md (optional, v2.1+)
 - context/ARCHITECTURE.md (optional)
@@ -164,6 +169,65 @@ Files to load:
 ```
 
 **Note any missing files** - will affect confidence score.
+
+#### SESSIONS.md Smart Loading Strategy (v2.2.0)
+
+**Problem:** Large SESSIONS.md files (2000+ lines) cause timeouts or hit token limits
+
+**Solution:** Strategic reading based on file size
+
+```bash
+# Check SESSIONS.md size first
+SESSIONS_LINES=$(wc -l < context/SESSIONS.md 2>/dev/null || echo "0")
+
+if [ "$SESSIONS_LINES" -lt 1000 ]; then
+  # Small file: Read entirely
+  echo "Reading complete SESSIONS.md ($SESSIONS_LINES lines)"
+  # Use Read tool on full file
+
+elif [ "$SESSIONS_LINES" -lt 5000 ]; then
+  # Medium file: Strategic reading
+  echo "📚 Medium SESSIONS.md detected ($SESSIONS_LINES lines)"
+  echo "Reading: Session index + last 2 sessions"
+
+  # Read first 300 lines (session index + early sessions)
+  # Use Read tool with: offset=0, limit=300
+
+  # Read last 800 lines (most recent 2 sessions)
+  # Calculate: offset = SESSIONS_LINES - 800
+  # Use Read tool with: offset=(calculated), limit=800
+
+  echo "✅ Loaded index + recent sessions"
+  echo "💡 Run /session-summary for condensed full history"
+
+else
+  # Large file: Index + current session only
+  echo "📚 Large SESSIONS.md detected ($SESSIONS_LINES lines)"
+  echo "Reading: Index + current session only"
+
+  # Read first 200 lines (index)
+  # Use Read tool with: offset=0, limit=200
+
+  # Read last 400 lines (current session)
+  # Calculate: offset = SESSIONS_LINES - 400
+  # Use Read tool with: offset=(calculated), limit=400
+
+  # Show stats
+  TOTAL_SESSIONS=$(grep -c "^## Session" context/SESSIONS.md)
+  echo "📊 File Statistics:"
+  echo "  - Total sessions: $TOTAL_SESSIONS"
+  echo "  - Total lines: $SESSIONS_LINES"
+  echo "  - Loaded: Index + latest session"
+  echo ""
+  echo "💡 Use /session-summary for full condensed history"
+fi
+```
+
+**Why this works:**
+- Session index at top shows all session titles
+- Most recent session has current WIP state
+- Avoids reading middle history (not needed for resuming)
+- Prevents timeouts on large files
 
 ### Step 3: Check Current Code State
 

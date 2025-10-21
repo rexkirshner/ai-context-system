@@ -54,16 +54,43 @@ description: Comprehensive session documentation for breaks and handoffs (10-15 
 
 ## Execution Steps
 
-### Step 1: Verify Context Exists
+### Step 1: Find and Verify Context Directory
 
-```
-If context/ folder missing:
-- Automatically run /init-context first
-- Then proceed with save
+**v2.2.0: Now works from subdirectories!**
 
-If context/ exists:
-- Proceed to Step 2
+```bash
+# Find context/ directory (searches up to 2 parent dirs)
+find_context_dir() {
+  for dir in "context" "../context" "../../context"; do
+    if [ -d "$dir" ]; then
+      echo "$dir"
+      return 0
+    fi
+  done
+  return 1
+}
+
+CONTEXT_DIR=$(find_context_dir)
+
+if [ -z "$CONTEXT_DIR" ]; then
+  echo "❌ No context/ directory found"
+  echo "Searched: ./ ../ ../../"
+  echo ""
+  echo "Run /init-context from project root first"
+  exit 1
+fi
+
+echo "✅ Found context at: $CONTEXT_DIR"
+
+# Use $CONTEXT_DIR for all context file operations below
+# Example: $CONTEXT_DIR/STATUS.md instead of context/STATUS.md
 ```
+
+**Why this works:**
+- Searches current directory first
+- Then parent directory (for `backend/` subdirs)
+- Then grandparent (for `backend/src/` subdirs)
+- Works from anywhere in project structure
 
 ### Step 2: Analyze What Changed
 
@@ -320,28 +347,46 @@ This creates `context/.sessions-data.json` with structured session history for:
 
 **Note:** Optional - only run when you actually need JSON for automation/multi-agent workflows.
 
-### Step 7.6: Git Push Protection - MANDATORY CHECK
+### Step 7.6: Git Push Protection - MANDATORY ENFORCEMENT
 
-**🚨 CRITICAL: Read this section before ANY git push operation**
+**🚨 CRITICAL: This is ENFORCED protection, not optional guidance**
 
-**ACTION:** Before pushing to GitHub, verify explicit user approval using multi-layered checklist:
+**v2.2.0 FIX:** This section now BLOCKS git push operations unless explicitly approved.
 
-#### Layer 1: Check Configuration
+#### Layer 1: Check Session Flag (MANDATORY - DO NOT SKIP)
 
 ```bash
-# Read git push protection settings from .context-config.json
-PUSH_PROTECTION=$(jq -r '.git.pushProtection.enabled' context/.context-config.json 2>/dev/null || echo "true")
+# CHECK: Was PUSH_APPROVED flag set to true by /review-context?
+# This flag is set to FALSE at session start
+# It MUST be explicitly set to TRUE by user approval
 
-if [ "$PUSH_PROTECTION" = "true" ]; then
+if [ "${PUSH_APPROVED:-false}" != "true" ]; then
   echo ""
   echo "🚨━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-  echo "   GIT PUSH PROTECTION - MANDATORY STOP"
+  echo "   GIT PUSH BLOCKED - NO APPROVAL"
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
   echo ""
+  echo "PUSH_APPROVED = false (set by /review-context)"
+  echo ""
+  echo "User must explicitly say:"
+  echo '  - "push"'
+  echo '  - "push to github"'
+  echo '  - "deploy"'
+  echo '  - "go ahead and push"'
+  echo ""
+  echo "Current action: Committing locally only"
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo ""
+
+  # STOP HERE - Do NOT push
+  # Commit locally and ask for approval
+  exit 0
 fi
+
+echo "✅ PUSH_APPROVED = true (user explicitly approved)"
 ```
 
-#### Layer 2: Pre-Push Checklist (MANDATORY - Answer ALL)
+#### Layer 2: Double-Check User's Last Message
 
 ```
 🚨 CHECKLIST - Answer ALL questions before proceeding:

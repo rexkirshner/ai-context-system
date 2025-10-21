@@ -1,6 +1,6 @@
 # Claude Context System - File Structure
 
-**Version 2.1.0** - Complete file organization
+**Version 2.2.0** - Complete file organization
 
 ## Root Files
 
