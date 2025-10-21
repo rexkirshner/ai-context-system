@@ -1,5 +1,11 @@
 # Rename Difficulty Analysis
 
+**AI Context System** (formerly Claude Context System)
+
+**Decision Made:** Rebrand to AI Context System for v3.0.0
+
+---
+
 ## What's Currently Claude-Specific
 
 ### Hard-coded in user projects:

@@ -1,6 +1,10 @@
 # v3.0.0 Planning & Analysis
 
+**AI Context System** (formerly Claude Context System)
+
 This directory contains comprehensive planning and analysis for the v3.0.0 rebrand.
+
+---
 
 ## Decision Summary
 
@@ -27,7 +31,41 @@ This directory contains comprehensive planning and analysis for the v3.0.0 rebra
 - Risk mitigation
 - Rollback procedures
 
-### Analysis Documents
+### Codex Enhancements (NEW)
+**[roadmap-addendum-codex.md](roadmap-addendum-codex.md)** - Codex improvements integrated
+- 11/13 suggestions implemented (85% adoption)
+- Updated timeline (+0.6 days for quality improvements)
+- Enhanced testing (84 test cases, up from 42)
+- Automation tools (rename script, test scripts)
+- Reference to new planning documents
+
+### Implementation Tools (NEW)
+**[terminology-guardrails.md](terminology-guardrails.md)** - MUST/MUST NOT change guide
+- Prevents over-zealous find/replace
+- Safe search patterns
+- Common mistakes to avoid
+- Post-implementation checklist
+
+**[search-matrix.md](search-matrix.md)** - Comprehensive search patterns
+- 13 categories of patterns
+- All case variants covered
+- File type specific searches
+- Verification commands
+
+**[enhanced-testing-matrix.md](enhanced-testing-matrix.md)** - 84 test cases (expanded)
+- 42 additional edge cases
+- Large files, non-ASCII, unusual content
+- 4 automated test scripts included
+- Performance benchmarks
+- Manual verification checklist
+
+**[faq-claude-md-retention.md](faq-claude-md-retention.md)** - Why claude.md stays
+- Addresses #1 post-rebrand question
+- Multi-AI architecture explained
+- Analogies and examples
+- Common misconceptions addressed
+
+### Original Analysis Documents
 
 **[comprehensive-rename-evaluation.md](comprehensive-rename-evaluation.md)** - Detailed scenario analysis
 - 4 scenarios from docs-only (2/10 difficulty) to full backward-compat (9/10 difficulty)

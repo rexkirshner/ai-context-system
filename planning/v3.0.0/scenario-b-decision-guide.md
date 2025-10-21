@@ -1,5 +1,11 @@
 # Scenario B Decision Guide: Feedback File Rename
 
+**AI Context System** (formerly Claude Context System)
+
+**Decision Made:** Proceed with feedback file rename as part of v3.0.0 rebrand
+
+---
+
 ## Quick Summary
 
 **Change:** `claude-context-feedback.md` → `context-feedback.md`  
