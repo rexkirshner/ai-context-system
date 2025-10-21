@@ -1,11 +1,11 @@
-# Claude Context System - File Structure
+# AI Context System - File Structure
 
 **Version 2.2.0** - Complete file organization
 
 ## Root Files
 
 ### Core Documentation
-- **README.md** - Overview of the Claude Context System
+- **README.md** - Overview of the AI Context System
 - **PRD.md** - Product requirements document
 - **SETUP_GUIDE.md** - Installation and usage guide
 - **MIGRATION_GUIDE.md** - v1.x → v2.0 migration steps
@@ -162,7 +162,7 @@ your-project/
 
 **📍 Start here:** [CONTEXT.md](./CONTEXT.md)
 
-This project uses the Claude Context System v2.1. All documentation is in platform-neutral markdown files.
+This project uses the AI Context System v2.1. All documentation is in platform-neutral markdown files.
 
 **Quick start:** [STATUS.md](./STATUS.md) → Active Tasks → Begin working
 ```

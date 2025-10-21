@@ -1,8 +1,8 @@
-# PRD: Claude Context System
+# PRD: AI Context System
 
 ## Executive Summary
 
-**Product Name:** Claude Context System
+**Product Name:** AI Context System
 **Version:** 1.9.0
 **Owner:** Rex Kirshner
 **Status:** Active Development
@@ -455,7 +455,7 @@ project-root/
 
 ## Success Statement
 
-The Claude Context System is successful when:
+The AI Context System is successful when:
 
 > **"I can end any session abruptly, start a new session days later, run /review-context, and continue exactly where I left off without any re-explanation or context loss."**
 
