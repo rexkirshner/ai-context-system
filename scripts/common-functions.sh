@@ -76,10 +76,10 @@ download_with_retry() {
           log_error "Downloaded file appears to be HTML (likely an error page)"
           rm -f "$output"
         else
-          # Check file size is reasonable (> 10 bytes, < 10MB)
+          # Check file size is reasonable (> 0 bytes, < 10MB)
           local size=$(wc -c < "$output" 2>/dev/null || echo "0")
-          if [ "$size" -lt 10 ]; then
-            log_error "Downloaded file too small ($size bytes)"
+          if [ "$size" -lt 1 ]; then
+            log_error "Downloaded file is empty"
             rm -f "$output"
           elif [ "$size" -gt 10485760 ]; then
             log_warn "Downloaded file is large ($size bytes)"
