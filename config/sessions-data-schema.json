@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://github.com/rexkirshner/claude-context-system/schemas/sessions-data.json",
-  "title": "Claude Context System - Sessions Data",
+  "title": "AI Context System - Sessions Data",
   "description": "Machine-readable session history for multi-agent workflows",
   "type": "object",
   "properties": {
@@ -11,7 +11,7 @@
       "properties": {
         "version": {
           "type": "string",
-          "description": "Claude Context System version",
+          "description": "AI Context System version",
           "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
         },
         "exportedAt": {

@@ -138,7 +138,7 @@ Accomplishments:
 ✅ Created improvement recommendations document
 
 Files Changed:
-- context/claude-context-feedback.md (+2,712 lines) - Feedback
+- context/context-feedback.md (+2,712 lines) - Feedback
 - context/codex-improvement-proposal.md (+60 lines) - Analysis
 
 Decisions:

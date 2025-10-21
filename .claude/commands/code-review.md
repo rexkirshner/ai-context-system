@@ -444,7 +444,7 @@ User runs this when they have time. Be thorough:
 
 ---
 
-**💬 Feedback**: Any feedback on the code review? (Add to `context/claude-context-feedback.md`)
+**💬 Feedback**: Any feedback on the code review? (Add to `context/context-feedback.md`)
 
 - Were the findings accurate and helpful?
 - Any false positives or missed issues?

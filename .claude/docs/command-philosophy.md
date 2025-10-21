@@ -1,6 +1,6 @@
 # Command Philosophy
 
-Core principles that guide all Claude Context System commands.
+Core principles that guide all AI Context System commands.
 
 ## The Prime Directive: Session Continuity
 

@@ -104,7 +104,7 @@ Example for web app:
 ├── [key-directory]/     # [Purpose]
 ├── [key-directory]/     # [Purpose]
 ├── [key-directory]/     # [Purpose]
-├── context/             # Claude Context System docs
+├── context/             # AI Context System docs
 │   ├── CONTEXT.md       # This file
 │   ├── STATUS.md        # Current state
 │   ├── DECISIONS.md     # Decision log

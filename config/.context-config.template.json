@@ -240,7 +240,7 @@
     "createdAt": "[YYYY-MM-DD]",
     "lastUpdated": "[YYYY-MM-DD]",
     "configVersion": "2.3.2",
-    "notes": "Configuration for Claude Context System"
+    "notes": "Configuration for AI Context System"
   },
   "counters": {
     "nextDecisionId": 1,

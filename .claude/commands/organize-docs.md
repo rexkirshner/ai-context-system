@@ -387,7 +387,7 @@ project-root/
 
 ---
 
-**💬 Feedback**: Any feedback on organization? (Add to `context/claude-context-feedback.md`)
+**💬 Feedback**: Any feedback on organization? (Add to `context/context-feedback.md`)
 
 - Did the interactive wizard work well?
 - Were file categorizations accurate?

@@ -9,7 +9,7 @@
 
 ## Core Principle: Active vs. Historical Files
 
-The Claude Context System enforces a clear distinction:
+The AI Context System enforces a clear distinction:
 
 - **Active** - Currently needed, frequently updated → Keep accessible
 - **Historical** - Completed work, old plans → Archive with dates
@@ -29,7 +29,7 @@ project-root/
 ├── LICENSE.md                  # License (required)
 ├── CHANGELOG.md                # Version history (recommended)
 │
-├── context/                    # Claude Context System (active)
+├── context/                    # AI Context System (active)
 │   ├── claude.md               # AI header (7-line redirect)
 │   ├── CONTEXT.md              # Project orientation
 │   ├── STATUS.md               # Current state
@@ -99,7 +99,7 @@ project-root/
 - Configuration (.context-config.json)
 
 **Rules:**
-- ✅ Only Claude Context System files
+- ✅ Only AI Context System files
 - ❌ No project documentation here (use docs/)
 - ❌ No historical files (use artifacts/)
 - ❌ No random notes (file them properly)
@@ -310,7 +310,7 @@ docs/architecture/
 
 ---
 
-## Claude Context System Integration
+## AI Context System Integration
 
 ### Validation
 
@@ -420,7 +420,7 @@ find src -name "*.md"
 - Regular organization prevents sprawl
 - Easier to maintain long-term
 
-### The Claude Context System Thrives on Order
+### The AI Context System Thrives on Order
 - Context files work best when project is organized
 - AI agents understand structure better
 - Session continuity improved
@@ -455,4 +455,4 @@ find src -name "*.md"
 
 **Version:** 2.2.1
 **Last Updated:** 2025-10-20
-**Status:** Active guideline for all projects using Claude Context System
+**Status:** Active guideline for all projects using AI Context System

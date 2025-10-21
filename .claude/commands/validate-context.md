@@ -74,7 +74,7 @@ The script performs these checks:
 
 **Output format:**
 ```
-🔍 Validating Claude Context System...
+🔍 Validating AI Context System...
 
 📄 Checking required documentation files...
   ✅ context/claude.md (AI header)
@@ -567,7 +567,7 @@ Validation succeeds when:
 
 ---
 
-**💬 Feedback**: Any feedback on validation? (Add to `context/claude-context-feedback.md`)
+**💬 Feedback**: Any feedback on validation? (Add to `context/context-feedback.md`)
 
 - Did validation find issues accurately?
 - Were the recommendations helpful?

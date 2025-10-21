@@ -1,10 +1,12 @@
-# Claude Context System
+# AI Context System
 
 **Version 2.3.2**
 
-> Perfect session continuity for Claude Code projects
+> Perfect session continuity for AI coding assistants
 >
 > **Start simple, grow naturally. Platform-neutral core with tool-specific entry points.**
+>
+> _Originally designed for Claude Code, now supports all AI assistants (Claude, Cursor, Aider, Codex, and more)_
 
 ---
 
@@ -37,7 +39,7 @@
 
 ## What is This?
 
-The Claude Context System is a complete toolkit for maintaining perfect context across Claude Code sessions AND enabling AI agents to review, improve, and take over your work.
+The AI Context System is a complete toolkit for maintaining perfect context across AI coding sessions AND enabling AI agents to review, improve, and take over your work.
 
 **Dual Purpose:**
 1. **Session Continuity** - Never lose your place, never repeat explanations, never lose work again
@@ -91,7 +93,7 @@ The Claude Context System is a complete toolkit for maintaining perfect context 
 
 ```bash
 # 1. Clone the repo
-git clone https://github.com/rexkirshner/claude-context-system.git
+git clone https://github.com/rexkirshner/ai-context-system.git
 
 # 2. Copy toolkit to your project
 cp -r claude-context-system/.claude /path/to/your/project/
@@ -199,7 +201,7 @@ Creates 5 files (4 core + 1 AI header): claude.md, CONTEXT.md, STATUS.md, DECISI
 #### `/migrate-context`
 **For EXISTING projects with docs**
 
-Migrates existing documentation to Claude Context System structure. Preserves ALL existing content while organizing into context/ and artifacts/ folders. Consolidates to single source of truth.
+Migrates existing documentation to AI Context System structure. Preserves ALL existing content while organizing into context/ and artifacts/ folders. Consolidates to single source of truth.
 
 ### Maintenance Commands (Run Frequently)
 

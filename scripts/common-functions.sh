@@ -1,5 +1,5 @@
 #!/bin/bash
-# Common functions used across Claude Context System commands
+# Common functions used across AI Context System commands
 # Version: 2.3.0
 #
 # This file extracts duplicate code from multiple commands into shared utilities.

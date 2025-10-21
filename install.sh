@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # install.sh
-# Bootstrap installer for Claude Context System
+# Bootstrap installer for AI Context System
 # v2.2.1 - Organization and structural neatness
 #
 # Usage:
@@ -20,11 +20,11 @@ NC='\033[0m' # No Color
 
 # Get version from GitHub VERSION file
 VERSION=$(curl -sL https://raw.githubusercontent.com/rexkirshner/claude-context-system/main/VERSION 2>/dev/null || echo "2.3.0")
-REPO_URL="https://github.com/rexkirshner/claude-context-system"
+REPO_URL="https://github.com/rexkirshner/ai-context-system"
 RAW_URL="https://raw.githubusercontent.com/rexkirshner/claude-context-system/main"
 
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${BLUE}  Claude Context System Installer (v${VERSION})${NC}"
+echo -e "${BLUE}  AI Context System Installer (v${VERSION})${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
 
@@ -175,7 +175,7 @@ TEMPLATES=(
   "CODE_MAP.template.md"
   "PRD.template.md"
   "ARCHITECTURE.template.md"
-  "claude-context-feedback.template.md"
+  "context-feedback.template.md"
 )
 
 echo "   ℹ️  Note: QUICK_REF.template.md removed in v2.1 (Quick Reference now in STATUS.md)"
@@ -344,7 +344,7 @@ echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━�
 if [ $FAILED_DOWNLOADS -eq 0 ] && [ $VERIFICATION_FAILED -eq 0 ]; then
   echo -e "${GREEN}✅ Installation successful!${NC}"
   echo ""
-  echo "Claude Context System v${VERSION} is now installed."
+  echo "AI Context System v${VERSION} is now installed."
   echo ""
   echo -e "${BLUE}Next steps:${NC}"
   echo "   1. Run /init-context to initialize your project"
@@ -360,7 +360,7 @@ if [ $FAILED_DOWNLOADS -eq 0 ] && [ $VERIFICATION_FAILED -eq 0 ]; then
   echo "   - GitHub: ${REPO_URL}"
   echo ""
   echo -e "${BLUE}v2.3.1 Features (Feedback System):${NC}"
-  echo "   - Built-in feedback collection (claude-context-feedback.md)"
+  echo "   - Built-in feedback collection (context-feedback.md)"
   echo "   - Structured templates for bugs, improvements, questions"
   echo "   - Auto-archive on update with version tracking"
   echo "   - Feedback reminders in key commands"

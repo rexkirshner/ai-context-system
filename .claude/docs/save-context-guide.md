@@ -16,7 +16,7 @@ This guide provides:
 
 ## Philosophy
 
-Save-context is the **heartbeat** of the Claude Context System. It's what makes the Prime Directive possible:
+Save-context is the **heartbeat** of the AI Context System. It's what makes the Prime Directive possible:
 
 > "I can end any session abruptly, start a new session days later, run /review-context, and continue exactly where I left off without any re-explanation or context loss."
 

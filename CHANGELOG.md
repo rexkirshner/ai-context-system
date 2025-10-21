@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to the Claude Context System will be documented in this file.
+All notable changes to the AI Context System will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 When running `/init-context`, all context files (CONTEXT.md, STATUS.md, DECISIONS.md, SESSIONS.md, claude.md) were created in the project root directory instead of the `context/` subdirectory. This violated the organizational structure and made projects messy.
 
 **Root Cause:**
-Step 4 in `/init-context` had descriptive text saying "**context/claude.md**", "**context/CONTEXT.md**", etc., but lacked explicit ACTION blocks with bash `cp` commands showing the full `context/` path. Only claude-context-feedback.md (added in v2.3.1) had an explicit ACTION block, which is why it was the only file created in the correct location.
+Step 4 in `/init-context` had descriptive text saying "**context/claude.md**", "**context/CONTEXT.md**", etc., but lacked explicit ACTION blocks with bash `cp` commands showing the full `context/` path. Only context-feedback.md (added in v2.3.1) had an explicit ACTION block, which is why it was the only file created in the correct location.
 
 The command was designed as instructions for Claude Code (AI agent), expecting it to infer the `context/` directory from the descriptions. However, this caused the AI to sometimes create files in the wrong location.
 
@@ -28,7 +28,7 @@ Added explicit ACTION block in Step 4 with bash commands that clearly create all
 - `cp templates/STATUS.template.md context/STATUS.md`
 - `cp templates/DECISIONS.template.md context/DECISIONS.md`
 - `cp templates/SESSIONS.template.md context/SESSIONS.md`
-- `cp templates/claude-context-feedback.template.md context/claude-context-feedback.md`
+- `cp templates/context-feedback.template.md context/context-feedback.md`
 
 Each command includes existence checks to prevent overwriting on re-init.
 
@@ -49,19 +49,19 @@ Each command includes existence checks to prevent overwriting on re-init.
 
 **"Make feedback gathering systematic - continuous improvement for everyone"**
 
-v2.3.1 adds a built-in feedback system to make gathering user feedback a core part of the Claude Context System workflow. Based on real-world feedback gathering through ad-hoc `claude-context-feedback.md` files, this release formalizes the process with structured templates, automatic archiving, and gentle reminders.
+v2.3.1 adds a built-in feedback system to make gathering user feedback a core part of the AI Context System workflow. Based on real-world feedback gathering through ad-hoc `context-feedback.md` files, this release formalizes the process with structured templates, automatic archiving, and gentle reminders.
 
 ### Added
 
 **Feedback System:**
-- **claude-context-feedback.template.md** - Structured feedback collection
+- **context-feedback.template.md** - Structured feedback collection
   - Template for bugs, improvements, questions, feature requests, and praise
   - Clear guidelines for specificity and helpful feedback
   - Example entries showing proper format
   - Categories with severity levels (🔴 Critical, 🟡 Moderate, 🟢 Minor)
 
 - **Feedback file creation in `/init-context`**
-  - Created as 6th core file: `context/claude-context-feedback.md`
+  - Created as 6th core file: `context/context-feedback.md`
   - Initialized from template with examples
   - Ready for immediate use after setup
 
@@ -80,12 +80,12 @@ v2.3.1 adds a built-in feedback system to make gathering user feedback a core pa
   - `/code-review` - Review quality
 
 - **install.sh updates:**
-  - Downloads claude-context-feedback.template.md
+  - Downloads context-feedback.template.md
   - Mentions v2.3.1 feedback features in success message
 
 ### Changed
 
-- **Core file count:** 5 → 6 files (added claude-context-feedback.md)
+- **Core file count:** 5 → 6 files (added context-feedback.md)
 - **Documentation updates:**
   - `/init-context` updated to create feedback file
   - `/update-context-system` updated with archive logic
@@ -242,7 +242,7 @@ v2.2.2 ensures that upgrading from v2.1.0 → v2.2.x is:
 
 **"A place for everything, everything in its place"**
 
-v2.2.1 makes organization and structural neatness a **first-class feature** of the Claude Context System. Real-world usage showed projects accumulate documentation sprawl over time - loose files in root, unclear structure, no consistent filing system. This release actively promotes and enforces project organization through validation, reminders, and guided cleanup.
+v2.2.1 makes organization and structural neatness a **first-class feature** of the AI Context System. Real-world usage showed projects accumulate documentation sprawl over time - loose files in root, unclear structure, no consistent filing system. This release actively promotes and enforces project organization through validation, reminders, and guided cleanup.
 
 ### Added
 
@@ -1874,7 +1874,7 @@ This release addresses that request completely.
 ## [1.0.0] - 2025-10-04
 
 ### Added
-- Initial release of Claude Context System
+- Initial release of AI Context System
 - Core slash commands:
   - /init-context - Initialize context system in new projects
   - /migrate-context - Migrate existing projects with documentation

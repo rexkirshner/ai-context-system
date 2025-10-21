@@ -1,4 +1,4 @@
-# Claude Context System
+# AI Context System
 # Recommended .gitignore patterns for projects using the system
 
 # Personal configuration (optional - uncomment if you want to keep config private)
@@ -18,7 +18,7 @@
 # context/CLAUDE.md
 # context/SESSIONS.md
 
-# Note: By default, the Claude Context System tracks all files.
+# Note: By default, the AI Context System tracks all files.
 # This allows perfect session continuity and documentation preservation.
 #
 # Uncomment sections above based on your needs:

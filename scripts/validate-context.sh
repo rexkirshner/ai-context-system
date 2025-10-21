@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # validate-context.sh
-# Validates Claude Context System documentation and configuration files
+# Validates AI Context System documentation and configuration files
 # v2.1.0 - File consolidation and platform neutrality
 # Exit codes: 0 = pass, 1 = warnings, 2 = errors
 
@@ -26,7 +26,7 @@ CONTEXT_DIR="${BASE_DIR}/context"
 CONFIG_DIR="${BASE_DIR}/config"
 TEMPLATES_DIR="${BASE_DIR}/templates"
 
-echo "🔍 Validating Claude Context System (v2.1.0)..."
+echo "🔍 Validating AI Context System (v2.1.0)..."
 echo "Base directory: $BASE_DIR"
 echo ""
 

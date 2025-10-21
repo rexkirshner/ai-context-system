@@ -100,7 +100,7 @@ Parse the versions and ask user:
 ```
 📦 Update Available
 
-Your Claude Context System: v[CURRENT_VERSION]
+Your AI Context System: v[CURRENT_VERSION]
 Latest on GitHub: v[LATEST_VERSION]
 
 Would you like to update now? [Y/n]
