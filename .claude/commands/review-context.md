@@ -33,6 +33,23 @@ Verify that all context documentation is accurate, consistent, and complete enou
 
 ## Execution Steps
 
+### Step 0: Load Shared Functions
+
+**ACTION:** Source the common functions library:
+
+```bash
+# Load shared utilities (v2.3.0+)
+if [ -f "scripts/common-functions.sh" ]; then
+  source scripts/common-functions.sh
+else
+  echo "⚠️  Warning: common-functions.sh not found (using legacy mode)"
+fi
+```
+
+**Why this matters:** Provides access to performance-optimized functions, version checking, progress indicators, and standardized logging.
+
+---
+
 ### Step 1: Verify Context Exists
 
 ```
@@ -48,14 +65,23 @@ If context/ exists:
 
 **Check if newer version available on GitHub:**
 
-**ACTION:** Use the Bash tool to check version:
+**ACTION:** Use the Bash tool to check version using shared functions:
 
 ```bash
-# Get current version
-CURRENT_VERSION=$(grep -m 1 '"version":' context/.context-config.json | sed 's/.*"version": "\([^"]*\)".*/\1/')
+# Get current version (from .context-config.json or fallback to VERSION file)
+CURRENT_VERSION=$(get_system_version)
 
-# Fetch latest version from GitHub (silently)
-LATEST_VERSION=$(curl -sL https://raw.githubusercontent.com/rexkirshner/claude-context-system/main/config/.context-config.template.json | grep -m 1 '"version":' | sed 's/.*"version": "\([^"]*\)".*/\1/')
+# Fetch latest version from GitHub (with retry logic)
+log_verbose "Checking for system updates..."
+LATEST_VERSION=$(curl --connect-timeout 5 --max-time 10 -sL \
+  https://raw.githubusercontent.com/rexkirshner/claude-context-system/main/VERSION 2>/dev/null | tr -d ' \n')
+
+# Fallback to config file if VERSION file not found
+if [ -z "$LATEST_VERSION" ]; then
+  LATEST_VERSION=$(curl --connect-timeout 5 --max-time 10 -sL \
+    https://raw.githubusercontent.com/rexkirshner/claude-context-system/main/config/.context-config.template.json \
+    | grep -m 1 '"version":' | sed 's/.*"version": "\([^"]*\)".*/\1/' 2>/dev/null)
+fi
 
 # Compare versions
 if [ -n "$LATEST_VERSION" ] && [ "$CURRENT_VERSION" != "$LATEST_VERSION" ]; then
@@ -178,17 +204,18 @@ Files to load:
 
 ```bash
 # Check SESSIONS.md size first
+log_verbose "Checking SESSIONS.md file size..."
 SESSIONS_LINES=$(wc -l < context/SESSIONS.md 2>/dev/null || echo "0")
 
 if [ "$SESSIONS_LINES" -lt 1000 ]; then
   # Small file: Read entirely
-  echo "Reading complete SESSIONS.md ($SESSIONS_LINES lines)"
+  log_info "Reading complete SESSIONS.md ($SESSIONS_LINES lines)"
   # Use Read tool on full file
 
 elif [ "$SESSIONS_LINES" -lt 5000 ]; then
   # Medium file: Strategic reading
-  echo "📚 Medium SESSIONS.md detected ($SESSIONS_LINES lines)"
-  echo "Reading: Session index + last 2 sessions"
+  log_info "📚 Medium SESSIONS.md detected ($SESSIONS_LINES lines)"
+  log_info "Reading: Session index + last 2 sessions"
 
   # Read first 300 lines (session index + early sessions)
   # Use Read tool with: offset=0, limit=300
@@ -197,13 +224,13 @@ elif [ "$SESSIONS_LINES" -lt 5000 ]; then
   # Calculate: offset = SESSIONS_LINES - 800
   # Use Read tool with: offset=(calculated), limit=800
 
-  echo "✅ Loaded index + recent sessions"
-  echo "💡 Run /session-summary for condensed full history"
+  log_success "✅ Loaded index + recent sessions"
+  log_info "💡 Run /session-summary for condensed full history"
 
 else
   # Large file: Index + current session only
-  echo "📚 Large SESSIONS.md detected ($SESSIONS_LINES lines)"
-  echo "Reading: Index + current session only"
+  log_info "📚 Large SESSIONS.md detected ($SESSIONS_LINES lines)"
+  log_info "Reading: Index + current session only"
 
   # Read first 200 lines (index)
   # Use Read tool with: offset=0, limit=200
@@ -214,12 +241,12 @@ else
 
   # Show stats
   TOTAL_SESSIONS=$(grep -c "^## Session" context/SESSIONS.md)
-  echo "📊 File Statistics:"
-  echo "  - Total sessions: $TOTAL_SESSIONS"
-  echo "  - Total lines: $SESSIONS_LINES"
-  echo "  - Loaded: Index + latest session"
-  echo ""
-  echo "💡 Use /session-summary for full condensed history"
+  log_info "📊 File Statistics:"
+  log_info "  - Total sessions: $TOTAL_SESSIONS"
+  log_info "  - Total lines: $SESSIONS_LINES"
+  log_info "  - Loaded: Index + latest session"
+  log_info ""
+  log_info "💡 Use /session-summary for full condensed history"
 fi
 ```
 
@@ -596,3 +623,8 @@ If confidence score >= 60, actively load context:
 **Perfect outcome:** Score 90-100, can state exact resume point, ready to continue seamlessly
 
 **See:** `.claude/docs/review-context-guide.md` - "Success Criteria"
+
+---
+
+**Version:** 2.3.0
+**Updated:** v2.3.0 - Integrated common-functions.sh for version checking, logging, and performance optimization

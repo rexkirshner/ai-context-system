@@ -47,7 +47,24 @@ Optional files (CODE_MAP.md, cursor.md, aider.md, PRD.md, ARCHITECTURE.md) sugge
 
 ## Execution Steps
 
-### Step 0: Verify Working Directory and .claude Location
+### Step 0: Load Shared Functions
+
+**ACTION:** Source the common functions library:
+
+```bash
+# Load shared utilities (v2.3.0+)
+if [ -f "scripts/common-functions.sh" ]; then
+  source scripts/common-functions.sh
+else
+  echo "⚠️  Warning: common-functions.sh not found (using legacy mode)"
+fi
+```
+
+**Why this matters:** Provides access to input validation (`validate_input()`), progress indicators, and error handling.
+
+---
+
+### Step 0.5: Verify Working Directory and .claude Location
 
 **CRITICAL:** Check for multiple .claude directories in the path. This causes conflicts.
 
@@ -297,7 +314,12 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
       3) cp templates/codex.md.template context/codex.md
          echo "✅ Created codex.md" ;;
       4) read -p "Enter AI tool name: " CUSTOM_TOOL
-         /add-ai-header "$CUSTOM_TOOL" ;;
+         # Validate input (alphanumeric, dashes, underscores only, max 50 chars)
+         if validate_input "$CUSTOM_TOOL" '^[a-zA-Z0-9_-]+$' 50; then
+           /add-ai-header "$CUSTOM_TOOL"
+         else
+           log_error "Invalid tool name. Use letters, numbers, dashes, and underscores only."
+         fi ;;
     esac
   done
 else
@@ -334,9 +356,11 @@ if [[ ! $REPLY =~ ^[Nn]$ ]]; then
     echo "✅ Created ORGANIZATION.md from reference"
   else
     # Download from GitHub if not in reference/
-    echo "   Downloading ORGANIZATION.md from GitHub..."
-    if curl -sL https://raw.githubusercontent.com/rexkirshner/claude-context-system/main/ORGANIZATION.md -o ./ORGANIZATION.md 2>/dev/null; then
-      echo "✅ Created ORGANIZATION.md"
+    log_info "   Downloading ORGANIZATION.md from GitHub..."
+    if download_with_retry \
+      "https://raw.githubusercontent.com/rexkirshner/claude-context-system/main/ORGANIZATION.md" \
+      "./ORGANIZATION.md"; then
+      log_success "✅ Created ORGANIZATION.md"
     else
       echo "⚠️  Could not download ORGANIZATION.md (network issue)"
       echo "   You can add it later from reference/ folder"
@@ -528,3 +552,8 @@ Command succeeds when:
 - User knows DECISIONS.md is for AI agent understanding
 - User can immediately run /save or /save-full
 - Clear next steps provided
+
+---
+
+**Version:** 2.3.0
+**Updated:** v2.3.0 - Integrated common-functions.sh for input validation and secure downloads

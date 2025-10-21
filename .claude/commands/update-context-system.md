@@ -46,7 +46,24 @@ Each bash code block in this file should be run using the Bash tool. This is an 
 
 ## Execution Steps
 
-### Step 0: Verify Working Directory
+### Step 0: Load Shared Functions
+
+**ACTION:** Source the common functions library:
+
+```bash
+# Load shared utilities (v2.3.0+)
+if [ -f "scripts/common-functions.sh" ]; then
+  source scripts/common-functions.sh
+else
+  echo "⚠️  Warning: common-functions.sh not found (using legacy mode)"
+fi
+```
+
+**Why this matters:** Provides access to `download_with_retry()` for robust network operations and `get_system_version()` for version checking.
+
+---
+
+### Step 0.5: Verify Working Directory
 
 **CRITICAL:** Ensure we're in the correct project directory before proceeding.
 
@@ -88,12 +105,12 @@ echo ""
 
 ### Step 1: Check Current Version
 
-**ACTION:** Use the Bash tool to check the current version:
+**ACTION:** Use the Bash tool to check the current version using shared function:
 
 ```bash
-CURRENT_VERSION=$(grep -m 1 '"version":' context/.context-config.json | cut -d'"' -f4 2>/dev/null || echo "unknown")
-echo "📦 Current version: $CURRENT_VERSION"
-echo "🔍 Checking for updates from GitHub..."
+CURRENT_VERSION=$(get_system_version)
+log_info "📦 Current version: $CURRENT_VERSION"
+log_info "🔍 Checking for updates from GitHub..."
 ```
 
 ### Step 2: Run Installer Script
@@ -101,17 +118,30 @@ echo "🔍 Checking for updates from GitHub..."
 **ACTION:** Use the Bash tool to download and run the installer:
 
 ```bash
-# Download the latest installer
-curl -sL https://raw.githubusercontent.com/rexkirshner/claude-context-system/main/install.sh -o /tmp/claude-context-install.sh
+# Download the latest installer with retry logic
+log_info "Downloading latest installer from GitHub..."
+if download_with_retry \
+  "https://raw.githubusercontent.com/rexkirshner/claude-context-system/main/install.sh" \
+  "/tmp/claude-context-install.sh" \
+  3 \
+  10; then
+  log_success "✅ Installer downloaded"
 
-# Make it executable
-chmod +x /tmp/claude-context-install.sh
+  # Make it executable
+  chmod +x /tmp/claude-context-install.sh
 
-# Run the installer (it handles version checking and backups)
-/tmp/claude-context-install.sh
+  # Run the installer (it handles version checking and backups)
+  /tmp/claude-context-install.sh
 
-# Clean up
-rm -f /tmp/claude-context-install.sh
+  # Clean up
+  rm -f /tmp/claude-context-install.sh
+else
+  show_error $EXIT_NETWORK "Failed to download installer" \
+    "Check your internet connection" \
+    "Verify GitHub is accessible" \
+    "Try again later if GitHub is experiencing issues"
+  exit 1
+fi
 ```
 
 The installer will:
@@ -132,11 +162,11 @@ The installer will:
 **ACTION:** Check current version to determine if migration is needed:
 
 ```bash
-echo ""
-CURRENT_VERSION=$(grep -m 1 '"version":' context/.context-config.json | cut -d'"' -f4 2>/dev/null || echo "unknown")
+log_info ""
+CURRENT_VERSION=$(get_system_version)
 
-echo "📦 Current version: $CURRENT_VERSION"
-echo ""
+log_info "📦 Current version: $CURRENT_VERSION"
+log_info ""
 
 if [[ "$CURRENT_VERSION" == "2.1.0" ]]; then
   echo "🔄 Migration to v2.2.1 available!"
@@ -362,3 +392,8 @@ Update succeeds when:
 - Project content untouched
 - Clear report of what changed
 - Ready to continue work immediately
+
+---
+
+**Version:** 2.3.0
+**Updated:** v2.3.0 - Integrated common-functions.sh for robust downloads with retry logic and version checking

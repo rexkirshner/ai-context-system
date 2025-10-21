@@ -54,6 +54,23 @@ description: Comprehensive session documentation for breaks and handoffs (10-15 
 
 ## Execution Steps
 
+### Step 0: Load Shared Functions
+
+**ACTION:** Source the common functions library:
+
+```bash
+# Load shared utilities (v2.3.0+)
+if [ -f "scripts/common-functions.sh" ]; then
+  source scripts/common-functions.sh
+else
+  echo "⚠️  Warning: common-functions.sh not found (using legacy mode)"
+fi
+```
+
+**Why this matters:** Provides access to performance-optimized functions, input validation, progress indicators, and standardized error handling.
+
+---
+
 ### Step 1: Find and Verify Context Directory
 
 **v2.2.0: Now works from subdirectories!**
@@ -131,14 +148,22 @@ git diff --cached
 
 ### Step 3: Update Core Files (Always)
 
+**ACTION:** Show progress for this comprehensive documentation step:
+
+```bash
+show_progress "Updating core context files" 3 8
+```
+
 These files ALWAYS get updated:
 
 #### context/SESSIONS.md - Session History (Structured, Comprehensive)
 
 **Auto-detect session number:**
 ```bash
+log_verbose "Detecting next session number..."
 LAST_SESSION=$(grep -c "^## Session" context/SESSIONS.md)
 NEXT_SESSION=$((LAST_SESSION + 1))
+log_info "Creating Session $NEXT_SESSION entry"
 ```
 
 **Write a comprehensive, structured session summary** (40-60 lines with depth for AI agents):
@@ -249,6 +274,12 @@ If you made an important technical decision this session:
 
 ### Step 4: Update Optional Files (If They Exist)
 
+**ACTION:** Show progress:
+
+```bash
+show_progress "Checking optional files" 4 8
+```
+
 Only update these if the file already exists:
 
 #### context/PRD.md (if exists)
@@ -265,6 +296,12 @@ Only update these if the file already exists:
 - Known issues → STATUS.md blockers section
 
 ### Step 5: Update Quick Reference in STATUS.md
+
+**ACTION:** Show progress:
+
+```bash
+show_progress "Updating Quick Reference in STATUS.md" 5 8
+```
 
 **Always update** - auto-generated dashboard section at top of STATUS.md:
 
@@ -290,17 +327,24 @@ CURRENT_PHASE=$(sed -n '/## Current Phase/,/^##/p' context/STATUS.md | grep "^**
 
 ### Step 6: Suggest New Files (When Needed)
 
+**ACTION:** Show progress:
+
+```bash
+show_progress "Checking if new documentation files needed" 6 8
+```
+
 **On-demand enhancement** - suggest when complexity demands:
 
 #### Check for ARCHITECTURE.md need:
 ```bash
-FILE_COUNT=$(find src -type f 2>/dev/null | wc -l)
-DIR_COUNT=$(find src -type d -maxdepth 2 2>/dev/null | wc -l)
+log_verbose "Analyzing project complexity..."
+FILE_COUNT=$(find src -type f 2>/dev/null | wc -l | tr -d ' ')
+DIR_COUNT=$(find src -type d -maxdepth 2 2>/dev/null | wc -l | tr -d ' ')
 
-if [ ! -f context/ARCHITECTURE.md ] && [ $FILE_COUNT -gt 20 ] && [ $DIR_COUNT -gt 5 ]; then
-  echo "📐 Your architecture is getting complex (20+ files, 5+ directories)"
-  echo "   Should I create ARCHITECTURE.md for AI agents to understand system design?"
-  echo "   (y/n)"
+if [ ! -f context/ARCHITECTURE.md ] && [ "$FILE_COUNT" -gt 20 ] && [ "$DIR_COUNT" -gt 5 ]; then
+  log_info "📐 Your architecture is getting complex (20+ files, 5+ directories)"
+  log_info "   Should I create ARCHITECTURE.md for AI agents to understand system design?"
+  log_info "   (y/n)"
 fi
 ```
 
@@ -315,6 +359,12 @@ Ask if:
 **v1.8.0 Note:** We only suggest ARCHITECTURE.md and PRD.md on-demand. DECISIONS.md is always created as core file #3.
 
 ### Step 7: Cross-Check Consistency
+
+**ACTION:** Show progress:
+
+```bash
+show_progress "Verifying documentation consistency" 7 8
+```
 
 Quick verification that docs tell coherent story:
 - Does STATUS.md reflect current reality?
@@ -512,33 +562,33 @@ LOOSE_FILES=$(find . -maxdepth 1 -name "*.md" \
   ! -name "LICENSE.md" \
   ! -name "CHANGELOG.md" \
   ! -name "ORGANIZATION.md" \
-  2>/dev/null | wc -l)
+  2>/dev/null | wc -l | tr -d ' ')
 
 # Only show reminder if threshold exceeded
 if [ "$LOOSE_FILES" -gt 2 ]; then
-  echo ""
-  echo "🧹━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-  echo "     ORGANIZATION REMINDER (v2.2.1)"
-  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-  echo ""
-  echo "Detected $LOOSE_FILES loose documentation file(s) in root."
-  echo ""
-  echo "💡 Good practice: File documentation in organized folders"
-  echo ""
-  echo "Suggested filing locations:"
-  echo "  📁 Active planning     → docs/planning/"
-  echo "  📁 Completed work      → artifacts/milestones/"
-  echo "  📁 Old proposals       → artifacts/planning/"
-  echo "  📁 Architecture docs   → docs/architecture/"
-  echo "  📁 Meeting notes       → artifacts/notes/"
-  echo ""
-  echo "Next steps:"
-  echo "  • Run /organize-docs for guided cleanup"
-  echo "  • Or say 'skip organization' to continue"
-  echo ""
-  echo "See ORGANIZATION.md for complete guidelines"
-  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-  echo ""
+  log_warn ""
+  log_warn "🧹━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  log_warn "     ORGANIZATION REMINDER (v2.2.1)"
+  log_warn "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  log_warn ""
+  log_warn "Detected $LOOSE_FILES loose documentation file(s) in root."
+  log_warn ""
+  log_warn "💡 Good practice: File documentation in organized folders"
+  log_warn ""
+  log_warn "Suggested filing locations:"
+  log_warn "  📁 Active planning     → docs/planning/"
+  log_warn "  📁 Completed work      → artifacts/milestones/"
+  log_warn "  📁 Old proposals       → artifacts/planning/"
+  log_warn "  📁 Architecture docs   → docs/architecture/"
+  log_warn "  📁 Meeting notes       → artifacts/notes/"
+  log_warn ""
+  log_warn "Next steps:"
+  log_warn "  • Run /organize-docs for guided cleanup"
+  log_warn "  • Or say 'skip organization' to continue"
+  log_warn ""
+  log_warn "See ORGANIZATION.md for complete guidelines"
+  log_warn "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  log_warn ""
 fi
 ```
 
@@ -562,6 +612,14 @@ fi
 ---
 
 ### Step 8: Report Updates
+
+**ACTION:** Show completion:
+
+```bash
+show_progress "Finalizing save" 8 8
+log_success ""
+log_success "✅ Comprehensive Save Complete - Session [N]"
+```
 
 Clear, concise summary:
 
@@ -702,3 +760,8 @@ Clear, concise summary:
 - With new optional file: 8-12 minutes (create ARCHITECTURE/PRD/CODE_MAP)
 
 **Worth every second** - enables perfect session continuity AND AI agent review/takeover.
+
+---
+
+**Version:** 2.3.0
+**Updated:** v2.3.0 - Integrated common-functions.sh for progress indicators, logging, and performance optimization

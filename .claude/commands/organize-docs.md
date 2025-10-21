@@ -13,16 +13,28 @@ description: "Organize project documentation into proper structure"
 
 ## Execution Steps
 
+### Step 0: Load Shared Functions
+
+**ACTION:** Source the common functions library:
+
+```bash
+# Load shared utilities (v2.3.0+)
+if [ -f "scripts/common-functions.sh" ]; then
+  source scripts/common-functions.sh
+else
+  echo "⚠️  Warning: common-functions.sh not found (using legacy mode)"
+fi
+```
+
 ### Step 1: Scan for Disorganized Files
 
 **Scan project for files that need organization:**
 
 ```bash
-echo "🔍 Scanning for files to organize..."
-echo ""
+show_progress "Scanning for files to organize" 1 6
 
 # Find loose .md files in root (exclude allowed ones)
-echo "Checking project root..."
+log_verbose "Checking project root..."
 LOOSE_ROOT=$(find . -maxdepth 1 -name "*.md" \
   ! -name "README.md" \
   ! -name "SECURITY.md" \
@@ -33,46 +45,46 @@ LOOSE_ROOT=$(find . -maxdepth 1 -name "*.md" \
   2>/dev/null)
 
 # Find .md files in source directories
-echo "Checking source directories..."
-LOOSE_SRC=$(find src backend frontend lib -name "*.md" 2>/dev/null || true)
+log_verbose "Checking source directories..."
+LOOSE_SRC=$(find src backend frontend lib -name "*.md" -maxdepth 3 2>/dev/null || true)
 
 # Count results
 ROOT_COUNT=$(echo "$LOOSE_ROOT" | grep -c "\.md$" || echo "0")
 SRC_COUNT=$(echo "$LOOSE_SRC" | grep -c "\.md$" || echo "0")
 TOTAL=$((ROOT_COUNT + SRC_COUNT))
 
-echo ""
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "  SCAN RESULTS"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "Loose files in root: $ROOT_COUNT"
-echo "Docs in source dirs: $SRC_COUNT"
-echo "Total to organize: $TOTAL"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo ""
+log_info ""
+log_info "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+log_info "  SCAN RESULTS"
+log_info "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+log_info "Loose files in root: $ROOT_COUNT"
+log_info "Docs in source dirs: $SRC_COUNT"
+log_info "Total to organize: $TOTAL"
+log_info "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+log_info ""
 
 if [ "$TOTAL" -eq 0 ]; then
-  echo "✅ Project is well-organized! No loose files found."
-  echo ""
-  echo "Current structure follows best practices:"
-  echo "  📄 Root - Only essential files"
-  echo "  📁 context/ - Active context system"
-  echo "  📁 docs/ - Organized documentation"
-  echo "  📁 artifacts/ - Historical work"
+  log_success "Project is well-organized! No loose files found."
+  log_info ""
+  log_info "Current structure follows best practices:"
+  log_info "  📄 Root - Only essential files"
+  log_info "  📁 context/ - Active context system"
+  log_info "  📁 docs/ - Organized documentation"
+  log_info "  📁 artifacts/ - Historical work"
   exit 0
 fi
 
 # List all files that need attention
 if [ "$ROOT_COUNT" -gt 0 ]; then
-  echo "Files in root:"
-  echo "$LOOSE_ROOT"
-  echo ""
+  log_info "Files in root:"
+  log_info "$LOOSE_ROOT"
+  log_info ""
 fi
 
 if [ "$SRC_COUNT" -gt 0 ]; then
-  echo "Files in source directories:"
-  echo "$LOOSE_SRC"
-  echo ""
+  log_info "Files in source directories:"
+  log_info "$LOOSE_SRC"
+  log_info ""
 fi
 ```
 
@@ -117,33 +129,33 @@ fi
 **If `artifacts/` or `docs/` folders don't exist, create them:**
 
 ```bash
-echo "Setting up organized folder structure..."
-echo ""
+show_progress "Setting up organized folder structure" 3 6
+log_info ""
 
 # Create artifacts/ for historical work
 if [ ! -d "artifacts" ]; then
-  echo "Creating artifacts/ directories..."
+  log_verbose "Creating artifacts/ directories..."
   mkdir -p artifacts/milestones
   mkdir -p artifacts/planning
   mkdir -p artifacts/reviews
   mkdir -p artifacts/research
   mkdir -p artifacts/notes
-  echo "  ✅ artifacts/ created"
+  log_success "  artifacts/ created"
 fi
 
 # Create docs/ for permanent documentation
 if [ ! -d "docs" ]; then
-  echo "Creating docs/ directories..."
+  log_verbose "Creating docs/ directories..."
   mkdir -p docs/setup
   mkdir -p docs/development
   mkdir -p docs/architecture
   mkdir -p docs/api
-  echo "  ✅ docs/ created"
+  log_success "  docs/ created"
 fi
 
-echo ""
-echo "📁 Folder structure ready"
-echo ""
+log_info ""
+log_success "📁 Folder structure ready"
+log_info ""
 ```
 
 ---
@@ -192,17 +204,17 @@ Say "cancel" to abort organization
 ```bash
 # Example move operations (customize based on analysis)
 
-echo "Organizing files..."
-echo ""
+show_progress "Organizing files" 5 6
+log_info ""
 
 # Move files to proper locations
 # Use 'git mv' if in git repo, otherwise 'mv'
 if git rev-parse --git-dir > /dev/null 2>&1; then
   MV_CMD="git mv"
-  echo "Using git mv (changes will be staged)"
+  log_verbose "Using git mv (changes will be staged)"
 else
   MV_CMD="mv"
-  echo "Using mv (not a git repository)"
+  log_verbose "Using mv (not a git repository)"
 fi
 
 # Execute each move
@@ -210,8 +222,8 @@ fi
 # $MV_CMD "API_DESIGN.md" "docs/architecture/api-design.md"
 # ... (based on approved plan)
 
-echo ""
-echo "✅ Files moved to organized locations"
+log_info ""
+log_success "✅ Files moved to organized locations"
 ```
 
 **IMPORTANT:** Only execute moves that were explicitly approved by the user.
@@ -223,42 +235,43 @@ echo "✅ Files moved to organized locations"
 **Provide summary of organization:**
 
 ```bash
-echo ""
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "  ORGANIZATION COMPLETE"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo ""
-echo "Summary:"
-echo "  📁 Files organized: $ORGANIZED_COUNT"
-echo "  📁 Folders created: $FOLDERS_CREATED"
-echo "  📄 Root directory: Clean"
-echo ""
-echo "Current structure:"
-echo "  📁 artifacts/ - Historical work (dated)"
-echo "  📁 docs/ - Permanent documentation (organized)"
-echo "  📁 context/ - Active context system"
-echo "  📄 Root - Only essential files"
-echo ""
-echo "✅ Project structure is now clean and organized!"
-echo ""
+show_progress "Finalizing organization" 6 6
+log_info ""
+log_info "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+log_info "  ORGANIZATION COMPLETE"
+log_info "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+log_info ""
+log_info "Summary:"
+log_info "  📁 Files organized: $ORGANIZED_COUNT"
+log_info "  📁 Folders created: $FOLDERS_CREATED"
+log_info "  📄 Root directory: Clean"
+log_info ""
+log_info "Current structure:"
+log_info "  📁 artifacts/ - Historical work (dated)"
+log_info "  📁 docs/ - Permanent documentation (organized)"
+log_info "  📁 context/ - Active context system"
+log_info "  📄 Root - Only essential files"
+log_info ""
+log_success "✅ Project structure is now clean and organized!"
+log_info ""
 ```
 
 **Suggest validation and next steps:**
 
 ```bash
-echo "Next steps:"
-echo "  1. Run /validate-context to check organization score"
+log_info "Next steps:"
+log_info "  1. Run /validate-context to check organization score"
 
 # Check if ORGANIZATION.md exists
 if [ -f "ORGANIZATION.md" ]; then
-  echo "  2. Review ORGANIZATION.md for guidelines"
+  log_info "  2. Review ORGANIZATION.md for guidelines"
 else
-  echo "  2. Create ORGANIZATION.md for guidelines (optional):"
-  echo "     cp reference/ORGANIZATION.md ./ORGANIZATION.md"
+  log_info "  2. Create ORGANIZATION.md for guidelines (optional):"
+  log_info "     cp reference/ORGANIZATION.md ./ORGANIZATION.md"
 fi
 
-echo "  3. Commit organized structure to git"
-echo ""
+log_info "  3. Commit organized structure to git"
+log_info ""
 ```
 
 ---
@@ -374,5 +387,6 @@ project-root/
 
 ---
 
-**Version:** 2.2.1
+**Version:** 2.3.0
 **Added:** Organization features for structural neatness
+**Updated:** v2.3.0 - Integrated common-functions.sh for shared utilities

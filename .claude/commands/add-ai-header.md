@@ -41,6 +41,23 @@ This system uses platform-neutral documentation (CONTEXT.md, STATUS.md, etc.) wi
 
 ## Execution Steps
 
+### Step 0: Load Shared Functions
+
+**ACTION:** Source the common functions library:
+
+```bash
+# Load shared utilities (v2.3.0+)
+if [ -f "scripts/common-functions.sh" ]; then
+  source scripts/common-functions.sh
+else
+  echo "⚠️  Warning: common-functions.sh not found (using legacy mode)"
+fi
+```
+
+**Why this matters:** Provides access to input validation (`validate_input()`) to prevent command injection and other security issues.
+
+---
+
 ### Step 1: Verify Context Exists
 
 ```bash
@@ -77,6 +94,24 @@ if [ -z "$1" ]; then
 fi
 
 TOOL_NAME="$1"
+
+# Validate tool name (alphanumeric, dashes, underscores only, max 50 chars)
+# This prevents command injection and path traversal attacks
+if ! validate_input "$TOOL_NAME" '^[a-zA-Z0-9_-]+$' 50; then
+  echo "❌ Invalid tool name"
+  echo ""
+  echo "Tool names must:"
+  echo "  - Use only letters, numbers, dashes, and underscores"
+  echo "  - Be 50 characters or less"
+  echo "  - Not contain spaces or special characters"
+  echo ""
+  echo "Examples of valid names:"
+  echo "  - cursor"
+  echo "  - github-copilot"
+  echo "  - my_custom_ai"
+  exit 1
+fi
+
 TOOL_FILE="context/${TOOL_NAME}.md"
 ```
 
@@ -281,3 +316,8 @@ Command succeeds when:
 - File is ready immediately
 - Clear output showing what was created
 - Multi-AI pattern is preserved
+
+---
+
+**Version:** 2.3.0
+**Updated:** v2.3.0 - Integrated common-functions.sh for input validation (security hardening)
