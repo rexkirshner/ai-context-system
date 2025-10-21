@@ -2,7 +2,7 @@
 
 # install.sh
 # Bootstrap installer for Claude Context System
-# v2.1.0 - File consolidation and platform neutrality
+# v2.2.1 - Organization and structural neatness
 #
 # Usage:
 #   curl -sL https://raw.githubusercontent.com/rexkirshner/claude-context-system/main/install.sh | bash
@@ -18,7 +18,7 @@ GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-VERSION="2.1.0"
+VERSION="2.2.1"
 REPO_URL="https://github.com/rexkirshner/claude-context-system"
 RAW_URL="https://raw.githubusercontent.com/rexkirshner/claude-context-system/main"
 
@@ -111,6 +111,7 @@ COMMANDS=(
   "update-templates.md"
   "add-ai-header.md"
   "session-summary.md"
+  "organize-docs.md"
 )
 
 FAILED_DOWNLOADS=0
@@ -241,7 +242,39 @@ done
 echo ""
 
 # =============================================================================
-# Step 9: Verify installation
+# Step 9: Download reference files
+# =============================================================================
+
+echo -e "${BLUE}⬇️  Downloading reference files...${NC}"
+
+# Download ORGANIZATION.md to reference/ (users can copy to root if desired)
+echo -n "   Downloading ORGANIZATION.md... "
+if curl -sL "${RAW_URL}/ORGANIZATION.md" -o "reference/ORGANIZATION.md" 2>/dev/null; then
+  echo -e "${GREEN}✓${NC}"
+else
+  echo -e "${RED}✗${NC}"
+  ((FAILED_DOWNLOADS++))
+fi
+
+# Download migration guides
+MIGRATION_GUIDES=(
+  "MIGRATION_GUIDE_v2.0_to_v2.1.md"
+  "MIGRATION_GUIDE_v2.1_to_v2.2.md"
+)
+
+for guide in "${MIGRATION_GUIDES[@]}"; do
+  echo -n "   Downloading $guide... "
+  if curl -sL "${RAW_URL}/${guide}" -o "reference/${guide}" 2>/dev/null; then
+    echo -e "${GREEN}✓${NC}"
+  else
+    echo -e "${YELLOW}⚠${NC} (not critical)"
+  fi
+done
+
+echo ""
+
+# =============================================================================
+# Step 10: Verify installation
 # =============================================================================
 
 echo -e "${BLUE}🔍 Verifying installation...${NC}"
@@ -272,7 +305,7 @@ done
 echo ""
 
 # =============================================================================
-# Step 10: Installation summary
+# Step 11: Installation summary
 # =============================================================================
 
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
@@ -295,17 +328,23 @@ if [ $FAILED_DOWNLOADS -eq 0 ] && [ $VERIFICATION_FAILED -eq 0 ]; then
   echo "   - Save context guide: .claude/docs/save-context-guide.md"
   echo "   - GitHub: ${REPO_URL}"
   echo ""
-  echo -e "${BLUE}v2.1.0 Features:${NC}"
-  echo "   - File consolidation (Quick Reference now in STATUS.md)"
+  echo -e "${BLUE}v2.2.1 Features (Organization & Structural Neatness):${NC}"
+  echo "   - ORGANIZATION.md guidelines (in reference/ - copy to root)"
+  echo "   - /organize-docs command (interactive cleanup wizard)"
+  echo "   - Organization validation (0-100 scoring in /validate-context)"
+  echo "   - Cleanup reminders (gentle prompts in /save-full)"
+  echo ""
+  echo -e "${BLUE}Previous Features (v2.1.0):${NC}"
+  echo "   - File consolidation (Quick Reference in STATUS.md)"
   echo "   - Multi-AI support (claude.md, cursor.md, etc.)"
   echo "   - Automated staleness detection"
-  echo "   - Template diff helper (/update-templates)"
   echo ""
   echo -e "${BLUE}Helpful commands:${NC}"
   echo "   /init-context          - Initialize context system"
   echo "   /save                  - Quick save (2-3 min)"
   echo "   /save-full             - Comprehensive save (10-15 min)"
-  echo "   /validate-context      - Check documentation + staleness"
+  echo "   /validate-context      - Check documentation + organization"
+  echo "   /organize-docs         - Interactive cleanup wizard (v2.2.1)"
   echo "   /update-context-system - Update to latest version"
   echo "   /update-templates      - Compare and update templates"
   echo ""

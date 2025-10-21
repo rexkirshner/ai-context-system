@@ -306,6 +306,51 @@ else
 fi
 ```
 
+#### 6.3: ORGANIZATION.md Guidelines (Recommended)
+
+**Create project organization guidelines:**
+
+```bash
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "📋 Recommended: ORGANIZATION.md"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+echo "ORGANIZATION.md provides project organization guidelines:"
+echo "  - Folder structure philosophy (docs/, artifacts/, context/)"
+echo "  - Naming conventions for historical files"
+echo "  - Maintenance schedule for keeping projects clean"
+echo "  - Anti-patterns to avoid (documentation sprawl)"
+echo ""
+echo "This helps maintain professional structure and reduces clutter."
+echo ""
+read -p "Create ORGANIZATION.md in project root? [Y/n]: " -n 1 -r
+echo ""
+
+if [[ ! $REPLY =~ ^[Nn]$ ]]; then
+  # Try to copy from reference/ first (if available from install.sh)
+  if [ -f "reference/ORGANIZATION.md" ]; then
+    cp reference/ORGANIZATION.md ./ORGANIZATION.md
+    echo "✅ Created ORGANIZATION.md from reference"
+  else
+    # Download from GitHub if not in reference/
+    echo "   Downloading ORGANIZATION.md from GitHub..."
+    if curl -sL https://raw.githubusercontent.com/rexkirshner/claude-context-system/main/ORGANIZATION.md -o ./ORGANIZATION.md 2>/dev/null; then
+      echo "✅ Created ORGANIZATION.md"
+    else
+      echo "⚠️  Could not download ORGANIZATION.md (network issue)"
+      echo "   You can add it later from reference/ folder"
+    fi
+  fi
+  echo ""
+  echo "📖 Review ORGANIZATION.md for folder structure guidelines"
+  echo "💡 Tip: Run /organize-docs monthly to maintain organization"
+else
+  echo "⏭️  Skipped ORGANIZATION.md"
+  echo "💡 Tip: Copy from reference/ORGANIZATION.md later if needed"
+fi
+```
+
 ### Step 7: Explain Dual-Purpose Philosophy
 
 After initialization, explain to the user:
@@ -324,6 +369,7 @@ Created 4 core files + 1 AI header:
 Optional files created (if selected):
 - context/CODE_MAP.md - Code location guide (if complex project)
 - context/[tool].md - Additional AI headers (if multi-tool team)
+- ORGANIZATION.md - Project organization guidelines (recommended)
 
 ⚡ Two-Tier Workflow:
 

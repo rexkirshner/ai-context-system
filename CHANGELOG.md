@@ -7,6 +7,133 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.2] - 2025-10-20
+
+### Philosophy
+
+**"Ensure graceful upgrades - never break existing users"**
+
+v2.2.2 is a patch release that fixes the upgrade path from v2.1.0 to v2.2.1. Real-world testing revealed several upgrade issues that would have made adoption difficult for existing users. This release ensures smooth, non-breaking upgrades with clear migration guidance.
+
+### Fixed
+
+**Upgrade Path Issues:**
+- **install.sh outdated** - Updated from v2.1.0 to v2.2.1
+  - Added organize-docs.md to commands download list
+  - Added ORGANIZATION.md download to reference/ folder
+  - Added migration guide downloads
+  - Updated success messaging to mention v2.2.1 features
+
+- **Missing /organize-docs** - Command now properly downloaded during updates
+  - Added to install.sh COMMANDS array
+  - Included in installer verification checks
+
+- **Version numbers outdated** - Updated all references to 2.2.1
+  - /update-context-system now shows correct latest version
+  - Migration path updated for multi-step upgrades
+
+### Added
+
+**Migration Support:**
+- **MIGRATION_GUIDE_v2.1_to_v2.2.md** - Comprehensive upgrade guide
+  - Clear explanation of v2.2.0 bug fixes + v2.2.1 organization features
+  - Step-by-step migration (5 min automatic + 10-15 min optional)
+  - Folder structure philosophy and adoption guide
+  - FAQs for common upgrade questions
+  - Non-breaking, opt-in adoption path
+
+- **v2.2.x migration messaging** in /update-context-system
+  - Detects v2.1.0 and shows v2.2.1 upgrade guidance
+  - Points to migration guide in reference/ folder
+  - Provides quick adoption steps (4 simple commands)
+  - Non-intrusive, helpful messaging
+
+**Graceful Degradation:**
+- **ORGANIZATION.md creation** in /init-context (Step 6.3)
+  - Recommended (not required) for new projects
+  - Default: Yes, but easily skippable
+  - Downloads from GitHub if not in reference/
+  - Graceful fallback if download fails
+
+- **Missing ORGANIZATION.md handling** in /organize-docs
+  - Checks if ORGANIZATION.md exists
+  - Offers to create it from reference/ if missing
+  - No errors if file doesn't exist
+  - Helpful suggestions in "Next steps"
+
+### Changed
+
+**Command Updates:**
+- `/init-context` - Added Step 6.3 for ORGANIZATION.md creation (recommended, opt-in)
+- `/update-context-system` - Added v2.1.0 → v2.2.1 migration detection and guidance
+- `/organize-docs` - Added graceful handling for missing ORGANIZATION.md
+- `install.sh` - Updated to v2.2.1 with organization features
+
+**Documentation:**
+- Updated version numbers: 2.2.1 → 2.2.2 in config template and README
+
+### Implementation Notes
+
+**Design Principles:**
+- **Backward compatible** - No breaking changes, everything works without ORGANIZATION.md
+- **Opt-in adoption** - Users choose when to adopt organization features
+- **Graceful degradation** - All features work whether ORGANIZATION.md exists or not
+- **Clear migration** - Step-by-step guide with time estimates
+
+**Upgrade Experience:**
+```bash
+# User runs update
+/update-context-system
+
+# Output shows:
+✨ v2.2.1 includes organization features + bug fixes
+📖 Full migration guide: reference/MIGRATION_GUIDE_v2.1_to_v2.2.md
+🎯 Quick adoption (optional):
+   1. cp reference/ORGANIZATION.md ./ORGANIZATION.md
+   2. Add /organize-docs to context/.context-config.json
+   3. Run /validate-context to check organization score
+```
+
+**What Works Automatically:**
+- ✅ Bug fixes (git push protection, large file handling, subdirectory support)
+- ✅ Organization scoring in /validate-context
+- ✅ Cleanup reminders in /save-full (skippable)
+- ✅ /organize-docs command available
+
+**What's Opt-In:**
+- ❏ ORGANIZATION.md in project root (recommended)
+- ❏ /organize-docs in slash command list (for autocomplete)
+- ❏ Running /organize-docs for cleanup (when needed)
+
+### Migration
+
+**From v2.2.1 to v2.2.2:**
+
+**Automatic (no action required):**
+- All upgrade path fixes apply automatically
+- Existing v2.2.1 installations continue working perfectly
+- No configuration changes needed
+- No file structure changes
+- Fully backward compatible
+
+**For new installs:**
+- ORGANIZATION.md optionally created by /init-context
+- Migration guides downloaded to reference/
+- Smooth upgrade messaging in /update-context-system
+
+**No breaking changes** - v2.2.2 is a drop-in replacement for v2.2.1
+
+### Summary
+
+v2.2.2 ensures that upgrading from v2.1.0 → v2.2.x is:
+- ✅ **Smooth** - Clear migration guide, helpful messaging
+- ✅ **Non-breaking** - Everything works without changes
+- ✅ **Opt-in** - Adopt organization features when ready
+- ✅ **Graceful** - No errors if optional files missing
+- ✅ **Complete** - All upgrade paths tested and documented
+
+**Time to upgrade:** 5 minutes (automatic) + 10-15 minutes (optional organization cleanup)
+
 ## [2.2.1] - 2025-10-20
 
 ### Philosophy

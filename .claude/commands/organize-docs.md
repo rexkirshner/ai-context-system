@@ -243,12 +243,20 @@ echo "✅ Project structure is now clean and organized!"
 echo ""
 ```
 
-**Suggest validation:**
+**Suggest validation and next steps:**
 
 ```bash
 echo "Next steps:"
 echo "  1. Run /validate-context to check organization score"
-echo "  2. Review ORGANIZATION.md for guidelines"
+
+# Check if ORGANIZATION.md exists
+if [ -f "ORGANIZATION.md" ]; then
+  echo "  2. Review ORGANIZATION.md for guidelines"
+else
+  echo "  2. Create ORGANIZATION.md for guidelines (optional):"
+  echo "     cp reference/ORGANIZATION.md ./ORGANIZATION.md"
+fi
+
 echo "  3. Commit organized structure to git"
 echo ""
 ```
