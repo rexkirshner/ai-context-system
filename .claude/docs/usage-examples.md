@@ -1,6 +1,6 @@
 # Usage Examples
 
-Real-world workflows showing how to use the Claude Context System in common scenarios.
+Real-world workflows showing how to use the AI Context System in common scenarios.
 
 ## Overview
 
@@ -131,15 +131,15 @@ Time: 2-3 minutes
 
 ```bash
 # Clone repo
-git clone https://github.com/rexkirshner/claude-context-system.git
+git clone https://github.com/rexkirshner/ai-context-system.git
 
 # Copy commands to your project
 cd my-new-project
 mkdir -p .claude
-cp -r ../claude-context-system/.claude/commands .claude/
+cp -r ../ai-context-system/.claude/commands .claude/
 
 # Clean up
-rm -rf ../claude-context-system
+rm -rf ../ai-context-system
 ```
 
 ### Step 2: Initialize in Claude Code
@@ -150,7 +150,7 @@ rm -rf ../claude-context-system
 
 **What happens:**
 ```
-🎯 Initializing Claude Context System v2.0
+🎯 Initializing AI Context System v3.0.0
 
 **Step 1: Analyzing project...**
 - Detected: Next.js 14 application
@@ -1061,7 +1061,7 @@ Tell Claude what actually happened. It will update STATUS.md and other docs to m
 
 ## Conclusion
 
-The Claude Context System works best when:
+The AI Context System works best when:
 - You save early and often
 - You review at session start
 - You capture detailed WIP

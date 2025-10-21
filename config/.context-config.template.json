@@ -1,5 +1,5 @@
 {
-  "version": "2.3.2",
+  "version": "3.0.0",
   "owner": "[Your Name]",
   "project": {
     "name": "[Project Name]",
@@ -239,7 +239,7 @@
   "metadata": {
     "createdAt": "[YYYY-MM-DD]",
     "lastUpdated": "[YYYY-MM-DD]",
-    "configVersion": "2.3.2",
+    "configVersion": "3.0.0",
     "notes": "Configuration for AI Context System"
   },
   "counters": {

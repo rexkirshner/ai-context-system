@@ -1,6 +1,6 @@
 # Update System Guide
 
-Comprehensive guide for updating the Claude Context System to latest versions.
+Comprehensive guide for updating the AI Context System to latest versions.
 
 ## Philosophy
 
@@ -510,21 +510,21 @@ cp -r .claude/commands .claude/commands.backup
 ### 2. Download Latest
 
 ```bash
-git clone https://github.com/rexkirshner/claude-context-system.git /tmp/ccs-update
+git clone https://github.com/rexkirshner/ai-context-system.git /tmp/acs-update
 ```
 
 ### 3. Update Commands
 
 ```bash
-cp /tmp/ccs-update/.claude/commands/* .claude/commands/
+cp /tmp/acs-update/.claude/commands/* .claude/commands/
 ```
 
 ### 4. Review Template Changes
 
 ```bash
 # Compare each template
-diff -u context/CLAUDE.md /tmp/ccs-update/templates/CLAUDE.template.md
-diff -u context/CODE_STYLE.md /tmp/ccs-update/templates/CODE_STYLE.template.md
+diff -u context/CLAUDE.md /tmp/acs-update/templates/CLAUDE.template.md
+diff -u context/CODE_STYLE.md /tmp/acs-update/templates/CODE_STYLE.template.md
 
 # Manually apply changes you want
 ```
@@ -539,7 +539,7 @@ diff -u context/CODE_STYLE.md /tmp/ccs-update/templates/CODE_STYLE.template.md
 ### 6. Cleanup
 
 ```bash
-rm -rf /tmp/ccs-update
+rm -rf /tmp/acs-update
 rm -rf .claude/commands.backup
 ```
 

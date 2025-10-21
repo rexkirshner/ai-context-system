@@ -118,7 +118,7 @@ This is a major version bump reflecting the system's evolution from Claude-speci
 - `scripts/common-functions.sh`
 - `scripts/validate-context.sh`
 
-**Total:** 34 files changed, 105 deletions(-), 134 insertions(+)
+**Total:** 34 files changed, 134 insertions(+), 105 deletions(-)
 
 ### Why This Change?
 

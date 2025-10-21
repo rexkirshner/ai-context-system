@@ -1,6 +1,6 @@
 # AI Context System
 
-**Version 2.3.2**
+**Version 3.0.0**
 
 > Perfect session continuity for AI coding assistants
 >
