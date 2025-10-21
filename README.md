@@ -1,6 +1,6 @@
 # Claude Context System
 
-**Version 2.2.2**
+**Version 2.3.0**
 
 > Perfect session continuity for Claude Code projects
 >

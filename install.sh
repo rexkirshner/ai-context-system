@@ -18,7 +18,8 @@ GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-VERSION="2.2.1"
+# Get version from GitHub VERSION file
+VERSION=$(curl -sL https://raw.githubusercontent.com/rexkirshner/claude-context-system/main/VERSION 2>/dev/null || echo "2.3.0")
 REPO_URL="https://github.com/rexkirshner/claude-context-system"
 RAW_URL="https://raw.githubusercontent.com/rexkirshner/claude-context-system/main"
 
@@ -92,7 +93,34 @@ echo "   ✅ Directories created"
 echo ""
 
 # =============================================================================
-# Step 4: Download commands
+# Step 4: Download VERSION file and scripts
+# =============================================================================
+
+echo -e "${BLUE}⬇️  Downloading VERSION and scripts...${NC}"
+
+# Download VERSION file
+echo -n "   Downloading VERSION... "
+if curl -sL "${RAW_URL}/VERSION" -o "VERSION" 2>/dev/null; then
+  echo -e "${GREEN}✓${NC}"
+else
+  echo -e "${RED}✗${NC}"
+  ((FAILED_DOWNLOADS++))
+fi
+
+# Download common-functions.sh
+echo -n "   Downloading common-functions.sh... "
+if curl -sL "${RAW_URL}/scripts/common-functions.sh" -o "scripts/common-functions.sh" 2>/dev/null; then
+  chmod +x "scripts/common-functions.sh"
+  echo -e "${GREEN}✓${NC}"
+else
+  echo -e "${RED}✗${NC}"
+  ((FAILED_DOWNLOADS++))
+fi
+
+echo ""
+
+# =============================================================================
+# Step 5: Download commands
 # =============================================================================
 
 echo -e "${BLUE}⬇️  Downloading slash commands...${NC}"
@@ -129,7 +157,7 @@ done
 echo ""
 
 # =============================================================================
-# Step 5: Download templates
+# Step 6: Download templates
 # =============================================================================
 
 echo -e "${BLUE}⬇️  Downloading templates...${NC}"
@@ -164,7 +192,7 @@ done
 echo ""
 
 # =============================================================================
-# Step 6: Download scripts
+# Step 7: Download remaining scripts
 # =============================================================================
 
 echo -e "${BLUE}⬇️  Downloading scripts...${NC}"
@@ -188,7 +216,7 @@ done
 echo ""
 
 # =============================================================================
-# Step 7: Download configuration
+# Step 8: Download configuration
 # =============================================================================
 
 echo -e "${BLUE}⬇️  Downloading configuration...${NC}"
@@ -219,7 +247,7 @@ fi
 echo ""
 
 # =============================================================================
-# Step 8: Download documentation
+# Step 9: Download documentation
 # =============================================================================
 
 echo -e "${BLUE}⬇️  Downloading documentation...${NC}"
@@ -242,7 +270,7 @@ done
 echo ""
 
 # =============================================================================
-# Step 9: Download reference files
+# Step 10: Download reference files
 # =============================================================================
 
 echo -e "${BLUE}⬇️  Downloading reference files...${NC}"
@@ -274,15 +302,17 @@ done
 echo ""
 
 # =============================================================================
-# Step 10: Verify installation
+# Step 11: Verify installation
 # =============================================================================
 
 echo -e "${BLUE}🔍 Verifying installation...${NC}"
 
 VERIFICATION_FAILED=0
 
-# Check critical files (v2.1.0)
+# Check critical files (v2.3.0)
 CRITICAL_FILES=(
+  "VERSION"
+  "scripts/common-functions.sh"
   ".claude/commands/init-context.md"
   ".claude/commands/save.md"
   ".claude/commands/save-full.md"
@@ -305,7 +335,7 @@ done
 echo ""
 
 # =============================================================================
-# Step 11: Installation summary
+# Step 12: Installation summary
 # =============================================================================
 
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
@@ -328,16 +358,17 @@ if [ $FAILED_DOWNLOADS -eq 0 ] && [ $VERIFICATION_FAILED -eq 0 ]; then
   echo "   - Save context guide: .claude/docs/save-context-guide.md"
   echo "   - GitHub: ${REPO_URL}"
   echo ""
-  echo -e "${BLUE}v2.2.1 Features (Organization & Structural Neatness):${NC}"
-  echo "   - ORGANIZATION.md guidelines (in reference/ - copy to root)"
-  echo "   - /organize-docs command (interactive cleanup wizard)"
-  echo "   - Organization validation (0-100 scoring in /validate-context)"
-  echo "   - Cleanup reminders (gentle prompts in /save-full)"
+  echo -e "${BLUE}v2.3.0 Features (Production-Ready Quality):${NC}"
+  echo "   - Performance: 10-100x faster on large repos"
+  echo "   - Network: Robust error handling with retry logic"
+  echo "   - Security: Input validation, download verification"
+  echo "   - Shared utilities: scripts/common-functions.sh"
+  echo "   - Single VERSION file source of truth"
   echo ""
-  echo -e "${BLUE}Previous Features (v2.1.0):${NC}"
-  echo "   - File consolidation (Quick Reference in STATUS.md)"
-  echo "   - Multi-AI support (claude.md, cursor.md, etc.)"
-  echo "   - Automated staleness detection"
+  echo -e "${BLUE}v2.2.1 Features (Organization):${NC}"
+  echo "   - ORGANIZATION.md guidelines (in reference/)"
+  echo "   - /organize-docs (interactive cleanup wizard)"
+  echo "   - Organization validation (0-100 scoring)"
   echo ""
   echo -e "${BLUE}Helpful commands:${NC}"
   echo "   /init-context          - Initialize context system"
