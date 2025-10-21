@@ -172,11 +172,12 @@ log_info ""
 
 # Check if feedback file exists and has actual content (not just template)
 if [ -f "context/claude-context-feedback.md" ]; then
-  # Count lines that contain actual feedback (skip headers, empty lines, examples)
-  CONTENT_LINES=$(grep -v "^#\|^-\|^\*\|^$\|^<!--\|Example\|Delete after reading" \
+  # Count lines in Feedback Entries section (between "## Feedback Entries" and "## Examples")
+  # Fresh template has ~7 lines, template with entries has 15+
+  CONTENT_LINES=$(awk '/^## Feedback Entries$/,/^## Examples/' \
     context/claude-context-feedback.md | wc -l | tr -d ' ')
 
-  if [ "$CONTENT_LINES" -gt 75 ]; then  # Has actual entries beyond template
+  if [ "$CONTENT_LINES" -gt 10 ]; then  # Has actual entries beyond template
     # Get current version for archive filename
     CURRENT_VERSION=$(get_system_version)
     ARCHIVE_DATE=$(date +%Y-%m-%d)

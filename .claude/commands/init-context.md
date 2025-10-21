@@ -24,7 +24,7 @@ Creates **5 core files + 1 AI header** that serve dual purpose (developer produc
 
 Optional files (CODE_MAP.md, cursor.md, aider.md, PRD.md, ARCHITECTURE.md) suggested when complexity demands.
 
-## Why 6 Core Files?
+## Why These 6 Files?
 
 **The Dual Purpose:**
 1. **Session continuity** - Resume work seamlessly
@@ -203,8 +203,12 @@ Create the **4 core files + 1 AI header** from templates:
 
 ```bash
 log_info "Creating feedback log..."
-cp templates/claude-context-feedback.template.md context/claude-context-feedback.md
-log_success "✅ Created context/claude-context-feedback.md"
+if [ ! -f "context/claude-context-feedback.md" ]; then
+  cp templates/claude-context-feedback.template.md context/claude-context-feedback.md
+  log_success "✅ Created context/claude-context-feedback.md"
+else
+  log_verbose "Feedback file already exists, skipping"
+fi
 ```
 
 ### Step 5: Create Configuration
