@@ -7,6 +7,117 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.1] - 2025-10-20
+
+### Philosophy
+
+**"A place for everything, everything in its place"**
+
+v2.2.1 makes organization and structural neatness a **first-class feature** of the Claude Context System. Real-world usage showed projects accumulate documentation sprawl over time - loose files in root, unclear structure, no consistent filing system. This release actively promotes and enforces project organization through validation, reminders, and guided cleanup.
+
+### Added
+
+**Organization Infrastructure:**
+- **ORGANIZATION.md** - Comprehensive project organization guidelines
+  - Philosophy: Active vs Historical vs Permanent file categorization
+  - Standard folder structure: `context/` (active), `docs/` (permanent), `artifacts/` (historical)
+  - Root directory rules: Only 5-6 essential files (README, LICENSE, SECURITY, CONTRIBUTING, CHANGELOG, ORGANIZATION)
+  - Naming conventions: ISO dates for historical files (`YYYY-MM-DD-description.md`)
+  - Anti-patterns guide: Documentation sprawl, source directory docs, unclear historical files
+  - Maintenance schedule: Daily, weekly, monthly practices
+  - Integration with validation scoring
+
+- **/organize-docs command** - Interactive documentation cleanup wizard
+  - Scans for loose .md files in root and source directories
+  - Analyzes file content to suggest categorization (milestone, planning, review, etc.)
+  - Creates organized folder structure (`docs/`, `artifacts/` with subdirectories)
+  - Guides user through filing each document with preview and suggestions
+  - Provides summary of organization actions
+  - Uses git mv when in git repository to preserve history
+  - When to use: Monthly maintenance, before releases, when validation flags issues
+
+**Organization Validation:**
+- **Organization scoring in /validate-context** (Step 2.8)
+  - Scans for documentation sprawl in project root
+  - Checks for docs in source directories (should be in `docs/`)
+  - Generates organization score 0-100
+  - Scoring: 100 (perfect), 90-99 (excellent), 75-89 (good), 60-74 (fair), <60 (needs cleanup)
+  - Deducts points based on severity: >10 loose files (-30), >5 files (-20), >0 files (-10)
+  - Suggests folder structure creation if missing
+  - Provides specific recommendations for each misplaced file type
+
+**Organization Reminders:**
+- **Cleanup prompts in /save-full** (Step 7.7)
+  - Gentle reminder when loose files > 2 in project root
+  - Only shows when organization is needed (non-intrusive)
+  - Suggests filing locations based on content type
+  - Points to /organize-docs for guided cleanup
+  - Skip with "skip organization" to continue
+  - Prevents accumulation of clutter over time
+
+### Changed
+
+**Command Updates:**
+- `/validate-context` - Added Step 2.8 for file organization validation with scoring
+- `/save-full` - Added Step 7.7 for organization reminder before session end
+- `.context-config.template.json` - Added `/organize-docs` to enabled commands list
+
+**Documentation:**
+- Updated version numbers: 2.2.0 → 2.2.1 in config template and README
+
+### Implementation Notes
+
+**Design Principles:**
+- **Non-intrusive** - Reminders only when needed, easy to skip
+- **Helpful, not annoying** - Suggestions, not enforcement
+- **Clear guidance** - Specific recommendations, not vague warnings
+- **AI-driven analysis** - Smart categorization based on content
+- **Preserve history** - Uses git mv to maintain file history
+
+**Folder Philosophy:**
+```
+project-root/
+├── README.md, LICENSE.md, etc.  # Root: Only essentials
+├── context/                      # Active: 5 core files
+├── docs/                         # Permanent: Topic-organized
+│   ├── setup/
+│   ├── development/
+│   ├── architecture/
+│   └── api/
+└── artifacts/                    # Historical: Dated work
+    ├── milestones/
+    ├── planning/
+    ├── reviews/
+    └── research/
+```
+
+**Benefits:**
+- Reduces cognitive load (know where to find things)
+- Professional appearance (clean repositories)
+- Enables better handoffs (clear structure)
+- Prevents technical debt (clutter accumulation)
+- Improves AI agent navigation (structured context)
+
+### Migration
+
+**From v2.2.0 to v2.2.1:**
+
+**Automatic (no action required):**
+- All new features apply automatically when commands run
+- No configuration changes needed
+- No file structure changes required
+- Fully backward compatible
+
+**Recommended:**
+1. Review ORGANIZATION.md to understand folder philosophy
+2. Run `/validate-context` to check current organization score
+3. Run `/organize-docs` if organization score < 90
+4. Adopt daily/weekly/monthly maintenance practices
+
+**No breaking changes** - v2.2.1 is a drop-in replacement for v2.2.0
+
+**Time investment:** Initial cleanup 10-15 minutes, ongoing maintenance 30 seconds daily
+
 ## [2.2.0] - 2025-10-20
 
 ### Philosophy

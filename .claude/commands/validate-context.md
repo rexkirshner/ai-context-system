@@ -274,6 +274,127 @@ echo ""
 - 🔴 CONTEXT.md stale → Review architecture changes, update if needed
 - 🔴 CODE_MAP.md stale → Review new features, update location guide
 
+---
+
+### Step 2.8: File Organization Validation ✨ v2.2.1
+
+**PURPOSE:** Ensure project maintains structural neatness and professional appearance
+
+**ACTION:** Check for documentation sprawl and misplaced files
+
+```bash
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "STEP 2.8: File Organization Check"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+
+ORGANIZATION_SCORE=100
+
+# Check 1: Documentation sprawl in root
+echo "Checking root directory for loose files..."
+ROOT_DOCS=$(find . -maxdepth 1 -name "*.md" \
+  ! -name "README.md" \
+  ! -name "SECURITY.md" \
+  ! -name "CONTRIBUTING.md" \
+  ! -name "LICENSE.md" \
+  ! -name "CHANGELOG.md" \
+  ! -name "ORGANIZATION.md" \
+  2>/dev/null | wc -l)
+
+if [ "$ROOT_DOCS" -gt 0 ]; then
+  echo "⚠️  Documentation sprawl detected: $ROOT_DOCS loose file(s) in root"
+  echo ""
+  find . -maxdepth 1 -name "*.md" \
+    ! -name "README.md" \
+    ! -name "SECURITY.md" \
+    ! -name "CONTRIBUTING.md" \
+    ! -name "LICENSE.md" \
+    ! -name "CHANGELOG.md" \
+    ! -name "ORGANIZATION.md" \
+    2>/dev/null
+  echo ""
+  echo "Recommendation: File these documents in organized folders"
+  echo "  - Active planning → docs/planning/"
+  echo "  - Completed milestones → artifacts/milestones/"
+  echo "  - Old proposals → artifacts/planning/"
+  echo "  - Architecture docs → docs/architecture/"
+  echo ""
+  echo "Run: /organize-docs for guided cleanup"
+  echo ""
+
+  # Deduct points based on severity
+  if [ "$ROOT_DOCS" -gt 10 ]; then
+    ORGANIZATION_SCORE=$((ORGANIZATION_SCORE - 30))
+  elif [ "$ROOT_DOCS" -gt 5 ]; then
+    ORGANIZATION_SCORE=$((ORGANIZATION_SCORE - 20))
+  else
+    ORGANIZATION_SCORE=$((ORGANIZATION_SCORE - 10))
+  fi
+fi
+
+# Check 2: Documentation in source directories
+if [ -d "src" ]; then
+  SOURCE_DOCS=$(find src -name "*.md" 2>/dev/null | wc -l)
+  if [ "$SOURCE_DOCS" -gt 0 ]; then
+    echo "⚠️  Documentation found in source directories:"
+    find src -name "*.md" 2>/dev/null
+    echo ""
+    echo "Recommendation: Move documentation to docs/ folder"
+    echo "  Source directories should contain code only"
+    echo ""
+    ORGANIZATION_SCORE=$((ORGANIZATION_SCORE - 10))
+  fi
+fi
+
+# Check 3: Folder structure suggestions
+if [ ! -d "artifacts" ] && [ "$ROOT_DOCS" -gt 3 ]; then
+  echo "💡 Suggestion: Create artifacts/ folder for historical work"
+  echo "   mkdir -p artifacts/{milestones,planning,reviews,research}"
+  echo ""
+fi
+
+if [ ! -d "docs" ] && [ "$(find . -name "*.md" 2>/dev/null | wc -l)" -gt 10 ]; then
+  echo "💡 Suggestion: Create docs/ folder for organized documentation"
+  echo "   mkdir -p docs/{setup,development,architecture,api}"
+  echo ""
+fi
+
+# Display organization score
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+if [ "$ORGANIZATION_SCORE" -ge 90 ]; then
+  echo "✅ Organization score: $ORGANIZATION_SCORE/100 (Excellent)"
+elif [ "$ORGANIZATION_SCORE" -ge 75 ]; then
+  echo "🟡 Organization score: $ORGANIZATION_SCORE/100 (Good - minor cleanup recommended)"
+elif [ "$ORGANIZATION_SCORE" -ge 60 ]; then
+  echo "🟠 Organization score: $ORGANIZATION_SCORE/100 (Fair - needs attention)"
+else
+  echo "🔴 Organization score: $ORGANIZATION_SCORE/100 (Poor - run /organize-docs)"
+fi
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+```
+
+**What this checks:**
+- Loose .md files in project root (should be ≤ 5)
+- Documentation in source directories (should be 0)
+- Presence of organizational folders (artifacts/, docs/)
+
+**Why this matters:**
+- Professional appearance
+- Easy navigation
+- Reduced cognitive load
+- Better collaboration
+- See ORGANIZATION.md for complete guidelines
+
+**Scoring:**
+- 100: Perfect organization (≤ 5 files in root, no source docs)
+- 90-99: Excellent (minor cleanup needed)
+- 75-89: Good (some reorganization recommended)
+- 60-74: Fair (needs attention)
+- <60: Poor (run /organize-docs immediately)
+
+---
+
 ### Step 3: Generate Recommendations Report
 
 Based on validation results, provide actionable recommendations:

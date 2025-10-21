@@ -1,5 +1,5 @@
 {
-  "version": "2.2.0",
+  "version": "2.2.1",
   "owner": "[Your Name]",
   "project": {
     "name": "[Project Name]",
@@ -79,7 +79,8 @@
       "/update-context-system",
       "/update-templates",
       "/add-ai-header",
-      "/session-summary"
+      "/session-summary",
+      "/organize-docs"
     ],
     "aliases": {
       "/review": "/review-context",
@@ -238,7 +239,7 @@
   "metadata": {
     "createdAt": "[YYYY-MM-DD]",
     "lastUpdated": "[YYYY-MM-DD]",
-    "configVersion": "2.2.0",
+    "configVersion": "2.2.1",
     "notes": "Configuration for Claude Context System"
   },
   "counters": {

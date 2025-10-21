@@ -495,6 +495,72 @@ This flag must be explicitly set to true with user approval before ANY push.
 - "then push" in instructions
 - Any mention of push without explicit "do it now"
 
+---
+
+### Step 7.7: Organization Reminder ✨ v2.2.1
+
+**PURPOSE:** Encourage clean project structure through gentle reminders
+
+**ACTION:** Check for loose files and suggest organization when appropriate
+
+```bash
+# Count loose files in root (excluding allowed ones)
+LOOSE_FILES=$(find . -maxdepth 1 -name "*.md" \
+  ! -name "README.md" \
+  ! -name "SECURITY.md" \
+  ! -name "CONTRIBUTING.md" \
+  ! -name "LICENSE.md" \
+  ! -name "CHANGELOG.md" \
+  ! -name "ORGANIZATION.md" \
+  2>/dev/null | wc -l)
+
+# Only show reminder if threshold exceeded
+if [ "$LOOSE_FILES" -gt 2 ]; then
+  echo ""
+  echo "🧹━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo "     ORGANIZATION REMINDER (v2.2.1)"
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo ""
+  echo "Detected $LOOSE_FILES loose documentation file(s) in root."
+  echo ""
+  echo "💡 Good practice: File documentation in organized folders"
+  echo ""
+  echo "Suggested filing locations:"
+  echo "  📁 Active planning     → docs/planning/"
+  echo "  📁 Completed work      → artifacts/milestones/"
+  echo "  📁 Old proposals       → artifacts/planning/"
+  echo "  📁 Architecture docs   → docs/architecture/"
+  echo "  📁 Meeting notes       → artifacts/notes/"
+  echo ""
+  echo "Next steps:"
+  echo "  • Run /organize-docs for guided cleanup"
+  echo "  • Or say 'skip organization' to continue"
+  echo ""
+  echo "See ORGANIZATION.md for complete guidelines"
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo ""
+fi
+```
+
+**When this shows:**
+- Only when loose files > 2 in root
+- After /save-full completes successfully
+- Not intrusive - easy to skip
+
+**Why this matters:**
+- Professional appearance
+- Easier navigation
+- Prevents clutter accumulation
+- Maintains long-term project health
+
+**Philosophy:**
+- Gentle nudges, not enforcement
+- Suggests solutions, doesn't block
+- Promotes good habits over time
+- See ORGANIZATION.md for guidelines
+
+---
+
 ### Step 8: Report Updates
 
 Clear, concise summary:
