@@ -33,6 +33,19 @@ Verify that all context documentation follows the expected structure, flag missi
 
 ## Execution Steps
 
+### Step 0: Load Shared Functions
+
+**ACTION:** Source the common functions library:
+
+```bash
+# Load shared utilities (v2.3.0+)
+if [ -f "scripts/common-functions.sh" ]; then
+  source scripts/common-functions.sh
+else
+  echo "⚠️  Warning: common-functions.sh not found (using legacy mode)"
+fi
+```
+
 ### Step 1: Run Validation Script
 
 **ACTION:** Use the Bash tool to run the validation script:
