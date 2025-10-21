@@ -10,6 +10,29 @@
 
 ---
 
+## 🎉 v3.0.0 Released - Rebrand to AI Context System
+
+**BREAKING CHANGE:** System renamed to reflect universal AI support
+
+**What Changed:**
+- **System Name**: Claude Context System → **AI Context System**
+- **Feedback File**: `claude-context-feedback.md` → `context-feedback.md`
+- **Repository**: Renamed to `ai-context-system` (old URLs auto-redirect)
+
+**What Stayed the Same:**
+- ✅ `claude.md`, `cursor.md`, `aider.md`, `codex.md` (tool-specific entry points - correct by design)
+- ✅ All your content: `CONTEXT.md`, `STATUS.md`, `DECISIONS.md`, `SESSIONS.md`
+- ✅ Zero data loss - all content preserved and archived
+
+**Migration (5 minutes):**
+```bash
+/update-context-system  # Automatic migration, zero data loss
+```
+
+**Learn more:** [MIGRATION_GUIDE_v2_to_v3.md](./MIGRATION_GUIDE_v2_to_v3.md) • [CHANGELOG.md](./CHANGELOG.md)
+
+---
+
 ## 🆕 What's New in v2.1
 
 **Philosophy:** Consolidate, don't expand. Start with minimal overhead, add complexity only when needed.
