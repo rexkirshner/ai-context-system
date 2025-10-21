@@ -7,6 +7,72 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.1] - 2025-10-21
+
+### Philosophy
+
+**"Make feedback gathering systematic - continuous improvement for everyone"**
+
+v2.3.1 adds a built-in feedback system to make gathering user feedback a core part of the Claude Context System workflow. Based on real-world feedback gathering through ad-hoc `claude-context-feedback.md` files, this release formalizes the process with structured templates, automatic archiving, and gentle reminders.
+
+### Added
+
+**Feedback System:**
+- **claude-context-feedback.template.md** - Structured feedback collection
+  - Template for bugs, improvements, questions, feature requests, and praise
+  - Clear guidelines for specificity and helpful feedback
+  - Example entries showing proper format
+  - Categories with severity levels (🔴 Critical, 🟡 Moderate, 🟢 Minor)
+
+- **Feedback file creation in `/init-context`**
+  - Created as 6th core file: `context/claude-context-feedback.md`
+  - Initialized from template with examples
+  - Ready for immediate use after setup
+
+- **Auto-archive on `/update-context-system`**
+  - Archives existing feedback (if has content) to `artifacts/feedback/`
+  - Filename format: `feedback-v{version}-{date}.md`
+  - Tracks what version user was on when they gave feedback
+  - Only archives if file has actual entries (not just template)
+  - Creates fresh feedback file from template
+
+- **Feedback reminders in 5 key commands:**
+  - `/init-context` - First impressions of setup
+  - `/update-context-system` - Upgrade experience
+  - `/validate-context` - Validation accuracy
+  - `/organize-docs` - Organization experience
+  - `/code-review` - Review quality
+
+- **install.sh updates:**
+  - Downloads claude-context-feedback.template.md
+  - Mentions v2.3.1 feedback features in success message
+
+### Changed
+
+- **Core file count:** 5 → 6 files (added claude-context-feedback.md)
+- **Documentation updates:**
+  - `/init-context` updated to create feedback file
+  - `/update-context-system` updated with archive logic
+  - All updated commands mention feedback in final output
+
+### Impact
+
+**For Users:**
+- Easy way to provide feedback about issues and improvements
+- Structured format reduces friction
+- Feedback preserved across updates with version tracking
+- Helps make CCS better for everyone
+
+**For Maintainers:**
+- Systematic feedback collection
+- Version-specific issue tracking
+- Clear understanding of user pain points
+- Actionable improvement suggestions
+
+**Based on user feedback:** This release itself came from recognizing the value of systematic feedback gathering!
+
+---
+
 ## [2.2.2] - 2025-10-20
 
 ### Philosophy

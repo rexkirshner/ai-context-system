@@ -441,3 +441,17 @@ User runs this when they have time. Be thorough:
 ✅ User knows what to fix and in what order
 
 **See:** `.claude/docs/code-review-guide.md` - "Success Criteria"
+
+---
+
+**💬 Feedback**: Any feedback on the code review? (Add to `context/claude-context-feedback.md`)
+
+- Were the findings accurate and helpful?
+- Any false positives or missed issues?
+- Was the review thorough enough?
+- Suggestions for improving review quality?
+
+---
+
+**Version:** 2.3.1
+**Updated:** v2.3.1 - Added feedback system

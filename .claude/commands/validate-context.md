@@ -564,3 +564,17 @@ Validation succeeds when:
 - Clear report
 - Ready for export/sharing
 - Documentation complete
+
+---
+
+**💬 Feedback**: Any feedback on validation? (Add to `context/claude-context-feedback.md`)
+
+- Did validation find issues accurately?
+- Were the recommendations helpful?
+- Any false positives or missed issues?
+- Suggestions for improvement?
+
+---
+
+**Version:** 2.3.1
+**Updated:** v2.3.1 - Added feedback system

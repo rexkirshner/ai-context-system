@@ -175,6 +175,7 @@ TEMPLATES=(
   "CODE_MAP.template.md"
   "PRD.template.md"
   "ARCHITECTURE.template.md"
+  "claude-context-feedback.template.md"
 )
 
 echo "   ℹ️  Note: QUICK_REF.template.md removed in v2.1 (Quick Reference now in STATUS.md)"
@@ -357,6 +358,13 @@ if [ $FAILED_DOWNLOADS -eq 0 ] && [ $VERIFICATION_FAILED -eq 0 ]; then
   echo "   - Command philosophy: .claude/docs/command-philosophy.md"
   echo "   - Save context guide: .claude/docs/save-context-guide.md"
   echo "   - GitHub: ${REPO_URL}"
+  echo ""
+  echo -e "${BLUE}v2.3.1 Features (Feedback System):${NC}"
+  echo "   - Built-in feedback collection (claude-context-feedback.md)"
+  echo "   - Structured templates for bugs, improvements, questions"
+  echo "   - Auto-archive on update with version tracking"
+  echo "   - Feedback reminders in key commands"
+  echo "   - Helps make CCS better for everyone!"
   echo ""
   echo -e "${BLUE}v2.3.0 Features (Production-Ready Quality):${NC}"
   echo "   - Performance: 10-100x faster on large repos"

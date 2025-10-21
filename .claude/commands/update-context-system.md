@@ -157,6 +157,71 @@ The installer will:
 - Installer will show version change (if any)
 - Installer will list all updated files
 
+### Step 2.5: Archive Feedback and Create Fresh File
+
+**v2.3.1: Feedback System**
+
+**ACTION:** Archive existing feedback (if has content) and create fresh feedback file:
+
+```bash
+log_info ""
+log_info "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+log_info "  Feedback System (v2.3.1+)"
+log_info "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+log_info ""
+
+# Check if feedback file exists and has actual content (not just template)
+if [ -f "context/claude-context-feedback.md" ]; then
+  # Count lines that contain actual feedback (skip headers, empty lines, examples)
+  CONTENT_LINES=$(grep -v "^#\|^-\|^\*\|^$\|^<!--\|Example\|Delete after reading" \
+    context/claude-context-feedback.md | wc -l | tr -d ' ')
+
+  if [ "$CONTENT_LINES" -gt 75 ]; then  # Has actual entries beyond template
+    # Get current version for archive filename
+    CURRENT_VERSION=$(get_system_version)
+    ARCHIVE_DATE=$(date +%Y-%m-%d)
+
+    # Create archive directory if needed
+    mkdir -p artifacts/feedback
+
+    # Archive with version and date
+    ARCHIVE_FILE="artifacts/feedback/feedback-v${CURRENT_VERSION}-${ARCHIVE_DATE}.md"
+    mv context/claude-context-feedback.md "$ARCHIVE_FILE"
+
+    log_success "✅ Archived feedback to $ARCHIVE_FILE"
+    log_info "   (Feedback from v${CURRENT_VERSION} preserved)"
+  else
+    log_verbose "Feedback file exists but appears to be just template (no entries)"
+    rm -f context/claude-context-feedback.md
+  fi
+fi
+
+# Create fresh feedback file from template
+if [ ! -f "context/claude-context-feedback.md" ]; then
+  if [ -f "templates/claude-context-feedback.template.md" ]; then
+    cp templates/claude-context-feedback.template.md context/claude-context-feedback.md
+    log_success "✅ Created fresh feedback file"
+    log_info ""
+    log_info "📝 Please share your upgrade experience:"
+    log_info "   - Any issues during update?"
+    log_info "   - New features working well?"
+    log_info "   - Add feedback to context/claude-context-feedback.md"
+  else
+    log_warn "⚠️  Template not found - will be created on next /init-context"
+  fi
+fi
+
+log_info ""
+```
+
+**Why this matters:**
+- Preserves your previous feedback (archived with version number)
+- Gives you fresh file for new feedback
+- Tracks what version you were using when you had issues
+- Helps identify version-specific problems
+
+---
+
 ### Step 3: Check Version and Migration Path
 
 **ACTION:** Check current version to determine if migration is needed:
@@ -395,5 +460,14 @@ Update succeeds when:
 
 ---
 
-**Version:** 2.3.0
-**Updated:** v2.3.0 - Integrated common-functions.sh for robust downloads with retry logic and version checking
+**💬 Feedback**: Any feedback on the update process? (Add to `context/claude-context-feedback.md`)
+
+- Did the update go smoothly?
+- Any errors or warnings?
+- New features working as expected?
+- Was feedback properly archived?
+
+---
+
+**Version:** 2.3.1
+**Updated:** v2.3.1 - Added feedback system with archive-on-update

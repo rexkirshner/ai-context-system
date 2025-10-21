@@ -5,7 +5,7 @@ description: Initialize Claude Context System for this project
 
 # /init-context Command
 
-Initialize a **minimal overhead** context system for this project. Creates 4 core files (CONTEXT.md, STATUS.md, DECISIONS.md, SESSIONS.md) plus 1 AI header (claude.md), with optional files (CODE_MAP.md, other AI headers) suggested when complexity demands.
+Initialize a **minimal overhead** context system for this project. Creates 5 core files (CONTEXT.md, STATUS.md, DECISIONS.md, SESSIONS.md, claude-context-feedback.md) plus 1 AI header (claude.md), with optional files (CODE_MAP.md, other AI headers) suggested when complexity demands.
 
 **Philosophy:** Minimal overhead during work. Good-enough recovery when needed. Single source of truth. Platform-neutral core with tool-specific entry points.
 
@@ -14,16 +14,17 @@ Initialize a **minimal overhead** context system for this project. Creates 4 cor
 
 ## What This Command Does
 
-Creates **4 core files + 1 AI header** that serve dual purpose (developer productivity + AI agent review/takeover):
+Creates **5 core files + 1 AI header** that serve dual purpose (developer productivity + AI agent review/takeover):
 1. **claude.md** - AI header (entry point for Claude, points to CONTEXT.md)
 2. **CONTEXT.md** - Orientation (rarely changes: who/what/how/why, platform-neutral)
 3. **STATUS.md** - Current state with auto-generated Quick Reference at top
 4. **DECISIONS.md** - Decision log (WHY choices made - critical for AI agents)
 5. **SESSIONS.md** - History (structured, comprehensive, append-only with mandatory TL;DR)
+6. **claude-context-feedback.md** - Feedback log (bugs, improvements, questions)
 
 Optional files (CODE_MAP.md, cursor.md, aider.md, PRD.md, ARCHITECTURE.md) suggested when complexity demands.
 
-## Why 5 Core Files?
+## Why 6 Core Files?
 
 **The Dual Purpose:**
 1. **Session continuity** - Resume work seamlessly
@@ -191,6 +192,20 @@ Create the **4 core files + 1 AI header** from templates:
 - Session index table
 - Template for future entries (TL;DR, accomplishments, git operations, tests)
 - **Mandatory TL;DR ensures perfect continuity**
+
+**context/claude-context-feedback.md** - Feedback log (v2.3.1+)
+- Structured feedback collection for system improvements
+- Template for bugs, improvements, questions, feature requests
+- Archived on `/update-context-system` (if has content)
+- **Helps make Claude Context System better for everyone**
+
+**ACTION:** Create feedback file from template:
+
+```bash
+log_info "Creating feedback log..."
+cp templates/claude-context-feedback.template.md context/claude-context-feedback.md
+log_success "✅ Created context/claude-context-feedback.md"
+```
 
 ### Step 5: Create Configuration
 
@@ -543,7 +558,7 @@ If errors occur:
 ## Success Criteria
 
 Command succeeds when:
-- 4 core files + 1 AI header (claude.md, CONTEXT.md, STATUS.md, DECISIONS.md, SESSIONS.md) created with available data
+- 5 core files + 1 AI header (claude.md, CONTEXT.md, STATUS.md, DECISIONS.md, SESSIONS.md, claude-context-feedback.md) created with available data
 - All files use v2.1 structure and format
 - STATUS.md includes auto-generated Quick Reference section
 - Configuration valid
@@ -555,5 +570,14 @@ Command succeeds when:
 
 ---
 
-**Version:** 2.3.0
-**Updated:** v2.3.0 - Integrated common-functions.sh for input validation and secure downloads
+**💬 Feedback**: Any feedback on this command? (Add to `context/claude-context-feedback.md`)
+
+- First impressions of the initialization process?
+- Was anything confusing or unclear?
+- Did all files get created correctly?
+- Suggestions for improvement?
+
+---
+
+**Version:** 2.3.1
+**Updated:** v2.3.1 - Added feedback system (claude-context-feedback.md)

@@ -387,6 +387,15 @@ project-root/
 
 ---
 
-**Version:** 2.3.0
-**Added:** Organization features for structural neatness
-**Updated:** v2.3.0 - Integrated common-functions.sh for shared utilities
+**💬 Feedback**: Any feedback on organization? (Add to `context/claude-context-feedback.md`)
+
+- Did the interactive wizard work well?
+- Were file categorizations accurate?
+- Any files placed incorrectly?
+- Suggestions for improvement?
+
+---
+
+**Version:** 2.3.1
+**Added:** Organization features for structural neatness (v2.2.1)
+**Updated:** v2.3.1 - Added feedback system
