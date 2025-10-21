@@ -154,9 +154,68 @@ mkdir -p artifacts/coverage
 
 Create the **4 core files + 1 AI header** from templates:
 
+**ACTION:** Create all 5 core files + 1 AI header in `context/` directory:
+
+```bash
+log_info "Creating core documentation files in context/ directory..."
+
+# 1. AI Header (claude.md)
+if [ ! -f "context/claude.md" ]; then
+  cp templates/claude.md.template context/claude.md
+  log_success "✅ Created context/claude.md"
+else
+  log_verbose "claude.md already exists, skipping"
+fi
+
+# 2. CONTEXT.md - Orientation (analyze project and customize from template)
+if [ ! -f "context/CONTEXT.md" ]; then
+  cp templates/CONTEXT.template.md context/CONTEXT.md
+  log_success "✅ Created context/CONTEXT.md"
+  log_info "   📝 Customize with project details (analyze package.json, README, git history)"
+else
+  log_verbose "CONTEXT.md already exists, skipping"
+fi
+
+# 3. STATUS.md - Current state
+if [ ! -f "context/STATUS.md" ]; then
+  cp templates/STATUS.template.md context/STATUS.md
+  log_success "✅ Created context/STATUS.md"
+  log_info "   📝 Quick Reference section will be auto-generated from .context-config.json"
+else
+  log_verbose "STATUS.md already exists, skipping"
+fi
+
+# 4. DECISIONS.md - Decision log
+if [ ! -f "context/DECISIONS.md" ]; then
+  cp templates/DECISIONS.template.md context/DECISIONS.md
+  log_success "✅ Created context/DECISIONS.md"
+  log_info "   📝 Critical for AI agents - documents WHY choices were made"
+else
+  log_verbose "DECISIONS.md already exists, skipping"
+fi
+
+# 5. SESSIONS.md - History
+if [ ! -f "context/SESSIONS.md" ]; then
+  cp templates/SESSIONS.template.md context/SESSIONS.md
+  log_success "✅ Created context/SESSIONS.md"
+  log_info "   📝 Document this initialization session with mandatory TL;DR"
+else
+  log_verbose "SESSIONS.md already exists, skipping"
+fi
+
+# 6. Feedback log (v2.3.1+)
+if [ ! -f "context/claude-context-feedback.md" ]; then
+  cp templates/claude-context-feedback.template.md context/claude-context-feedback.md
+  log_success "✅ Created context/claude-context-feedback.md"
+else
+  log_verbose "Feedback file already exists, skipping"
+fi
+```
+
+**What each file contains:**
+
 **context/claude.md** - AI header (entry point)
 - 7-line file pointing to CONTEXT.md
-- Created from claude.md.template
 - **Tool-specific entry point for platform-neutral docs**
 
 **context/CONTEXT.md** - Orientation (platform-neutral, ~300 lines)
@@ -198,18 +257,6 @@ Create the **4 core files + 1 AI header** from templates:
 - Template for bugs, improvements, questions, feature requests
 - Archived on `/update-context-system` (if has content)
 - **Helps make Claude Context System better for everyone**
-
-**ACTION:** Create feedback file from template:
-
-```bash
-log_info "Creating feedback log..."
-if [ ! -f "context/claude-context-feedback.md" ]; then
-  cp templates/claude-context-feedback.template.md context/claude-context-feedback.md
-  log_success "✅ Created context/claude-context-feedback.md"
-else
-  log_verbose "Feedback file already exists, skipping"
-fi
-```
 
 ### Step 5: Create Configuration
 
@@ -583,5 +630,5 @@ Command succeeds when:
 
 ---
 
-**Version:** 2.3.1
-**Updated:** v2.3.1 - Added feedback system (claude-context-feedback.md)
+**Version:** 2.3.2
+**Updated:** v2.3.2 - Fixed files created in root instead of context/ directory

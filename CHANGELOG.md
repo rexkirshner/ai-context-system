@@ -7,6 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.2] - 2025-10-21
+
+### Fixed
+
+**Critical Bug: Files created in root instead of `context/` directory**
+
+**Problem:**
+When running `/init-context`, all context files (CONTEXT.md, STATUS.md, DECISIONS.md, SESSIONS.md, claude.md) were created in the project root directory instead of the `context/` subdirectory. This violated the organizational structure and made projects messy.
+
+**Root Cause:**
+Step 4 in `/init-context` had descriptive text saying "**context/claude.md**", "**context/CONTEXT.md**", etc., but lacked explicit ACTION blocks with bash `cp` commands showing the full `context/` path. Only claude-context-feedback.md (added in v2.3.1) had an explicit ACTION block, which is why it was the only file created in the correct location.
+
+The command was designed as instructions for Claude Code (AI agent), expecting it to infer the `context/` directory from the descriptions. However, this caused the AI to sometimes create files in the wrong location.
+
+**Solution:**
+Added explicit ACTION block in Step 4 with bash commands that clearly create all 6 files in `context/` directory:
+- `cp templates/claude.md.template context/claude.md`
+- `cp templates/CONTEXT.template.md context/CONTEXT.md`
+- `cp templates/STATUS.template.md context/STATUS.md`
+- `cp templates/DECISIONS.template.md context/DECISIONS.md`
+- `cp templates/SESSIONS.template.md context/SESSIONS.md`
+- `cp templates/claude-context-feedback.template.md context/claude-context-feedback.md`
+
+Each command includes existence checks to prevent overwriting on re-init.
+
+**Impact:**
+- All context files now correctly created in `context/` directory
+- Consistent with ORGANIZATION.md principles (context/ for active documentation)
+- Matches user expectations from earlier versions
+- Makes projects cleaner and more professional
+
+**Files Changed:**
+- `.claude/commands/init-context.md` - Added 50-line ACTION block with explicit file creation
+
+**Reported by:** Real-world user testing in project-zebra
+
 ## [2.3.1] - 2025-10-21
 
 ### Philosophy
