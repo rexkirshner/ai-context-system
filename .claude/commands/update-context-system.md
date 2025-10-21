@@ -121,7 +121,7 @@ log_info "🔍 Checking for updates from GitHub..."
 # Download the latest installer with retry logic
 log_info "Downloading latest installer from GitHub..."
 if download_with_retry \
-  "https://raw.githubusercontent.com/rexkirshner/claude-context-system/main/install.sh" \
+  "https://raw.githubusercontent.com/rexkirshner/ai-context-system/main/install.sh" \
   "/tmp/claude-context-install.sh" \
   3 \
   10; then
@@ -273,7 +273,7 @@ elif [[ "$CURRENT_VERSION" == "2.0.0" ]]; then
   echo "  https://github.com/rexkirshner/ai-context-system/blob/main/MIGRATION_GUIDE_v2.0_to_v2.1.md"
   echo ""
   echo "Quick migration (copy-paste to terminal):"
-  echo "  curl -sL https://raw.githubusercontent.com/rexkirshner/claude-context-system/main/MIGRATION_GUIDE_v2.0_to_v2.1.md | grep -A 100 'Run in terminal:' | bash"
+  echo "  curl -sL https://raw.githubusercontent.com/rexkirshner/ai-context-system/main/MIGRATION_GUIDE_v2.0_to_v2.1.md | grep -A 100 'Run in terminal:' | bash"
   echo ""
 elif [[ "$CURRENT_VERSION" == "1.9.0" ]]; then
   echo "🔄 Migration to v2.0.0 available!"

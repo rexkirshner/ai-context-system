@@ -74,12 +74,12 @@ CURRENT_VERSION=$(get_system_version)
 # Fetch latest version from GitHub (with retry logic)
 log_verbose "Checking for system updates..."
 LATEST_VERSION=$(curl --connect-timeout 5 --max-time 10 -sL \
-  https://raw.githubusercontent.com/rexkirshner/claude-context-system/main/VERSION 2>/dev/null | tr -d ' \n')
+  https://raw.githubusercontent.com/rexkirshner/ai-context-system/main/VERSION 2>/dev/null | tr -d ' \n')
 
 # Fallback to config file if VERSION file not found
 if [ -z "$LATEST_VERSION" ]; then
   LATEST_VERSION=$(curl --connect-timeout 5 --max-time 10 -sL \
-    https://raw.githubusercontent.com/rexkirshner/claude-context-system/main/config/.context-config.template.json \
+    https://raw.githubusercontent.com/rexkirshner/ai-context-system/main/config/.context-config.template.json \
     | grep -m 1 '"version":' | sed 's/.*"version": "\([^"]*\)".*/\1/' 2>/dev/null)
 fi
 

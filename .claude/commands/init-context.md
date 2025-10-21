@@ -264,7 +264,7 @@ fi
 
 ```bash
 # Download the latest config template from GitHub
-curl -sL https://raw.githubusercontent.com/rexkirshner/claude-context-system/main/config/.context-config.template.json -o context/.context-config.json
+curl -sL https://raw.githubusercontent.com/rexkirshner/ai-context-system/main/config/.context-config.template.json -o context/.context-config.json
 
 # Update placeholders (project name, owner, dates)
 # Use Read tool to get current config, then Edit tool to replace placeholders with actual values
@@ -424,7 +424,7 @@ if [[ ! $REPLY =~ ^[Nn]$ ]]; then
     # Download from GitHub if not in reference/
     log_info "   Downloading ORGANIZATION.md from GitHub..."
     if download_with_retry \
-      "https://raw.githubusercontent.com/rexkirshner/claude-context-system/main/ORGANIZATION.md" \
+      "https://raw.githubusercontent.com/rexkirshner/ai-context-system/main/ORGANIZATION.md" \
       "./ORGANIZATION.md"; then
       log_success "✅ Created ORGANIZATION.md"
     else
@@ -539,21 +539,21 @@ Next Steps:
 
 ```bash
 # Check if we're in a nested installation (common pattern)
-if [ -d "../claude-context-system" ]; then
+if [ -d "../ai-context-system" ]; then
   echo "🧹 Removing installation files..."
-  rm -rf ../claude-context-system
+  rm -rf ../ai-context-system
   echo "✅ Installation files removed"
-elif [ -d "./claude-context-system" ]; then
+elif [ -d "./ai-context-system" ]; then
   echo "🧹 Removing installation files..."
-  rm -rf ./claude-context-system
+  rm -rf ./ai-context-system
   echo "✅ Installation files removed"
 else
   echo "⏭️  No installation files found (already clean)"
 fi
 
 # Also check for downloaded zip
-if [ -f "../claude-context-system.zip" ]; then
-  rm -f ../claude-context-system.zip
+if [ -f "../ai-context-system.zip" ]; then
+  rm -f ../ai-context-system.zip
   echo "✅ Removed installation zip"
 fi
 ```

@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://github.com/rexkirshner/claude-context-system/schemas/sessions-data.json",
+  "$id": "https://github.com/rexkirshner/ai-context-system/schemas/sessions-data.json",
   "title": "AI Context System - Sessions Data",
   "description": "Machine-readable session history for multi-agent workflows",
   "type": "object",

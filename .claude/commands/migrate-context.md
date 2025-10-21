@@ -67,8 +67,8 @@ if [ ! -d "$CURRENT_DIR/.claude" ]; then
   echo "This migration requires the toolkit (.claude/ and scripts/) to be installed first."
   echo ""
   echo "Install with:"
-  echo "  cp -r /path/to/claude-context-system/.claude ."
-  echo "  cp -r /path/to/claude-context-system/scripts ."
+  echo "  cp -r /path/to/ai-context-system/.claude ."
+  echo "  cp -r /path/to/ai-context-system/scripts ."
   echo ""
   read -p "Continue anyway? [y/N] " -n 1 -r
   echo
@@ -751,28 +751,28 @@ Migration succeeds when:
 
 ```bash
 # Check if we're in a nested installation (common pattern)
-if [ -d "../claude-context-system" ]; then
+if [ -d "../ai-context-system" ]; then
   echo "🧹 Removing installation files..."
-  rm -rf ../claude-context-system
+  rm -rf ../ai-context-system
   echo "✅ Installation files removed"
-elif [ -d "./claude-context-system" ]; then
+elif [ -d "./ai-context-system" ]; then
   echo "🧹 Removing installation files..."
-  rm -rf ./claude-context-system
+  rm -rf ./ai-context-system
   echo "✅ Installation files removed"
 else
   echo "⏭️  No installation files found (already clean)"
 fi
 
 # Also check for downloaded zip
-if [ -f "../claude-context-system.zip" ]; then
-  rm -f ../claude-context-system.zip
+if [ -f "../ai-context-system.zip" ]; then
+  rm -f ../ai-context-system.zip
   echo "✅ Removed installation zip"
 fi
 ```
 
 **What gets removed:**
-- `claude-context-system/` directory (GitHub repo contents)
-- `claude-context-system.zip` (if exists)
+- `ai-context-system/` directory (GitHub repo contents)
+- `ai-context-system.zip` (if exists)
 
 **What gets kept:**
 - `.claude/` directory (slash commands)

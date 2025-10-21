@@ -336,7 +336,7 @@ For each:
 Current version: 1.6.0
 Latest version: 1.6.0
 
-Your Claude Context System is already running the latest version.
+Your AI Context System is already running the latest version.
 No updates were performed.
 ```
 
@@ -587,7 +587,7 @@ rm -rf .claude/commands.backup
 3. **Commit:**
    ```bash
    git add -A
-   git commit -m "Updated Claude Context System to v1.6.0
+   git commit -m "Updated AI Context System to v1.6.0
 
    Command improvements:
    - Better error handling in save-context

@@ -5,7 +5,7 @@
 # v2.2.1 - Organization and structural neatness
 #
 # Usage:
-#   curl -sL https://raw.githubusercontent.com/rexkirshner/claude-context-system/main/install.sh | bash
+#   curl -sL https://raw.githubusercontent.com/rexkirshner/ai-context-system/main/install.sh | bash
 #   OR
 #   ./install.sh
 
@@ -19,9 +19,9 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Get version from GitHub VERSION file
-VERSION=$(curl -sL https://raw.githubusercontent.com/rexkirshner/claude-context-system/main/VERSION 2>/dev/null || echo "2.3.0")
+VERSION=$(curl -sL https://raw.githubusercontent.com/rexkirshner/ai-context-system/main/VERSION 2>/dev/null || echo "2.3.0")
 REPO_URL="https://github.com/rexkirshner/ai-context-system"
-RAW_URL="https://raw.githubusercontent.com/rexkirshner/claude-context-system/main"
+RAW_URL="https://raw.githubusercontent.com/rexkirshner/ai-context-system/main"
 
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo -e "${BLUE}  AI Context System Installer (v${VERSION})${NC}"
