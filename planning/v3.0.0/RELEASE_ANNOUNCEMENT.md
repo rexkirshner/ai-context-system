@@ -2,7 +2,7 @@
 
 **AI Context System** (formerly Claude Context System)
 
-**Release Date:** 2025-10-21
+**Release Date:** 2025-10-22
 
 **Version:** 3.0.0
 
@@ -10,9 +10,74 @@
 
 ## 🎉 Announcing AI Context System v3.0.0
 
-We're excited to announce the biggest update since v2.0: **the rebrand to AI Context System**.
+We're excited to announce the biggest update since v2.0: **the rebrand to AI Context System** plus **three critical improvements from real-world production feedback**.
 
-This isn't just a name change - it's a recognition that what started as a Claude-specific tool has evolved into a **universal session continuity system for all AI coding assistants**.
+This isn't just a name change - it's a recognition that what started as a Claude-specific tool has evolved into a **universal session continuity system for all AI coding assistants**, battle-tested across multiple production projects.
+
+---
+
+## 🚀 New: Real-World Feedback Improvements
+
+Based on production usage across multiple projects (portfolio-tracker: 6 sessions/10 days, project-zebra: first multi-developer project), we identified and fixed three critical issues:
+
+### 1. Enhanced Git Push Protection ⚠️
+
+**Problem:** AI assistants pushed to GitHub without explicit user approval
+
+**Impact:** Session 3 violation in portfolio-tracker - "you just push to github without my permission, despite the instructions"
+
+**Fix:**
+- Multi-layer protection in `command-philosophy.md` and `claude.md.template`
+- **Key principle**: "Commit ≠ Push" - permission NEVER carries forward
+- Explicit approval required for EACH push operation
+- Clear examples of correct vs incorrect behavior
+
+**Result:** Prevents unauthorized repository publication
+
+### 2. Smart SESSIONS.md Loading (Mandatory) 📊
+
+**Problem:** Large SESSIONS.md files (>25K tokens) caused Read tool failures and command crashes
+
+**Impact:** portfolio-tracker SESSIONS.md reached 28,105 tokens, exceeding the 25K limit
+
+**Fix:**
+- Mandatory file size checking in `/review-context` BEFORE loading
+- Progressive loading strategy:
+  - <1000 lines: Read entire file
+  - 1000-5000 lines: Strategic reading (index + recent)
+  - \>5000 lines: Index + current session only
+- Graceful failure handling (partial load > crash)
+
+**Result:** Commands work reliably with large session histories
+
+### 3. Context Folder Detection 📁
+
+**Problem:** Commands failed when run from subdirectories (backend/, src/, etc.)
+
+**Impact:** Session 5 in portfolio-tracker - "commands fail from backend/ directory"
+
+**Fix:**
+- New `find-context-folder.sh` script searches up to 2 parent directories
+- Commands updated: `/save`, `/save-full`, `/review-context`, `/init-context`
+- Validates with `.context-config.json` check
+- Clear error messages if context not found
+
+**Result:** System works seamlessly from any project subdirectory
+
+### ✅ Validation Bonus
+
+**Finding:** `/organize-docs` command (v2.2.1) independently validated by user feedback
+
+- User in portfolio-tracker Session 2 proposed EXACT solution we already built
+- **Match: 90%** (missing only DOCUMENTATION-INDEX auto-generation)
+- Hybrid approach (code-review + organize-docs + save-full): **100% implemented**
+
+**Conclusion:** Our design decisions were right - validated by independent user proposal
+
+**Source Documentation:**
+- `planning/v3.0.0/real-world-feedback-analysis.md` (portfolio-tracker analysis)
+- `planning/v3.0.0/project-zebra-feedback-analysis.md` (multi-developer project)
+- `planning/v3.0.0/organize-docs-validation.md` (validation report)
 
 ---
 
@@ -302,8 +367,10 @@ _Originally designed for Claude Code, now supports all AI assistants (Claude, Cu
 
 ---
 
-**Published:** 2025-10-21
+**Published:** 2025-10-22
 
 **Version:** 3.0.0
 
 **Branch:** v3.0.0-dev (ready for merge to main)
+
+**Improvements:** 3 critical fixes from real-world production feedback

@@ -7,13 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [3.0.0] - 2025-10-21
+## [3.0.0] - 2025-10-22
 
 ### BREAKING CHANGES
 
 **System Rebrand: Claude Context System → AI Context System**
 
 This is a major version bump reflecting the system's evolution from Claude-specific to universal AI assistant support.
+
+### Improved
+
+**Real-World Feedback Implementation (v3.0.0)**
+
+Based on production usage across multiple projects, three critical improvements have been implemented:
+
+1. **Enhanced Git Push Protection**
+   - **Issue**: AI assistants pushed to GitHub without explicit approval (Session 3 violation in portfolio-tracker)
+   - **Fix**: Multi-layer protection added to `command-philosophy.md` and `claude.md.template`
+   - **Key principle**: "Commit ≠ Push" - permission NEVER carries forward
+   - **Impact**: Prevents unauthorized repository publication
+
+2. **Smart SESSIONS.md Loading (Mandatory)**
+   - **Issue**: Large SESSIONS.md files (>25K tokens) caused Read tool failures and command crashes
+   - **Fix**: Mandatory file size checking in `/review-context` before loading
+   - **Strategy**: Progressive loading (full <1000 lines, strategic 1000-5000, indexed >5000)
+   - **Impact**: Commands work reliably with large session histories
+
+3. **Context Folder Detection**
+   - **Issue**: Commands failed when run from subdirectories (backend/, src/, etc.)
+   - **Fix**: New `find-context-folder.sh` script searches up to 2 parent directories
+   - **Commands updated**: `/save`, `/save-full`, `/review-context`, `/init-context`
+   - **Impact**: System works seamlessly from any project subdirectory
+
+**Validation**: `/organize-docs` command (v2.2.1) independently validated by user feedback - 90% match with user's independent proposal from portfolio-tracker Session 2.
+
+**Source**: Analysis of real-world feedback from portfolio-tracker (6 sessions, 10 days) and project-zebra (first multi-developer project).
 
 ### Changed
 
