@@ -46,7 +46,7 @@ This system uses platform-neutral documentation (CONTEXT.md, STATUS.md, etc.) wi
 **ACTION:** Source the common functions library:
 
 ```bash
-# Load shared utilities (v2.3.0+)
+# Load shared utilities (v3.0.0+)
 if [ -f "scripts/common-functions.sh" ]; then
   source scripts/common-functions.sh
 else
@@ -295,7 +295,7 @@ All AI header files follow the same pattern:
 
 **📍 Start here:** [CONTEXT.md](./CONTEXT.md)
 
-This project uses the AI Context System v2.1. All documentation is in platform-neutral markdown files.
+This project uses the AI Context System v3.0. All documentation is in platform-neutral markdown files.
 
 **Quick start:** [STATUS.md](./STATUS.md) → Active Tasks → Begin working
 ```
@@ -319,5 +319,5 @@ Command succeeds when:
 
 ---
 
-**Version:** 2.3.0
-**Updated:** v2.3.0 - Integrated common-functions.sh for input validation (security hardening)
+**Version:** 3.0.0
+**Updated:** v3.0.0 - Multi-AI support and real-world feedback improvements (git push protection, smart loading, context detection)

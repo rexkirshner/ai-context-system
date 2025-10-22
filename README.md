@@ -119,14 +119,14 @@ The AI Context System is a complete toolkit for maintaining perfect context acro
 git clone https://github.com/rexkirshner/ai-context-system.git
 
 # 2. Copy toolkit to your project
-cp -r claude-context-system/.claude /path/to/your/project/
-cp -r claude-context-system/scripts /path/to/your/project/
+cp -r ai-context-system/.claude /path/to/your/project/
+cp -r ai-context-system/scripts /path/to/your/project/
 
 # 3. In Claude Code, initialize
 /init-context
 
 # 4. Clean up (after init completes)
-rm -rf claude-context-system
+rm -rf ai-context-system
 
 # 5. Daily workflow
 /save          # Quick update (2-3 min) - most sessions
@@ -535,11 +535,11 @@ See [SETUP_GUIDE.md](./SETUP_GUIDE.md) for detailed troubleshooting.
 
 ## Version
 
-**Current Version:** 2.2.0
-**Status:** Active Development
-**Last Updated:** 2025-10-09
+**Current Version:** 3.0.0
+**Status:** Production Ready
+**Last Updated:** 2025-10-22
 
-See [What's New in v2.1](#whats-new-in-v21) at the top of this file.
+See [What's New in v3.0.0](#-v300-released---rebrand-to-ai-context-system) at the top of this file.
 
 ### Previous Versions
 

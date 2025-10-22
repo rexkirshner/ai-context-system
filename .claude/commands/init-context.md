@@ -446,7 +446,7 @@ fi
 After initialization, explain to the user:
 
 ```
-✅ Context System Initialized (v2.1.0)
+✅ Context System Initialized (v3.0.0)
 
 Created 4 core files + 1 AI header:
 - context/claude.md - AI header (entry point for Claude)

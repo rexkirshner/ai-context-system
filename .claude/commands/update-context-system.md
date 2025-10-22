@@ -122,19 +122,19 @@ log_info "🔍 Checking for updates from GitHub..."
 log_info "Downloading latest installer from GitHub..."
 if download_with_retry \
   "https://raw.githubusercontent.com/rexkirshner/ai-context-system/main/install.sh" \
-  "/tmp/claude-context-install.sh" \
+  "/tmp/ai-context-install.sh" \
   3 \
   10; then
   log_success "✅ Installer downloaded"
 
   # Make it executable
-  chmod +x /tmp/claude-context-install.sh
+  chmod +x /tmp/ai-context-install.sh
 
   # Run the installer (it handles version checking and backups)
-  /tmp/claude-context-install.sh
+  /tmp/ai-context-install.sh
 
   # Clean up
-  rm -f /tmp/claude-context-install.sh
+  rm -f /tmp/ai-context-install.sh
 else
   show_error $EXIT_NETWORK "Failed to download installer" \
     "Check your internet connection" \
@@ -495,5 +495,5 @@ Update succeeds when:
 
 ---
 
-**Version:** 2.3.1
+**Version:** 3.0.0
 **Updated:** v2.3.1 - Added feedback system with archive-on-update

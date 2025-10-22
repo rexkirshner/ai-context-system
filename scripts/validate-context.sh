@@ -2,7 +2,7 @@
 
 # validate-context.sh
 # Validates AI Context System documentation and configuration files
-# v2.1.0 - File consolidation and platform neutrality
+# v3.0.0 - Multi-AI support and real-world feedback improvements
 # Exit codes: 0 = pass, 1 = warnings, 2 = errors
 
 set -e
@@ -26,12 +26,12 @@ CONTEXT_DIR="${BASE_DIR}/context"
 CONFIG_DIR="${BASE_DIR}/config"
 TEMPLATES_DIR="${BASE_DIR}/templates"
 
-echo "🔍 Validating AI Context System (v2.1.0)..."
+echo "🔍 Validating AI Context System (v3.0.0)..."
 echo "Base directory: $BASE_DIR"
 echo ""
 
 # =============================================================================
-# Check 1: Required Core Files (v2.1.0)
+# Check 1: Required Core Files (v3.0.0)
 # =============================================================================
 echo "📄 Checking REQUIRED core files (4 core + 1 AI header)..."
 

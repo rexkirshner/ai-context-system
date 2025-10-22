@@ -363,7 +363,7 @@ echo "✅ Non-ASCII test passed"
 - **Performance:** 4 tests (new)
 
 ### Automation:
-- 4 automated test scripts provided
+- 4 automated test scripts (planned for future releases)
 - Manual verification checklist (22 items)
 - Regression prevention tests (4 tests)
 

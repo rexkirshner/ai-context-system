@@ -576,5 +576,5 @@ Validation succeeds when:
 
 ---
 
-**Version:** 2.3.1
+**Version:** 3.0.0
 **Updated:** v2.3.1 - Added feedback system

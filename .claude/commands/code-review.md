@@ -453,5 +453,5 @@ User runs this when they have time. Be thorough:
 
 ---
 
-**Version:** 2.3.1
+**Version:** 3.0.0
 **Updated:** v2.3.1 - Added feedback system

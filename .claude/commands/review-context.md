@@ -670,5 +670,5 @@ If confidence score >= 60, actively load context:
 
 ---
 
-**Version:** 2.3.0
+**Version:** 3.0.0
 **Updated:** v2.3.0 - Integrated common-functions.sh for version checking, logging, and performance optimization

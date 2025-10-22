@@ -763,5 +763,5 @@ Clear, concise summary:
 
 ---
 
-**Version:** 2.3.0
+**Version:** 3.0.0
 **Updated:** v2.3.0 - Integrated common-functions.sh for progress indicators, logging, and performance optimization
