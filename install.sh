@@ -5,7 +5,7 @@
 # v3.0.0 - Multi-AI support and real-world feedback improvements
 #
 # Usage:
-#   curl -sL https://raw.githubusercontent.com/rexkirshner/ai-context-system/main/install.sh | bash
+#   curl -sL https://raw.githubusercontent.com/rexkirshner/claude-context-system/main/install.sh | bash
 #   OR
 #   ./install.sh
 
@@ -18,15 +18,125 @@ GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Get version from GitHub VERSION file
-VERSION=$(curl -sL https://raw.githubusercontent.com/rexkirshner/ai-context-system/main/VERSION 2>/dev/null || echo "3.0.0")
-REPO_URL="https://github.com/rexkirshner/ai-context-system"
-RAW_URL="https://raw.githubusercontent.com/rexkirshner/ai-context-system/main"
+# Repository configuration
+REPO_URL="https://github.com/rexkirshner/claude-context-system"
+RAW_URL="https://raw.githubusercontent.com/rexkirshner/claude-context-system/main"
+
+# Get version from GitHub VERSION file (with validation)
+VERSION=$(curl -sL "${RAW_URL}/VERSION" 2>/dev/null || echo "3.0.0")
+
+# Validate VERSION format (must be X.Y.Z)
+if ! echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+  echo -e "${YELLOW}⚠️  Warning: Could not fetch version from GitHub${NC}"
+  echo "   Using fallback version: 3.0.0"
+  VERSION="3.0.0"
+fi
 
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo -e "${BLUE}  AI Context System Installer (v${VERSION})${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
+
+# =============================================================================
+# Step 0: Parse command line flags
+# =============================================================================
+
+NON_INTERACTIVE=false
+if [[ "$1" == "--yes" ]] || [[ "$1" == "-y" ]] || [[ "$1" == "--force" ]]; then
+  NON_INTERACTIVE=true
+fi
+
+# =============================================================================
+# Utility Functions
+# =============================================================================
+
+# Validate downloaded file contents
+validate_file() {
+  local file="$1"
+  local min_size="${2:-50}"  # Minimum size in bytes (default 50)
+
+  # Check file exists
+  if [ ! -f "$file" ]; then
+    return 1
+  fi
+
+  # Check file size (404 errors are typically ~14 bytes)
+  local size=$(wc -c < "$file" | tr -d ' ')
+  if [ "$size" -lt "$min_size" ]; then
+    echo -e "${RED}✗${NC} (file too small: ${size} bytes)"
+    return 1
+  fi
+
+  # Check for 404 error content
+  if grep -qi "404" "$file" || grep -qi "Not Found" "$file"; then
+    echo -e "${RED}✗${NC} (404 error)"
+    return 1
+  fi
+
+  # Check for HTML error pages
+  if head -1 "$file" | grep -qi "<!DOCTYPE\|<html"; then
+    echo -e "${RED}✗${NC} (HTML error page)"
+    return 1
+  fi
+
+  return 0
+}
+
+# Download and validate file
+download_file() {
+  local url="$1"
+  local output="$2"
+  local min_size="${3:-50}"
+
+  # Download file
+  if ! curl -sL "$url" -o "$output" 2>/dev/null; then
+    echo -e "${RED}✗${NC} (download failed)"
+    rm -f "$output"
+    return 1
+  fi
+
+  # Validate content
+  if ! validate_file "$output" "$min_size"; then
+    rm -f "$output"
+    return 1
+  fi
+
+  echo -e "${GREEN}✓${NC}"
+  return 0
+}
+
+# Rollback installation on error
+rollback_installation() {
+  if [ -n "$BACKUP_DIR" ] && [ -d "$BACKUP_DIR" ]; then
+    echo ""
+    echo -e "${RED}❌ Installation failed${NC}"
+    echo -e "${BLUE}🔄 Restoring from backup...${NC}"
+
+    # Restore .claude directory
+    if [ -d "$BACKUP_DIR/.claude" ]; then
+      rm -rf .claude 2>/dev/null || true
+      cp -r "$BACKUP_DIR/.claude" . 2>/dev/null || true
+    fi
+
+    # Restore scripts directory
+    if [ -d "$BACKUP_DIR/scripts" ]; then
+      rm -rf scripts 2>/dev/null || true
+      cp -r "$BACKUP_DIR/scripts" . 2>/dev/null || true
+    fi
+
+    echo -e "${GREEN}✅ System restored from backup${NC}"
+    echo ""
+    echo "Backup preserved at: $BACKUP_DIR"
+    exit 1
+  else
+    echo ""
+    echo -e "${RED}❌ Installation failed (no backup available)${NC}"
+    exit 1
+  fi
+}
+
+# Set error trap
+trap 'rollback_installation' ERR
 
 # =============================================================================
 # Step 1: Detect working directory
@@ -54,11 +164,16 @@ if [ -d ".claude/commands" ] && [ -f ".claude/commands/init-context.md" ]; then
   echo "   New version: ${VERSION}"
   echo ""
 
-  read -p "Overwrite existing installation? [y/N] " -n 1 -r
-  echo
-  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-    echo -e "${YELLOW}Installation cancelled${NC}"
-    exit 0
+  if [ "$NON_INTERACTIVE" = true ]; then
+    echo "   Non-interactive mode: Proceeding with installation"
+    REPLY="y"
+  else
+    read -p "Overwrite existing installation? [y/N] " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+      echo -e "${YELLOW}Installation cancelled${NC}"
+      exit 0
+    fi
   fi
 
   echo -e "${BLUE}📦 Backing up existing installation...${NC}"
@@ -100,21 +215,20 @@ echo -e "${BLUE}⬇️  Downloading VERSION and scripts...${NC}"
 
 # Download VERSION file
 echo -n "   Downloading VERSION... "
-if curl -sL "${RAW_URL}/VERSION" -o "VERSION" 2>/dev/null; then
-  echo -e "${GREEN}✓${NC}"
+if download_file "${RAW_URL}/VERSION" "VERSION" 1; then
+  : # Success message already printed
 else
-  echo -e "${RED}✗${NC}"
-  ((FAILED_DOWNLOADS++))
+  echo -e "${RED}CRITICAL: VERSION file download failed${NC}"
+  rollback_installation
 fi
 
 # Download common-functions.sh
 echo -n "   Downloading common-functions.sh... "
-if curl -sL "${RAW_URL}/scripts/common-functions.sh" -o "scripts/common-functions.sh" 2>/dev/null; then
+if download_file "${RAW_URL}/scripts/common-functions.sh" "scripts/common-functions.sh" 100; then
   chmod +x "scripts/common-functions.sh"
-  echo -e "${GREEN}✓${NC}"
 else
-  echo -e "${RED}✗${NC}"
-  ((FAILED_DOWNLOADS++))
+  echo -e "${RED}CRITICAL: common-functions.sh download failed${NC}"
+  rollback_installation
 fi
 
 echo ""
@@ -142,15 +256,11 @@ COMMANDS=(
   "organize-docs.md"
 )
 
-FAILED_DOWNLOADS=0
-
 for cmd in "${COMMANDS[@]}"; do
   echo -n "   Downloading $cmd... "
-  if curl -sL "${RAW_URL}/.claude/commands/${cmd}" -o ".claude/commands/${cmd}" 2>/dev/null; then
-    echo -e "${GREEN}✓${NC}"
-  else
-    echo -e "${RED}✗${NC}"
-    ((FAILED_DOWNLOADS++))
+  if ! download_file "${RAW_URL}/.claude/commands/${cmd}" ".claude/commands/${cmd}" 100; then
+    echo -e "${RED}CRITICAL: Command download failed${NC}"
+    rollback_installation
   fi
 done
 
@@ -182,11 +292,9 @@ echo "   ℹ️  Note: QUICK_REF.template.md removed in v2.1 (Quick Reference no
 
 for tmpl in "${TEMPLATES[@]}"; do
   echo -n "   Downloading $tmpl... "
-  if curl -sL "${RAW_URL}/templates/${tmpl}" -o "templates/${tmpl}" 2>/dev/null; then
-    echo -e "${GREEN}✓${NC}"
-  else
-    echo -e "${RED}✗${NC}"
-    ((FAILED_DOWNLOADS++))
+  if ! download_file "${RAW_URL}/templates/${tmpl}" "templates/${tmpl}" 100; then
+    echo -e "${RED}CRITICAL: Template download failed${NC}"
+    rollback_installation
   fi
 done
 
@@ -205,12 +313,11 @@ SCRIPTS=(
 
 for script in "${SCRIPTS[@]}"; do
   echo -n "   Downloading $script... "
-  if curl -sL "${RAW_URL}/scripts/${script}" -o "scripts/${script}" 2>/dev/null; then
+  if download_file "${RAW_URL}/scripts/${script}" "scripts/${script}" 100; then
     chmod +x "scripts/${script}"
-    echo -e "${GREEN}✓${NC}"
   else
-    echo -e "${RED}✗${NC}"
-    ((FAILED_DOWNLOADS++))
+    echo -e "${RED}CRITICAL: Script download failed${NC}"
+    rollback_installation
   fi
 done
 

@@ -121,20 +121,20 @@ log_info "🔍 Checking for updates from GitHub..."
 # Download the latest installer with retry logic
 log_info "Downloading latest installer from GitHub..."
 if download_with_retry \
-  "https://raw.githubusercontent.com/rexkirshner/ai-context-system/main/install.sh" \
-  "/tmp/ai-context-install.sh" \
+  "https://raw.githubusercontent.com/rexkirshner/claude-context-system/main/install.sh" \
+  "/tmp/claude-context-install.sh" \
   3 \
   10; then
   log_success "✅ Installer downloaded"
 
   # Make it executable
-  chmod +x /tmp/ai-context-install.sh
+  chmod +x /tmp/claude-context-install.sh
 
-  # Run the installer (it handles version checking and backups)
-  /tmp/ai-context-install.sh
+  # Run the installer with --yes flag for non-interactive mode
+  /tmp/claude-context-install.sh --yes
 
   # Clean up
-  rm -f /tmp/ai-context-install.sh
+  rm -f /tmp/claude-context-install.sh
 else
   show_error $EXIT_NETWORK "Failed to download installer" \
     "Check your internet connection" \
