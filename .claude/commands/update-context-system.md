@@ -170,6 +170,31 @@ log_info "  Feedback System (v2.3.1+)"
 log_info "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 log_info ""
 
+# v3.0.0 Migration: Rename old feedback file if it exists
+if [ -f "context/claude-context-feedback.md" ] && [ ! -f "context/context-feedback.md" ]; then
+  log_info "🔄 Migrating feedback file (v2.x → v3.0)..."
+
+  # Check if old file has actual content
+  CONTENT_LINES=$(wc -l < "context/claude-context-feedback.md" | tr -d ' ')
+
+  if [ "$CONTENT_LINES" -gt 10 ]; then
+    # Has content - archive it
+    CURRENT_VERSION=$(get_system_version)
+    ARCHIVE_DATE=$(date +%Y-%m-%d)
+    mkdir -p artifacts/feedback
+
+    ARCHIVE_FILE="artifacts/feedback/feedback-v${CURRENT_VERSION}-${ARCHIVE_DATE}.md"
+    mv "context/claude-context-feedback.md" "$ARCHIVE_FILE"
+
+    log_success "✅ Archived v2.x feedback to $ARCHIVE_FILE"
+    log_info "   (Your old feedback preserved)"
+  else
+    # Just template - remove it
+    rm -f "context/claude-context-feedback.md"
+    log_verbose "Removed empty v2.x feedback file"
+  fi
+fi
+
 # Check if feedback file exists and has actual content (not just template)
 if [ -f "context/context-feedback.md" ]; then
   # Count lines in Feedback Entries section (between "## Feedback Entries" and "## Examples")

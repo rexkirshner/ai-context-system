@@ -2,7 +2,7 @@
 
 # install.sh
 # Bootstrap installer for AI Context System
-# v2.2.1 - Organization and structural neatness
+# v3.0.0 - Multi-AI support and real-world feedback improvements
 #
 # Usage:
 #   curl -sL https://raw.githubusercontent.com/rexkirshner/ai-context-system/main/install.sh | bash
@@ -19,7 +19,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Get version from GitHub VERSION file
-VERSION=$(curl -sL https://raw.githubusercontent.com/rexkirshner/ai-context-system/main/VERSION 2>/dev/null || echo "2.3.0")
+VERSION=$(curl -sL https://raw.githubusercontent.com/rexkirshner/ai-context-system/main/VERSION 2>/dev/null || echo "3.0.0")
 REPO_URL="https://github.com/rexkirshner/ai-context-system"
 RAW_URL="https://raw.githubusercontent.com/rexkirshner/ai-context-system/main"
 
@@ -310,7 +310,7 @@ echo -e "${BLUE}🔍 Verifying installation...${NC}"
 
 VERIFICATION_FAILED=0
 
-# Check critical files (v2.3.0)
+# Check critical files (v3.0.0)
 CRITICAL_FILES=(
   "VERSION"
   "scripts/common-functions.sh"
@@ -359,12 +359,18 @@ if [ $FAILED_DOWNLOADS -eq 0 ] && [ $VERIFICATION_FAILED -eq 0 ]; then
   echo "   - Save context guide: .claude/docs/save-context-guide.md"
   echo "   - GitHub: ${REPO_URL}"
   echo ""
+  echo -e "${BLUE}v3.0.0 Features (Universal AI Support + Critical Fixes):${NC}"
+  echo "   - Rebrand: Claude Context System → AI Context System"
+  echo "   - Enhanced git push protection (commit ≠ push)"
+  echo "   - Smart SESSIONS.md loading (handles large files)"
+  echo "   - Context folder detection (works from subdirectories)"
+  echo "   - Validated with real-world production feedback"
+  echo "   - Multi-AI support (Claude, Cursor, Aider, Codex)"
+  echo ""
   echo -e "${BLUE}v2.3.1 Features (Feedback System):${NC}"
   echo "   - Built-in feedback collection (context-feedback.md)"
   echo "   - Structured templates for bugs, improvements, questions"
   echo "   - Auto-archive on update with version tracking"
-  echo "   - Feedback reminders in key commands"
-  echo "   - Helps make CCS better for everyone!"
   echo ""
   echo -e "${BLUE}v2.3.0 Features (Production-Ready Quality):${NC}"
   echo "   - Performance: 10-100x faster on large repos"

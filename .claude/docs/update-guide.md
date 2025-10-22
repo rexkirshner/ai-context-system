@@ -271,14 +271,14 @@ git commit -m "Updated to v1.6.0"
 
 ```bash
 # Download latest
-curl -L https://github.com/rexkirshner/claude-context-system/archive/refs/heads/main.zip -o /tmp/latest.zip
+curl -L https://github.com/rexkirshner/ai-context-system/archive/refs/heads/main.zip -o /tmp/latest.zip
 unzip /tmp/latest.zip -d /tmp/
 
 # Compare versions
-diff -u .claude/commands/save-context.md /tmp/claude-context-system-main/.claude/commands/save-context.md
+diff -u .claude/commands/save-context.md /tmp/ai-context-system-main/.claude/commands/save-context.md
 
 # Compare templates
-diff -u context/CLAUDE.md /tmp/claude-context-system-main/templates/CLAUDE.template.md
+diff -u context/CLAUDE.md /tmp/ai-context-system-main/templates/CLAUDE.template.md
 ```
 
 No changes made. Just preview.
