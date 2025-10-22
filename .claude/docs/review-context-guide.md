@@ -698,7 +698,7 @@ git log --oneline --since="1 week ago" --pretty=format:"%h %s"
 **Status:** ❌ No context found
 
 The context/ directory doesn't exist. This project hasn't been initialized
-with the Claude Context System.
+with the AI Context System.
 
 **Recommendation:** Run /init-context to set up context documentation.
 ```

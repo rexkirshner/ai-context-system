@@ -1,11 +1,11 @@
 ---
 name: migrate-context
-description: Migrate existing project to Claude Context System while preserving all content
+description: Migrate existing project to AI Context System while preserving all content
 ---
 
 # /migrate-context Command
 
-Migrate an existing project with documentation to the Claude Context System. This command preserves ALL existing content while organizing it into the standard structure and augmenting with new sections.
+Migrate an existing project with documentation to the AI Context System. This command preserves ALL existing content while organizing it into the standard structure and augmenting with new sections.
 
 ## When to Use This Command
 
@@ -13,11 +13,11 @@ Migrate an existing project with documentation to the Claude Context System. Thi
 - Projects with docs scattered across root directory
 - Projects with artifacts (code reviews, lighthouse reports) in wrong locations
 - Converting from other documentation systems
-- Want to adopt Claude Context System without losing existing work
+- Want to adopt AI Context System without losing existing work
 
 **Do NOT use if:**
 - Project has no documentation (use `/init-context` instead)
-- Already using Claude Context System
+- Already using AI Context System
 
 ## What This Command Does
 
@@ -67,8 +67,8 @@ if [ ! -d "$CURRENT_DIR/.claude" ]; then
   echo "This migration requires the toolkit (.claude/ and scripts/) to be installed first."
   echo ""
   echo "Install with:"
-  echo "  cp -r /path/to/claude-context-system/.claude ."
-  echo "  cp -r /path/to/claude-context-system/scripts ."
+  echo "  cp -r /path/to/ai-context-system/.claude ."
+  echo "  cp -r /path/to/ai-context-system/scripts ."
   echo ""
   read -p "Continue anyway? [y/N] " -n 1 -r
   echo
@@ -137,7 +137,7 @@ Create inventory:
 
 ### Step 2: Create Folder Structure
 
-Create the complete Claude Context System structure:
+Create the complete AI Context System structure:
 
 ```bash
 mkdir -p context
@@ -399,7 +399,7 @@ Use SESSIONS.template.md and create first entry:
 ```markdown
 # Session History
 
-## Session 1 - Migration to Claude Context System
+## Session 1 - Migration to AI Context System
 **Date:** [DATE]
 **Focus:** Project migration
 
@@ -407,7 +407,7 @@ Use SESSIONS.template.md and create first entry:
 - Migrated existing documentation to context/ folder
 - Moved artifacts to proper locations
 - Created missing documentation files
-- Established Claude Context System structure
+- Established AI Context System structure
 
 **Files Modified:**
 - Moved: CLAUDE.md, PRD.md, DECISIONS.md, KNOWN_ISSUES.md → context/
@@ -417,7 +417,7 @@ Use SESSIONS.template.md and create first entry:
 - Created: .context-config.json
 
 **State at End:**
-- Claude Context System fully migrated
+- AI Context System fully migrated
 - All existing content preserved
 - Ready to use /save-context for future sessions
 
@@ -547,7 +547,7 @@ grep -q "context/tasks/todo.md" context/CLAUDE.md && echo "✅ Task paths update
 Create comprehensive report of what was done:
 
 ```markdown
-✅ Migration to Claude Context System Complete
+✅ Migration to AI Context System Complete
 
 ## Files Moved
 
@@ -629,11 +629,11 @@ artifacts/
 2. Verify context/.context-config.json settings
 3. Check new ARCHITECTURE.md and CODE_STYLE.md
 4. Run /save-context to capture current state
-5. Use Claude Context System going forward!
+5. Use AI Context System going forward!
 
 ---
 
-**Ready!** Your project is now fully migrated to Claude Context System.
+**Ready!** Your project is now fully migrated to AI Context System.
 All existing content preserved, enhanced with new structure.
 ```
 
@@ -751,28 +751,28 @@ Migration succeeds when:
 
 ```bash
 # Check if we're in a nested installation (common pattern)
-if [ -d "../claude-context-system" ]; then
+if [ -d "../ai-context-system" ]; then
   echo "🧹 Removing installation files..."
-  rm -rf ../claude-context-system
+  rm -rf ../ai-context-system
   echo "✅ Installation files removed"
-elif [ -d "./claude-context-system" ]; then
+elif [ -d "./ai-context-system" ]; then
   echo "🧹 Removing installation files..."
-  rm -rf ./claude-context-system
+  rm -rf ./ai-context-system
   echo "✅ Installation files removed"
 else
   echo "⏭️  No installation files found (already clean)"
 fi
 
 # Also check for downloaded zip
-if [ -f "../claude-context-system.zip" ]; then
-  rm -f ../claude-context-system.zip
+if [ -f "../ai-context-system.zip" ]; then
+  rm -f ../ai-context-system.zip
   echo "✅ Removed installation zip"
 fi
 ```
 
 **What gets removed:**
-- `claude-context-system/` directory (GitHub repo contents)
-- `claude-context-system.zip` (if exists)
+- `ai-context-system/` directory (GitHub repo contents)
+- `ai-context-system.zip` (if exists)
 
 **What gets kept:**
 - `.claude/` directory (slash commands)

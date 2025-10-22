@@ -1,10 +1,35 @@
-# Claude Context System
+# AI Context System
 
-**Version 2.3.2**
+**Version 3.0.0**
 
-> Perfect session continuity for Claude Code projects
+> Perfect session continuity for AI coding assistants
 >
 > **Start simple, grow naturally. Platform-neutral core with tool-specific entry points.**
+>
+> _Originally designed for Claude Code, now supports all AI assistants (Claude, Cursor, Aider, Codex, and more)_
+
+---
+
+## 🎉 v3.0.0 Released - Rebrand to AI Context System
+
+**BREAKING CHANGE:** System renamed to reflect universal AI support
+
+**What Changed:**
+- **System Name**: Claude Context System → **AI Context System**
+- **Feedback File**: `claude-context-feedback.md` → `context-feedback.md`
+- **Repository**: Renamed to `ai-context-system` (old URLs auto-redirect)
+
+**What Stayed the Same:**
+- ✅ `claude.md`, `cursor.md`, `aider.md`, `codex.md` (tool-specific entry points - correct by design)
+- ✅ All your content: `CONTEXT.md`, `STATUS.md`, `DECISIONS.md`, `SESSIONS.md`
+- ✅ Zero data loss - all content preserved and archived
+
+**Migration (5 minutes):**
+```bash
+/update-context-system  # Automatic migration, zero data loss
+```
+
+**Learn more:** [MIGRATION_GUIDE_v2_to_v3.md](./MIGRATION_GUIDE_v2_to_v3.md) • [CHANGELOG.md](./CHANGELOG.md)
 
 ---
 
@@ -37,7 +62,7 @@
 
 ## What is This?
 
-The Claude Context System is a complete toolkit for maintaining perfect context across Claude Code sessions AND enabling AI agents to review, improve, and take over your work.
+The AI Context System is a complete toolkit for maintaining perfect context across AI coding sessions AND enabling AI agents to review, improve, and take over your work.
 
 **Dual Purpose:**
 1. **Session Continuity** - Never lose your place, never repeat explanations, never lose work again
@@ -91,17 +116,17 @@ The Claude Context System is a complete toolkit for maintaining perfect context 
 
 ```bash
 # 1. Clone the repo
-git clone https://github.com/rexkirshner/claude-context-system.git
+git clone https://github.com/rexkirshner/ai-context-system.git
 
 # 2. Copy toolkit to your project
-cp -r claude-context-system/.claude /path/to/your/project/
-cp -r claude-context-system/scripts /path/to/your/project/
+cp -r ai-context-system/.claude /path/to/your/project/
+cp -r ai-context-system/scripts /path/to/your/project/
 
 # 3. In Claude Code, initialize
 /init-context
 
 # 4. Clean up (after init completes)
-rm -rf claude-context-system
+rm -rf ai-context-system
 
 # 5. Daily workflow
 /save          # Quick update (2-3 min) - most sessions
@@ -199,7 +224,7 @@ Creates 5 files (4 core + 1 AI header): claude.md, CONTEXT.md, STATUS.md, DECISI
 #### `/migrate-context`
 **For EXISTING projects with docs**
 
-Migrates existing documentation to Claude Context System structure. Preserves ALL existing content while organizing into context/ and artifacts/ folders. Consolidates to single source of truth.
+Migrates existing documentation to AI Context System structure. Preserves ALL existing content while organizing into context/ and artifacts/ folders. Consolidates to single source of truth.
 
 ### Maintenance Commands (Run Frequently)
 
@@ -510,11 +535,11 @@ See [SETUP_GUIDE.md](./SETUP_GUIDE.md) for detailed troubleshooting.
 
 ## Version
 
-**Current Version:** 2.2.0
-**Status:** Active Development
-**Last Updated:** 2025-10-09
+**Current Version:** 3.0.0
+**Status:** Production Ready
+**Last Updated:** 2025-10-22
 
-See [What's New in v2.1](#whats-new-in-v21) at the top of this file.
+See [What's New in v3.0.0](#-v300-released---rebrand-to-ai-context-system) at the top of this file.
 
 ### Previous Versions
 

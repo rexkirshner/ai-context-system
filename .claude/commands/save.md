@@ -32,15 +32,19 @@ description: Quick session save - updates current state only (2-3 minutes)
 
 ## Execution Steps
 
-### Step 1: Verify Context Exists
+### Step 1: Find Context Folder
+
+**v3.0.0:** Commands now work from subdirectories (backend/, frontend/, etc.)
 
 ```bash
-if [ ! -d "context" ]; then
-  echo "❌ No context/ directory found"
-  echo "Run /init-context first"
-  exit 1
-fi
+# Find context folder (works from project root or subdirectories)
+source "$(dirname "${BASH_SOURCE[0]}")/../scripts/find-context-folder.sh" || exit 1
+CONTEXT_DIR=$(find_context_folder) || exit 1
+
+echo "✅ Found context at: $CONTEXT_DIR"
 ```
+
+**Note:** This searches current directory, parent directory, and grandparent directory for context/ folder. Use `$CONTEXT_DIR` variable throughout this command instead of hardcoded `context/`.
 
 ### Step 2: Auto-Extract Git Data
 
@@ -131,19 +135,19 @@ Next steps? (or press enter to keep existing):
 
 ```bash
 # Extract values from config
-PROJECT_NAME=$(jq -r '.project.name' context/.context-config.json 2>/dev/null || echo "[Project Name]")
-PROD_URL=$(jq -r '.project.urls.production' context/.context-config.json 2>/dev/null || echo "N/A")
-STAGING_URL=$(jq -r '.project.urls.staging' context/.context-config.json 2>/dev/null || echo "N/A")
-REPO_URL=$(jq -r '.project.urls.repository' context/.context-config.json 2>/dev/null || echo "N/A")
-TECH_STACK=$(jq -r '.project.techStack' context/.context-config.json 2>/dev/null || echo "[Tech stack]")
-DEV_CMD=$(jq -r '.project.commands.dev' context/.context-config.json 2>/dev/null || echo "npm run dev")
-TEST_CMD=$(jq -r '.project.commands.test' context/.context-config.json 2>/dev/null || echo "npm test")
-BUILD_CMD=$(jq -r '.project.commands.build' context/.context-config.json 2>/dev/null || echo "npm run build")
+PROJECT_NAME=$(jq -r '.project.name' $CONTEXT_DIR/.context-config.json 2>/dev/null || echo "[Project Name]")
+PROD_URL=$(jq -r '.project.urls.production' $CONTEXT_DIR/.context-config.json 2>/dev/null || echo "N/A")
+STAGING_URL=$(jq -r '.project.urls.staging' $CONTEXT_DIR/.context-config.json 2>/dev/null || echo "N/A")
+REPO_URL=$(jq -r '.project.urls.repository' $CONTEXT_DIR/.context-config.json 2>/dev/null || echo "N/A")
+TECH_STACK=$(jq -r '.project.techStack' $CONTEXT_DIR/.context-config.json 2>/dev/null || echo "[Tech stack]")
+DEV_CMD=$(jq -r '.project.commands.dev' $CONTEXT_DIR/.context-config.json 2>/dev/null || echo "npm run dev")
+TEST_CMD=$(jq -r '.project.commands.test' $CONTEXT_DIR/.context-config.json 2>/dev/null || echo "npm test")
+BUILD_CMD=$(jq -r '.project.commands.build' $CONTEXT_DIR/.context-config.json 2>/dev/null || echo "npm run build")
 
 # Extract from STATUS.md
-CURRENT_PHASE=$(sed -n '/## Current Phase/,/^##/p' context/STATUS.md | grep "^**Phase:**" | sed 's/^**Phase:** //' 2>/dev/null || echo "[Phase]")
-ACTIVE_TASK=$(sed -n '/## Active Tasks/,/^##/p' context/STATUS.md | grep -m1 '^- \[ \]' | sed 's/^- \[ \] //' 2>/dev/null || echo "[No active tasks]")
-BLOCKERS=$(sed -n '/## Blockers/,/^##/p' context/STATUS.md | grep -v "^##" | grep -v "^**" | grep -v "^$" | wc -l 2>/dev/null || echo "0")
+CURRENT_PHASE=$(sed -n '/## Current Phase/,/^##/p' $CONTEXT_DIR/STATUS.md | grep "^**Phase:**" | sed 's/^**Phase:** //' 2>/dev/null || echo "[Phase]")
+ACTIVE_TASK=$(sed -n '/## Active Tasks/,/^##/p' $CONTEXT_DIR/STATUS.md | grep -m1 '^- \[ \]' | sed 's/^- \[ \] //' 2>/dev/null || echo "[No active tasks]")
+BLOCKERS=$(sed -n '/## Blockers/,/^##/p' $CONTEXT_DIR/STATUS.md | grep -v "^##" | grep -v "^**" | grep -v "^$" | wc -l 2>/dev/null || echo "0")
 
 # Determine status color
 if [ "$BLOCKERS" -gt 0 ]; then
@@ -153,7 +157,7 @@ else
 fi
 
 # Get last session from SESSIONS.md
-LAST_SESSION=$(grep -m1 '^## Session' context/SESSIONS.md 2>/dev/null | sed 's/^## //' || echo "No sessions yet")
+LAST_SESSION=$(grep -m1 '^## Session' $CONTEXT_DIR/SESSIONS.md 2>/dev/null | sed 's/^## //' || echo "No sessions yet")
 
 # Update Quick Reference section in STATUS.md using Edit tool
 # Replace content between "## 📊 Quick Reference" and next "---"

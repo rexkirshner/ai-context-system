@@ -1,6 +1,6 @@
 # Command Philosophy
 
-Core principles that guide all Claude Context System commands.
+Core principles that guide all AI Context System commands.
 
 ## The Prime Directive: Session Continuity
 
@@ -28,13 +28,82 @@ Everything exists to serve this goal.
 
 **NEVER push to GitHub without explicit approval.**
 
-Commands that modify code, delete files, or push to remote:
+**Critical Distinction: Commit ≠ Push**
+
+Git operations are DISTINCT and require SEPARATE approval:
+- `git add` → Staging (reversible)
+- `git commit` → Local history (reversible with reset)
+- `git push` → **PUBLICATION** (visible to others, permanent)
+
+**When user says "commit", do ONLY commit:**
+```
+User: "ok, let's commit to git"
+✅ CORRECT: Stage files, commit locally, STOP and report
+❌ WRONG: Stage files, commit locally, push to GitHub
+```
+
+**Push requires EXPLICIT approval phrases:**
+- "push to github"
+- "push to origin"
+- "push everything"
+- "publish changes"
+- "commit and push"
+
+**Push permission NEVER carries forward:**
+```
+Session start:
+User: "commit and push to github"
+→ OK to push THIS commit
+
+Later in same session:
+User: "ok let's commit these changes"
+→ NOT OK to push (only commit)
+→ Permission does NOT carry forward
+→ EACH push requires NEW approval
+```
+
+**Why this matters:**
+- Commit = safe, local, reversible
+- Push = public, permanent, affects team
+- User may want to review/amend before pushing
+- Violating this breaks user trust and control
+
+**Commands that modify code, delete files, or push to remote:**
 - Must ask user first
 - Clear about what will change
 - Provide preview when possible
-- Wait for explicit "ok" or "push"
+- Wait for explicit approval
+- NEVER assume permission carries forward
 
-### 3. No Broken Promises
+### 3. Context Folder Detection (v3.0.0+)
+
+**Commands must work from subdirectories.**
+
+**Real-world issue:** Users run commands from `backend/`, `frontend/`, `src/` directories
+**Solution:** Find context folder automatically (up to 2 parent directories)
+
+**Pattern for all commands:**
+
+```bash
+# Step 1: Find Context Folder (add to ALL commands)
+source "$(dirname "${BASH_SOURCE[0]}")/../scripts/find-context-folder.sh" || exit 1
+CONTEXT_DIR=$(find_context_folder) || exit 1
+
+# Then use $CONTEXT_DIR throughout the command instead of hardcoded "context/"
+cat "$CONTEXT_DIR/STATUS.md"
+echo "Content" >> "$CONTEXT_DIR/SESSIONS.md"
+```
+
+**Why this matters:**
+- Users work in subdirectories (`cd backend && /save`)
+- Old behavior: "context/ not found" error
+- New behavior: Searches `./context`, `../context`, `../../context`
+- Validates with `.context-config.json` check
+- Clear error if truly not found
+
+**Commands updated:** /save, /save-full, /review-context, /init-context (others in progress)
+
+### 4. No Broken Promises
 
 **Only promise what we actually deliver.**
 

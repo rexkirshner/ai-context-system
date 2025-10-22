@@ -50,7 +50,25 @@ fi
 
 ---
 
+### Step 0.5: Find Context Folder
+
+**ACTION:** Source the context folder detection script and find the context directory:
+
+```bash
+# Load context folder detection (v3.0.0+)
+source "$(dirname "${BASH_SOURCE[0]}")/../scripts/find-context-folder.sh" || exit 1
+CONTEXT_DIR=$(find_context_folder) || exit 1
+
+echo "✅ Found context at: $CONTEXT_DIR"
+```
+
+**Why this matters:** Allows command to work from subdirectories (backend/, src/, etc.) by searching up to 2 parent directories.
+
+---
+
 ### Step 1: Verify Context Exists
+
+**NOTE:** This step is now handled by Step 0.5 (find_context_folder fails if context/ not found)
 
 ```
 If context/ folder missing:
@@ -74,12 +92,12 @@ CURRENT_VERSION=$(get_system_version)
 # Fetch latest version from GitHub (with retry logic)
 log_verbose "Checking for system updates..."
 LATEST_VERSION=$(curl --connect-timeout 5 --max-time 10 -sL \
-  https://raw.githubusercontent.com/rexkirshner/claude-context-system/main/VERSION 2>/dev/null | tr -d ' \n')
+  https://raw.githubusercontent.com/rexkirshner/ai-context-system/main/VERSION 2>/dev/null | tr -d ' \n')
 
 # Fallback to config file if VERSION file not found
 if [ -z "$LATEST_VERSION" ]; then
   LATEST_VERSION=$(curl --connect-timeout 5 --max-time 10 -sL \
-    https://raw.githubusercontent.com/rexkirshner/claude-context-system/main/config/.context-config.template.json \
+    https://raw.githubusercontent.com/rexkirshner/ai-context-system/main/config/.context-config.template.json \
     | grep -m 1 '"version":' | sed 's/.*"version": "\([^"]*\)".*/\1/' 2>/dev/null)
 fi
 
@@ -100,7 +118,7 @@ Parse the versions and ask user:
 ```
 📦 Update Available
 
-Your Claude Context System: v[CURRENT_VERSION]
+Your AI Context System: v[CURRENT_VERSION]
 Latest on GitHub: v[LATEST_VERSION]
 
 Would you like to update now? [Y/n]
@@ -182,73 +200,99 @@ Read and parse all context files:
 
 ```
 Files to load:
-- context/CONTEXT.md (v2.0+) or context/CLAUDE.md (pre-v2.0)
-- context/STATUS.md (v2.1+ includes Quick Reference section)
-- context/DECISIONS.md
-- context/SESSIONS.md (see smart loading strategy below)
-- context/PRD.md (optional)
-- context/CODE_MAP.md (optional, v2.1+)
-- context/ARCHITECTURE.md (optional)
-- context/CODE_STYLE.md (optional)
-- context/KNOWN_ISSUES.md (optional)
-- context/.context-config.json
+- $CONTEXT_DIR/CONTEXT.md (v2.0+) or context/CLAUDE.md (pre-v2.0)
+- $CONTEXT_DIR/STATUS.md (v2.1+ includes Quick Reference section)
+- $CONTEXT_DIR/DECISIONS.md
+- $CONTEXT_DIR/SESSIONS.md (see smart loading strategy below)
+- $CONTEXT_DIR/PRD.md (optional)
+- $CONTEXT_DIR/CODE_MAP.md (optional, v2.1+)
+- $CONTEXT_DIR/ARCHITECTURE.md (optional)
+- $CONTEXT_DIR/CODE_STYLE.md (optional)
+- $CONTEXT_DIR/KNOWN_ISSUES.md (optional)
+- $CONTEXT_DIR/.context-config.json
 ```
 
 **Note any missing files** - will affect confidence score.
 
-#### SESSIONS.md Smart Loading Strategy (v2.2.0)
+#### SESSIONS.md Smart Loading Strategy (v3.0.0 - MANDATORY)
 
-**Problem:** Large SESSIONS.md files (2000+ lines) cause timeouts or hit token limits
+**🔴 CRITICAL:** NEVER attempt to read entire SESSIONS.md without checking size first
 
-**Solution:** Strategic reading based on file size
+**Real-world issue:** Files >25K tokens cause Read tool failures and command crashes
+
+**MANDATORY STEPS:**
+
+**Step 1: Check file size FIRST**
 
 ```bash
-# Check SESSIONS.md size first
-log_verbose "Checking SESSIONS.md file size..."
-SESSIONS_LINES=$(wc -l < context/SESSIONS.md 2>/dev/null || echo "0")
-
-if [ "$SESSIONS_LINES" -lt 1000 ]; then
-  # Small file: Read entirely
-  log_info "Reading complete SESSIONS.md ($SESSIONS_LINES lines)"
-  # Use Read tool on full file
-
-elif [ "$SESSIONS_LINES" -lt 5000 ]; then
-  # Medium file: Strategic reading
-  log_info "📚 Medium SESSIONS.md detected ($SESSIONS_LINES lines)"
-  log_info "Reading: Session index + last 2 sessions"
-
-  # Read first 300 lines (session index + early sessions)
-  # Use Read tool with: offset=0, limit=300
-
-  # Read last 800 lines (most recent 2 sessions)
-  # Calculate: offset = SESSIONS_LINES - 800
-  # Use Read tool with: offset=(calculated), limit=800
-
-  log_success "✅ Loaded index + recent sessions"
-  log_info "💡 Run /session-summary for condensed full history"
-
-else
-  # Large file: Index + current session only
-  log_info "📚 Large SESSIONS.md detected ($SESSIONS_LINES lines)"
-  log_info "Reading: Index + current session only"
-
-  # Read first 200 lines (index)
-  # Use Read tool with: offset=0, limit=200
-
-  # Read last 400 lines (current session)
-  # Calculate: offset = SESSIONS_LINES - 400
-  # Use Read tool with: offset=(calculated), limit=400
-
-  # Show stats
-  TOTAL_SESSIONS=$(grep -c "^## Session" context/SESSIONS.md)
-  log_info "📊 File Statistics:"
-  log_info "  - Total sessions: $TOTAL_SESSIONS"
-  log_info "  - Total lines: $SESSIONS_LINES"
-  log_info "  - Loaded: Index + latest session"
-  log_info ""
-  log_info "💡 Use /session-summary for full condensed history"
-fi
+wc -l $CONTEXT_DIR/SESSIONS.md
+# This shows line count - use this to determine loading strategy
 ```
+
+**Step 2: Choose loading strategy based on size**
+
+**If < 1000 lines: Read entire file**
+
+```
+Use Read tool:
+- file_path: $CONTEXT_DIR/SESSIONS.md
+- No offset/limit needed
+```
+
+**If 1000-5000 lines: Strategic reading (RECOMMENDED threshold)**
+
+```
+⚠️ File is medium-sized - using strategic loading
+
+Part 1 - Session Index:
+  Use Read tool with:
+  - file_path: $CONTEXT_DIR/SESSIONS.md
+  - offset: 0 (or omit)
+  - limit: 300
+
+Part 2 - Recent Sessions:
+  Calculate offset: <SESSIONS_LINES> - 800
+  Use Read tool with:
+  - file_path: $CONTEXT_DIR/SESSIONS.md
+  - offset: <calculated>
+  - limit: 800
+
+Result: Loaded session index + last ~2 sessions
+```
+
+**If > 5000 lines: Index + current session only**
+
+```
+⚠️ File is large - loading index + current session only
+
+Part 1 - Session Index:
+  Use Read tool with:
+  - file_path: $CONTEXT_DIR/SESSIONS.md
+  - offset: 0 (or omit)
+  - limit: 200
+
+Part 2 - Current Session:
+  Calculate offset: <SESSIONS_LINES> - 400
+  Use Read tool with:
+  - file_path: $CONTEXT_DIR/SESSIONS.md
+  - offset: <calculated>
+  - limit: 400
+
+Show file statistics:
+  Total sessions: (count "^## Session" with grep)
+  Total lines: <SESSIONS_LINES>
+  Loaded: Index + latest session
+
+💡 Suggest: Run /session-summary for condensed full history
+```
+
+**Step 3: Handle Read failures gracefully**
+
+If Read tool returns error about token limits:
+1. Report the error clearly
+2. Fall back to smaller load (reduce limits by 50%)
+3. Suggest session archiving if file > 3000 lines
+4. NEVER crash - partial load is better than none
 
 **Why this works:**
 - Session index at top shows all session titles
@@ -626,5 +670,5 @@ If confidence score >= 60, actively load context:
 
 ---
 
-**Version:** 2.3.0
+**Version:** 3.0.0
 **Updated:** v2.3.0 - Integrated common-functions.sh for version checking, logging, and performance optimization

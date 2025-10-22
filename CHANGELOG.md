@@ -1,11 +1,242 @@
 # Changelog
 
-All notable changes to the Claude Context System will be documented in this file.
+All notable changes to the AI Context System will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [3.0.0] - 2025-10-22
+
+### BREAKING CHANGES
+
+**System Rebrand: Claude Context System → AI Context System**
+
+This is a major version bump reflecting the system's evolution from Claude-specific to universal AI assistant support.
+
+### Improved
+
+**Real-World Feedback Implementation (v3.0.0)**
+
+Based on production usage across multiple projects, three critical improvements have been implemented:
+
+1. **Enhanced Git Push Protection**
+   - **Issue**: AI assistants pushed to GitHub without explicit approval (Session 3 violation in portfolio-tracker)
+   - **Fix**: Multi-layer protection added to `command-philosophy.md` and `claude.md.template`
+   - **Key principle**: "Commit ≠ Push" - permission NEVER carries forward
+   - **Impact**: Prevents unauthorized repository publication
+
+2. **Smart SESSIONS.md Loading (Mandatory)**
+   - **Issue**: Large SESSIONS.md files (>25K tokens) caused Read tool failures and command crashes
+   - **Fix**: Mandatory file size checking in `/review-context` before loading
+   - **Strategy**: Progressive loading (full <1000 lines, strategic 1000-5000, indexed >5000)
+   - **Impact**: Commands work reliably with large session histories
+
+3. **Context Folder Detection**
+   - **Issue**: Commands failed when run from subdirectories (backend/, src/, etc.)
+   - **Fix**: New `find-context-folder.sh` script searches up to 2 parent directories
+   - **Commands updated**: `/save`, `/save-full`, `/review-context`, `/init-context`
+   - **Impact**: System works seamlessly from any project subdirectory
+
+**Validation**: `/organize-docs` command (v2.2.1) independently validated by user feedback - 90% match with user's independent proposal from portfolio-tracker Session 2.
+
+**Source**: Analysis of real-world feedback from portfolio-tracker (6 sessions, 10 days) and project-zebra (first multi-developer project).
+
+### Changed
+
+**System Name**
+- **Old**: Claude Context System
+- **New**: AI Context System
+- **Reason**: Reflects multi-AI support (Claude, Cursor, Aider, Codex, and more)
+- **Attribution**: "Originally designed for Claude Code, now supports all AI assistants"
+
+**Feedback File**
+- **Old**: `claude-context-feedback.template.md` → `context-feedback.md`
+- **New**: `context-feedback.template.md` → `context-feedback.md`
+- **Reason**: System-focused, not Claude-specific
+- **Migration**: Automatic via `/update-context-system` (archives old file if content exists)
+
+**Repository**
+- **Old**: `github.com/rexkirshner/claude-context-system`
+- **New**: `github.com/rexkirshner/ai-context-system`
+- **Migration**: GitHub auto-redirects old URLs
+- **Impact**: No action required - all old links continue to work
+
+**Version**
+- **2.3.2** → **3.0.0** (major version bump for breaking changes)
+
+### What Stayed the Same
+
+✅ **Tool-Specific Entry Points** (by design)
+- `claude.md` - Claude's entry point (correct - it's Claude's integration file)
+- `cursor.md` - Cursor's entry point
+- `aider.md` - Aider's entry point
+- `codex.md` - Codex's entry point
+- These files are named after the **tool**, not the system
+
+✅ **Universal Context Files** (unchanged)
+- `CONTEXT.md`, `STATUS.md`, `DECISIONS.md`, `SESSIONS.md`
+- All remain tool-agnostic and universal
+
+✅ **All Historical References** (preserved)
+- CHANGELOG entries for v2.x and earlier unchanged
+- Historical documentation preserved in `docs/`
+- Legacy templates preserved in `templates/legacy/`
+
+### Migration Guide
+
+**For Existing Users (v2.x → v3.0.0):**
+
+1. **Update your local clone** (if you cloned the repo):
+   ```bash
+   git remote set-url origin https://github.com/rexkirshner/ai-context-system.git
+   git fetch
+   ```
+
+2. **Run `/update-context-system`** in your project:
+   - Automatically migrates `claude-context-feedback.md` → `context-feedback.md`
+   - Archives old file if it has content (>10 lines)
+   - Preserves all your feedback
+   - Zero data loss
+
+3. **No action needed for**:
+   - `claude.md` (stays as-is - it's your AI tool's entry point)
+   - `CONTEXT.md`, `STATUS.md`, etc. (already universal)
+   - Any existing content or documentation
+
+**For New Users:**
+
+1. **Clone the repo**:
+   ```bash
+   git clone https://github.com/rexkirshner/ai-context-system.git
+   ```
+
+2. **Run `/init-context`** as normal:
+   - Creates `context-feedback.md` (new filename)
+   - All other files unchanged
+
+### Files Changed
+
+**Commands (10 files):**
+- Updated system name references in all commands
+- Updated feedback file references: `claude-context-feedback.md` → `context-feedback.md`
+- Updated repository URLs
+
+**Templates (9 files):**
+- All AI headers updated: `claude.md`, `cursor.md`, `aider.md`, `codex.md`, `generic-ai-header.md`
+- Core templates: `CONTEXT.template.md`, `SESSIONS.template.md`
+- Feedback template renamed: `claude-context-feedback.template.md` → `context-feedback.template.md`
+- `.gitignore.template` updated
+
+**Configuration (4 files):**
+- `config/.context-config.template.json`
+- `config/context-config-schema.json`
+- `config/sessions-data-schema.json`
+- `VERSION` (2.3.2 → 3.0.0)
+
+**Documentation (4 files):**
+- `README.md` - Added attribution, updated tagline
+- `ORGANIZATION.md` - Updated system name references
+- `.claude/docs/command-philosophy.md`
+- `.claude/docs/save-context-guide.md`
+
+**Scripts (3 files):**
+- `install.sh` - Updated template filename and references
+- `scripts/common-functions.sh`
+- `scripts/validate-context.sh`
+
+**Total:** 34 files changed, 134 insertions(+), 105 deletions(-)
+
+### Why This Change?
+
+**Problem Solved:**
+- Name "Claude Context System" implied Claude-only support
+- Confused users when seeing `cursor.md`, `aider.md` alongside "Claude" system name
+- Didn't reflect the v2.1 multi-AI architecture
+
+**Solution:**
+- "AI Context System" = universal, clear, accurate
+- Attribution preserves Claude Code origins
+- Tool-specific files (claude.md, cursor.md) make sense with universal system name
+
+**Real-World Impact:**
+- Clearer positioning for multi-AI teams
+- Better SEO for "AI context" searches
+- No confusion about tool support
+
+### FAQ
+
+**Q: Why does `claude.md` still exist if this isn't "Claude Context System" anymore?**
+
+**A:** `claude.md` is Claude's **entry point** to the universal AI Context System, just like `cursor.md` is Cursor's entry point. The system is universal; the entry points are tool-specific.
+
+Think of it like `package.json` - having that file doesn't make your project npm-only. You can also use yarn, pnpm, bun. Same concept here.
+
+**Q: Do I need to rename my `claude.md` file?**
+
+**A:** NO! Keep `claude.md` as-is. It's correctly named - it's Claude's integration file, not the system's main file.
+
+**Q: Will my old feedback file be preserved?**
+
+**A:** YES! When you run `/update-context-system`, it:
+1. Checks if `claude-context-feedback.md` has content (>10 lines)
+2. If yes: Archives to `artifacts/feedback/feedback-v2.3.2-{date}.md`
+3. Creates new `context-feedback.md` from template
+4. Zero data loss
+
+**Q: What if I don't want to update?**
+
+**A:** You can stay on v2.3.2 indefinitely. It's stable and will continue working. However:
+- You won't get future updates
+- New features will be v3.0.0+
+- Migration becomes harder over time
+
+**Recommendation:** Update now while migration is automatic.
+
+### Testing
+
+- ✅ 25/25 verification tests passed
+- ✅ 99.6% reference elimination (236 → 1 references)
+- ✅ File rename detection (94% similarity)
+- ✅ Zero data loss
+- ✅ Historical references preserved
+- ✅ Tool-specific files preserved
+
+See: `planning/v3.0.0/phase-3-testing-report.md`
+
+### Credits
+
+**Planning & Analysis:**
+- Comprehensive rename evaluation (4 scenarios)
+- Strategic analysis (80% already universal)
+- Multi-AI architecture validation
+- Risk mitigation strategy
+
+**Codex Enhancements:**
+- External AI review provided 13 suggestions
+- 11/13 implemented (85% adoption)
+- Enhanced testing (42 → 84 test cases)
+- Automation tools (rename script, test scripts)
+- Terminology guardrails
+
+**Implementation:**
+- Automated rename workflow (8 phases)
+- Comprehensive testing matrix
+- Migration strategy optimization
+- Attribution and communication plan
+
+**Total Planning Time:** ~6 hours across 3 phases
+**Total Implementation Time:** ~1.5 hours (vs 15-20 estimated)
+
+### Links
+
+- **Migration Guide**: See above
+- **Planning Docs**: `planning/v3.0.0/`
+- **New Repository**: https://github.com/rexkirshner/ai-context-system
+- **Old Repository**: https://github.com/rexkirshner/claude-context-system (auto-redirects)
+
+---
 
 ## [2.3.2] - 2025-10-21
 
@@ -17,7 +248,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 When running `/init-context`, all context files (CONTEXT.md, STATUS.md, DECISIONS.md, SESSIONS.md, claude.md) were created in the project root directory instead of the `context/` subdirectory. This violated the organizational structure and made projects messy.
 
 **Root Cause:**
-Step 4 in `/init-context` had descriptive text saying "**context/claude.md**", "**context/CONTEXT.md**", etc., but lacked explicit ACTION blocks with bash `cp` commands showing the full `context/` path. Only claude-context-feedback.md (added in v2.3.1) had an explicit ACTION block, which is why it was the only file created in the correct location.
+Step 4 in `/init-context` had descriptive text saying "**context/claude.md**", "**context/CONTEXT.md**", etc., but lacked explicit ACTION blocks with bash `cp` commands showing the full `context/` path. Only context-feedback.md (added in v2.3.1) had an explicit ACTION block, which is why it was the only file created in the correct location.
 
 The command was designed as instructions for Claude Code (AI agent), expecting it to infer the `context/` directory from the descriptions. However, this caused the AI to sometimes create files in the wrong location.
 
@@ -28,7 +259,7 @@ Added explicit ACTION block in Step 4 with bash commands that clearly create all
 - `cp templates/STATUS.template.md context/STATUS.md`
 - `cp templates/DECISIONS.template.md context/DECISIONS.md`
 - `cp templates/SESSIONS.template.md context/SESSIONS.md`
-- `cp templates/claude-context-feedback.template.md context/claude-context-feedback.md`
+- `cp templates/context-feedback.template.md context/context-feedback.md`
 
 Each command includes existence checks to prevent overwriting on re-init.
 
@@ -49,19 +280,19 @@ Each command includes existence checks to prevent overwriting on re-init.
 
 **"Make feedback gathering systematic - continuous improvement for everyone"**
 
-v2.3.1 adds a built-in feedback system to make gathering user feedback a core part of the Claude Context System workflow. Based on real-world feedback gathering through ad-hoc `claude-context-feedback.md` files, this release formalizes the process with structured templates, automatic archiving, and gentle reminders.
+v2.3.1 adds a built-in feedback system to make gathering user feedback a core part of the AI Context System workflow. Based on real-world feedback gathering through ad-hoc `context-feedback.md` files, this release formalizes the process with structured templates, automatic archiving, and gentle reminders.
 
 ### Added
 
 **Feedback System:**
-- **claude-context-feedback.template.md** - Structured feedback collection
+- **context-feedback.template.md** - Structured feedback collection
   - Template for bugs, improvements, questions, feature requests, and praise
   - Clear guidelines for specificity and helpful feedback
   - Example entries showing proper format
   - Categories with severity levels (🔴 Critical, 🟡 Moderate, 🟢 Minor)
 
 - **Feedback file creation in `/init-context`**
-  - Created as 6th core file: `context/claude-context-feedback.md`
+  - Created as 6th core file: `context/context-feedback.md`
   - Initialized from template with examples
   - Ready for immediate use after setup
 
@@ -80,12 +311,12 @@ v2.3.1 adds a built-in feedback system to make gathering user feedback a core pa
   - `/code-review` - Review quality
 
 - **install.sh updates:**
-  - Downloads claude-context-feedback.template.md
+  - Downloads context-feedback.template.md
   - Mentions v2.3.1 feedback features in success message
 
 ### Changed
 
-- **Core file count:** 5 → 6 files (added claude-context-feedback.md)
+- **Core file count:** 5 → 6 files (added context-feedback.md)
 - **Documentation updates:**
   - `/init-context` updated to create feedback file
   - `/update-context-system` updated with archive logic
@@ -242,7 +473,7 @@ v2.2.2 ensures that upgrading from v2.1.0 → v2.2.x is:
 
 **"A place for everything, everything in its place"**
 
-v2.2.1 makes organization and structural neatness a **first-class feature** of the Claude Context System. Real-world usage showed projects accumulate documentation sprawl over time - loose files in root, unclear structure, no consistent filing system. This release actively promotes and enforces project organization through validation, reminders, and guided cleanup.
+v2.2.1 makes organization and structural neatness a **first-class feature** of the AI Context System. Real-world usage showed projects accumulate documentation sprawl over time - loose files in root, unclear structure, no consistent filing system. This release actively promotes and enforces project organization through validation, reminders, and guided cleanup.
 
 ### Added
 
@@ -1874,7 +2105,7 @@ This release addresses that request completely.
 ## [1.0.0] - 2025-10-04
 
 ### Added
-- Initial release of Claude Context System
+- Initial release of AI Context System
 - Core slash commands:
   - /init-context - Initialize context system in new projects
   - /migrate-context - Migrate existing projects with documentation

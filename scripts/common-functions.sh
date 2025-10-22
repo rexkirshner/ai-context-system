@@ -1,6 +1,6 @@
 #!/bin/bash
-# Common functions used across Claude Context System commands
-# Version: 2.3.0
+# Common functions used across AI Context System commands
+# Version: 3.0.0
 #
 # This file extracts duplicate code from multiple commands into shared utilities.
 # Source this file at the beginning of any command that needs these functions.
@@ -355,7 +355,7 @@ get_repo_url() {
   fi
 
   # Default
-  echo "https://github.com/rexkirshner/claude-context-system"
+  echo "https://github.com/rexkirshner/ai-context-system"
 }
 
 # Get raw content URL from repository URL

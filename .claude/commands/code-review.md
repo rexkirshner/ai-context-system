@@ -444,7 +444,7 @@ User runs this when they have time. Be thorough:
 
 ---
 
-**💬 Feedback**: Any feedback on the code review? (Add to `context/claude-context-feedback.md`)
+**💬 Feedback**: Any feedback on the code review? (Add to `context/context-feedback.md`)
 
 - Were the findings accurate and helpful?
 - Any false positives or missed issues?
@@ -453,5 +453,5 @@ User runs this when they have time. Be thorough:
 
 ---
 
-**Version:** 2.3.1
+**Version:** 3.0.0
 **Updated:** v2.3.1 - Added feedback system

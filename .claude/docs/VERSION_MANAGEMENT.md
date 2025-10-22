@@ -2,7 +2,7 @@
 
 ## ⚠️ ALWAYS Update Version Numbers
 
-**CRITICAL RULE:** Every change to the Claude Context System MUST increment the version number, no matter how small.
+**CRITICAL RULE:** Every change to the AI Context System MUST increment the version number, no matter how small.
 
 ### Why This Matters
 

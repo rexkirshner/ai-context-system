@@ -1,11 +1,11 @@
 ---
 name: init-context
-description: Initialize Claude Context System for this project
+description: Initialize AI Context System for this project
 ---
 
 # /init-context Command
 
-Initialize a **minimal overhead** context system for this project. Creates 5 core files (CONTEXT.md, STATUS.md, DECISIONS.md, SESSIONS.md, claude-context-feedback.md) plus 1 AI header (claude.md), with optional files (CODE_MAP.md, other AI headers) suggested when complexity demands.
+Initialize a **minimal overhead** context system for this project. Creates 5 core files (CONTEXT.md, STATUS.md, DECISIONS.md, SESSIONS.md, context-feedback.md) plus 1 AI header (claude.md), with optional files (CODE_MAP.md, other AI headers) suggested when complexity demands.
 
 **Philosophy:** Minimal overhead during work. Good-enough recovery when needed. Single source of truth. Platform-neutral core with tool-specific entry points.
 
@@ -20,7 +20,7 @@ Creates **5 core files + 1 AI header** that serve dual purpose (developer produc
 3. **STATUS.md** - Current state with auto-generated Quick Reference at top
 4. **DECISIONS.md** - Decision log (WHY choices made - critical for AI agents)
 5. **SESSIONS.md** - History (structured, comprehensive, append-only with mandatory TL;DR)
-6. **claude-context-feedback.md** - Feedback log (bugs, improvements, questions)
+6. **context-feedback.md** - Feedback log (bugs, improvements, questions)
 
 Optional files (CODE_MAP.md, cursor.md, aider.md, PRD.md, ARCHITECTURE.md) suggested when complexity demands.
 
@@ -204,9 +204,9 @@ else
 fi
 
 # 6. Feedback log (v2.3.1+)
-if [ ! -f "context/claude-context-feedback.md" ]; then
-  cp templates/claude-context-feedback.template.md context/claude-context-feedback.md
-  log_success "✅ Created context/claude-context-feedback.md"
+if [ ! -f "context/context-feedback.md" ]; then
+  cp templates/context-feedback.template.md context/context-feedback.md
+  log_success "✅ Created context/context-feedback.md"
 else
   log_verbose "Feedback file already exists, skipping"
 fi
@@ -252,11 +252,11 @@ fi
 - Template for future entries (TL;DR, accomplishments, git operations, tests)
 - **Mandatory TL;DR ensures perfect continuity**
 
-**context/claude-context-feedback.md** - Feedback log (v2.3.1+)
+**context/context-feedback.md** - Feedback log (v2.3.1+)
 - Structured feedback collection for system improvements
 - Template for bugs, improvements, questions, feature requests
 - Archived on `/update-context-system` (if has content)
-- **Helps make Claude Context System better for everyone**
+- **Helps make AI Context System better for everyone**
 
 ### Step 5: Create Configuration
 
@@ -264,7 +264,7 @@ fi
 
 ```bash
 # Download the latest config template from GitHub
-curl -sL https://raw.githubusercontent.com/rexkirshner/claude-context-system/main/config/.context-config.template.json -o context/.context-config.json
+curl -sL https://raw.githubusercontent.com/rexkirshner/ai-context-system/main/config/.context-config.template.json -o context/.context-config.json
 
 # Update placeholders (project name, owner, dates)
 # Use Read tool to get current config, then Edit tool to replace placeholders with actual values
@@ -424,7 +424,7 @@ if [[ ! $REPLY =~ ^[Nn]$ ]]; then
     # Download from GitHub if not in reference/
     log_info "   Downloading ORGANIZATION.md from GitHub..."
     if download_with_retry \
-      "https://raw.githubusercontent.com/rexkirshner/claude-context-system/main/ORGANIZATION.md" \
+      "https://raw.githubusercontent.com/rexkirshner/ai-context-system/main/ORGANIZATION.md" \
       "./ORGANIZATION.md"; then
       log_success "✅ Created ORGANIZATION.md"
     else
@@ -446,7 +446,7 @@ fi
 After initialization, explain to the user:
 
 ```
-✅ Context System Initialized (v2.1.0)
+✅ Context System Initialized (v3.0.0)
 
 Created 4 core files + 1 AI header:
 - context/claude.md - AI header (entry point for Claude)
@@ -539,21 +539,21 @@ Next Steps:
 
 ```bash
 # Check if we're in a nested installation (common pattern)
-if [ -d "../claude-context-system" ]; then
+if [ -d "../ai-context-system" ]; then
   echo "🧹 Removing installation files..."
-  rm -rf ../claude-context-system
+  rm -rf ../ai-context-system
   echo "✅ Installation files removed"
-elif [ -d "./claude-context-system" ]; then
+elif [ -d "./ai-context-system" ]; then
   echo "🧹 Removing installation files..."
-  rm -rf ./claude-context-system
+  rm -rf ./ai-context-system
   echo "✅ Installation files removed"
 else
   echo "⏭️  No installation files found (already clean)"
 fi
 
 # Also check for downloaded zip
-if [ -f "../claude-context-system.zip" ]; then
-  rm -f ../claude-context-system.zip
+if [ -f "../ai-context-system.zip" ]; then
+  rm -f ../ai-context-system.zip
   echo "✅ Removed installation zip"
 fi
 ```
@@ -609,7 +609,7 @@ If errors occur:
 ## Success Criteria
 
 Command succeeds when:
-- 5 core files + 1 AI header (claude.md, CONTEXT.md, STATUS.md, DECISIONS.md, SESSIONS.md, claude-context-feedback.md) created with available data
+- 5 core files + 1 AI header (claude.md, CONTEXT.md, STATUS.md, DECISIONS.md, SESSIONS.md, context-feedback.md) created with available data
 - All files use v2.1 structure and format
 - STATUS.md includes auto-generated Quick Reference section
 - Configuration valid
@@ -621,7 +621,7 @@ Command succeeds when:
 
 ---
 
-**💬 Feedback**: Any feedback on this command? (Add to `context/claude-context-feedback.md`)
+**💬 Feedback**: Any feedback on this command? (Add to `context/context-feedback.md`)
 
 - First impressions of the initialization process?
 - Was anything confusing or unclear?
@@ -630,5 +630,5 @@ Command succeeds when:
 
 ---
 
-**Version:** 2.3.2
+**Version:** 3.0.0
 **Updated:** v2.3.2 - Fixed files created in root instead of context/ directory

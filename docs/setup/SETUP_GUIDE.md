@@ -1,4 +1,4 @@
-# Claude Context System - Setup Guide
+# AI Context System - Setup Guide
 
 **Version 2.0.0** - Single Source of Truth
 
@@ -26,7 +26,7 @@
 ### Step 1: Get the Toolkit
 ```bash
 # Clone the repository
-git clone https://github.com/rexkirshner/claude-context-system.git
+git clone https://github.com/rexkirshner/ai-context-system.git
 
 # Or download just the .claude/commands folder from GitHub
 ```
@@ -34,8 +34,8 @@ git clone https://github.com/rexkirshner/claude-context-system.git
 ### Step 2: Copy Toolkit to Your Project
 ```bash
 # From your new project root
-cp -r claude-context-system/.claude .
-cp -r claude-context-system/scripts .
+cp -r ai-context-system/.claude .
+cp -r ai-context-system/scripts .
 ```
 
 This copies:
@@ -64,7 +64,7 @@ Plus:
 ### Step 4: Clean Up
 ```bash
 # After /init-context completes successfully, clean up the clone
-rm -rf claude-context-system
+rm -rf ai-context-system
 ```
 
 The system is now installed and the clone is no longer needed. Future updates use `/update-context-system` which downloads fresh from GitHub.
@@ -99,7 +99,7 @@ The system is now installed and the clone is no longer needed. Future updates us
 ### Step 1: Get the Toolkit
 ```bash
 # Clone the repository
-git clone https://github.com/rexkirshner/claude-context-system.git
+git clone https://github.com/rexkirshner/ai-context-system.git
 
 # Or download just the .claude/commands folder from GitHub
 ```
@@ -108,7 +108,7 @@ git clone https://github.com/rexkirshner/claude-context-system.git
 ```bash
 # From your existing project root
 mkdir -p .claude
-cp -r claude-context-system/.claude/commands .claude/
+cp -r ai-context-system/.claude/commands .claude/
 ```
 
 ### Step 3: Migrate Existing Documentation
@@ -126,7 +126,7 @@ This will:
 ### Step 4: Clean Up
 ```bash
 # After /migrate-context completes successfully, clean up the clone
-rm -rf claude-context-system
+rm -rf ai-context-system
 ```
 
 The system is now installed and the clone is no longer needed. Future updates use `/update-context-system` which downloads fresh from GitHub.
@@ -151,10 +151,10 @@ The system is now installed and the clone is no longer needed. Future updates us
 ### Installation Methods
 
 #### Method 1: Clone and Copy (Recommended)
-1. Clone the repository: `git clone https://github.com/rexkirshner/claude-context-system.git`
-2. Copy the `.claude/commands/` folder to your project: `mkdir -p .claude && cp -r claude-context-system/.claude/commands .claude/`
+1. Clone the repository: `git clone https://github.com/rexkirshner/ai-context-system.git`
+2. Copy the `.claude/commands/` folder to your project: `mkdir -p .claude && cp -r ai-context-system/.claude/commands .claude/`
 3. Run `/init-context` in Claude Code (creates `context/.context-config.json` automatically)
-4. Clean up: `rm -rf claude-context-system`
+4. Clean up: `rm -rf ai-context-system`
 5. Review and customize `context/.context-config.json` if needed
 
 #### Method 2: Download and Copy
@@ -165,7 +165,7 @@ The system is now installed and the clone is no longer needed. Future updates us
 
 #### Method 3: Direct Reference
 If you have a local clone of the repo:
-1. Tell Claude: "Load commands from /path/to/claude-context-system/"
+1. Tell Claude: "Load commands from /path/to/ai-context-system/"
 2. Claude will read the command definitions
 3. Run `/init-context`
 
@@ -318,7 +318,7 @@ Created 5 core files:
 
 **Expected output:**
 ```
-✅ Claude Context System Updated
+✅ AI Context System Updated
 📦 Version: 1.0.0 → 1.2.0
 ✅ Updated 5 commands
 ✅ Updated 2 context sections
@@ -499,7 +499,7 @@ description: Command description
 ```yaml
 ---
 name: init-context
-description: Initialize Claude Context System for this project
+description: Initialize AI Context System for this project
 ---
 ```
 
@@ -549,7 +549,7 @@ Edit `.context-config.json`:
 
 ### Global Preferences
 Keep your master preferences in the cloned repo:
-`claude-context-system/config/.context-config.template.json`
+`ai-context-system/config/.context-config.template.json`
 
 ### Command Shortcuts
 Add to `.context-config.json`:
@@ -641,11 +641,11 @@ echo ".context-config.json" >> .gitignore
 Keep a master command set:
 ```bash
 # Clone once, then symlink to projects
-git clone https://github.com/rexkirshner/claude-context-system.git ~/claude-context-system
+git clone https://github.com/rexkirshner/ai-context-system.git ~/ai-context-system
 
 # In each project, create symlink instead of copying
 mkdir -p .claude
-ln -s ~/claude-context-system/.claude/commands .claude/commands
+ln -s ~/ai-context-system/.claude/commands .claude/commands
 ```
 
 ### Backup Strategy

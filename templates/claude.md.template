@@ -2,6 +2,22 @@
 
 **📍 Start here:** [CONTEXT.md](./CONTEXT.md)
 
-This project uses the Claude Context System v2.1. All documentation is in platform-neutral markdown files.
+This project uses the AI Context System v3.0. All documentation is in platform-neutral markdown files.
 
 **Quick start:** [STATUS.md](./STATUS.md) → Active Tasks → Begin working
+
+---
+
+## 🔴 Critical Protocol: Git Push Permission
+
+**NEVER push to GitHub without EXPLICIT approval for EACH push.**
+
+**Commit ≠ Push:**
+- User says **"commit"** → ONLY commit locally, then STOP
+- User says **"push"** or **"commit and push"** → OK to push
+
+**Permission NEVER carries forward:**
+- Approval for one push does NOT apply to future pushes
+- EACH git push requires NEW explicit approval
+
+**See:** [command-philosophy.md](../.claude/docs/command-philosophy.md#2-user-approval-for-destructive-actions)

@@ -103,7 +103,7 @@ Create header with project information:
 
 **Generated:** [YYYY-MM-DD HH:MM:SS]
 **Version:** [from .context-config.json]
-**System Version:** [Claude Context System version]
+**System Version:** [AI Context System version]
 
 **Included Sections:**
 - Project Orientation (CONTEXT.md)
@@ -201,7 +201,7 @@ done
 
 ## Export Information
 
-**Exported by:** Claude Context System v[VERSION]
+**Exported by:** AI Context System v[VERSION]
 **Export Date:** [YYYY-MM-DD HH:MM:SS]
 **Format:** Markdown (GitHub-flavored)
 **Source:** context/ directory

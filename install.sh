@@ -1,11 +1,11 @@
 #!/bin/bash
 
 # install.sh
-# Bootstrap installer for Claude Context System
-# v2.2.1 - Organization and structural neatness
+# Bootstrap installer for AI Context System
+# v3.0.0 - Multi-AI support and real-world feedback improvements
 #
 # Usage:
-#   curl -sL https://raw.githubusercontent.com/rexkirshner/claude-context-system/main/install.sh | bash
+#   curl -sL https://raw.githubusercontent.com/rexkirshner/ai-context-system/main/install.sh | bash
 #   OR
 #   ./install.sh
 
@@ -19,12 +19,12 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Get version from GitHub VERSION file
-VERSION=$(curl -sL https://raw.githubusercontent.com/rexkirshner/claude-context-system/main/VERSION 2>/dev/null || echo "2.3.0")
-REPO_URL="https://github.com/rexkirshner/claude-context-system"
-RAW_URL="https://raw.githubusercontent.com/rexkirshner/claude-context-system/main"
+VERSION=$(curl -sL https://raw.githubusercontent.com/rexkirshner/ai-context-system/main/VERSION 2>/dev/null || echo "3.0.0")
+REPO_URL="https://github.com/rexkirshner/ai-context-system"
+RAW_URL="https://raw.githubusercontent.com/rexkirshner/ai-context-system/main"
 
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${BLUE}  Claude Context System Installer (v${VERSION})${NC}"
+echo -e "${BLUE}  AI Context System Installer (v${VERSION})${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
 
@@ -175,7 +175,7 @@ TEMPLATES=(
   "CODE_MAP.template.md"
   "PRD.template.md"
   "ARCHITECTURE.template.md"
-  "claude-context-feedback.template.md"
+  "context-feedback.template.md"
 )
 
 echo "   ℹ️  Note: QUICK_REF.template.md removed in v2.1 (Quick Reference now in STATUS.md)"
@@ -310,7 +310,7 @@ echo -e "${BLUE}🔍 Verifying installation...${NC}"
 
 VERIFICATION_FAILED=0
 
-# Check critical files (v2.3.0)
+# Check critical files (v3.0.0)
 CRITICAL_FILES=(
   "VERSION"
   "scripts/common-functions.sh"
@@ -344,7 +344,7 @@ echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━�
 if [ $FAILED_DOWNLOADS -eq 0 ] && [ $VERIFICATION_FAILED -eq 0 ]; then
   echo -e "${GREEN}✅ Installation successful!${NC}"
   echo ""
-  echo "Claude Context System v${VERSION} is now installed."
+  echo "AI Context System v${VERSION} is now installed."
   echo ""
   echo -e "${BLUE}Next steps:${NC}"
   echo "   1. Run /init-context to initialize your project"
@@ -359,12 +359,18 @@ if [ $FAILED_DOWNLOADS -eq 0 ] && [ $VERIFICATION_FAILED -eq 0 ]; then
   echo "   - Save context guide: .claude/docs/save-context-guide.md"
   echo "   - GitHub: ${REPO_URL}"
   echo ""
+  echo -e "${BLUE}v3.0.0 Features (Universal AI Support + Critical Fixes):${NC}"
+  echo "   - Rebrand: Claude Context System → AI Context System"
+  echo "   - Enhanced git push protection (commit ≠ push)"
+  echo "   - Smart SESSIONS.md loading (handles large files)"
+  echo "   - Context folder detection (works from subdirectories)"
+  echo "   - Validated with real-world production feedback"
+  echo "   - Multi-AI support (Claude, Cursor, Aider, Codex)"
+  echo ""
   echo -e "${BLUE}v2.3.1 Features (Feedback System):${NC}"
-  echo "   - Built-in feedback collection (claude-context-feedback.md)"
+  echo "   - Built-in feedback collection (context-feedback.md)"
   echo "   - Structured templates for bugs, improvements, questions"
   echo "   - Auto-archive on update with version tracking"
-  echo "   - Feedback reminders in key commands"
-  echo "   - Helps make CCS better for everyone!"
   echo ""
   echo -e "${BLUE}v2.3.0 Features (Production-Ready Quality):${NC}"
   echo "   - Performance: 10-100x faster on large repos"

@@ -100,7 +100,7 @@ fi
 echo "✅ Found context at: $CONTEXT_DIR"
 
 # Use $CONTEXT_DIR for all context file operations below
-# Example: $CONTEXT_DIR/STATUS.md instead of context/STATUS.md
+# Example: $CONTEXT_DIR/STATUS.md instead of $CONTEXT_DIR/STATUS.md
 ```
 
 **Why this works:**
@@ -156,12 +156,12 @@ show_progress "Updating core context files" 3 8
 
 These files ALWAYS get updated:
 
-#### context/SESSIONS.md - Session History (Structured, Comprehensive)
+#### $CONTEXT_DIR/SESSIONS.md - Session History (Structured, Comprehensive)
 
 **Auto-detect session number:**
 ```bash
 log_verbose "Detecting next session number..."
-LAST_SESSION=$(grep -c "^## Session" context/SESSIONS.md)
+LAST_SESSION=$(grep -c "^## Session" $CONTEXT_DIR/SESSIONS.md)
 NEXT_SESSION=$((LAST_SESSION + 1))
 log_info "Creating Session $NEXT_SESSION entry"
 ```
@@ -219,7 +219,7 @@ log_info "Creating Session $NEXT_SESSION entry"
 - Decisions linked to DECISIONS.md - full rationale
 - Structured but comprehensive (40-60 lines, not 10 or 190)
 
-#### context/STATUS.md - Current State (Single Source of Truth)
+#### $CONTEXT_DIR/STATUS.md - Current State (Single Source of Truth)
 
 **Always update:**
 - Current phase/focus - reflect where you are now
@@ -231,7 +231,7 @@ log_info "Creating Session $NEXT_SESSION entry"
 
 **This is the canonical source for "what's happening now"**
 
-#### context/DECISIONS.md - Decision Log (For AI Agents)
+#### $CONTEXT_DIR/DECISIONS.md - Decision Log (For AI Agents)
 
 **Update when significant decisions made:**
 
@@ -309,8 +309,8 @@ show_progress "Updating Quick Reference in STATUS.md" 5 8
 
 ```bash
 # Extract values from config and STATUS.md
-PROJECT_NAME=$(jq -r '.project.name' context/.context-config.json)
-CURRENT_PHASE=$(sed -n '/## Current Phase/,/^##/p' context/STATUS.md | grep "^**Phase:**" | sed 's/^**Phase:** //')
+PROJECT_NAME=$(jq -r '.project.name' $CONTEXT_DIR/.context-config.json)
+CURRENT_PHASE=$(sed -n '/## Current Phase/,/^##/p' $CONTEXT_DIR/STATUS.md | grep "^**Phase:**" | sed 's/^**Phase:** //')
 # ... (see /save command for full auto-population logic)
 
 # Update Quick Reference section between markers in STATUS.md
@@ -763,5 +763,5 @@ Clear, concise summary:
 
 ---
 
-**Version:** 2.3.0
+**Version:** 3.0.0
 **Updated:** v2.3.0 - Integrated common-functions.sh for progress indicators, logging, and performance optimization

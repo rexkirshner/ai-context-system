@@ -1,6 +1,6 @@
 # Migration Guide
 
-**Claude Context System Migration Guide**
+**AI Context System Migration Guide**
 
 ---
 
@@ -271,23 +271,23 @@ cp -r context context-backup-$(date +%Y%m%d-%H%M%S)
 
 ```bash
 # Clone or download from GitHub
-git clone https://github.com/rexkirshner/claude-context-system.git
+git clone https://github.com/rexkirshner/ai-context-system.git
 
 # Or download specific version
-curl -L https://github.com/rexkirshner/claude-context-system/archive/v1.9.0.tar.gz | tar xz
+curl -L https://github.com/rexkirshner/ai-context-system/archive/v1.9.0.tar.gz | tar xz
 ```
 
 ### Step 3: Update System Files
 
 ```bash
 # Copy new commands
-cp -r claude-context-system/.claude/commands/* .claude/commands/
+cp -r ai-context-system/.claude/commands/* .claude/commands/
 
 # Copy new scripts
-cp -r claude-context-system/scripts/* scripts/
+cp -r ai-context-system/scripts/* scripts/
 
 # Copy new templates
-cp -r claude-context-system/templates/* templates/
+cp -r ai-context-system/templates/* templates/
 ```
 
 ### Step 4: Run Migration Script
@@ -299,7 +299,7 @@ cp -r claude-context-system/templates/* templates/
 ### Step 5: Clean Up
 
 ```bash
-rm -rf claude-context-system
+rm -rf ai-context-system
 ```
 
 ---
@@ -470,7 +470,7 @@ ls .claude/commands/
 ls scripts/migrate-to-1-9-0.sh
 
 # If missing, copy from repo
-cp claude-context-system/scripts/migrate-to-1-9-0.sh scripts/
+cp ai-context-system/scripts/migrate-to-1-9-0.sh scripts/
 chmod +x scripts/migrate-to-1-9-0.sh
 ./scripts/migrate-to-1-9-0.sh
 ```
@@ -504,9 +504,9 @@ cp -r context-backup-TIMESTAMP context
 
 ```bash
 # Clone v1.8.0 from GitHub
-git clone --branch v1.8.0 https://github.com/rexkirshner/claude-context-system.git
-cp -r claude-context-system/.claude .
-rm -rf claude-context-system
+git clone --branch v1.8.0 https://github.com/rexkirshner/ai-context-system.git
+cp -r ai-context-system/.claude .
+rm -rf ai-context-system
 ```
 
 ---
@@ -617,7 +617,7 @@ The migration script handles all versions gracefully.
 - Check: [SETUP_GUIDE.md](./SETUP_GUIDE.md)
 - Read: [README.md](./README.md)
 - Review: [PRD.md](./PRD.md)
-- GitHub: https://github.com/rexkirshner/claude-context-system
+- GitHub: https://github.com/rexkirshner/ai-context-system
 
 **Backup Everything** before major changes!
 

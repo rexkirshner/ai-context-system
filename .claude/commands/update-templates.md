@@ -37,8 +37,8 @@ if [ -d ".claude/templates" ]; then
   TEMPLATES_DIR=".claude/templates"
   echo "✅ Found templates in .claude/templates/"
 
-# Strategy 2: Check if we're in the claude-context-system repo
-elif [ -d "templates" ] && [ -f "README.md" ] && grep -q "Claude Context System" README.md 2>/dev/null; then
+# Strategy 2: Check if we're in the ai-context-system repo
+elif [ -d "templates" ] && [ -f "README.md" ] && grep -q "AI Context System" README.md 2>/dev/null; then
   TEMPLATES_DIR="templates"
   echo "✅ Found templates in current repo"
 
@@ -68,7 +68,7 @@ else
   )
 
   for template in "${TEMPLATES[@]}"; do
-    curl -sL "https://raw.githubusercontent.com/rexkirshner/claude-context-system/main/templates/$template" \
+    curl -sL "https://raw.githubusercontent.com/rexkirshner/ai-context-system/main/templates/$template" \
       -o "$TEMPLATES_DIR/$template" 2>/dev/null
 
     if [ -f "$TEMPLATES_DIR/$template" ]; then
@@ -83,7 +83,7 @@ fi
 
 if [ -z "$TEMPLATES_DIR" ] || [ ! -d "$TEMPLATES_DIR" ]; then
   echo "❌ Could not locate templates directory"
-  echo "Please ensure Claude Context System is properly installed"
+  echo "Please ensure AI Context System is properly installed"
   exit 1
 fi
 ```

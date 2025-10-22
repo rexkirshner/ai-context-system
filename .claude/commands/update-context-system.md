@@ -1,11 +1,11 @@
 ---
 name: update-context-system
-description: Update Claude Context System to latest version from GitHub
+description: Update AI Context System to latest version from GitHub
 ---
 
 # /update-context-system Command
 
-Update your project's Claude Context System to the latest version from GitHub using the automated installer script.
+Update your project's AI Context System to the latest version from GitHub using the automated installer script.
 
 ## When to Use This Command
 
@@ -121,20 +121,20 @@ log_info "🔍 Checking for updates from GitHub..."
 # Download the latest installer with retry logic
 log_info "Downloading latest installer from GitHub..."
 if download_with_retry \
-  "https://raw.githubusercontent.com/rexkirshner/claude-context-system/main/install.sh" \
-  "/tmp/claude-context-install.sh" \
+  "https://raw.githubusercontent.com/rexkirshner/ai-context-system/main/install.sh" \
+  "/tmp/ai-context-install.sh" \
   3 \
   10; then
   log_success "✅ Installer downloaded"
 
   # Make it executable
-  chmod +x /tmp/claude-context-install.sh
+  chmod +x /tmp/ai-context-install.sh
 
   # Run the installer (it handles version checking and backups)
-  /tmp/claude-context-install.sh
+  /tmp/ai-context-install.sh
 
   # Clean up
-  rm -f /tmp/claude-context-install.sh
+  rm -f /tmp/ai-context-install.sh
 else
   show_error $EXIT_NETWORK "Failed to download installer" \
     "Check your internet connection" \
@@ -170,12 +170,37 @@ log_info "  Feedback System (v2.3.1+)"
 log_info "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 log_info ""
 
+# v3.0.0 Migration: Rename old feedback file if it exists
+if [ -f "context/claude-context-feedback.md" ] && [ ! -f "context/context-feedback.md" ]; then
+  log_info "🔄 Migrating feedback file (v2.x → v3.0)..."
+
+  # Check if old file has actual content
+  CONTENT_LINES=$(wc -l < "context/claude-context-feedback.md" | tr -d ' ')
+
+  if [ "$CONTENT_LINES" -gt 10 ]; then
+    # Has content - archive it
+    CURRENT_VERSION=$(get_system_version)
+    ARCHIVE_DATE=$(date +%Y-%m-%d)
+    mkdir -p artifacts/feedback
+
+    ARCHIVE_FILE="artifacts/feedback/feedback-v${CURRENT_VERSION}-${ARCHIVE_DATE}.md"
+    mv "context/claude-context-feedback.md" "$ARCHIVE_FILE"
+
+    log_success "✅ Archived v2.x feedback to $ARCHIVE_FILE"
+    log_info "   (Your old feedback preserved)"
+  else
+    # Just template - remove it
+    rm -f "context/claude-context-feedback.md"
+    log_verbose "Removed empty v2.x feedback file"
+  fi
+fi
+
 # Check if feedback file exists and has actual content (not just template)
-if [ -f "context/claude-context-feedback.md" ]; then
+if [ -f "context/context-feedback.md" ]; then
   # Count lines in Feedback Entries section (between "## Feedback Entries" and "## Examples")
   # Fresh template has ~7 lines, template with entries has 15+
   CONTENT_LINES=$(awk '/^## Feedback Entries$/,/^## Examples/' \
-    context/claude-context-feedback.md | wc -l | tr -d ' ')
+    context/context-feedback.md | wc -l | tr -d ' ')
 
   if [ "$CONTENT_LINES" -gt 10 ]; then  # Has actual entries beyond template
     # Get current version for archive filename
@@ -187,26 +212,26 @@ if [ -f "context/claude-context-feedback.md" ]; then
 
     # Archive with version and date
     ARCHIVE_FILE="artifacts/feedback/feedback-v${CURRENT_VERSION}-${ARCHIVE_DATE}.md"
-    mv context/claude-context-feedback.md "$ARCHIVE_FILE"
+    mv context/context-feedback.md "$ARCHIVE_FILE"
 
     log_success "✅ Archived feedback to $ARCHIVE_FILE"
     log_info "   (Feedback from v${CURRENT_VERSION} preserved)"
   else
     log_verbose "Feedback file exists but appears to be just template (no entries)"
-    rm -f context/claude-context-feedback.md
+    rm -f context/context-feedback.md
   fi
 fi
 
 # Create fresh feedback file from template
-if [ ! -f "context/claude-context-feedback.md" ]; then
-  if [ -f "templates/claude-context-feedback.template.md" ]; then
-    cp templates/claude-context-feedback.template.md context/claude-context-feedback.md
+if [ ! -f "context/context-feedback.md" ]; then
+  if [ -f "templates/context-feedback.template.md" ]; then
+    cp templates/context-feedback.template.md context/context-feedback.md
     log_success "✅ Created fresh feedback file"
     log_info ""
     log_info "📝 Please share your upgrade experience:"
     log_info "   - Any issues during update?"
     log_info "   - New features working well?"
-    log_info "   - Add feedback to context/claude-context-feedback.md"
+    log_info "   - Add feedback to context/context-feedback.md"
   else
     log_warn "⚠️  Template not found - will be created on next /init-context"
   fi
@@ -249,7 +274,7 @@ if [[ "$CURRENT_VERSION" == "2.1.0" ]]; then
   echo ""
   echo "📖 Full migration guide:"
   echo "   reference/MIGRATION_GUIDE_v2.1_to_v2.2.md"
-  echo "   https://github.com/rexkirshner/claude-context-system/blob/main/MIGRATION_GUIDE_v2.1_to_v2.2.md"
+  echo "   https://github.com/rexkirshner/ai-context-system/blob/main/MIGRATION_GUIDE_v2.1_to_v2.2.md"
   echo ""
   echo "🎯 Quick adoption (optional):"
   echo "   1. cp reference/ORGANIZATION.md ./ORGANIZATION.md"
@@ -270,10 +295,10 @@ elif [[ "$CURRENT_VERSION" == "2.0.0" ]]; then
   echo "Difficulty: Easy (mostly automatic)"
   echo ""
   echo "📖 Full migration guide:"
-  echo "  https://github.com/rexkirshner/claude-context-system/blob/main/MIGRATION_GUIDE_v2.0_to_v2.1.md"
+  echo "  https://github.com/rexkirshner/ai-context-system/blob/main/MIGRATION_GUIDE_v2.0_to_v2.1.md"
   echo ""
   echo "Quick migration (copy-paste to terminal):"
-  echo "  curl -sL https://raw.githubusercontent.com/rexkirshner/claude-context-system/main/MIGRATION_GUIDE_v2.0_to_v2.1.md | grep -A 100 'Run in terminal:' | bash"
+  echo "  curl -sL https://raw.githubusercontent.com/rexkirshner/ai-context-system/main/MIGRATION_GUIDE_v2.0_to_v2.1.md | grep -A 100 'Run in terminal:' | bash"
   echo ""
 elif [[ "$CURRENT_VERSION" == "1.9.0" ]]; then
   echo "🔄 Migration to v2.0.0 available!"
@@ -289,7 +314,7 @@ elif [[ "$CURRENT_VERSION" == "1.9.0" ]]; then
   echo "  2. AUTOMATED: Use migration script (backup first)"
   echo ""
   echo "For manual migration, see:"
-  echo "  https://github.com/rexkirshner/claude-context-system/blob/main/MIGRATION_GUIDE.md"
+  echo "  https://github.com/rexkirshner/ai-context-system/blob/main/MIGRATION_GUIDE.md"
   echo ""
 elif [[ "$CURRENT_VERSION" < "1.9.0" ]]; then
   echo "🔄 Multi-step migration required..."
@@ -304,7 +329,7 @@ elif [[ "$CURRENT_VERSION" < "1.9.0" ]]; then
   echo "  4. Finally upgrade to v2.2.1"
   echo ""
   echo "Start with:"
-  echo "  https://github.com/rexkirshner/claude-context-system/releases"
+  echo "  https://github.com/rexkirshner/ai-context-system/releases"
   echo ""
 else
   echo "✅ Already on latest version structure"
@@ -315,7 +340,7 @@ fi
 
 Automated migration with dry-run, backup, and rollback is planned for v2.1. For now, v2.0.0 migration is manual:
 
-1. Read [MIGRATION_GUIDE.md](https://github.com/rexkirshner/claude-context-system/blob/main/MIGRATION_GUIDE.md)
+1. Read [MIGRATION_GUIDE.md](https://github.com/rexkirshner/ai-context-system/blob/main/MIGRATION_GUIDE.md)
 2. Backup your `context/` folder
 3. Follow the step-by-step migration process
 4. Verify with `/validate-context`
@@ -365,7 +390,7 @@ Templates are reference files - you choose what to adopt.
 Provide a clear summary to the user:
 
 ```
-✅ Claude Context System Updated
+✅ AI Context System Updated
 
 ## Version
 [OLD_VERSION] → [NEW_VERSION]
@@ -399,7 +424,7 @@ Review templates/ directory for new reference content you may want to adopt:
 
 ---
 
-📚 Full changelog: https://github.com/rexkirshner/claude-context-system/releases
+📚 Full changelog: https://github.com/rexkirshner/ai-context-system/releases
 ```
 
 ## Important Notes
@@ -433,7 +458,7 @@ Review templates/ directory for new reference content you may want to adopt:
 ❌ Cannot reach GitHub
 - Check internet connection
 - Try again later
-- Manual update: download from https://github.com/rexkirshner/claude-context-system
+- Manual update: download from https://github.com/rexkirshner/ai-context-system
 ```
 
 **If installer fails:**
@@ -461,7 +486,7 @@ Update succeeds when:
 
 ---
 
-**💬 Feedback**: Any feedback on the update process? (Add to `context/claude-context-feedback.md`)
+**💬 Feedback**: Any feedback on the update process? (Add to `context/context-feedback.md`)
 
 - Did the update go smoothly?
 - Any errors or warnings?
@@ -470,5 +495,5 @@ Update succeeds when:
 
 ---
 
-**Version:** 2.3.1
+**Version:** 3.0.0
 **Updated:** v2.3.1 - Added feedback system with archive-on-update

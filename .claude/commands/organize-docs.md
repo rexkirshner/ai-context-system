@@ -387,7 +387,7 @@ project-root/
 
 ---
 
-**💬 Feedback**: Any feedback on organization? (Add to `context/claude-context-feedback.md`)
+**💬 Feedback**: Any feedback on organization? (Add to `context/context-feedback.md`)
 
 - Did the interactive wizard work well?
 - Were file categorizations accurate?
@@ -396,6 +396,6 @@ project-root/
 
 ---
 
-**Version:** 2.3.1
+**Version:** 3.0.0
 **Added:** Organization features for structural neatness (v2.2.1)
 **Updated:** v2.3.1 - Added feedback system
