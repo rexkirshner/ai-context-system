@@ -64,11 +64,16 @@ if git rev-parse --git-dir > /dev/null 2>&1; then
   MODIFIED_FILES=$(echo "$GIT_STATUS" | grep "^ M\|^M " | wc -l | tr -d ' ')
   STAGED_FILES=$(echo "$GIT_STATUS" | grep "^A \|^M " | wc -l | tr -d ' ')
 
+  echo "✅ Git repository detected"
   echo "Branch: $GIT_BRANCH"
   echo "New: $NEW_FILES | Modified: $MODIFIED_FILES | Staged: $STAGED_FILES"
   echo ""
+elif find . -maxdepth 2 -name ".git" -type d 2>/dev/null | grep -q .; then
+  echo "ℹ️  Meta-project detected (sub-repos have git repositories)"
+  echo "💡 Tip: Track file changes manually or run from sub-repo"
+  echo ""
 else
-  echo "⚠️  Not a git repository"
+  echo "⏭️  Not a git repository (skipping git data)"
   echo ""
 fi
 ```
