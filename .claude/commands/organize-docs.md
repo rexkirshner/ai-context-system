@@ -31,10 +31,11 @@ fi
 **Scan project for files that need organization:**
 
 ```bash
-show_progress "Scanning for files to organize" 1 6
+echo "Step 1/6: Scanning for files to organize..."
+echo ""
 
-# Find loose .md files in root (exclude allowed ones)
-log_verbose "Checking project root..."
+# Find loose .md files in root (exclude allowed ones and common directories)
+echo "Checking project root..."
 LOOSE_ROOT=$(find . -maxdepth 1 -name "*.md" \
   ! -name "README.md" \
   ! -name "SECURITY.md" \
@@ -42,11 +43,21 @@ LOOSE_ROOT=$(find . -maxdepth 1 -name "*.md" \
   ! -name "LICENSE.md" \
   ! -name "CHANGELOG.md" \
   ! -name "ORGANIZATION.md" \
+  ! -path "*/node_modules/*" \
+  ! -path "*/.git/*" \
+  ! -path "*/dist/*" \
+  ! -path "*/build/*" \
+  ! -path "*/.next/*" \
   2>/dev/null)
 
-# Find .md files in source directories
-log_verbose "Checking source directories..."
-LOOSE_SRC=$(find src backend frontend lib -name "*.md" -maxdepth 3 2>/dev/null || true)
+# Find .md files in source directories (exclude common directories)
+echo "Checking source directories..."
+LOOSE_SRC=$(find src backend frontend lib -name "*.md" -maxdepth 3 \
+  ! -path "*/node_modules/*" \
+  ! -path "*/.git/*" \
+  ! -path "*/dist/*" \
+  ! -path "*/build/*" \
+  2>/dev/null || true)
 
 # Count results
 ROOT_COUNT=$(echo "$LOOSE_ROOT" | grep -c "\.md$" || echo "0")
@@ -96,6 +107,11 @@ fi
 
 **For each file found, analyze its content and purpose:**
 
+```bash
+echo "Step 2/6: Analyzing file contents..."
+echo ""
+```
+
 **Analysis criteria:**
 1. **Read the file** - Use Read tool to examine contents
 2. **Determine type** - Based on content keywords and structure:
@@ -129,8 +145,8 @@ fi
 **If `artifacts/` or `docs/` folders don't exist, create them:**
 
 ```bash
-show_progress "Setting up organized folder structure" 3 6
-log_info ""
+echo "Step 3/6: Setting up organized folder structure..."
+echo ""
 
 # Create artifacts/ for historical work
 if [ ! -d "artifacts" ]; then
@@ -163,6 +179,11 @@ log_info ""
 ### Step 4: File Organization Plan
 
 **Present organization plan to user:**
+
+```bash
+echo "Step 4/6: Creating organization plan..."
+echo ""
+```
 
 ```markdown
 ## Organization Plan
@@ -204,26 +225,43 @@ Say "cancel" to abort organization
 ```bash
 # Example move operations (customize based on analysis)
 
-show_progress "Organizing files" 5 6
-log_info ""
+echo "Step 5/6: Organizing files..."
+echo ""
 
 # Move files to proper locations
 # Use 'git mv' if in git repo, otherwise 'mv'
 if git rev-parse --git-dir > /dev/null 2>&1; then
   MV_CMD="git mv"
-  log_verbose "Using git mv (changes will be staged)"
+  echo "Using git mv (changes will be staged)"
 else
   MV_CMD="mv"
-  log_verbose "Using mv (not a git repository)"
+  echo "Using mv (not a git repository)"
 fi
 
-# Execute each move
-# $MV_CMD "NOTES.md" "artifacts/planning/2024-10-old-notes.md"
-# $MV_CMD "API_DESIGN.md" "docs/architecture/api-design.md"
+# Helper function to safely move files
+safe_move() {
+  local source="$1"
+  local dest="$2"
+
+  # Create destination directory if it doesn't exist
+  local dest_dir=$(dirname "$dest")
+  if [ ! -d "$dest_dir" ]; then
+    echo "Creating directory: $dest_dir"
+    mkdir -p "$dest_dir"
+  fi
+
+  # Execute the move
+  $MV_CMD "$source" "$dest"
+  echo "✓ Moved: $source → $dest"
+}
+
+# Execute each move (examples - customize based on approved plan)
+# safe_move "NOTES.md" "artifacts/planning/2024-10-old-notes.md"
+# safe_move "API_DESIGN.md" "docs/architecture/api-design.md"
 # ... (based on approved plan)
 
-log_info ""
-log_success "✅ Files moved to organized locations"
+echo ""
+echo "✅ Files moved to organized locations"
 ```
 
 **IMPORTANT:** Only execute moves that were explicitly approved by the user.

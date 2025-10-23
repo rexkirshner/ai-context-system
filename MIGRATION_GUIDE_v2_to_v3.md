@@ -298,6 +298,36 @@ git remote set-url origin https://github.com/rexkirshner/claude-context-system.g
 
 ---
 
+## New Commands in v3.0
+
+The following commands were added after v2.1.0. If you're upgrading from v2.x, these commands exist but may not be enabled in your config:
+
+### /organize-docs (Added in v2.2.1)
+Interactive documentation cleanup wizard that helps organize loose files into proper structure.
+
+**To enable manually:**
+```json
+// In context/.context-config.json
+"commands": {
+  "enabled": [
+    "/save",
+    "/save-full",
+    "/review-context",
+    "/organize-docs"  // ← Add this line
+  ]
+}
+```
+
+**Or use the command directly** - you can execute it manually even if not in config:
+```bash
+# Read the command file and execute its instructions
+cat .claude/commands/organize-docs.md
+```
+
+**Note:** Fresh installs (v3.0.0+) include `/organize-docs` by default. Upgrading users need to add it manually if desired.
+
+---
+
 ## Post-Migration Checklist
 
 After running `/update-context-system`:

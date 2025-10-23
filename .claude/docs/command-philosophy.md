@@ -103,7 +103,58 @@ echo "Content" >> "$CONTEXT_DIR/SESSIONS.md"
 
 **Commands updated:** /save, /save-full, /review-context, /init-context (others in progress)
 
-### 4. No Broken Promises
+### 4. Command Syntax Limitations (Claude Code Platform)
+
+**Commands with `$(...)` may fail when executed via SlashCommand tool.**
+
+**Real-world issue:** Commands containing command substitution syntax (`$(...)`) can fail with parse errors when executed through Claude Code's SlashCommand tool.
+
+**Examples that may fail:**
+```bash
+# Command substitution in variable assignment
+MV_CMD=$(which git)
+
+# Command substitution in conditionals
+if [ "$(git status)" ]; then
+
+# Command substitution in strings
+git commit -m "$(cat <<'EOF'
+Message here
+EOF
+)"
+```
+
+**Workaround options:**
+
+1. **Execute manually using Bash tool** (most reliable):
+   - AI assistant reads the command file
+   - Executes bash commands directly using Bash tool
+   - No SlashCommand parsing involved
+
+2. **Rewrite to avoid command substitution** (if possible):
+   ```bash
+   # Before (may fail)
+   DEST_DIR=$(dirname "$dest")
+
+   # After (works)
+   DEST_DIR="${dest%/*}"
+   ```
+
+3. **Use heredocs without command substitution**:
+   ```bash
+   # Avoid $(cat <<'EOF') pattern
+   # Instead use heredoc directly in git commit
+   ```
+
+**Why this matters:**
+- SlashCommand has parsing limitations we cannot control
+- Manual execution via Bash tool always works
+- Commands should document if they require manual execution
+- Not a bug in our system - it's a Claude Code platform limitation
+
+**Commands affected:** /organize-docs (Step 5 safe_move function)
+
+### 5. No Broken Promises
 
 **Only promise what we actually deliver.**
 
@@ -114,7 +165,7 @@ v1.4.0 removed JSON artifacts because:
 
 **Lesson:** Don't implement speculative features. Deliver what works.
 
-### 4. Honesty About Enforcement
+### 6. Honesty About Enforcement
 
 **Be clear about what's enforced vs. what's just reference.**
 
@@ -124,7 +175,7 @@ v1.4.0 removed JSON artifacts because:
 
 If a file isn't used by commands, say so clearly.
 
-### 5. Separation of Concerns
+### 7. Separation of Concerns
 
 **Commands DO, documentation EXPLAINS.**
 
@@ -134,7 +185,7 @@ If a file isn't used by commands, say so clearly.
 
 This separation keeps commands scannable.
 
-### 6. Capture Everything, Lose Nothing
+### 8. Capture Everything, Lose Nothing
 
 **When in doubt, save it.**
 
@@ -147,7 +198,7 @@ This separation keeps commands scannable.
 
 Better to over-save than lose context.
 
-### 7. Thoroughness When Time Permits
+### 9. Thoroughness When Time Permits
 
 **/code-review takes its time.**
 
@@ -158,7 +209,7 @@ Better to over-save than lose context.
 
 Quality commands need time to be thorough.
 
-### 8. Fast Paths for Common Cases
+### 10. Fast Paths for Common Cases
 
 **/quick-save-context for active work.**
 
