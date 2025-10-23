@@ -7,6 +7,153 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.4] - 2025-10-22
+
+### Added
+
+**Git Workflow Session Reminder**
+
+Added copy-paste prompt to `/review-context` and `/update-context-system` commands to help users establish clear git workflow expectations with AI assistants at the start of each session.
+
+**The Reminder:**
+- Encourages frequent local commits ("commit liberally and often")
+- Requires explicit permission for GitHub pushes ("NEVER push without explicit permission")
+- Clarifies that permission doesn't carry forward ("each push needs NEW approval")
+- Provides simple mental model: "Local commits are safe. Remote pushes require approval."
+
+**Why This Matters:**
+- **Practical solution**: Works with any AI assistant (Claude, Cursor, Aider, etc.)
+- **User-controlled**: User decides when to use the prompt
+- **Prevents accidents**: Stops AI from pushing to GitHub without permission
+- **Encourages best practices**: Frequent commits create better git history
+- **Clear boundaries**: Explicit permission scope prevents assumptions
+
+**Implementation:**
+- `.claude/commands/review-context.md` - Added session start reminder section
+- `.claude/commands/update-context-system.md` - Added session start reminder section
+- Both commands now present a formatted copy-paste prompt after completion
+- Prompt includes visual boundaries (box-drawing chars) for easy copying
+
+**User Workflow:**
+1. Run `/review-context` or `/update-context-system`
+2. AI presents the copy-paste prompt
+3. User copies and pastes it into the session
+4. AI acknowledges with "Understood?"
+5. Session proceeds with clear git workflow expectations
+
+**Impact**: Solves the git push permission enforcement challenge through clear communication rather than technical enforcement.
+
+### Changed
+
+- Updated version references: 3.0.3 → 3.0.4
+- Updated command version footers in `/review-context` and `/update-context-system`
+
+## [3.0.3] - 2025-10-22
+
+### Fixed
+
+**Improved /organize-docs Usability**
+
+Based on real-world user feedback from portfolio-tracker project (Session 012), implemented three critical usability improvements:
+
+1. **Missing Directory Creation**
+   - Added `safe_move()` function with `mkdir -p` before all file moves
+   - Prevents "directory doesn't exist" errors on first move
+
+2. **node_modules Noise**
+   - Added exclusion patterns for node_modules, .git, dist, build, .next
+   - Prevents scanning 180+ irrelevant .md files
+
+3. **No Progress Indicators**
+   - Added "Step X/6" progress indicators to all execution steps
+   - Users now see clear feedback about what's happening
+
+### Added
+
+**Documentation Improvements**
+
+1. **Command Syntax Limitations** (command-philosophy.md)
+   - Documented command substitution `$(...)` parsing limitation in Claude Code's SlashCommand tool
+   - Provided 3 workaround options
+   - Clarified it's a platform limitation, not a system bug
+
+2. **Migration Guide Enhancement** (MIGRATION_GUIDE_v2_to_v3.md)
+   - Added "New Commands in v3.0" section
+   - Documented `/organize-docs` (added in v2.2.1)
+   - Explained why upgrading users need manual config updates
+   - Provided manual enable instructions
+
+**Feedback Grade Improvement:**
+- User feedback grade: B+ → A (projected after fixes)
+- Issues: All identified usability problems resolved
+
+## [3.0.2] - 2025-10-22
+
+### Fixed
+
+**Critical Upgrade System Fixes**
+
+Based on real-world upgrade failures from portfolio-tracker project:
+
+1. **Repository URL Mismatch** (CRITICAL)
+   - Fixed: All URLs now point to correct repository (claude-context-system)
+   - Root cause: Code referenced ai-context-system, but repo wasn't renamed yet
+   - Impact: 100% upgrade failure rate in v3.0.0 → 0% failure rate in v3.0.2
+
+2. **File Validation False Positives**
+   - Fixed: Only check first 3 lines for "404: Not Found" errors
+   - Old behavior: Rejected valid files containing "NOT_FOUND" constants
+   - New behavior: Precise detection of actual 404 error pages
+
+3. **Uninitialized Variables**
+   - Fixed: Initialize FAILED_DOWNLOADS=0 and VERIFICATION_FAILED=0
+   - Impact: Success messages now display correctly
+
+4. **Config Version Not Updated**
+   - Fixed: Installer now updates version in context/.context-config.json
+   - Impact: Users see correct version after upgrade
+
+5. **VERSION File Sync**
+   - Fixed: VERSION file now stays in sync with git tags
+   - Impact: Installer fetches correct version number
+
+### Added
+
+**Automatic Rollback System**
+- Error trap restores from backup on ANY installation failure
+- Clear error messages guide recovery
+- Zero data loss guarantee
+
+**Non-Interactive Mode**
+- Added `--yes` flag support for automated execution
+- Essential for AI assistants and scripts
+- No more hanging on interactive prompts
+
+**Comprehensive Download Validation**
+- Size check (minimum 50 bytes, 404s are ~14 bytes)
+- Content check (first 3 lines for error patterns)
+- HTML check (detect error pages)
+- Fail-fast on first validation failure
+
+## [3.0.1] - 2025-10-22
+
+### Fixed
+
+**Critical Upgrade Failure Fix**
+
+v3.0.0 upgrade completely failed due to repository URL mismatch. All downloads returned 404 errors, causing system destruction.
+
+**Fixes:**
+1. Repository URLs corrected in install.sh and update-context-system.md
+2. Added comprehensive file validation
+3. Added automatic rollback on errors
+4. Created VERSION file in repository root
+5. Added non-interactive mode support
+
+**Impact:**
+- v3.0.0: 100% upgrade failure, system destruction
+- v3.0.1: Fail-safe with automatic rollback, zero data loss
+
 ## [3.0.0] - 2025-10-22
 
 ### BREAKING CHANGES

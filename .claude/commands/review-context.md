@@ -670,5 +670,38 @@ If confidence score >= 60, actively load context:
 
 ---
 
-**Version:** 3.0.0
-**Updated:** v2.3.0 - Integrated common-functions.sh for version checking, logging, and performance optimization
+## Session Start: Git Workflow Reminder
+
+**After completing context review**, present this copy-paste prompt to the user:
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📋 COPY-PASTE PROMPT FOR THIS SESSION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For this session, please follow these git workflow rules:
+
+1. **Commit liberally and often** - Create git commits whenever you complete a logical unit of work (fixing a bug, adding a feature, refactoring a section, etc.)
+
+2. **NEVER push to GitHub without explicit permission** - You may stage files (git add) and commit locally (git commit), but ONLY push to remote (git push) when I explicitly say "push to github" or similar.
+
+3. **Permission does NOT carry forward** - If I say "commit and push" for one change, that permission applies ONLY to that specific commit. Future commits require NEW explicit permission to push.
+
+Think of it as: Local commits are safe and encouraged. Remote pushes require explicit approval each time.
+
+Understood?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+**Why this matters:**
+- Standardizes git workflow expectations across all AI assistants
+- Prevents accidental pushes to remote repository
+- Encourages frequent local commits (good practice)
+- User controls when work is published to team
+
+**User action:** Copy the prompt above and paste it into your session to set ground rules with the AI.
+
+---
+
+**Version:** 3.0.4
+**Updated:** v3.0.4 - Added git workflow reminder for session start
