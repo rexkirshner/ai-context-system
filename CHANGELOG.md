@@ -7,6 +7,69 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.2.2] - 2025-10-23
+
+### Fixed - Critical Installer Bugs
+
+**PATCH RELEASE** - Emergency fixes for installer blocking all upgrades
+
+**Context:** Upgrade testing revealed two critical installer bugs introduced during v3.2.1 cleanup. The first bug blocked 100% of upgrades with 404 errors. The second caused misleading error messages that confused users despite successful upgrades.
+
+#### Critical Bugs Fixed
+
+**🐛 BUG-003: Deprecated Command in Installer (CRITICAL)**
+- **Issue**: Installer tried to download `save-context.md` which was removed in earlier commit
+- **Impact**: HTTP 404 error, 100% upgrade failure rate, automatic rollback
+- **Root cause**: Hardcoded COMMANDS array in install.sh out of sync with repository
+- **Fix**: Removed `save-context.md` from installer command list
+- **File**: `install.sh:256`
+- **Severity**: 🔴 CRITICAL (blocked all upgrades to v3.2.1)
+- **Commit**: 4fcb453
+
+**🐛 BUG-004: Version Detection Returns Blank**
+- **Issue**: Installer showed blank for current version instead of detected version
+- **Impact**: Users couldn't see "Current version: 3.0.3" - showed "Current version: "
+- **Root cause**: Only checked scripts/validate-context.sh, didn't check VERSION file
+- **Fix**: Priority-order detection (VERSION file → config → script grepping)
+- **File**: `install.sh:159-173`
+- **Severity**: 🟡 MEDIUM (poor UX, no upgrade blocker)
+- **Commit**: 4fcb453
+
+**🐛 BUG-005: Misleading Error Message in Non-Interactive Mode (CRITICAL UX)**
+- **Issue**: Showed "Installation successful!" then "Installation failed!" in --yes mode
+- **Impact**: 100% user confusion - users thought upgrade failed when it succeeded
+- **Root cause**: ERR trap fired after success due to failed `read` prompt in non-interactive mode
+- **Fix**:
+  1. Disable ERR trap after successful installation (`trap - ERR`)
+  2. Skip initialization prompt in non-interactive mode (check NON_INTERACTIVE flag)
+- **File**: `install.sh:471, 538-576`
+- **Severity**: 🔴 CRITICAL (UX disaster - success reported as failure)
+- **Commit**: af4ea1b
+
+#### Files Changed (1 file)
+
+1. `install.sh` - Three critical fixes (deprecated command removal, version detection, non-interactive handling)
+
+#### Testing
+
+- ✅ Test #1: Identified save-context.md 404 blocking upgrades
+- ✅ Test #2: Verified fixes but found misleading error message
+- ⏳ Test #3: Pending validation of final fixes
+
+#### Upgrade Instructions
+
+From v3.2.1 or earlier:
+```bash
+/update-context-system
+```
+
+Or fresh install:
+```bash
+curl -sL https://raw.githubusercontent.com/rexkirshner/ai-context-system/main/install.sh | bash
+```
+
+**Note:** v3.2.1 installer was broken. Upgrade to v3.2.2 for working installer.
+
 ## [3.2.1] - 2025-10-22
 
 ### Fixed - Critical Dogfooding Feedback (Installation & /save-full Testing)

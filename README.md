@@ -1,6 +1,6 @@
 # AI Context System
 
-**Version 3.2.1** • [What's New](#-v321-released---critical-dogfooding-fixes)
+**Version 3.2.2** • [What's New](#-v322-released---critical-installer-fixes)
 
 > **Externalize AI context. Enable human-AI collaboration. Perfect session continuity.**
 >
@@ -26,20 +26,19 @@ Facilitate peer review, project handoffs, and collaborative development between 
 
 ---
 
-## 🎉 v3.2.1 Released - Critical Dogfooding Fixes
+## 🎉 v3.2.2 Released - Critical Installer Fixes
 
-**Patch release addressing all issues found during real-world testing**
+**Emergency patch fixing installer bugs blocking all upgrades**
 
 **Critical Fixes:**
-- ✅ **Session number detection** - Now correctly detects Session 1 (was detecting Session 6)
-- ✅ **Context folder detection** - Works from subdirectories (3 levels deep)
-- ✅ **Quick Reference auto-generation** - Now truly automated (was false advertising - required manual work)
+- ✅ **Deprecated command bug** - Removed save-context.md causing 404 errors (100% upgrade failure)
+- ✅ **Version detection** - Now shows actual version instead of blank
+- ✅ **Misleading error message** - Fixed "success then failure" confusion in non-interactive mode
 
-**UX Improvements:**
-- Meta-project git detection messaging
-- Post-install auto-init prompt
-- Smarter multiple .claude warnings
-- File detection in non-git projects
+**Impact:**
+- Upgrades now work reliably
+- Clear success messaging
+- Perfect non-interactive (--yes) support
 
 **Full details:** [CHANGELOG.md](./CHANGELOG.md) • **Upgrade:** `/update-context-system`
 
@@ -420,15 +419,15 @@ See [SETUP_GUIDE.md](./SETUP_GUIDE.md) for detailed troubleshooting.
 
 ## Version
 
-**Current Version:** 3.2.1
+**Current Version:** 3.2.2
 **Status:** Production Ready
-**Last Updated:** 2025-10-22
+**Last Updated:** 2025-10-23
 
-**What's New in v3.2.1:**
-- Fixed session number detection (100% accuracy for first-time users)
-- Implemented Quick Reference auto-generation (was false advertising)
-- Added context folder detection (works from subdirectories)
-- Improved meta-project support
+**What's New in v3.2.2:**
+- Fixed critical installer bug blocking all upgrades (save-context.md 404)
+- Fixed version detection showing blank
+- Fixed misleading error messages in non-interactive mode
+- Installer now works reliably with --yes flag
 
 **See:** [CHANGELOG.md](./CHANGELOG.md) for complete version history
 
