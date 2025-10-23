@@ -67,41 +67,71 @@ fi
 
 ### Step 0.5: Verify Working Directory and .claude Location
 
-**CRITICAL:** Check for multiple .claude directories in the path. This causes conflicts.
+**CRITICAL:** Check for multiple .claude directories in the path. This causes conflicts (except for meta-projects).
 
 ```bash
 # Get absolute path to current directory
 CURRENT_DIR=$(pwd)
 echo "Working directory: $CURRENT_DIR"
 
-# Check for .claude directories in parent path
-CLAUDE_DIRS=$(find "$CURRENT_DIR" -maxdepth 0 -name ".claude" -o -path "*/.claude" | grep -c ".claude" || echo "0")
-
-# Also check parent directories up to 3 levels
+# Check parent directories up to 3 levels for .claude
 PARENT_CLAUDE=$(find "$CURRENT_DIR/.." -maxdepth 2 -name ".claude" 2>/dev/null | grep -v "$CURRENT_DIR/.claude" || echo "")
 
 if [ -n "$PARENT_CLAUDE" ]; then
-  echo ""
-  echo "⚠️  WARNING: Multiple .claude directories detected!"
-  echo ""
-  echo "Current project: $CURRENT_DIR/.claude"
-  echo "Parent folder(s): $PARENT_CLAUDE"
-  echo ""
-  echo "❌ PROBLEM: Claude Code may use the wrong .claude directory"
-  echo "This causes commands to be loaded from the parent instead of this project."
-  echo ""
-  echo "✅ SOLUTION: Only keep .claude in the actual project root"
-  echo "Remove .claude from parent folders that aren't projects themselves."
-  echo ""
-  echo "Recommended action:"
-  echo "  1. If parent folder is NOT a project: rm -rf <parent>/.claude"
-  echo "  2. If parent folder IS a project: Move this project out of it"
-  echo ""
-  read -p "Continue anyway? [y/N] " -n 1 -r
-  echo
-  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-    echo "Cancelled. Please resolve .claude directory conflicts first."
-    exit 1
+  # Check if parent is a meta-project
+  PARENT_DIR=$(dirname "$PARENT_CLAUDE")
+  IS_META_PROJECT=false
+
+  if [ -f "$PARENT_DIR/context/.context-config.json" ]; then
+    # Check if project type is "meta-project"
+    if command -v jq &> /dev/null; then
+      PROJECT_TYPE=$(jq -r '.project.type // ""' "$PARENT_DIR/context/.context-config.json" 2>/dev/null)
+      if [ "$PROJECT_TYPE" = "meta-project" ]; then
+        IS_META_PROJECT=true
+      fi
+    else
+      # Fallback: Check if "meta-project" string exists in config
+      if grep -q '"type".*"meta-project"' "$PARENT_DIR/context/.context-config.json" 2>/dev/null; then
+        IS_META_PROJECT=true
+      fi
+    fi
+  fi
+
+  if [ "$IS_META_PROJECT" = "true" ]; then
+    echo ""
+    echo "ℹ️  Note: Parent directory is a meta-project"
+    echo ""
+    echo "Parent: $PARENT_DIR (meta-project managing multiple repos)"
+    echo "Current: $CURRENT_DIR (sub-repository)"
+    echo ""
+    echo "✅ This is a valid configuration."
+    echo "Meta-projects intentionally have .claude at parent level to manage sub-repos."
+    echo ""
+  else
+    # Original warning for non-meta-projects
+    echo ""
+    echo "⚠️  WARNING: Multiple .claude directories detected!"
+    echo ""
+    echo "Current project: $CURRENT_DIR/.claude"
+    echo "Parent folder(s): $PARENT_CLAUDE"
+    echo ""
+    echo "❌ PROBLEM: Claude Code may use the wrong .claude directory"
+    echo "This causes commands to be loaded from the parent instead of this project."
+    echo ""
+    echo "✅ SOLUTION: Only keep .claude in the actual project root"
+    echo "Remove .claude from parent folders that aren't projects themselves."
+    echo ""
+    echo "Recommended action:"
+    echo "  1. If parent folder is NOT a project: rm -rf <parent>/.claude"
+    echo "  2. If parent folder IS a meta-project: Configure as type=\"meta-project\""
+    echo "  3. If parent folder IS a project: Move this project out of it"
+    echo ""
+    read -p "Continue anyway? [y/N] " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+      echo "Cancelled. Please resolve .claude directory conflicts first."
+      exit 1
+    fi
   fi
 fi
 ```

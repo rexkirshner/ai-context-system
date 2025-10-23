@@ -114,56 +114,41 @@ Next steps? (or press enter to keep existing):
 
 ### Step 4: Auto-Generate Quick Reference in STATUS.md
 
-**ACTION:** Use Read tool to read STATUS.md, .context-config.json, then update Quick Reference section:
-
-**Auto-population logic:**
-
-1. **Project:** From `.context-config.json` → `project.name`
-2. **Phase:** From `STATUS.md` → `## Current Phase` section (first line)
-3. **Status indicator:**
-   - 🔴 Red if `Blockers` section has items
-   - 🟡 Yellow if Active Tasks > 5 or any task marked (HIGH)
-   - 🟢 Green otherwise
-4. **URLs:** From `.context-config.json` → `project.urls.*`
-5. **Tech Stack:** From `.context-config.json` → `project.techStack`
-6. **Commands:** From `.context-config.json` → `project.commands.*`
-7. **Current Focus:** From `STATUS.md` → first item in Active Tasks
-8. **Last Session:** From `SESSIONS.md` → most recent `## Session` heading
-9. **Documentation Health:** From last `/validate-context` run (cached in temp file)
-
-**Update the Quick Reference section in STATUS.md:**
+**ACTION:** Run the update-quick-reference.sh script to auto-generate the Quick Reference section:
 
 ```bash
-# Extract values from config
-PROJECT_NAME=$(jq -r '.project.name' $CONTEXT_DIR/.context-config.json 2>/dev/null || echo "[Project Name]")
-PROD_URL=$(jq -r '.project.urls.production' $CONTEXT_DIR/.context-config.json 2>/dev/null || echo "N/A")
-STAGING_URL=$(jq -r '.project.urls.staging' $CONTEXT_DIR/.context-config.json 2>/dev/null || echo "N/A")
-REPO_URL=$(jq -r '.project.urls.repository' $CONTEXT_DIR/.context-config.json 2>/dev/null || echo "N/A")
-TECH_STACK=$(jq -r '.project.techStack' $CONTEXT_DIR/.context-config.json 2>/dev/null || echo "[Tech stack]")
-DEV_CMD=$(jq -r '.project.commands.dev' $CONTEXT_DIR/.context-config.json 2>/dev/null || echo "npm run dev")
-TEST_CMD=$(jq -r '.project.commands.test' $CONTEXT_DIR/.context-config.json 2>/dev/null || echo "npm test")
-BUILD_CMD=$(jq -r '.project.commands.build' $CONTEXT_DIR/.context-config.json 2>/dev/null || echo "npm run build")
+echo "Step 4/5: Auto-generating Quick Reference section..."
+echo ""
 
-# Extract from STATUS.md
-CURRENT_PHASE=$(sed -n '/## Current Phase/,/^##/p' $CONTEXT_DIR/STATUS.md | grep "^**Phase:**" | sed 's/^**Phase:** //' 2>/dev/null || echo "[Phase]")
-ACTIVE_TASK=$(sed -n '/## Active Tasks/,/^##/p' $CONTEXT_DIR/STATUS.md | grep -m1 '^- \[ \]' | sed 's/^- \[ \] //' 2>/dev/null || echo "[No active tasks]")
-BLOCKERS=$(sed -n '/## Blockers/,/^##/p' $CONTEXT_DIR/STATUS.md | grep -v "^##" | grep -v "^**" | grep -v "^$" | wc -l 2>/dev/null || echo "0")
+# Run the auto-generation script
+./scripts/update-quick-reference.sh
 
-# Determine status color
-if [ "$BLOCKERS" -gt 0 ]; then
-  STATUS_COLOR="🔴 Blocked"
-else
-  STATUS_COLOR="🟢 Active"
-fi
-
-# Get last session from SESSIONS.md
-LAST_SESSION=$(grep -m1 '^## Session' $CONTEXT_DIR/SESSIONS.md 2>/dev/null | sed 's/^## //' || echo "No sessions yet")
-
-# Update Quick Reference section in STATUS.md using Edit tool
-# Replace content between "## 📊 Quick Reference" and next "---"
+echo ""
+echo "✅ Quick Reference auto-generated"
+echo ""
 ```
 
-**Note:** This replaces Step 4 from v2.0. QUICK_REF.md is no longer generated as a separate file.
+**What this does:**
+- Extracts project info from .context-config.json
+- Extracts current phase and focus from STATUS.md
+- Finds last session from SESSIONS.md
+- Calculates documentation health
+- Generates Quick Reference section automatically
+
+**Auto-populates:**
+1. Project name, URLs, tech stack (from config)
+2. Current phase and status (from STATUS.md)
+3. Active tasks / current focus (from STATUS.md)
+4. Last session link (from SESSIONS.md)
+5. Documentation health (file age heuristic)
+
+**No manual editing required!** The script handles all 15+ fields automatically.
+
+**Note:** Requires `jq` to be installed:
+```bash
+# macOS: brew install jq
+# Linux: apt-get install jq
+```
 
 ### Step 5: Report Updates
 

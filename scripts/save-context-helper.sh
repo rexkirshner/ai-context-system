@@ -2,7 +2,7 @@
 
 # save-context-helper.sh
 # Pre-populates session data for /save-context command
-# v1.8.0 - Reduces manual typing while capturing comprehensive context
+# v3.2.1 - Auto-detects context folder, fixes session numbering, improves meta-project support
 
 set -e
 
@@ -12,29 +12,41 @@ BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-# Base directory
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-BASE_DIR="$(dirname "$SCRIPT_DIR")"
-CONTEXT_DIR="${BASE_DIR}/context"
-
-echo -e "${BLUE}📝 Save Context Helper (v1.8.0)${NC}"
+echo -e "${BLUE}📝 Save Context Helper (v3.2.1)${NC}"
 echo ""
 
 # =============================================================================
-# Step 1: Verify context exists
+# Step 1: Find and verify context folder
 # =============================================================================
 
-if [ ! -d "$CONTEXT_DIR" ]; then
-  echo -e "${YELLOW}⚠️  Context directory not found${NC}"
+# Find context folder (checks current dir, parent, grandparent)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Source the find-context-folder function
+if [ -f "$SCRIPT_DIR/find-context-folder.sh" ]; then
+  source "$SCRIPT_DIR/find-context-folder.sh"
+  CONTEXT_DIR=$(find_context_folder) || exit 1
+else
+  # Fallback: Check relative to script location
+  BASE_DIR="$(dirname "$SCRIPT_DIR")"
+  if [ -d "${BASE_DIR}/context" ] && [ -f "${BASE_DIR}/context/.context-config.json" ]; then
+    CONTEXT_DIR="${BASE_DIR}/context"
+  else
+    echo -e "${YELLOW}⚠️  Context directory not found${NC}"
+    echo "Run /init-context first to initialize the context system"
+    exit 1
+  fi
+fi
+
+# Verify SESSIONS.md exists
+if [ ! -f "$CONTEXT_DIR/SESSIONS.md" ]; then
+  echo -e "${YELLOW}⚠️  SESSIONS.md not found in ${CONTEXT_DIR}${NC}"
   echo "Run /init-context first to initialize the context system"
   exit 1
 fi
 
-if [ ! -f "$CONTEXT_DIR/SESSIONS.md" ]; then
-  echo -e "${YELLOW}⚠️  SESSIONS.md not found${NC}"
-  echo "Run /init-context first to initialize the context system"
-  exit 1
-fi
+echo -e "${GREEN}✅ Context folder found: ${CONTEXT_DIR}${NC}"
+echo ""
 
 # =============================================================================
 # Step 2: Auto-detect session number
@@ -42,7 +54,19 @@ fi
 
 echo -e "${BLUE}🔢 Detecting session number...${NC}"
 
-LAST_SESSION=$(grep -c "^## Session" "$CONTEXT_DIR/SESSIONS.md" 2>/dev/null || echo "0")
+# Count only actual session entries (not templates or examples)
+# Strategy: Look for "## Session N" where N is a number, but exclude sections after "## Example"
+LAST_SESSION=$(sed -n '1,/^## Example/p' "$CONTEXT_DIR/SESSIONS.md" | \
+               grep "^## Session [0-9]" | \
+               grep -v "Template" | \
+               wc -l | \
+               tr -d ' ' || echo "0")
+
+# Handle edge case where file is empty or no sessions
+if [ -z "$LAST_SESSION" ] || [ "$LAST_SESSION" = "" ]; then
+  LAST_SESSION=0
+fi
+
 NEXT_SESSION=$((LAST_SESSION + 1))
 
 echo "   Next session: $NEXT_SESSION"
@@ -60,6 +84,7 @@ GIT_DIFF=""
 GIT_STAGED=""
 
 if git rev-parse --git-dir > /dev/null 2>&1; then
+  # Current directory is a git repository
   # Get recent commits
   GIT_LOG=$(git log --oneline -5 2>/dev/null || echo "No commits")
 
@@ -72,8 +97,13 @@ if git rev-parse --git-dir > /dev/null 2>&1; then
   # Get staged diff summary
   GIT_STAGED=$(git diff --cached --stat 2>/dev/null || echo "No staged changes")
 
-  echo "   ✅ Git data collected"
+  echo "   ✅ Git repository detected"
+elif find . -maxdepth 2 -name ".git" -type d 2>/dev/null | grep -q .; then
+  # Meta-project: No git repo here, but sub-directories have repos
+  echo "   ℹ️  Meta-project detected (sub-repos have git repositories)"
+  echo "   💡 Tip: Track file changes manually or run script from sub-repo"
 else
+  # No git repository found
   echo "   ⏭️  Not a git repository (skipping git data)"
 fi
 
@@ -90,6 +120,7 @@ MODIFIED_FILES=""
 DELETED_FILES=""
 
 if git rev-parse --git-dir > /dev/null 2>&1; then
+  # Git repository: Use git status
   # Get new files (untracked or added)
   NEW_FILES=$(git status --short | grep "^??\|^A " | awk '{print $2}' | head -10 || echo "")
 
@@ -103,7 +134,33 @@ if git rev-parse --git-dir > /dev/null 2>&1; then
   MOD_COUNT=$(echo "$MODIFIED_FILES" | grep -c . || echo "0")
   DEL_COUNT=$(echo "$DELETED_FILES" | grep -c . || echo "0")
 
-  echo "   New: $NEW_COUNT | Modified: $MOD_COUNT | Deleted: $DEL_COUNT"
+  echo "   Git detected - New: $NEW_COUNT | Modified: $MOD_COUNT | Deleted: $DEL_COUNT"
+else
+  # Non-git or meta-project: Use timestamp-based detection
+  echo "   No git repository - checking recent file changes..."
+
+  # Find files modified in last 24 hours in key directories
+  RECENT_FILES=$(find . -type f \
+    -not -path "./.git/*" \
+    -not -path "./node_modules/*" \
+    -not -path "./venv/*" \
+    -not -path "./.next/*" \
+    -not -path "./dist/*" \
+    -not -path "./build/*" \
+    -not -path "$CONTEXT_DIR/.session-*" \
+    -mtime -1 \
+    2>/dev/null | head -20 || echo "")
+
+  if [ -n "$RECENT_FILES" ]; then
+    # Categorize as "modified" for simplicity
+    MODIFIED_FILES="$RECENT_FILES"
+    MOD_COUNT=$(echo "$MODIFIED_FILES" | grep -c . || echo "0")
+    echo "   Recent changes: $MOD_COUNT files modified in last 24 hours"
+  else
+    echo "   No recent file changes detected"
+    echo ""
+    echo "   💡 Tip: You can manually note file changes in the template"
+  fi
 fi
 
 echo ""

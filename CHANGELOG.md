@@ -7,6 +7,100 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.2.1] - 2025-10-22
+
+### Fixed - Critical Dogfooding Feedback (Installation & /save-full Testing)
+
+**PATCH RELEASE** - Addresses all issues found during real-world dogfooding test
+
+**Context:** After completing the v3.2.0 rebrand, we dogfooded the system by installing it fresh and running /save-full. This revealed 2 critical bugs and multiple UX issues that needed immediate fixes.
+
+#### Critical Bugs Fixed
+
+**🐛 BUG-001: Session Number Detection**
+- **Issue**: Helper script counted template/example sessions as real sessions
+- **Impact**: Detected "Session 6" for first-ever session
+- **Root cause**: `grep -c "^## Session"` matched templates and examples
+- **Fix**: Updated pattern to exclude sections after "## Example" and exclude templates
+- **File**: `scripts/save-context-helper.sh:47-51`
+- **Severity**: 🟡 Moderate (affected all first-time users)
+
+**🐛 BUG-002: Context Folder Detection**
+- **Issue**: Commands assumed you're in correct directory, failed from subdirectories
+- **Impact**: Users had to manually navigate to project root
+- **Fix**: Integrated `find-context-folder.sh` logic into helper script
+- **Files**: `scripts/save-context-helper.sh:26-39`
+- **Severity**: 🟡 Moderate (workaround: cd to project root)
+
+**🚨 CRITICAL: Quick Reference Auto-Generation NOT Implemented**
+- **Issue**: Documentation said "auto-generated" but was completely manual
+- **Impact**: FALSE ADVERTISING - 15+ fields required manual population
+- **Fix**: Created `scripts/update-quick-reference.sh` with full automation
+- **Files**:
+  - NEW: `scripts/update-quick-reference.sh` (auto-generates from config + STATUS.md)
+  - `.claude/commands/save.md:117-151` (updated to call script)
+  - `.claude/commands/save-full.md:396-426` (updated to call script)
+- **Severity**: 🔴 Critical (false advertising, major UX issue)
+
+#### UX Improvements
+
+**✅ Meta-Project Git Detection Messaging**
+- **Issue**: "Not a git repository" didn't distinguish no-git vs. meta-project
+- **Fix**: Detect sub-repos and show informative message
+- **File**: `scripts/save-context-helper.sh:89-92`
+
+**✅ Post-Install Auto-Init Prompt**
+- **Issue**: Two-step process (install → manually run /init-context)
+- **Fix**: Added optional prompt at end of install.sh
+- **File**: `install.sh:522-556`
+
+**✅ Multiple .claude Warning for Meta-Projects**
+- **Issue**: Warning scared users with legitimate meta-project setups
+- **Fix**: Detect meta-project config type and show friendly message
+- **File**: `.claude/commands/init-context.md:80-136`
+
+**✅ Draft File Pre-Population for Non-Git Projects**
+- **Issue**: No file changes detected in meta-projects
+- **Fix**: Added timestamp-based detection (files modified in last 24h)
+- **File**: `scripts/save-context-helper.sh:138-163`
+
+#### Files Changed (9 files)
+
+1. `scripts/save-context-helper.sh` - Session detection, context detection, git messaging, file detection
+2. `scripts/update-quick-reference.sh` - **NEW** - Auto-generates Quick Reference
+3. `.claude/commands/save.md` - Quick Reference auto-generation integration
+4. `.claude/commands/save-full.md` - Quick Reference auto-generation integration
+5. `.claude/commands/init-context.md` - Meta-project warning improvements
+6. `install.sh` - Post-install init prompt
+7. `VERSION` - 3.2.0 → 3.2.1
+8. `CHANGELOG.md` - This entry
+9. Planning docs (for reference)
+
+#### Deferred to v3.3.0
+
+**Interactive Init Mode** (3h) - Too large for patch release
+**Meta-Project Templates** (2h) - Feature addition, not bug fix
+
+These will be included in v3.3.0 feature release.
+
+#### Testing
+
+- ✅ Tested session detection with fresh SESSIONS.md
+- ✅ Tested context folder detection from subdirectories
+- ✅ Tested Quick Reference auto-generation
+- ✅ Tested meta-project scenarios
+
+#### Upgrade Instructions
+
+From v3.2.0 or earlier:
+```bash
+/update-context-system
+```
+
+No breaking changes. All fixes are backward compatible.
+
+---
+
 ## [3.2.0] - 2025-10-22
 
 ### Changed - Complete AI Context System Rebrand
