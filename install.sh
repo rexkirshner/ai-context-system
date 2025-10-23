@@ -467,6 +467,9 @@ echo ""
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 
 if [ $FAILED_DOWNLOADS -eq 0 ] && [ $VERIFICATION_FAILED -eq 0 ]; then
+  # Disable error trap - installation complete, don't rollback for prompt failures
+  trap - ERR
+
   echo -e "${GREEN}✅ Installation successful!${NC}"
   echo ""
   echo "AI Context System v${VERSION} is now installed."
@@ -532,36 +535,44 @@ if [ $FAILED_DOWNLOADS -eq 0 ] && [ $VERIFICATION_FAILED -eq 0 ]; then
   # Optional: Prompt to initialize context
   # ==========================================================================
 
-  echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-  echo ""
-  read -p "Initialize context system now? This will run /init-context. [Y/n] " -n 1 -r
-  echo ""
-
-  if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
+  if [ "$NON_INTERACTIVE" = true ]; then
+    # Skip prompt in non-interactive mode
+    echo -e "${BLUE}Non-interactive mode: Skipping initialization prompt${NC}"
     echo ""
-    echo -e "${GREEN}Running /init-context...${NC}"
+    echo "To initialize context system later, run: /init-context"
+    echo ""
+  else
+    echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo ""
+    read -p "Initialize context system now? This will run /init-context. [Y/n] " -n 1 -r
     echo ""
 
-    # Check if Claude Code is available
-    if command -v claude &> /dev/null; then
-      echo "Launching /init-context in Claude Code..."
-      echo "Note: This will open in Claude Code interface"
+    if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
       echo ""
-      claude /init-context
+      echo -e "${GREEN}Running /init-context...${NC}"
+      echo ""
+
+      # Check if Claude Code is available
+      if command -v claude &> /dev/null; then
+        echo "Launching /init-context in Claude Code..."
+        echo "Note: This will open in Claude Code interface"
+        echo ""
+        claude /init-context
+      else
+        echo -e "${YELLOW}Claude Code not found in PATH${NC}"
+        echo ""
+        echo "To initialize context:"
+        echo "  1. Open this project in Claude Code"
+        echo "  2. Run: /init-context"
+        echo ""
+      fi
     else
-      echo -e "${YELLOW}Claude Code not found in PATH${NC}"
       echo ""
-      echo "To initialize context:"
-      echo "  1. Open this project in Claude Code"
-      echo "  2. Run: /init-context"
+      echo -e "${BLUE}Skipped initialization${NC}"
+      echo ""
+      echo "When ready, run: /init-context"
       echo ""
     fi
-  else
-    echo ""
-    echo -e "${BLUE}Skipped initialization${NC}"
-    echo ""
-    echo "When ready, run: /init-context"
-    echo ""
   fi
 
   exit 0
