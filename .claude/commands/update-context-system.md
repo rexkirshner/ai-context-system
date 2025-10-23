@@ -121,7 +121,7 @@ log_info "🔍 Checking for updates from GitHub..."
 # Download the latest installer with retry logic
 log_info "Downloading latest installer from GitHub..."
 if download_with_retry \
-  "https://raw.githubusercontent.com/rexkirshner/claude-context-system/main/install.sh" \
+  "https://raw.githubusercontent.com/rexkirshner/ai-context-system/main/install.sh" \
   "/tmp/claude-context-install.sh" \
   3 \
   10; then

@@ -1,6 +1,6 @@
 # Legacy Templates (v1.x)
 
-These templates are from Claude Context System v1.9 and earlier. They are kept for reference during migration from v1.x to v2.0.
+These templates are from AI Context System (formerly Claude Context System) v1.9 and earlier. They are kept for reference during migration from v1.x to v2.0.
 
 ## Files in This Folder
 

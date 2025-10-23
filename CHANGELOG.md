@@ -7,6 +7,105 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.2.0] - 2025-10-22
+
+### Changed - Complete AI Context System Rebrand
+
+**REBRAND COMPLETION RELEASE** - Finishes the repository rename started in v3.0.0
+
+**Background:** v3.0.0 announced the rebrand from "Claude Context System" to "AI Context System" but the GitHub repository was never actually renamed. This release completes the rebrand by performing the actual repository rename on GitHub.
+
+#### What Changed
+
+**Repository Rename:**
+- **Old**: `github.com/rexkirshner/claude-context-system`
+- **New**: `github.com/rexkirshner/ai-context-system`
+- **Impact**: GitHub automatically redirects all old URLs
+- **User action**: None required (redirects work automatically)
+
+**Updated References (8 files):**
+1. `install.sh` - Repository URLs updated
+2. `.claude/commands/update-context-system.md` - Download URL updated
+3. `README.md` - Repository name and rebrand announcement updated to v3.2.0
+4. `scripts/common-functions.sh` - Default repository URL updated
+5. `templates/legacy/README.md` - Historical reference clarified
+6. `MIGRATION_GUIDE_v2_to_v3.md` - Already correct (documented new URL)
+7. `VERSION` - Updated to 3.2.0
+8. `CHANGELOG.md` - This entry added
+
+#### What Stayed the Same
+
+**Preserved Historical References:**
+- CHANGELOG.md old entries still reference "Claude Context System" (SEO + historical accuracy)
+- planning/v3.0.0/* docs unchanged (historical documentation)
+- MIGRATION_GUIDE_v2_to_v3.md rollback section unchanged (shows old URL for rollback)
+
+**All User Content:**
+- ✅ All context files unchanged
+- ✅ All user data preserved
+- ✅ All commands work identically
+- ✅ Zero breaking changes for end users
+
+#### Backward Compatibility
+
+**For Fresh Installs:**
+✅ All new installs use `ai-context-system` URLs
+
+**For Existing Users:**
+✅ GitHub automatic redirects handle everything:
+- Old bookmark URLs → Redirected automatically
+- Old git clones → Work via redirect
+- Old curl commands → Work via redirect
+
+**For Developers/Contributors:**
+⚠️ Optional: Update git remote URL (works without, but recommended):
+```bash
+git remote set-url origin https://github.com/rexkirshner/ai-context-system.git
+```
+
+#### Old Repository Strategy
+
+A new repository has been created at the old URL (`claude-context-system`) containing:
+- **README.md** - Migration notice pointing to new repository
+- **install.sh** - Smart redirect script that auto-redirects to new installer
+
+This ensures users who find the old repository are seamlessly directed to the new location.
+
+#### Version Numbering
+
+- v3.1.1 → v3.2.0 (minor bump)
+- Why minor, not major? This completes the v3.0.0 rebrand announcement. For end users, nothing breaks (GitHub redirects). Only developers need to optionally update git remotes.
+
+#### Migration Instructions
+
+**For projects on any version (v2.x, v3.0.x, v3.1.x):**
+```bash
+/update-context-system  # Automatically downloads from new URL
+```
+
+**For developers/contributors (optional but recommended):**
+```bash
+git remote set-url origin https://github.com/rexkirshner/ai-context-system.git
+git remote -v  # Verify change
+```
+
+#### Files Changed Summary
+
+**Modified:**
+- install.sh (repository URLs)
+- .claude/commands/update-context-system.md (download URL)
+- README.md (rebrand announcement updated to v3.2.0)
+- scripts/common-functions.sh (default repo URL)
+- templates/legacy/README.md (historical clarification)
+- VERSION (3.1.1 → 3.2.0)
+- CHANGELOG.md (this entry)
+
+**GitHub Operations:**
+- Main repo renamed: `claude-context-system` → `ai-context-system`
+- New redirect repo created at old URL with migration notice
+
+**Impact:** Repository rebrand complete, all URLs updated, backward compatibility preserved via GitHub redirects.
+
 ## [3.1.1] - 2025-10-22
 
 ### Changed - Documentation Cleanup

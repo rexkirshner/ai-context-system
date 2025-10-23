@@ -5,7 +5,7 @@
 # v3.0.0 - Multi-AI support and real-world feedback improvements
 #
 # Usage:
-#   curl -sL https://raw.githubusercontent.com/rexkirshner/claude-context-system/main/install.sh | bash
+#   curl -sL https://raw.githubusercontent.com/rexkirshner/ai-context-system/main/install.sh | bash
 #   OR
 #   ./install.sh
 
@@ -19,8 +19,8 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Repository configuration
-REPO_URL="https://github.com/rexkirshner/claude-context-system"
-RAW_URL="https://raw.githubusercontent.com/rexkirshner/claude-context-system/main"
+REPO_URL="https://github.com/rexkirshner/ai-context-system"
+RAW_URL="https://raw.githubusercontent.com/rexkirshner/ai-context-system/main"
 
 # Get version from GitHub VERSION file (with validation)
 VERSION=$(curl -sL "${RAW_URL}/VERSION" 2>/dev/null || echo "3.0.0")

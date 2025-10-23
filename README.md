@@ -10,14 +10,14 @@
 
 ---
 
-## 🎉 v3.0.0 Released - Rebrand to AI Context System
+## 🎉 v3.2.0 Released - AI Context System Rebrand Complete
 
-**BREAKING CHANGE:** System renamed to reflect universal AI support
+**System renamed to reflect universal AI support**
 
 **What Changed:**
 - **System Name**: Claude Context System → **AI Context System**
 - **Feedback File**: `claude-context-feedback.md` → `context-feedback.md`
-- **Repository**: Renamed to `ai-context-system` (old URLs auto-redirect)
+- **Repository**: Renamed to `ai-context-system` (GitHub auto-redirects from old URLs)
 
 **What Stayed the Same:**
 - ✅ `claude.md`, `cursor.md`, `aider.md`, `codex.md` (tool-specific entry points - correct by design)
@@ -380,7 +380,7 @@ These are embedded in CODE_STYLE.md and enforced automatically.
 ## File Organization
 
 ```
-claude-context-system/
+ai-context-system/
 ├── README.md                   # This file
 ├── PRD.md                      # System requirements
 ├── SETUP_GUIDE.md              # How to install and use

@@ -355,7 +355,7 @@ get_repo_url() {
   fi
 
   # Default repository URL
-  echo "https://github.com/rexkirshner/claude-context-system"
+  echo "https://github.com/rexkirshner/ai-context-system"
 }
 
 # Get raw content URL from repository URL
