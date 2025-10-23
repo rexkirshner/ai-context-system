@@ -7,6 +7,56 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.1.1] - 2025-10-22
+
+### Changed - Documentation Cleanup
+
+**MAINTENANCE RELEASE** - Removed obsolete documentation artifacts
+
+**Problem:** 97 total .md files with 47 (48%) being obsolete artifacts from completed releases
+- Planning documents from shipped v2.2.0, v2.2.1, v2.3.0 releases
+- Completed v3.0.0 planning phases and reviews
+- Redundant migration and setup guides
+- Historical code reviews and analyses
+
+**Impact on Downloads:**
+- Before: 97 .md files
+- After: 56 .md files (41% reduction)
+- Disk space saved: ~500-800 KB
+- Cleaner project structure for new installations
+
+**Files Removed (41 total):**
+
+**artifacts/ directory (16 files - REMOVED ENTIRELY):**
+- All v2.2.0 planning documents (11 files)
+- v2.2.1 organization plan (1 file)
+- v2.3.0 implementation/removal plans (2 files)
+- Historical code review v2.2.2 (1 file)
+- Old Codex analysis v2.1.0 (1 file)
+
+**planning/v3.0.0/ directory (18 files):**
+- Completed phase reports (phase-1, phase-3, phase-5)
+- Comprehensive review reports (2 duplicates)
+- Rename analysis documents (2 files)
+- Strategic analysis and decision guides (2 files)
+- Testing matrices and terminology guardrails (2 files)
+- Codex feedback/suggestions (3 files)
+- Roadmap addendum and release announcement (2 files)
+
+**docs/ directory (6 files - REMOVED ENTIRELY):**
+- Old architecture docs (PRD.md, STRUCTURE.md)
+- Redundant migration guides (v2.0→v2.1, v2.1→v2.2, generic guide)
+- Redundant setup guide (covered in README.md)
+
+**Preserved (10 valuable files in planning/v3.0.0/):**
+- Real-world feedback analysis (portfolio-tracker, project-zebra)
+- Critical upgrade failure documentation
+- Codex evaluation reasoning
+- Feature feedback responses (/organize-docs, /save-full)
+- Planning directory index
+
+**Rationale:** All removed files were completed work from shipped releases. Decisions made, features implemented, planning phases complete. No ongoing reference value. Users needing historical context can check git history.
+
 ## [3.1.0] - 2025-10-22
 
 ### Fixed - Complete /save-full Command Rewrite
