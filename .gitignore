@@ -1,6 +1,3 @@
-# Reference folder (legacy files, not part of the system)
-reference/
-
 # Artifacts (tracked by default per preferences.yaml)
 # Uncomment to ignore in specific projects:
 # artifacts/
