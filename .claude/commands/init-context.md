@@ -65,6 +65,85 @@ fi
 
 ---
 
+### Step 0.1: Detect Project Maturity (Auto-Route to Correct Command)
+
+**ACTION:** Check if project has existing documentation. If yes, suggest /migrate-context instead.
+
+```bash
+echo "🔍 Checking project maturity..."
+echo ""
+
+# Detect existing documentation files
+EXISTING_DOCS=()
+
+# Common documentation files
+[ -f "README.md" ] && [ -s "README.md" ] && EXISTING_DOCS+=("README.md")
+[ -f "ARCHITECTURE.md" ] && EXISTING_DOCS+=("ARCHITECTURE.md")
+[ -f "CONTRIBUTING.md" ] && EXISTING_DOCS+=("CONTRIBUTING.md")
+[ -f "docs/architecture.md" ] && EXISTING_DOCS+=("docs/architecture.md")
+[ -f "docs/README.md" ] && EXISTING_DOCS+=("docs/README.md")
+
+# Check for docs directory with content
+if [ -d "docs/" ] && [ "$(find docs/ -type f -name '*.md' 2>/dev/null | head -1)" ]; then
+  EXISTING_DOCS+=("docs/ directory (with markdown files)")
+fi
+
+# Check for existing architecture/design docs
+[ -f "DESIGN.md" ] && EXISTING_DOCS+=("DESIGN.md")
+[ -f "PRD.md" ] && EXISTING_DOCS+=("PRD.md")
+[ -f "ROADMAP.md" ] && EXISTING_DOCS+=("ROADMAP.md")
+
+# If project has 2+ significant docs, suggest migration
+if [ ${#EXISTING_DOCS[@]} -ge 2 ]; then
+  echo "⚠️  Detected existing documentation:"
+  for doc in "${EXISTING_DOCS[@]}"; do
+    echo "   📄 $doc"
+  done
+  echo ""
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo "🔀 WRONG COMMAND DETECTED"
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo ""
+  echo "This project has existing documentation."
+  echo "You should use /migrate-context instead of /init-context"
+  echo ""
+  echo "📌 Difference:"
+  echo "   /init-context    - Creates fresh templates (for NEW projects)"
+  echo "   /migrate-context - Preserves existing docs (for MATURE projects)"
+  echo ""
+  echo "Options:"
+  echo "  [Y] Switch to /migrate-context (recommended)"
+  echo "  [n] Continue with /init-context (will ignore existing docs)"
+  echo ""
+  read -p "Switch to /migrate-context? [Y/n] " -r
+  echo ""
+
+  if [[ ! $REPLY =~ ^[Nn]$ ]]; then
+    echo "✅ Switching to /migrate-context..."
+    echo ""
+    # Note: In actual execution, use: claude /migrate-context
+    exit 0
+  else
+    echo "⚠️  Continuing with /init-context (existing docs will be ignored)"
+    echo ""
+  fi
+elif [ ${#EXISTING_DOCS[@]} -eq 1 ]; then
+  echo "ℹ️  Found 1 documentation file: ${EXISTING_DOCS[0]}"
+  echo "   Proceeding with /init-context (you can manually migrate later)"
+  echo ""
+else
+  echo "✅ No existing documentation detected"
+  echo "   /init-context is the correct command"
+  echo ""
+fi
+```
+
+**Why this matters:** Prevents users from accidentally choosing the wrong command. /init-context creates fresh templates and ignores existing docs, while /migrate-context preserves and organizes them.
+
+**Threshold:** 2+ significant documentation files triggers the warning (not just a basic README).
+
+---
+
 ### Step 0.5: Verify Working Directory and .claude Location
 
 **CRITICAL:** Check for multiple .claude directories in the path. This causes conflicts (except for meta-projects).

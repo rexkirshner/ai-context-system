@@ -32,7 +32,91 @@ Migrate an existing project with documentation to the AI Context System. This co
 
 ## Execution Steps
 
-### Step 0: Verify Working Directory and .claude Location
+### Step 0: Detect Project Maturity (Auto-Route to Correct Command)
+
+**ACTION:** Check if project is actually new/empty. If yes, suggest /init-context instead.
+
+```bash
+echo "🔍 Scanning for existing documentation..."
+echo ""
+
+# Detect existing documentation files
+EXISTING_DOCS=()
+
+# Common documentation files
+[ -f "README.md" ] && [ -s "README.md" ] && EXISTING_DOCS+=("README.md")
+[ -f "ARCHITECTURE.md" ] && EXISTING_DOCS+=("ARCHITECTURE.md")
+[ -f "CONTRIBUTING.md" ] && EXISTING_DOCS+=("CONTRIBUTING.md")
+[ -f "docs/architecture.md" ] && EXISTING_DOCS+=("docs/architecture.md")
+[ -f "docs/README.md" ] && EXISTING_DOCS+=("docs/README.md")
+
+# Check for docs directory with content
+if [ -d "docs/" ] && [ "$(find docs/ -type f -name '*.md' 2>/dev/null | head -1)" ]; then
+  EXISTING_DOCS+=("docs/ directory")
+fi
+
+# Check for existing architecture/design docs
+[ -f "DESIGN.md" ] && EXISTING_DOCS+=("DESIGN.md")
+[ -f "PRD.md" ] && EXISTING_DOCS+=("PRD.md")
+[ -f "ROADMAP.md" ] && EXISTING_DOCS+=("ROADMAP.md")
+
+# Check for code review or artifact files (common in mature projects)
+[ -d "code-reviews/" ] && EXISTING_DOCS+=("code-reviews/")
+[ -d "lighthouse/" ] && EXISTING_DOCS+=("lighthouse/")
+
+# If project has <2 docs, it's probably new
+if [ ${#EXISTING_DOCS[@]} -lt 2 ]; then
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo "🔀 WRONG COMMAND DETECTED"
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo ""
+
+  if [ ${#EXISTING_DOCS[@]} -eq 0 ]; then
+    echo "ℹ️  No existing documentation detected"
+  else
+    echo "ℹ️  Only found: ${EXISTING_DOCS[0]}"
+  fi
+
+  echo ""
+  echo "This appears to be a NEW project without significant documentation."
+  echo "You should use /init-context instead of /migrate-context"
+  echo ""
+  echo "📌 Difference:"
+  echo "   /init-context    - Creates fresh templates (for NEW projects)"
+  echo "   /migrate-context - Preserves existing docs (for MATURE projects)"
+  echo ""
+  echo "Options:"
+  echo "  [Y] Switch to /init-context (recommended)"
+  echo "  [n] Continue with /migrate-context (unnecessary complexity)"
+  echo ""
+  read -p "Switch to /init-context? [Y/n] " -r
+  echo ""
+
+  if [[ ! $REPLY =~ ^[Nn]$ ]]; then
+    echo "✅ Switching to /init-context..."
+    echo ""
+    # Note: In actual execution, use: claude /init-context
+    exit 0
+  else
+    echo "⚠️  Continuing with /migrate-context (will work, but adds complexity)"
+    echo ""
+  fi
+else
+  echo "✅ Found ${#EXISTING_DOCS[@]} documentation files - migration is appropriate"
+  for doc in "${EXISTING_DOCS[@]}"; do
+    echo "   📄 $doc"
+  done
+  echo ""
+fi
+```
+
+**Why this matters:** /migrate-context is complex and designed for projects with existing documentation to preserve. For new projects, /init-context is simpler and faster.
+
+**Threshold:** <2 documentation files triggers the warning (suggests project is too new for migration).
+
+---
+
+### Step 0.5: Verify Working Directory and .claude Location
 
 **CRITICAL:** The `.claude/` directory MUST be in your actual project root, not in a parent container folder.
 
