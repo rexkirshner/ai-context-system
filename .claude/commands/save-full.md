@@ -9,6 +9,8 @@ description: Comprehensive session documentation for breaks and handoffs (10-15 
 
 **For regular session updates, use `/save` (2-3 minutes)**
 
+**⏱️ Estimated time:** 10-15 minutes
+
 **Philosophy:**
 - Capture TodoWrite state for productivity tracking
 - Extract mental models and decision rationale for AI agents
@@ -26,8 +28,6 @@ description: Comprehensive session documentation for breaks and handoffs (10-15 
 - Want detailed session history entry
 
 **Frequency:** ~3-5 times per 20 sessions (occasional, not every session)
-
-**Target time:** 10-15 minutes
 
 **For regular sessions:** Use `/save` instead (2-3 minutes)
 
@@ -52,6 +52,8 @@ description: Comprehensive session documentation for breaks and handoffs (10-15 
 
 **Purpose:** Comprehensive context for AI agents to review, understand, and take over development.
 
+---
+
 ## Execution Steps
 
 ### Step 0: Load Shared Functions
@@ -59,12 +61,23 @@ description: Comprehensive session documentation for breaks and handoffs (10-15 
 **ACTION:** Source the common functions library:
 
 ```bash
+echo "Step 0/8: Loading shared utilities..."
+echo ""
+
 # Load shared utilities (v2.3.0+)
 if [ -f "scripts/common-functions.sh" ]; then
   source scripts/common-functions.sh
+  echo "✅ Common functions loaded"
 else
   echo "⚠️  Warning: common-functions.sh not found (using legacy mode)"
+  # Define minimal fallback functions
+  log_info() { echo "$1"; }
+  log_success() { echo "✅ $1"; }
+  log_warn() { echo "⚠️  $1"; }
+  log_error() { echo "❌ $1"; }
 fi
+
+echo ""
 ```
 
 **Why this matters:** Provides access to performance-optimized functions, input validation, progress indicators, and standardized error handling.
@@ -73,13 +86,15 @@ fi
 
 ### Step 1: Find and Verify Context Directory
 
-**v2.2.0: Now works from subdirectories!**
-
 ```bash
+echo "Step 1/8: Verifying context directory..."
+echo "⏱️ Estimated time remaining: ~12-15 minutes"
+echo ""
+
 # Find context/ directory (searches up to 2 parent dirs)
 find_context_dir() {
   for dir in "context" "../context" "../../context"; do
-    if [ -d "$dir" ]; then
+    if [ -d "$dir" ] && [ -f "$dir/.context-config.json" ]; then
       echo "$dir"
       return 0
     fi
@@ -91,90 +106,152 @@ CONTEXT_DIR=$(find_context_dir)
 
 if [ -z "$CONTEXT_DIR" ]; then
   echo "❌ No context/ directory found"
-  echo "Searched: ./ ../ ../../"
+  echo ""
+  echo "Searched:"
+  echo "  • ./ (current directory)"
+  echo "  • ../ (parent directory)"
+  echo "  • ../../ (grandparent directory)"
   echo ""
   echo "Run /init-context from project root first"
   exit 1
 fi
 
 echo "✅ Found context at: $CONTEXT_DIR"
-
-# Use $CONTEXT_DIR for all context file operations below
-# Example: $CONTEXT_DIR/STATUS.md instead of $CONTEXT_DIR/STATUS.md
+echo ""
 ```
 
 **Why this works:**
 - Searches current directory first
 - Then parent directory (for `backend/` subdirs)
 - Then grandparent (for `backend/src/` subdirs)
+- Validates with `.context-config.json` check
 - Works from anywhere in project structure
+
+---
 
 ### Step 2: Analyze What Changed
 
-**Option A: Use Helper Script (Recommended)**
-
 ```bash
-./scripts/save-context-helper.sh
+echo "Step 2/8: Analyzing what changed since last save..."
+echo "⏱️ Estimated time remaining: ~10-12 minutes"
+echo ""
+
+# Try helper script first (auto-executes if available)
+if [ -x "scripts/save-context-helper.sh" ]; then
+  echo "Using save-context-helper.sh for automated analysis..."
+  echo ""
+
+  if ./scripts/save-context-helper.sh; then
+    echo ""
+    echo "✅ Helper created draft session entry"
+    echo "   Review: context/.session-draft.md"
+    echo ""
+    echo "You can edit the draft and append to SESSIONS.md when ready:"
+    echo "  cat context/.session-draft.md >> $CONTEXT_DIR/SESSIONS.md"
+    echo "  rm context/.session-draft.md"
+    echo ""
+    echo "Or continue with manual process below."
+    echo ""
+  else
+    echo "⚠️  Helper script failed, falling back to manual process"
+    echo ""
+  fi
+fi
+
+# Manual analysis process
+echo "Gathering session information..."
+echo ""
+
+# Check for git repository
+if git rev-parse --git-dir > /dev/null 2>&1; then
+  echo "Git repository detected - analyzing changes:"
+  echo ""
+
+  echo "Recent commits (last 10):"
+  git log --oneline -10
+  echo ""
+
+  echo "Working directory status:"
+  git status
+  echo ""
+
+  echo "Staged changes:"
+  git diff --cached --stat
+  echo ""
+else
+  echo "Not a git repository - using file timestamps for change detection"
+  echo ""
+
+  echo "Recently modified files (last 24 hours):"
+  find . -type f -mtime -1 -not -path "*/node_modules/*" -not -path "*/.git/*" 2>/dev/null | head -20
+  echo ""
+fi
+
+echo "✅ Analysis complete - ready to create session entry"
+echo ""
 ```
 
-This will:
-- Auto-detect session number
-- Gather git changes (log, status, diff)
-- Pre-populate session template with file changes
-- Create draft file: `context/.session-N-draft.md`
-- You just fill in the [BRACKETED] placeholders (mental models, rationale)
+**Key improvements:**
+- ✅ No command substitution
+- ✅ Auto-runs helper script if available
+- ✅ Graceful fallback to manual process
+- ✅ Git repo check before git commands
+- ✅ Progress indicator with time estimate
 
-**Option B: Manual Analysis**
+---
 
-Gather information about this session's work:
-
-**Git Analysis:**
-```bash
-# What happened this session
-git log --oneline -10
-git status
-git diff HEAD
-
-# What's staged
-git diff --cached
-```
-
-**Session Understanding:**
-- What was the focus of this session?
-- What files were modified/created?
-- What decisions were made?
-- What issues were discovered or fixed?
-- What's incomplete (WIP)?
-
-### Step 3: Update Core Files (Always)
-
-**ACTION:** Show progress for this comprehensive documentation step:
+### Step 3: Create SESSIONS.md Entry (Append-Only Strategy)
 
 ```bash
-show_progress "Updating core context files" 3 8
+echo "Step 3/8: Creating SESSIONS.md entry..."
+echo "⏱️ Estimated time remaining: ~8-10 minutes"
+echo ""
+
+# Detect next session number (NO command substitution)
+echo "Detecting next session number..."
+grep -c "^## Session" "$CONTEXT_DIR/SESSIONS.md"
+echo ""
+
+# AI reads the output above (e.g., "12") and uses it
+# The AI will create the session entry with the next number
+
+echo "Please provide the following information for the session entry:"
+echo ""
+echo "1. Session number (based on count above + 1):"
+echo "2. Today's date (YYYY-MM-DD):"
+echo "3. Current phase/focus:"
+echo "4. Session duration (hours):"
+echo "5. Brief session focus (1-2 sentences):"
+echo ""
 ```
 
-These files ALWAYS get updated:
+**Create the session entry** using the Write tool on a draft file, then append:
 
-#### $CONTEXT_DIR/SESSIONS.md - Session History (Structured, Comprehensive)
-
-**Auto-detect session number:**
 ```bash
-log_verbose "Detecting next session number..."
-LAST_SESSION=$(grep -c "^## Session" $CONTEXT_DIR/SESSIONS.md)
-NEXT_SESSION=$((LAST_SESSION + 1))
-log_info "Creating Session $NEXT_SESSION entry"
+echo "Creating session draft..."
+echo ""
+
+# AI creates the session entry using Write tool in a draft file
+# Template provided below for AI to fill in
+
+echo "Once you've created the draft, append it to SESSIONS.md:"
+echo ""
+echo "  cat context/.session-draft.md >> $CONTEXT_DIR/SESSIONS.md"
+echo "  rm context/.session-draft.md"
+echo ""
 ```
 
-**Write a comprehensive, structured session summary** (40-60 lines with depth for AI agents):
+**Session Entry Template** (40-60 lines with depth for AI agents):
+
 ```markdown
-## Session [N] | YYYY-MM-DD | [Phase Name]
+## Session [N] - YYYY-MM-DD
 
 **Duration:** [X]h | **Focus:** [Brief description] | **Status:** ✅/⏳
 
-### Changed
-- ✅ [Key accomplishment 1 with context]
-- ✅ [Key accomplishment 2 with context]
+### TL;DR
+- [Key accomplishment 1]
+- [Key accomplishment 2]
+- [Key accomplishment 3]
 
 ### Problem Solved
 **Issue:** [What problem did this session address?]
@@ -183,7 +260,8 @@ log_info "Creating Session $NEXT_SESSION entry"
 **Why this approach:** [Rationale for the chosen solution]
 
 ### Decisions
-- **[Decision topic]:** [What and why] → See DECISIONS.md [ID]
+- **[Decision topic]:** [What and why] → See DECISIONS.md D[ID]
+- Or: No significant technical decisions this session
 
 ### Files
 **NEW:** `path/to/file.ts:1-150` - [Purpose and key contents]
@@ -204,358 +282,243 @@ log_info "Creating Session $NEXT_SESSION entry"
 **Context needed:** [What you need to remember to resume]
 
 ### TodoWrite State
-**Captured from TodoWrite:**
-- ✅ [Completed todo 1]
-- [ ] [Incomplete todo - in WIP]
+**Completed:**
+- ✅ [Todo 1]
+- ✅ [Todo 2]
+
+**In Progress:**
+- ⏳ [Todo 3]
 
 ### Next Session
 **Priority:** [Most important next action]
 **Blockers:** [None / List blockers with details]
+
+---
 ```
 
 **Critical for AI Agents:**
-- Problem Solved section - shows your thinking process
+- TL;DR section - Quick scan of key points
+- Problem Solved section - Shows your thinking process
 - Mental Models section - AI understands your approach
-- Decisions linked to DECISIONS.md - full rationale
+- Decisions linked to DECISIONS.md - Full rationale available
 - Structured but comprehensive (40-60 lines, not 10 or 190)
 
-#### $CONTEXT_DIR/STATUS.md - Current State (Single Source of Truth)
-
-**Always update:**
-- Current phase/focus - reflect where you are now
-- Active tasks - update from TodoWrite state
-- Work in progress - detailed WIP from current session
-- Recent accomplishments - what you completed this session
-- Next session priorities - what to do next
-- Blockers and recent decisions
-
-**This is the canonical source for "what's happening now"**
-
-#### $CONTEXT_DIR/DECISIONS.md - Decision Log (For AI Agents)
-
-**Update when significant decisions made:**
-
-If you made an important technical decision this session:
-1. Check if it's already documented
-2. If not, add new entry using template format:
-   ```markdown
-   ## D[ID] - [Decision Title]
-
-   **Date:** YYYY-MM-DD
-   **Status:** Accepted
-   **Session:** [N]
-
-   ### Context
-   [What problem? What constraints?]
-
-   ### Decision
-   [What did we decide?]
-
-   ### Rationale
-   [WHY this approach?]
-
-   ### Alternatives Considered
-   1. **[Alt 1]** - Pros/Cons/Why not
-
-   ### Tradeoffs Accepted
-   - ✅ [What we gain]
-   - ❌ [What we give up]
-
-   ### When to Reconsider
-   [Triggers for revisiting]
-
-   **For AI agents:** [Additional context AI needs]
-   ```
-
-3. Update Active Decisions table
-4. Link from SESSIONS.md entry
-
-**Critical:** DECISIONS.md enables AI agents to understand WHY you made choices, not just WHAT you implemented.
-
-### Step 4: Update Optional Files (If They Exist)
-
-**ACTION:** Show progress:
+**File Size Warning:**
 
 ```bash
-show_progress "Checking optional files" 4 8
-```
+# Check SESSIONS.md size
+echo "Checking SESSIONS.md file size..."
+SESSIONS_LINES=$(wc -l < "$CONTEXT_DIR/SESSIONS.md" | tr -d ' ')
 
-Only update these if the file already exists:
-
-#### context/PRD.md (if exists)
-**Update if:** Product vision/roadmap changed
-**Skip if:** Just implementation work
-
-#### context/ARCHITECTURE.md (if exists)
-**Update if:** Architectural changes made, new system design decisions
-**Skip if:** No design changes
-
-**Note:** These are the only optional files in v1.8.0. Other documentation needs are covered by core files:
-- Decisions → DECISIONS.md (core file)
-- Code style → CONTEXT.md preferences
-- Known issues → STATUS.md blockers section
-
-### Step 5: Update Quick Reference in STATUS.md
-
-**ACTION:** Show progress:
-
-```bash
-show_progress "Updating Quick Reference in STATUS.md" 5 8
-```
-
-**Always update** - auto-generated dashboard section at top of STATUS.md:
-
-**ACTION:** Use Edit tool to update the Quick Reference section in STATUS.md with current data from .context-config.json and STATUS.md content:
-
-```bash
-# Extract values from config and STATUS.md
-PROJECT_NAME=$(jq -r '.project.name' $CONTEXT_DIR/.context-config.json)
-CURRENT_PHASE=$(sed -n '/## Current Phase/,/^##/p' $CONTEXT_DIR/STATUS.md | grep "^**Phase:**" | sed 's/^**Phase:** //')
-# ... (see /save command for full auto-population logic)
-
-# Update Quick Reference section between markers in STATUS.md
-# Section is between "## 📊 Quick Reference" and next "---"
-```
-
-**Fields auto-populated:**
-- Project name, URLs, tech stack → from .context-config.json
-- Current phase, status, active tasks → from STATUS.md content
-- Documentation health → from last /validate-context run
-- Last session → from SESSIONS.md
-
-**Note:** In v2.1.0, Quick Reference is a section IN STATUS.md, not a separate file.
-
-### Step 6: Suggest New Files (When Needed)
-
-**ACTION:** Show progress:
-
-```bash
-show_progress "Checking if new documentation files needed" 6 8
-```
-
-**On-demand enhancement** - suggest when complexity demands:
-
-#### Check for ARCHITECTURE.md need:
-```bash
-log_verbose "Analyzing project complexity..."
-FILE_COUNT=$(find src -type f 2>/dev/null | wc -l | tr -d ' ')
-DIR_COUNT=$(find src -type d -maxdepth 2 2>/dev/null | wc -l | tr -d ' ')
-
-if [ ! -f context/ARCHITECTURE.md ] && [ "$FILE_COUNT" -gt 20 ] && [ "$DIR_COUNT" -gt 5 ]; then
-  log_info "📐 Your architecture is getting complex (20+ files, 5+ directories)"
-  log_info "   Should I create ARCHITECTURE.md for AI agents to understand system design?"
-  log_info "   (y/n)"
-fi
-```
-
-#### Check for PRD.md need:
-Ask if:
-- Product vision discussed multiple times
-- Feature roadmap getting complex
-- File doesn't exist yet
-
-**Prompt:** "Product scope is expanding. Should I create PRD.md to document vision and roadmap for AI agent context?"
-
-**v1.8.0 Note:** We only suggest ARCHITECTURE.md and PRD.md on-demand. DECISIONS.md is always created as core file #3.
-
-### Step 7: Cross-Check Consistency
-
-**ACTION:** Show progress:
-
-```bash
-show_progress "Verifying documentation consistency" 7 8
-```
-
-Quick verification that docs tell coherent story:
-- Does STATUS.md reflect current reality?
-- Are DECISIONS.md entries linked from SESSIONS.md?
-- Is Quick Reference section in STATUS.md auto-updated correctly?
-- Do files reference each other correctly?
-
-If inconsistencies found → fix them.
-
-### Step 7.5: Export JSON for Multi-Agent Workflows (Optional)
-
-**ACTION:** If user provided `--with-json` flag, export SESSIONS.md to machine-readable JSON:
-
-```bash
-if [ "$WITH_JSON" = "true" ]; then
+if [ "$SESSIONS_LINES" -gt 5000 ]; then
   echo ""
-  echo "📊 Exporting JSON..."
-  ./scripts/export-sessions-json.sh
-  echo "   ✅ .sessions-data.json created"
-fi
-```
-
-This creates `context/.sessions-data.json` with structured session history for:
-- Multi-agent workflows (context handoff)
-- External tooling and analytics
-- Automated QA and reminders
-- AI agent consumption without Markdown parsing
-
-**Usage:** `/save-full --with-json` to include JSON export
-
-**Note:** Optional - only run when you actually need JSON for automation/multi-agent workflows.
-
-### Step 7.6: Git Push Protection - MANDATORY ENFORCEMENT
-
-**🚨 CRITICAL: This is ENFORCED protection, not optional guidance**
-
-**v2.2.0 FIX:** This section now BLOCKS git push operations unless explicitly approved.
-
-#### Layer 1: Check Session Flag (MANDATORY - DO NOT SKIP)
-
-```bash
-# CHECK: Was PUSH_APPROVED flag set to true by /review-context?
-# This flag is set to FALSE at session start
-# It MUST be explicitly set to TRUE by user approval
-
-if [ "${PUSH_APPROVED:-false}" != "true" ]; then
+  echo "⚠️  SESSIONS.md is large ($SESSIONS_LINES lines)"
   echo ""
-  echo "🚨━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-  echo "   GIT PUSH BLOCKED - NO APPROVAL"
-  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo "Recommendation: Consider archiving old sessions:"
+  echo "  • Move sessions 1-50 to artifacts/sessions/archive-2024-Q4.md"
+  echo "  • Keep only recent 50-100 sessions in main file"
   echo ""
-  echo "PUSH_APPROVED = false (set by /review-context)"
+  echo "Benefits:"
+  echo "  • Faster file operations"
+  echo "  • Better performance with Edit/Read tools"
+  echo "  • Historical sessions preserved in archives"
   echo ""
-  echo "User must explicitly say:"
-  echo '  - "push"'
-  echo '  - "push to github"'
-  echo '  - "deploy"'
-  echo '  - "go ahead and push"'
-  echo ""
-  echo "Current action: Committing locally only"
-  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-  echo ""
-
-  # STOP HERE - Do NOT push
-  # Commit locally and ask for approval
-  exit 0
 fi
 
-echo "✅ PUSH_APPROVED = true (user explicitly approved)"
-```
-
-#### Layer 2: Double-Check User's Last Message
-
-```
-🚨 CHECKLIST - Answer ALL questions before proceeding:
-
-1. Did user say "push" or "deploy" in their LAST message?
-   [ ] Yes, user explicitly said to push
-   [ ] No or unclear
-
-2. Will this trigger a production deployment or consume build quota?
-   [ ] Yes (requires approval)
-   [ ] No
-
-3. Do I have explicit permission for THIS SPECIFIC push?
-   [ ] Yes, user approved in last message
-   [ ] No or based on general workflow description
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-📋 DECISION LOGIC:
-
-If ANY answer is "No" or "unclear":
-  ✅ STOP HERE
-  ✅ Commit changes locally: git commit -m "..."
-  ✅ Ask user: "Ready to push to GitHub? This will trigger [deployment/build]. Do you approve?"
-  ✅ Wait for explicit "yes" / "push" / "approved" response
-  ✅ Only then: git push
-
-If ALL answers are "Yes":
-  ✅ Verify by re-reading user's exact message
-  ✅ Confirm approval is for THIS push (not a workflow description)
-  ✅ Extract approval quote for auto-logging (see below)
-  ✅ Then: git push
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-⚠️  REMEMBER:
-- General workflow instructions ≠ permission for this specific push
-- "Then push to GitHub" in instructions = workflow description, NOT approval
-- ALWAYS ask explicitly before every push
-- Auto-log approval if granted (see below)
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-```
-
-#### Layer 3: Auto-Log Git Operations (Codex #7)
-
-**If git operations occurred this session, auto-populate Git Operations section in SESSIONS.md:**
-
-```bash
-# Count commits in this session (approximation using recent history)
-COMMITS=$(git rev-list --count HEAD@{1}..HEAD 2>/dev/null || echo "0")
-
-# Detect if push occurred
-PUSHED="NO"
-APPROVAL="Not pushed"
-
-# If push was executed:
-if [ $PUSH_EXECUTED = true ]; then
-  PUSHED="YES"
-
-  # Extract approval quote from conversation
-  # In actual implementation, this would parse the conversation log
-  # For now, prompt to capture it:
-  echo ""
-  echo "📝 Git push executed. What was the user's approval message?"
-  echo "   (Paste the exact quote where user approved the push):"
-  read -r USER_APPROVAL
-
-  APPROVAL="\"$USER_APPROVAL\" (user message)"
-fi
-
-# Add to SESSIONS.md entry in Git Operations section
+echo "✅ Session entry ready to append"
 echo ""
-echo "### Git Operations"
-echo "**MANDATORY - Auto-logged from conversation**"
-echo ""
-echo "- **Commits:** $COMMITS commits"
-echo "- **Pushed:** $PUSHED"
-echo "- **Approval:** $APPROVAL"
 ```
-
-**Why auto-logging matters:**
-- Removes manual copy-paste burden
-- Ensures audit trail never missing
-- Validates against git push protocol
-- Reduces human error
-- Provides evidence of approval compliance
-
-#### Layer 4: Session Start Flag (for /review-context)
-
-**At session start, set:**
-```bash
-PUSH_APPROVED=false
-```
-
-This flag must be explicitly set to true with user approval before ANY push.
-
-**Approval phrases (from .context-config.json):**
-- "push"
-- "deploy"
-- "go ahead and push"
-- "yes push"
-
-**NOT approval:**
-- "save and push" in workflow description
-- "then push" in instructions
-- Any mention of push without explicit "do it now"
 
 ---
 
-### Step 7.7: Organization Reminder ✨ v2.2.1
-
-**PURPOSE:** Encourage clean project structure through gentle reminders
-
-**ACTION:** Check for loose files and suggest organization when appropriate
+### Step 4: Update STATUS.md
 
 ```bash
-# Count loose files in root (excluding allowed ones)
-LOOSE_FILES=$(find . -maxdepth 1 -name "*.md" \
+echo "Step 4/8: Updating STATUS.md..."
+echo "⏱️ Estimated time remaining: ~6-8 minutes"
+echo ""
+
+echo "Update the following sections in STATUS.md:"
+echo ""
+echo "1. Current Phase/Focus - Where are you now?"
+echo "2. Active Tasks - From TodoWrite state"
+echo "3. Work In Progress - Detailed WIP from session"
+echo "4. Recent Accomplishments - What you completed"
+echo "5. Next Session Priorities - What to do next"
+echo "6. Blockers - Any issues preventing progress"
+echo ""
+
+echo "STATUS.md is the single source of truth for 'what's happening now'"
+echo ""
+echo "✅ Use Edit tool to update each section"
+echo ""
+```
+
+---
+
+### Step 5: Update DECISIONS.md (If Needed)
+
+```bash
+echo "Step 5/8: Checking for new decisions..."
+echo "⏱️ Estimated time remaining: ~5-7 minutes"
+echo ""
+
+echo "Did you make any significant technical decisions this session?"
+echo ""
+echo "Examples of decisions that should be documented:"
+echo "  • Choice of library/framework"
+echo "  • Architectural pattern decision"
+echo "  • Data model design"
+echo "  • API design approach"
+echo "  • Security implementation choice"
+echo ""
+
+# If yes, AI creates decision entry
+# If no, skip this step
+
+echo "If yes, add entry to DECISIONS.md with:"
+echo "  • Context (problem, constraints)"
+echo "  • Decision (what you chose)"
+echo "  • Rationale (WHY this approach)"
+echo "  • Alternatives considered"
+echo "  • Tradeoffs accepted"
+echo "  • When to reconsider"
+echo ""
+
+echo "Then link from SESSIONS.md entry: 'See DECISIONS.md D[ID]'"
+echo ""
+```
+
+---
+
+### Step 6: Update Quick Reference in STATUS.md
+
+```bash
+echo "Step 6/8: Updating Quick Reference section..."
+echo "⏱️ Estimated time remaining: ~3-5 minutes"
+echo ""
+
+echo "The Quick Reference section provides a dashboard view at the top of STATUS.md"
+echo ""
+
+# Read current values (no command substitution needed)
+echo "Gathering current values..."
+echo ""
+
+echo "Project name from config:"
+cat "$CONTEXT_DIR/.context-config.json" | grep '"name"' | head -1
+echo ""
+
+echo "Current phase from STATUS.md:"
+grep -A 2 "## Current Phase" "$CONTEXT_DIR/STATUS.md" | grep "Phase:"
+echo ""
+
+echo "Active tasks count:"
+grep -c "^- \[ \]" "$CONTEXT_DIR/STATUS.md" || echo "0"
+echo ""
+
+echo "Use these values to update the Quick Reference section"
+echo "Located between ## 📊 Quick Reference and the next ---"
+echo ""
+echo "✅ Use Edit tool to update Quick Reference"
+echo ""
+```
+
+---
+
+### Step 7: Optional Files
+
+```bash
+echo "Step 7/8: Checking optional documentation files..."
+echo "⏱️ Estimated time remaining: ~2-3 minutes"
+echo ""
+
+# Check for optional files
+if [ -f "$CONTEXT_DIR/ARCHITECTURE.md" ]; then
+  echo "📐 ARCHITECTURE.md exists"
+  echo "   Update if: Architectural changes or design decisions made"
+  echo "   Skip if: No architecture changes this session"
+  echo ""
+fi
+
+if [ -f "$CONTEXT_DIR/PRD.md" ]; then
+  echo "📋 PRD.md exists"
+  echo "   Update if: Product vision or roadmap changed"
+  echo "   Skip if: Just implementation work"
+  echo ""
+fi
+
+# Suggest new files if needed
+echo "Checking if new documentation files needed..."
+echo ""
+
+if [ ! -f "$CONTEXT_DIR/ARCHITECTURE.md" ]; then
+  # Count files in src (if exists)
+  if [ -d "src" ]; then
+    echo "Checking project complexity..."
+    find src -type f 2>/dev/null | wc -l
+    echo ""
+
+    echo "If file count > 20 and complexity is growing:"
+    echo "  Consider creating ARCHITECTURE.md for system design documentation"
+    echo ""
+  fi
+fi
+
+echo "✅ Optional files checked"
+echo ""
+```
+
+---
+
+### Step 8: Git Push Protection & Final Report
+
+```bash
+echo "Step 8/8: Finalizing save and checking git push approval..."
+echo "⏱️ Estimated time remaining: ~1 minute"
+echo ""
+
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "🚨 GIT PUSH PROTECTION"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+echo "Before pushing to GitHub, verify:"
+echo ""
+echo "1. Did user explicitly say 'push' in their LAST message?"
+echo "   [ ] Yes, user explicitly said to push"
+echo "   [ ] No or unclear"
+echo ""
+echo "2. Do I have permission for THIS SPECIFIC push?"
+echo "   [ ] Yes, user approved in last message"
+echo "   [ ] No or based on general workflow description"
+echo ""
+echo "3. Is this a production deployment or build trigger?"
+echo "   [ ] Yes (requires explicit approval)"
+echo "   [ ] No"
+echo ""
+echo "DECISION LOGIC:"
+echo ""
+echo "If ANY answer is 'No' or 'unclear':"
+echo "  ✅ STOP - Commit locally only"
+echo "  ✅ Ask user: 'Ready to push to GitHub? This will trigger [action]. Approve?'"
+echo "  ✅ Wait for explicit 'yes' / 'push' / 'approved'"
+echo ""
+echo "If ALL answers are 'Yes':"
+echo "  ✅ Verify by re-reading user's exact message"
+echo "  ✅ Confirm approval is for THIS push (not workflow description)"
+echo "  ✅ Then proceed with push"
+echo ""
+echo "REMEMBER:"
+echo "  • General workflow instructions ≠ permission for this specific push"
+echo "  • ALWAYS ask explicitly before every push"
+echo "  • Permission does NOT carry forward between sessions"
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+
+# Organization reminder (if needed)
+echo "Checking for loose documentation files..."
+LOOSE_COUNT=$(find . -maxdepth 1 -name "*.md" \
   ! -name "README.md" \
   ! -name "SECURITY.md" \
   ! -name "CONTRIBUTING.md" \
@@ -564,92 +527,58 @@ LOOSE_FILES=$(find . -maxdepth 1 -name "*.md" \
   ! -name "ORGANIZATION.md" \
   2>/dev/null | wc -l | tr -d ' ')
 
-# Only show reminder if threshold exceeded
-if [ "$LOOSE_FILES" -gt 2 ]; then
-  log_warn ""
-  log_warn "🧹━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-  log_warn "     ORGANIZATION REMINDER (v2.2.1)"
-  log_warn "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-  log_warn ""
-  log_warn "Detected $LOOSE_FILES loose documentation file(s) in root."
-  log_warn ""
-  log_warn "💡 Good practice: File documentation in organized folders"
-  log_warn ""
-  log_warn "Suggested filing locations:"
-  log_warn "  📁 Active planning     → docs/planning/"
-  log_warn "  📁 Completed work      → artifacts/milestones/"
-  log_warn "  📁 Old proposals       → artifacts/planning/"
-  log_warn "  📁 Architecture docs   → docs/architecture/"
-  log_warn "  📁 Meeting notes       → artifacts/notes/"
-  log_warn ""
-  log_warn "Next steps:"
-  log_warn "  • Run /organize-docs for guided cleanup"
-  log_warn "  • Or say 'skip organization' to continue"
-  log_warn ""
-  log_warn "See ORGANIZATION.md for complete guidelines"
-  log_warn "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-  log_warn ""
+if [ "$LOOSE_COUNT" -gt 2 ]; then
+  echo ""
+  echo "🧹━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo "   ORGANIZATION REMINDER"
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo ""
+  echo "Detected $LOOSE_COUNT loose documentation files in root."
+  echo ""
+  echo "💡 Consider running /organize-docs for guided cleanup"
+  echo ""
+  echo "Suggested locations:"
+  echo "  📁 Active planning     → docs/planning/"
+  echo "  📁 Completed work      → artifacts/milestones/"
+  echo "  📁 Old proposals       → artifacts/planning/"
+  echo ""
+  echo "Or say 'skip organization' to continue"
+  echo ""
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo ""
 fi
+
+# Final report
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "✅ COMPREHENSIVE SAVE COMPLETE"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+echo "Core Updates:"
+echo "  ✅ SESSIONS.md - Comprehensive session entry (mental models, WIP)"
+echo "  ✅ STATUS.md - Updated tasks, blockers, priorities, Quick Reference"
+echo "  ✅ DECISIONS.md - [Updated / No new decisions]"
+echo ""
+echo "Optional Updates:"
+echo "  • ARCHITECTURE.md - [Updated / Skipped]"
+echo "  • PRD.md - [Updated / Skipped]"
+echo ""
+echo "For AI Agents:"
+echo "  • Mental models captured in SESSIONS.md"
+echo "  • Decision rationale in DECISIONS.md"
+echo "  • Full context available for review/takeover"
+echo ""
+echo "Time Invested: ~10-15 minutes (comprehensive documentation)"
+echo ""
+echo "Next Session:"
+echo "  • Use /save for quick updates (2-3 min)"
+echo "  • Use /save-full again before next break/handoff"
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
 ```
-
-**When this shows:**
-- Only when loose files > 2 in root
-- After /save-full completes successfully
-- Not intrusive - easy to skip
-
-**Why this matters:**
-- Professional appearance
-- Easier navigation
-- Prevents clutter accumulation
-- Maintains long-term project health
-
-**Philosophy:**
-- Gentle nudges, not enforcement
-- Suggests solutions, doesn't block
-- Promotes good habits over time
-- See ORGANIZATION.md for guidelines
 
 ---
-
-### Step 8: Report Updates
-
-**ACTION:** Show completion:
-
-```bash
-show_progress "Finalizing save" 8 8
-log_success ""
-log_success "✅ Comprehensive Save Complete - Session [N]"
-```
-
-Clear, concise summary:
-
-```
-✅ Comprehensive Save Complete - Session [N]
-
-**Core Updates:**
-- SESSIONS.md - Comprehensive session log (Problem Solved, Mental Models, WIP)
-- STATUS.md - Updated current tasks, blockers, next priorities, Quick Reference (auto-generated)
-- DECISIONS.md - [Documented Decision D[ID] / No new decisions]
-- [.sessions-data.json - Machine-readable export (if --with-json used)]
-
-**Optional Updates:**
-- [ARCHITECTURE.md - Updated system design / Skipped]
-- [PRD.md - Updated roadmap / Skipped]
-
-**For AI Agents:**
-- Mental models captured in SESSIONS.md
-- Decision rationale in DECISIONS.md
-- [Machine-readable JSON available in .sessions-data.json]
-- Full context available for review/takeover
-
-**Time Invested:** ~10-15 minutes (comprehensive documentation)
-
-**Current Status:** [One-sentence project status]
-
-**Next Session:**
-- Use /save for quick updates (2-3 min)
-- Use /save-full again before next break/handoff
-```
 
 ## Important Guidelines
 
@@ -658,21 +587,18 @@ Clear, concise summary:
 **Dual purpose in mind:**
 - **For you:** Capture TodoWrite state, update STATUS.md, quick recovery
 - **For AI agents:** Mental models, decision rationale, comprehensive context
-- Write good session summary (SESSIONS.md 40-60 lines with depth)
-- Document decisions with WHY (DECISIONS.md critical for AI)
-- Everything else is optional
 
 **Be structured AND comprehensive:**
 - Structured format (scannable sections)
-- But include depth (mental models, rationale, constraints)
+- Include depth (mental models, rationale, constraints)
 - Include file paths and line numbers
 - Capture the "why" not just the "what"
-- Document WIP state precisely with mental model
+- Document WIP state precisely
 - **Structured ≠ minimal** - AI agents need context
 
 **Grow when needed:**
 - Don't create files prematurely
-- Suggest ARCHITECTURE/PRD when complexity warrants it
+- Suggest ARCHITECTURE/PRD when complexity warrants
 - DECISIONS.md is always core (AI agents need it)
 
 **See:** `.claude/docs/save-context-guide.md` for philosophy, examples, best practices
@@ -681,10 +607,10 @@ Clear, concise summary:
 
 **Non-negotiable (Core Files):**
 - **SESSIONS.md entry** - Comprehensive with mental models (40-60 lines)
-- **STATUS.md update** - Current tasks, blockers, next priorities, Quick Reference section (auto-generated)
+- **STATUS.md update** - Current tasks, blockers, priorities, Quick Reference
 - **DECISIONS.md entry** - If significant decisions made (WHY)
-- **Work in progress** state - Exact resume point with mental model
-- **TodoWrite state** - Capture what was completed vs. pending
+- **Work in progress** - Exact resume point with mental model
+- **TodoWrite state** - Capture completed vs. pending
 
 **Critical for AI agents:**
 - Mental models - How you understand the system
@@ -714,54 +640,55 @@ Clear, concise summary:
 - Working on authentication
 ```
 
-**Why:** Future Claude (or you) needs exact context to resume.
+**Why:** Future AI agent (or you) needs exact context to resume.
 
-## Difference from Old Approach
+### Append-Only Strategy for Large SESSIONS.md Files
 
-**Old way (v1.6.2):**
-- 50-step checklist
-- Update all 8 files every time
-- Bureaucratic process
-- "Documentation for documentation's sake"
+**Problem:** SESSIONS.md files can grow beyond 25K tokens (Read tool limit)
 
-**v1.7.0:**
-- Write session summary
-- Update what changed
-- Minimal approach (2 files)
+**Solution:** Always append, never edit the full file
 
-**New way (v2.1.0 - Dual Purpose):**
-- **Write comprehensive session summary** (40-60 lines with mental models, mandatory TL;DR)
-- **Capture TodoWrite state + mental models for AI agents**
-- **Document decision rationale** (DECISIONS.md)
-- Update core 4 files (claude.md, CONTEXT, STATUS with auto-generated Quick Reference, DECISIONS)
-- **Auto-generate Quick Reference section in STATUS.md**
-- Structured but comprehensive
-- **Enable AI agent review and takeover**
-- **Auto-log git operations** for audit trail
+**Process:**
+1. Create session entry in draft file (context/.session-draft.md)
+2. Append draft to SESSIONS.md: `cat context/.session-draft.md >> context/SESSIONS.md`
+3. Delete draft: `rm context/.session-draft.md`
+
+**Benefits:**
+- Works with any file size
+- No Read tool limitations
+- Fast operation
+- Zero risk of corruption
+
+**When to archive:**
+- When SESSIONS.md > 5000 lines
+- Move sessions 1-50 to artifacts/sessions/archive-YYYY-QN.md
+- Keep recent 50-100 sessions in main file
 
 ## Success Criteria
 
-✅ SESSIONS.md has comprehensive, structured entry (40-60 lines with mandatory TL;DR)
+✅ SESSIONS.md has comprehensive entry (40-60 lines with TL;DR)
 ✅ Mental models captured for AI understanding
 ✅ TodoWrite state preserved
-✅ WIP state captured precisely with mental model
+✅ WIP state captured precisely
 ✅ STATUS.md updated as single source of truth
-✅ Quick Reference section in STATUS.md auto-generated
-✅ DECISIONS.md updated if significant decisions made
-✅ Git operations auto-logged in SESSIONS.md
+✅ Quick Reference in STATUS.md updated
+✅ DECISIONS.md updated if decisions made
 ✅ Can resume seamlessly next session
 ✅ **AI agents can review with full context**
-✅ **AI agents can take over development with understanding**
+✅ **AI agents can take over development**
+✅ **No command substitution blocking automation**
+✅ **Progress indicators throughout**
+✅ **File size warnings for large SESSIONS.md**
 
 ## Time Investment
 
-- Simple session: 3-5 minutes (comprehensive SESSIONS.md + STATUS.md with Quick Reference)
-- Complex session with decisions: 5-8 minutes (+ DECISIONS.md entry)
-- With new optional file: 8-12 minutes (create ARCHITECTURE/PRD/CODE_MAP)
+- Simple session: 10-12 minutes
+- Complex session with decisions: 12-15 minutes
+- With new optional file: 15-20 minutes
 
 **Worth every second** - enables perfect session continuity AND AI agent review/takeover.
 
 ---
 
-**Version:** 3.0.0
-**Updated:** v2.3.0 - Integrated common-functions.sh for progress indicators, logging, and performance optimization
+**Version:** 3.1.0
+**Updated:** v3.1.0 - Removed all command substitution, added progress indicators, implemented append-only SESSIONS.md strategy, added git repo checks, added file size warnings
