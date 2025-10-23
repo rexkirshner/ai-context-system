@@ -186,7 +186,7 @@ your-project/
 │   ├── docs/                       # Comprehensive guides
 │   └── checklists/                 # Review criteria
 ├── scripts/
-│   ├── save-context-helper.sh      # Session template generator
+│   ├── save-full-helper.sh         # Session template generator
 │   ├── update-quick-reference.sh   # Auto-generates Quick Reference
 │   └── validate-context.sh         # Documentation health check
 ├── context/                        # ← EXTERNALIZED AI CONTEXT (visible to humans)

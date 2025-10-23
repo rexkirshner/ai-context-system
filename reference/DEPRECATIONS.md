@@ -4,20 +4,7 @@
 
 ---
 
-## Active Deprecations (v2.2.0)
-
-### `/save-context` Command
-- **Deprecated:** v2.2.0 (2025-10-20)
-- **Replacement:** `/save` (quick) or `/save-full` (comprehensive)
-- **Planned Removal:** v2.3.0 (approximately 3 months after v2.2.0 release)
-- **Status:** Functional but warns users
-- **Reason:** Naming confusion - users don't know difference between save/save-context
-- **Files Affected:**
-  - `.claude/commands/save-context.md` (14K)
-  - `scripts/save-context-helper.sh` (8.2K)
-  - `.claude/docs/save-context-guide.md` (23K)
-  - 200+ documentation references
-- **Migration Path:** Users should use `/save` for quick updates or `/save-full` for comprehensive saves
+## Active Deprecations
 
 ### Complex Staleness Configuration
 - **Deprecated:** v2.2.0
@@ -75,6 +62,17 @@
 
 ## Removed Features (Historical)
 
+### `/save-context` Command (Removed in v3.2.1)
+- **Deprecated:** v2.1.0 (2025-10-20)
+- **Removed:** v3.2.1 (2025-10-22)
+- **Replacement:** `/save` (quick, 2-3 min) or `/save-full` (comprehensive, 10-15 min)
+- **Reason:** Naming confusion - users didn't know difference between `/save` and `/save-context`
+- **Files Removed:**
+  - `.claude/commands/save-context.md` - Deprecated command
+  - `.claude/docs/save-context-guide.md` - Documentation guide
+  - `scripts/save-context-helper.sh` → Renamed to `save-full-helper.sh`
+- **Migration:** Automatic - users naturally migrate to `/save` or `/save-full`
+
 ### QUICK_REF.md (Removed in v2.1.0)
 - **Deprecated:** v2.0.0
 - **Removed:** v2.1.0
@@ -107,5 +105,5 @@
 
 ---
 
-**Last Updated:** 2025-10-20
-**Next Review:** v2.2.5 (before v2.3.0 removals)
+**Last Updated:** 2025-10-22 (v3.2.1 - Removed /save-context)
+**Next Review:** v3.3.0 (staleness configuration removal check)

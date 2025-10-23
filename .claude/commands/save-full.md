@@ -137,11 +137,11 @@ echo "⏱️ Estimated time remaining: ~10-12 minutes"
 echo ""
 
 # Try helper script first (auto-executes if available)
-if [ -x "scripts/save-context-helper.sh" ]; then
-  echo "Using save-context-helper.sh for automated analysis..."
+if [ -x "scripts/save-full-helper.sh" ]; then
+  echo "Using save-full-helper.sh for automated analysis..."
   echo ""
 
-  if ./scripts/save-context-helper.sh; then
+  if ./scripts/save-full-helper.sh; then
     echo ""
     echo "✅ Helper created draft session entry"
     echo "   Review: context/.session-draft.md"

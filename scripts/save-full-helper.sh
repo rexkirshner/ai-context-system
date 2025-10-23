@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# save-context-helper.sh
-# Pre-populates session data for /save-context command
+# save-full-helper.sh
+# Pre-populates session data for /save-full command
 # v3.2.1 - Auto-detects context folder, fixes session numbering, improves meta-project support
 
 set -e

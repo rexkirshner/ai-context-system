@@ -317,7 +317,7 @@ echo -e "${BLUE}⬇️  Downloading scripts...${NC}"
 
 SCRIPTS=(
   "validate-context.sh"
-  "save-context-helper.sh"
+  "save-full-helper.sh"
 )
 
 for script in "${SCRIPTS[@]}"; do
