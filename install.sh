@@ -67,14 +67,16 @@ validate_file() {
     return 1
   fi
 
-  # Check for 404 error content
-  if grep -qi "404" "$file" || grep -qi "Not Found" "$file"; then
-    echo -e "${RED}✗${NC} (404 error)"
+  # Check for 404 error pages (only check first 3 lines to avoid false positives)
+  # Real 404 errors appear at the start: "404: Not Found" or "HTTP/1.1 404"
+  # Don't check entire file - legitimate code may contain "NOT_FOUND" constants
+  if head -3 "$file" | grep -Eq "^404: Not Found$|^HTTP.*404|404.*Not Found"; then
+    echo -e "${RED}✗${NC} (404 error page)"
     return 1
   fi
 
   # Check for HTML error pages
-  if head -1 "$file" | grep -qi "<!DOCTYPE\|<html"; then
+  if head -3 "$file" | grep -qi "<!DOCTYPE\|<html"; then
     echo -e "${RED}✗${NC} (HTML error page)"
     return 1
   fi
