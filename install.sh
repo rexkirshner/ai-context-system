@@ -236,6 +236,13 @@ fi
 echo ""
 
 # =============================================================================
+# Initialize counters
+# =============================================================================
+
+FAILED_DOWNLOADS=0
+VERIFICATION_FAILED=0
+
+# =============================================================================
 # Step 5: Download commands
 # =============================================================================
 
@@ -455,6 +462,15 @@ if [ $FAILED_DOWNLOADS -eq 0 ] && [ $VERIFICATION_FAILED -eq 0 ]; then
   echo ""
   echo "AI Context System v${VERSION} is now installed."
   echo ""
+
+  # Update version in config if it exists
+  if [ -f "context/.context-config.json" ]; then
+    sed -i.bak "s/\"version\": \"[^\"]*\"/\"version\": \"$VERSION\"/" context/.context-config.json
+    rm -f context/.context-config.json.bak
+    echo -e "${BLUE}📝 Updated config version to v${VERSION}${NC}"
+    echo ""
+  fi
+
   echo -e "${BLUE}Next steps:${NC}"
   echo "   1. Run /init-context to initialize your project"
   echo "   2. Review context/CONTEXT.md for accuracy"
