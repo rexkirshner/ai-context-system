@@ -393,36 +393,35 @@ echo ""
 
 ### Step 6: Update Quick Reference in STATUS.md
 
-**ACTION:** Run the update-quick-reference.sh script to auto-generate the Quick Reference section:
-
 ```bash
-echo "Step 6/8: Auto-generating Quick Reference section..."
-echo "⏱️ Estimated time remaining: ~1 minute"
+echo "Step 6/8: Updating Quick Reference section..."
+echo "⏱️ Estimated time remaining: ~3-5 minutes"
 echo ""
 
-# Run the auto-generation script
-./scripts/update-quick-reference.sh
-
+echo "The Quick Reference section provides a dashboard view at the top of STATUS.md"
 echo ""
-echo "✅ Quick Reference auto-generated"
+
+# Read current values (no command substitution needed)
+echo "Gathering current values..."
 echo ""
-```
 
-**What this does:**
-- Extracts project info from .context-config.json
-- Extracts current phase and focus from STATUS.md
-- Finds last session from SESSIONS.md
-- Generates Quick Reference section automatically
+echo "Project name from config:"
+cat "$CONTEXT_DIR/.context-config.json" | grep '"name"' | head -1
+echo ""
 
-**No manual editing required!** The script handles all 15+ fields automatically.
+echo "Current phase from STATUS.md:"
+grep -A 2 "## Current Phase" "$CONTEXT_DIR/STATUS.md" | grep "Phase:"
+echo ""
 
-**Note:** Requires `jq` to be installed. If not available:
-```bash
-# macOS
-brew install jq
+echo "Active tasks count:"
+grep -c "^- \[ \]" "$CONTEXT_DIR/STATUS.md" || echo "0"
+echo ""
 
-# Linux
-apt-get install jq
+echo "Use these values to update the Quick Reference section"
+echo "Located between ## 📊 Quick Reference and the next ---"
+echo ""
+echo "✅ Use Edit tool to update Quick Reference"
+echo ""
 ```
 
 ---
