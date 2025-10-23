@@ -47,57 +47,18 @@ Facilitate peer review, project handoffs, and collaborative development between 
 
 ## The Problem
 
-**Without externalized AI context, collaboration breaks down:**
-
-**For Session Continuity:**
-- Context is lost between AI sessions
-- You repeat the same explanations every time
-- Work-in-progress disappears when sessions end
-- Technical decisions get forgotten or contradicted
-
-**For Human Understanding:**
-- AI reasoning is invisible—you can't see WHY it made certain choices
-- Decisions lack documented rationale
-- Constraints and tradeoffs aren't visible
-- Mental models stay locked inside the AI
-
-**For Human-AI Collaboration:**
-- Programmers can't review AI's thinking process
-- No visibility into what the AI considered or rejected
-- Can't verify if AI understood project constraints
-- Hard to course-correct when AI misunderstands context
-
-**For AI-to-AI Handoffs:**
-- New AI agents start from zero—must reverse-engineer everything
-- Code reviews lack context about constraints and tradeoffs
-- Architecture reviews miss the rationale behind design choices
-- Project takeovers lose critical mental models
+AI reasoning is invisible. Context is lost between sessions. Decisions lack rationale. Humans can't review AI's thinking. New AI agents must reverse-engineer everything. Collaboration breaks down.
 
 ## The Solution
 
-**Externalize everything.** AI thoughts, decisions, mental models, and reasoning—all captured in structured, visible documentation.
+Externalize AI context into structured, visible documentation:
 
-**Two-tier workflow** - Minimal overhead for continuous work, comprehensive documentation for collaboration:
+- **`/init-context`** or **`/migrate-context`** - One-time setup
+- **`/save`** (2-3 min) - Quick updates during work
+- **`/save-full`** (10-15 min) - Comprehensive saves before breaks/handoffs
+- **`/review-context`** - Verify continuity at session start
 
-**Philosophy:**
-- **Within sessions:** TodoWrite for active productivity (zero overhead)
-- **Quick saves (daily):** `/save` updates current state (2-3 minutes)
-- **Comprehensive saves (occasional):** `/save-full` before breaks/handoffs (10-15 minutes)
-- **Everything is visible:** No hidden AI context—all reasoning externalized
-
-**Setup (run once):**
-- **`/init-context`** - Create core files (CONTEXT.md, STATUS.md, DECISIONS.md, SESSIONS.md)
-- **`/migrate-context`** - Migrate existing project with documentation
-
-**Daily Workflow:**
-- **`/save`** - Quick save (2-3 min): Updates STATUS.md with auto-generated Quick Reference
-- **`/save-full`** - Comprehensive (10-15 min): Everything /save does + SESSIONS.md entry + mental models
-- **Frequency:** Use `/save` most sessions, `/save-full` 3-5× per 20 sessions
-
-**Collaboration:**
-- **`/code-review`** - AI peer review with full context
-- **`/export-context`** - Package everything for AI-to-AI handoffs
-- **`/review-context`** - Verify continuity and completeness
+Everything AI thinks gets documented. No hidden context. Perfect session continuity. Full visibility for humans and AI agents.
 
 ---
 
@@ -248,7 +209,9 @@ your-project/
 
 ---
 
-## Core Commands (Claude Code)
+## Core Commands
+
+**Note:** These commands are universal and work with any AI coding assistant. They're organized in `.claude/commands/` following Claude Code's slash command paradigm, but the workflows themselves are generalizable. Future versions will provide native support for other AI tools (Cursor, Aider, etc.). For now, other AI assistants can reference these command files directly to follow the same workflows.
 
 ### Setup Commands (Run Once)
 
