@@ -156,9 +156,19 @@ if [ -d ".claude/commands" ] && [ -f ".claude/commands/init-context.md" ]; then
   echo -e "${YELLOW}⚠️  Existing installation detected${NC}"
   echo ""
 
-  # Try to detect version
+  # Try to detect version (priority order)
   EXISTING_VERSION="unknown"
-  if [ -f "scripts/validate-context.sh" ]; then
+
+  # 1. Check VERSION file (most reliable)
+  if [ -f "VERSION" ]; then
+    EXISTING_VERSION=$(cat VERSION | tr -d '\n' | tr -d ' ')
+
+  # 2. Check config file
+  elif [ -f "context/.context-config.json" ]; then
+    EXISTING_VERSION=$(grep '"version":' context/.context-config.json | head -1 | sed 's/.*"version":[[:space:]]*"\([^"]*\)".*/\1/' || echo "unknown")
+
+  # 3. Fallback to script grepping
+  elif [ -f "scripts/validate-context.sh" ]; then
     EXISTING_VERSION=$(grep -m 1 "v[0-9]\+\.[0-9]\+\.[0-9]\+" scripts/validate-context.sh | sed 's/.*v\([0-9.]*\).*/\1/' || echo "unknown")
   fi
 
@@ -253,7 +263,6 @@ COMMANDS=(
   "migrate-context.md"
   "save.md"
   "save-full.md"
-  "save-context.md"
   "review-context.md"
   "code-review.md"
   "validate-context.md"
