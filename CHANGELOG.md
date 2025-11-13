@@ -7,6 +7,86 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.2.3] - 2025-11-13
+
+### Fixed - Production Feedback Bug Fixes
+
+**PATCH RELEASE** - Three critical fixes based on real-world production usage feedback
+
+**Context:** Analysis of 2,824 lines of feedback from two production projects revealed installation failures and inconsistent session numbering. This release fixes three critical issues affecting installation reliability and command consistency.
+
+#### Bugs Fixed
+
+**🐛 FIX #1: Installation Manifest Drift (CRITICAL)**
+- **Issue**: Installer tried to download 4 non-existent files, causing 11% failure rate
+  - `MIGRATION_GUIDE_v2.0_to_v2.1.md`
+  - `MIGRATION_GUIDE_v2.1_to_v2.2.md`
+  - `.claude/docs/save-context-guide.md` (in DOCS array)
+  - `.claude/docs/save-context-guide.md` (in success message)
+- **Impact**: 89% installation success rate, created 404 stub files
+- **Root cause**: Hardcoded file arrays in install.sh out of sync with repository
+- **Fix**: Removed all references to non-existent files from manifest and documentation
+- **Files**: `install.sh:383, 413-426, 468`
+- **Severity**: 🔴 CRITICAL (affected 11% of installations)
+- **Commits**: d3a7403, 4623104
+
+**🐛 FIX #2: Inconsistent Download Validation**
+- **Issue**: Some downloads used robust validation while others used direct curl
+- **Impact**: Silent failures, 404 stub files not detected, inconsistent error handling
+- **Root cause**: validate_file() and download_file() functions existed but not used everywhere
+- **Fix**: Applied download_file() consistently across all 4 download locations
+  - CONFIG_FILES loop (line 356)
+  - Config template (line 363)
+  - DOCS loop (line 381)
+  - ORGANIZATION.md (line 396)
+- **Files**: `install.sh:356, 363, 381, 396`
+- **Severity**: 🟡 MEDIUM (workaround: manual cleanup of stub files)
+- **Commit**: caeaca5
+
+**🐛 FIX #3: Session Number Counting Inconsistency**
+- **Issue**: Different commands would count sessions differently, causing mismatches
+- **Impact**: Session numbering conflicts, potential duplicate session numbers
+- **Root cause**: Logic duplicated across commands, no single source of truth
+- **Fix**: Created shared session counting functions in common-functions.sh
+  - `get_next_session_number([context_dir])` - Single source of truth
+  - `get_current_session_count([context_dir])` - Helper function
+  - Updated save-full-helper.sh to use common functions
+- **Files**: `scripts/common-functions.sh:565-607`, `scripts/save-full-helper.sh:55-63`
+- **Severity**: 🟡 MEDIUM (workaround: manual session number tracking)
+- **Commit**: c9f3a06
+
+#### Files Changed (3 files)
+
+1. `install.sh` - Removed non-existent file references, applied consistent validation
+2. `scripts/common-functions.sh` - Added session counting functions
+3. `scripts/save-full-helper.sh` - Use common session counting functions
+
+#### Testing
+
+All fixes tested and verified:
+- ✅ Test #1: Manifest verification (found 1 additional reference, fixed)
+- ✅ Test #2: Validation consistency (all downloads now validated)
+- ✅ Test #3: Session numbering (single source of truth established)
+
+See `development/planning/v3.3.0/IMPLEMENTATION-LOG.md` for detailed test results.
+
+#### Upgrade Instructions
+
+From v3.2.2 or earlier:
+```bash
+/update-context-system
+```
+
+Or fresh install:
+```bash
+curl -sL https://raw.githubusercontent.com/rexkirshner/ai-context-system/main/install.sh | bash
+```
+
+**Expected results:**
+- 100% installation success rate (up from 89%)
+- All downloads validated (no more 404 stubs)
+- Consistent session numbering across all commands
+
 ## [3.2.2] - 2025-10-23
 
 ### Fixed - Critical Installer Bugs
