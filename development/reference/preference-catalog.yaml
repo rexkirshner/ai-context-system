@@ -1,0 +1,253 @@
+# Claude Context System - Preference Catalog
+# Reference documentation of available preferences
+# NOTE: This is NOT enforced by commands - it's a catalog of options
+# Actual preferences come from: CLAUDE.template.md, CODE_STYLE.template.md, .context-config.json
+# Version: 1.0.0
+
+version: "1.0.0"
+owner: "Rex"
+
+# =============================================================================
+# COMMUNICATION PREFERENCES
+# =============================================================================
+
+communication:
+  # Response style
+  style:
+    format: "high-level"              # high-level | detailed | minimal
+    verbosity: "concise"               # concise | normal | verbose
+    skip_preamble: true                # No "I'll help you..." intros
+    skip_postamble: true               # No "In summary..." outros
+    use_emojis: false                  # Only use if explicitly requested
+
+  # File references
+  references:
+    include_line_numbers: true         # Format: file.ts:123
+    include_function_names: true       # Format: file.ts:123 (functionName)
+
+  # Status communication
+  status:
+    explicit_approval_points: true     # Clearly state when waiting for approval
+    confidence_levels: true            # State uncertainty when present
+
+  # Explanations
+  explanations:
+    explain_complex_only: true         # Only explain when specifically requested
+    explain_non_trivial_bash: true     # Do explain non-trivial bash commands
+
+# =============================================================================
+# WORKFLOW PREFERENCES
+# =============================================================================
+
+workflow:
+  # Planning
+  planning:
+    plan_first: true                   # Read codebase, think, write plan to context/tasks/todo.md
+    verify_plan: true                  # Check in before starting implementation
+    use_todo_list: true                # Create checkable todo items
+
+  # Execution
+  execution:
+    work_incrementally: true           # Complete todos one by one
+    mark_complete_as_you_go: true      # Don't batch completions
+    communicate_at_each_step: true     # High-level explanation per step
+
+  # Quality principles
+  quality:
+    simplicity_above_all: true         # Every change should be as simple as possible
+    minimal_code_impact: true          # Impact as little code as possible
+    no_temporary_fixes: true           # Find root causes, never band-aids
+    no_lazy_coding: true               # Think like a senior developer
+    full_code_flow_tracing: true       # Trace ENTIRE code flow when debugging - no assumptions
+
+  # Git workflow
+  git:
+    never_push_without_approval: true  # CRITICAL: Wait for explicit "push" approval
+    test_before_commit: true           # Test everything in dev before committing
+    incremental_commits: true          # Make incremental commits with clear messages
+    wait_when_asked: true              # "let's make sure it works first" = make, verify, WAIT
+
+# =============================================================================
+# CODE REVIEW PREFERENCES
+# =============================================================================
+
+code_review:
+  approach: "read-only"                # read-only | with-fixes
+  thoroughness: "comprehensive"        # basic | standard | comprehensive
+  make_no_changes: true                # Analysis only, fixes happen later
+  time_constraint_warning: true        # Warn if not enough time
+  separate_fix_session: true           # Fixes in separate session after review
+
+  focus_areas:
+    - simplicity
+    - root-causes
+    - security
+    - performance
+    - testing
+    - accessibility
+    - seo
+    - architecture
+
+# =============================================================================
+# SESSION MANAGEMENT PREFERENCES
+# =============================================================================
+
+session_management:
+  context_saving:
+    save_frequently: true              # Better to save too often than lose context
+    auto_save_triggers:
+      - "after_significant_work"
+      - "before_breaks"                # Even 5-minute breaks
+      - "session_end"                  # Always!
+      - "after_decisions"
+      - "when_switching_tasks"
+      - "before_code_review"
+
+  work_in_progress:
+    capture_wip_state: true            # Exact task, files, line numbers, approach
+    preserve_mental_model: true        # Document thinking/approach
+
+  session_logging:
+    detailed_logs: true                # Comprehensive SESSIONS.md entries
+    track_file_changes: true           # With line numbers when significant
+    track_decisions: true              # Link to DECISIONS.md
+    track_commands: true               # Key commands executed
+
+# =============================================================================
+# DOCUMENTATION PREFERENCES
+# =============================================================================
+
+documentation:
+  location: "context/"
+  auto_create: true
+  update_frequency: "every-session"
+  include_timestamps: true
+  git_tracking: true
+  prune_interval: "monthly"
+
+  required_docs:
+    - "CLAUDE.md"
+    - "PRD.md"
+    - "ARCHITECTURE.md"
+    - "DECISIONS.md"
+    - "CODE_STYLE.md"
+    - "KNOWN_ISSUES.md"
+    - "SESSIONS.md"
+    - "tasks/next-steps.md"
+    - "tasks/todo.md"
+
+  optional_docs:
+    - "TESTING.md"
+    - "DEPLOYMENT.md"
+    - "TROUBLESHOOTING.md"
+
+# =============================================================================
+# ARTIFACT STORAGE
+# =============================================================================
+
+artifacts:
+  # Where to store generated reports and outputs (NOT context docs)
+  location: "artifacts/"
+
+  # Subdirectories for different artifact types
+  subdirectories:
+    lighthouse: "lighthouse/"           # Lighthouse performance reports
+    code_reviews: "code-reviews/"       # Code review reports
+    performance: "performance/"         # Performance audit outputs
+    security: "security/"               # Security scan results
+    bundle_analysis: "bundle-analysis/" # Bundle size reports
+    coverage: "coverage/"               # Test coverage reports
+
+  # Naming conventions
+  naming:
+    include_timestamp: true             # Add timestamps to artifact filenames
+    include_session_number: true        # Add session number when applicable
+    format: "YYYY-MM-DD"               # Date format for timestamps
+
+  # Git tracking
+  git_ignore: false                     # Don't ignore artifacts by default (useful for tracking)
+
+  # Organization rules
+  organization:
+    keep_root_clean: true               # Never put artifacts in project root
+    auto_create_dirs: true              # Automatically create subdirectories as needed
+    archive_old: false                  # Don't auto-archive (manual cleanup preferred)
+
+# =============================================================================
+# CORE PRINCIPLES (Non-negotiable)
+# =============================================================================
+
+core_principles:
+  # The golden rule
+  simplicity: "Make every task and code change as simple as possible. Avoid massive or complex changes. Every change should impact as little code as possible."
+
+  # Debugging approach
+  debugging: "When debugging, trace through the ENTIRE code flow step by step. No assumptions. No shortcuts."
+
+  # Code quality
+  quality: "DO NOT BE LAZY. NEVER BE LAZY. Find root causes. NO TEMPORARY FIXES. Think like a senior developer."
+
+  # Impact minimization
+  impact: "Make all fixes and code changes as simple as humanly possible. They should only impact necessary code relevant to the task and nothing else. Goal: not introduce any bugs."
+
+# =============================================================================
+# APPROVAL LANGUAGE DETECTION
+# =============================================================================
+
+approval_signals:
+  proceed:
+    - "ok push"
+    - "push"
+    - "looks good"
+    - "ok great, push to GitHub"
+    - "go ahead"
+    - "ok"
+
+  wait:
+    - "let's make sure it works first"
+    - "hold on"
+    - "not yet"
+    - "wait"
+    - "don't push yet"
+
+# =============================================================================
+# RESPONSE EXAMPLES (What Rex Wants)
+# =============================================================================
+
+response_examples:
+  good:
+    - "Found issue in lib/auth.ts:145 - missing null check. Added validation. Testing... Fix confirmed. Ready to commit."
+    - "Dashboard.tsx:67 - expensive array sort on every render. Solution: memoize with useMemo or move to server-side."
+
+  bad:
+    - "I'll help you fix the authentication bug! Let me first analyze the codebase to understand the issue..."
+    - "Let me explain what I'm going to do. First, I'll look through the files, then I'll..."
+
+# =============================================================================
+# ANTI-PATTERNS TO AVOID
+# =============================================================================
+
+anti_patterns:
+  communication:
+    - "Verbose explanations unless requested"
+    - "Preamble like 'I'll help you...'"
+    - "Postamble like 'In summary...'"
+    - "Making assumptions about user intent"
+    - "Using emojis unless explicitly requested"
+
+  technical:
+    - "Pushing to GitHub without explicit approval"
+    - "Complex changes when simple ones work"
+    - "Temporary fixes instead of root cause solutions"
+    - "Lazy coding or shortcuts"
+    - "Making assumptions during debugging"
+
+# =============================================================================
+# METADATA
+# =============================================================================
+
+metadata:
+  created: "2025-10-04"
+  last_updated: "2025-10-04"
+  schema_version: "1.0.0"
+  notes: "Consolidated from CLAUDE.template.md, communication-guide.md, workflow-rules.md, and claude code rules.txt"
