@@ -53,7 +53,49 @@
 
 ---
 
-## Fix #2: Add File Size Validation
+## Fix #2: Use Validation Function Consistently
+
+### Investigation:
+
+**Good news**: The script already has a robust `validate_file()` and `download_file()` function (lines 54-108) that:
+- Checks file size (minimum 50 bytes)
+- Detects 404 error pages
+- Detects HTML error pages
+- Automatically removes invalid files
+
+**Problem**: Not all downloads use this validation. Direct curl calls found at:
+- Line 356: config files download
+- Line 366: .context-config.template.json download
+- Line 387: .claude/docs files download
+- Line 405: ORGANIZATION.md download
+
+### What needs to be fixed:
+Replace direct `curl` calls with `download_file()` function calls to ensure consistent validation.
+
+### Expected outcome:
+- All downloads will be validated for size and content
+- 404 stub files will be detected and removed automatically
+- No silent failures
+
+### Status: ✅ COMPLETED
+
+### Changes made:
+1. **Line 356**: CONFIG_FILES loop now uses `download_file()` with validation
+2. **Line 363**: Config template download now uses `download_file()` with validation
+3. **Line 381**: DOCS loop now uses `download_file()` with validation
+4. **Line 396**: ORGANIZATION.md download now uses `download_file()` with validation
+
+### Result:
+- All downloads now validated for size (minimum 100 bytes for content files)
+- 404 stub files automatically detected and removed
+- HTML error pages automatically detected and removed
+- No more silent failures
+
+### Commit: Ready to commit
+
+---
+
+## Fix #3: Fix Session Number Counting
 
 ### Investigation:
 

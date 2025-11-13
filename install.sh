@@ -353,20 +353,14 @@ CONFIG_FILES=(
 
 for cfg in "${CONFIG_FILES[@]}"; do
   echo -n "   Downloading $cfg... "
-  if curl -sL "${RAW_URL}/config/${cfg}" -o "config/${cfg}" 2>/dev/null; then
-    echo -e "${GREEN}✓${NC}"
-  else
-    echo -e "${RED}✗${NC}"
+  if ! download_file "${RAW_URL}/config/${cfg}" "config/${cfg}" 100; then
     ((FAILED_DOWNLOADS++))
   fi
 done
 
 # Download config template
 echo -n "   Downloading .context-config.template.json... "
-if curl -sL "${RAW_URL}/config/.context-config.template.json" -o "config/.context-config.template.json" 2>/dev/null; then
-  echo -e "${GREEN}✓${NC}"
-else
-  echo -e "${RED}✗${NC}"
+if ! download_file "${RAW_URL}/config/.context-config.template.json" "config/.context-config.template.json" 100; then
   ((FAILED_DOWNLOADS++))
 fi
 
@@ -384,10 +378,7 @@ DOCS=(
 
 for doc in "${DOCS[@]}"; do
   echo -n "   Downloading $doc... "
-  if curl -sL "${RAW_URL}/.claude/docs/${doc}" -o ".claude/docs/${doc}" 2>/dev/null; then
-    echo -e "${GREEN}✓${NC}"
-  else
-    echo -e "${RED}✗${NC}"
+  if ! download_file "${RAW_URL}/.claude/docs/${doc}" ".claude/docs/${doc}" 100; then
     ((FAILED_DOWNLOADS++))
   fi
 done
@@ -402,10 +393,7 @@ echo -e "${BLUE}⬇️  Downloading reference files...${NC}"
 
 # Download ORGANIZATION.md to reference/ (users can copy to root if desired)
 echo -n "   Downloading ORGANIZATION.md... "
-if curl -sL "${RAW_URL}/ORGANIZATION.md" -o "reference/ORGANIZATION.md" 2>/dev/null; then
-  echo -e "${GREEN}✓${NC}"
-else
-  echo -e "${RED}✗${NC}"
+if ! download_file "${RAW_URL}/ORGANIZATION.md" "reference/ORGANIZATION.md" 100; then
   ((FAILED_DOWNLOADS++))
 fi
 
