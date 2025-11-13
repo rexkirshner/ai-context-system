@@ -54,20 +54,13 @@ echo ""
 
 echo -e "${BLUE}🔢 Detecting session number...${NC}"
 
-# Count only actual session entries (not templates or examples)
-# Strategy: Look for "## Session N" where N is a number, but exclude sections after "## Example"
-LAST_SESSION=$(sed -n '1,/^## Example/p' "$CONTEXT_DIR/SESSIONS.md" | \
-               grep "^## Session [0-9]" | \
-               grep -v "Template" | \
-               wc -l | \
-               tr -d ' ' || echo "0")
+# Use common function for consistent session numbering across all commands
+source "$(dirname "$0")/common-functions.sh" 2>/dev/null || {
+  echo -e "${RED}Error: Unable to load common-functions.sh${NC}"
+  exit 1
+}
 
-# Handle edge case where file is empty or no sessions
-if [ -z "$LAST_SESSION" ] || [ "$LAST_SESSION" = "" ]; then
-  LAST_SESSION=0
-fi
-
-NEXT_SESSION=$((LAST_SESSION + 1))
+NEXT_SESSION=$(get_next_session_number "$CONTEXT_DIR")
 
 echo "   Next session: $NEXT_SESSION"
 echo ""

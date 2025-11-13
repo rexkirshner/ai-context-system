@@ -563,6 +563,50 @@ git_current_branch() {
 }
 
 # =============================================================================
+# Session Management Functions
+# =============================================================================
+
+# Get the next session number from SESSIONS.md
+# This is the single source of truth for session numbering across all commands.
+# Usage: get_next_session_number [context_dir]
+# Returns: The next session number to use (e.g., if 13 sessions exist, returns 14)
+get_next_session_number() {
+  local context_dir="${1:-context}"
+  local sessions_file="$context_dir/SESSIONS.md"
+
+  # Check if SESSIONS.md exists
+  if [ ! -f "$sessions_file" ]; then
+    echo "1"
+    return 0
+  fi
+
+  # Count only actual session entries (not templates or examples)
+  # Strategy: Look for "## Session N" where N is a number, but exclude sections after "## Example"
+  local count=$(sed -n '1,/^## Example/p' "$sessions_file" | \
+                grep "^## Session [0-9]" | \
+                grep -v "Template" | \
+                wc -l | \
+                tr -d ' ' || echo "0")
+
+  # Handle edge case where count is empty
+  if [ -z "$count" ] || [ "$count" = "" ]; then
+    count=0
+  fi
+
+  # Return next session number
+  echo $((count + 1))
+}
+
+# Get the current session count from SESSIONS.md
+# Usage: get_current_session_count [context_dir]
+# Returns: The number of existing sessions (e.g., if 13 sessions exist, returns 13)
+get_current_session_count() {
+  local context_dir="${1:-context}"
+  local next=$(get_next_session_number "$context_dir")
+  echo $((next - 1))
+}
+
+# =============================================================================
 # Initialization
 # =============================================================================
 

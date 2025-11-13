@@ -99,7 +99,51 @@ Replace direct `curl` calls with `download_file()` function calls to ensure cons
 
 ### Investigation:
 
-*To be completed...*
+**Problem**: Different commands counted sessions differently:
+- /save-full: Used complex sed/grep in save-full-helper.sh
+- /code-review: Would use different logic if implemented
+- No single source of truth for session numbering
+
+**Current logic in save-full-helper.sh** (lines 59-63):
+```bash
+LAST_SESSION=$(sed -n '1,/^## Example/p' "$CONTEXT_DIR/SESSIONS.md" | \
+               grep "^## Session [0-9]" | \
+               grep -v "Template" | \
+               wc -l | \
+               tr -d ' ' || echo "0")
+```
+
+This logic is correct but duplicated and inconsistent across commands.
+
+### Solution:
+
+**Created shared functions in common-functions.sh:**
+1. `get_next_session_number([context_dir])` - Returns next session number to use
+2. `get_current_session_count([context_dir])` - Returns count of existing sessions
+
+**Updated save-full-helper.sh** to use the shared function.
+
+### Status: ✅ COMPLETED
+
+### Changes made:
+1. **common-functions.sh (lines 565-607)**: Added session counting functions
+   - `get_next_session_number()` - Single source of truth
+   - `get_current_session_count()` - Helper function
+   - Matches save-full-helper.sh logic exactly
+   - Excludes template sections and "## Example"
+
+2. **save-full-helper.sh (lines 55-63)**: Now uses common function
+   - Sources common-functions.sh
+   - Calls `get_next_session_number()`
+   - Removed duplicate logic
+
+### Result:
+- Single source of truth for session numbering
+- All commands will use consistent numbering
+- Easy to update logic in one place if needed
+- 100% compatibility with existing SESSIONS.md files
+
+### Commit: Ready to commit
 
 ---
 
