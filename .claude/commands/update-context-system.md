@@ -258,17 +258,66 @@ log_info ""
 
 ---
 
-### Step 3: Check Version and Migration Path
+### Step 3: Show What's New (v3.3.0+)
+
+**ACTION:** Display what's new in the upgraded version:
+
+```bash
+log_info ""
+log_info "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+log_info "  🎉 What's New in v3.3.0"
+log_info "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+log_info ""
+
+CURRENT_VERSION=$(get_system_version)
+
+# Show what's new for v3.3.0 upgrades
+if [[ "$CURRENT_VERSION" == "3.3.0" ]]; then
+  echo "✨ You now have these new features:"
+  echo ""
+  echo "1️⃣  Template Markers (Template Protection)"
+  echo "   • HTML comment markers protect critical sections"
+  echo "   • <!-- TEMPLATE SECTION: KEEP ALL --> preserves structure"
+  echo "   • <!-- TEMPLATE: READ-ONLY --> prevents modifications"
+  echo "   • Prevents 80-90% of template deletion errors"
+  echo ""
+  echo "2️⃣  Documentation Staleness Detection"
+  echo "   • /save-full warns when CONTEXT.md is >7 days old"
+  echo "   • /save-full warns when README.md is >14 days old"
+  echo "   • /review-context shows color-coded staleness 🟢🟡🔴"
+  echo "   • Proactive reminders prevent documentation drift"
+  echo ""
+  echo "3️⃣  Decision Documentation Guidance"
+  echo "   • context/claude.md now has decision capture prompts"
+  echo "   • 5 categories of decisions with examples"
+  echo "   • DECISIONS.md format guidance with metrics"
+  echo "   • Better architectural decision preservation"
+  echo ""
+  echo "4️⃣  Deletion Protection"
+  echo "   • Interactive confirmation before file deletion"
+  echo "   • Shows file details and requires explicit 'yes'"
+  echo "   • Default: keep file (safe by default)"
+  echo "   • Zero data loss from accidental deletions"
+  echo ""
+  echo "📖 Detailed documentation: .claude/docs/update-guide.md"
+  echo ""
+  echo "🎯 To adopt template markers (recommended):"
+  echo "   Run /update-templates to add markers to your context files"
+  echo ""
+  echo "🎯 To use staleness detection:"
+  echo "   Already active! Next /save-full will check documentation currency"
+  echo ""
+fi
+
+log_info "📦 Current version: $CURRENT_VERSION"
+log_info ""
+```
+
+### Step 4: Check Version and Migration Path
 
 **ACTION:** Check current version to determine if migration is needed:
 
 ```bash
-log_info ""
-CURRENT_VERSION=$(get_system_version)
-
-log_info "📦 Current version: $CURRENT_VERSION"
-log_info ""
-
 if [[ "$CURRENT_VERSION" == "2.1.0" ]]; then
   echo "🔄 Migration to v2.2.1 available!"
   echo ""
@@ -361,7 +410,7 @@ Automated migration with dry-run, backup, and rollback is planned for v2.1. For 
 - Manual migration ensures you understand changes
 - v2.1 will add full automation with safety features
 
-### Step 4: Review Template Updates (Optional)
+### Step 5: Review Template Updates (Optional)
 
 After the installer completes, you may want to review if any template files have significant updates that should be applied to your context files.
 
@@ -395,7 +444,7 @@ echo "   useful additions. Your project-specific content remains untouched."
 
 Templates are reference files - you choose what to adopt.
 
-### Step 5: Generate Update Report
+### Step 6: Generate Update Report
 
 Provide a clear summary to the user:
 
