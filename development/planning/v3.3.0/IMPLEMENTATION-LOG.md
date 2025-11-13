@@ -1210,4 +1210,258 @@ Following the simplified implementation plan's core principles:
 - Reconsider /sync-commits if demand increases
 - Consider Priority 2 template markers if users report issues
 
-### Status: ✅ v3.3.0 FEATURE-COMPLETE → READY FOR RELEASE PREP
+### Status: ✅ v3.3.0 FEATURE-COMPLETE → CLEANUP NEEDED
+
+---
+
+## Pre-Release Cleanup: Deprecated Features
+
+**Discovery**: User identified that deprecated features should be removed before v3.3.0 release.
+
+### Investigation: What Should Be Removed?
+
+**From DEPRECATIONS.md:**
+
+1. **Complex Staleness Configuration**
+   - Deprecated: v2.2.0
+   - Planned removal: v2.3.0
+   - **Status**: We're at v3.3.0 - overdue for removal!
+   - Location: `config/.context-config.template.json` (lines 180-260)
+   - Reason: Nobody customizes these values
+
+### Investigation Complete
+
+**Finding**: The DEPRECATIONS.md file is **INCORRECT**. The "complex staleness configuration" is NOT deprecated and is actively used.
+
+**Evidence:**
+
+1. **Configuration exists** at `config/.context-config.template.json` lines 139-165:
+   ```json
+   "validation": {
+     "stalenessThresholds": {
+       "STATUS.md": { "green": 7, "yellow": 14, "red": 30 },
+       "SESSIONS.md": { "green": 7, "yellow": 14, "red": 21 },
+       "CONTEXT.md": { "green": 90, "yellow": 180, "red": 365 },
+       "DECISIONS.md": { "appendOnly": true, "noThreshold": true },
+       "CODE_MAP.md": { "green": 30, "yellow": 60, "red": 90 }
+     }
+   }
+   ```
+
+2. **Actively used** by `.claude/commands/validate-context.md` (lines 239-253):
+   ```bash
+   STATUS_GREEN=$(jq -r '.validation.stalenessThresholds."STATUS.md".green' ...)
+   STATUS_YELLOW=$(jq -r '.validation.stalenessThresholds."STATUS.md".yellow' ...)
+   # ... and so on for all files
+   ```
+
+3. **NOT in schema**: `config/context-config-schema.json` does not validate this section
+
+**Conclusion:**
+- The `stalenessThresholds` configuration is a working, useful feature
+- It's NOT "parsed but ignored" as DEPRECATIONS.md claims
+- The DEPRECATIONS.md entry is outdated/incorrect
+- **No removal needed** - this is a good feature that should be kept
+
+**Actions Taken:**
+1. ✅ Updated DEPRECATIONS.md:
+   - Removed incorrect "Complex Staleness Configuration" entry from Active Deprecations
+   - Added new "Not Deprecated (Corrections)" section
+   - Documented investigation findings and evidence
+   - Updated "Last Updated" timestamp to v3.3.0
+2. ✅ Updated IMPLEMENTATION-LOG.md with investigation results
+
+**Result:**
+- No deprecated features need removal
+- DEPRECATIONS.md is now accurate
+- Feature preserved correctly
+
+**Future Consideration (out of scope for v3.3.0):**
+- Add schema validation for `validation.stalenessThresholds` section
+- Currently missing from `config/context-config-schema.json`
+
+### Cleanup Complete
+
+**Status:** ✅ No deprecated features to remove - DEPRECATIONS.md was incorrect
+
+---
+
+## Day 3: Documentation Currency Improvements
+
+**Start Date**: 2025-11-13
+**Goal**: Address documentation staleness based on Project 1 feedback
+**Estimated Effort**: 6 hours
+**Approach**: Methodical, test-driven, frequent commits
+
+### Background: Project 1 Feedback Analysis
+
+**Problem Identified**: Context documentation became stale during active development
+- CONTEXT.md showed "Phase 0" → actually Phase 4 complete
+- README.md had outdated tech stack versions (Next.js 14 vs 16.0.1)
+- DECISIONS.md only had 2 entries despite major architectural decisions
+- 29% of modules missing READMEs (2 out of 7)
+- Files 4-6 days stale with no workflow to update them
+
+**Root Cause**: Only STATUS.md and SESSIONS.md are in update workflow
+- `/save` and `/save-full` don't touch CONTEXT.md, README.md, DECISIONS.md
+- No automated staleness detection
+- No prompts to update documentation
+- Manual updates get skipped under time pressure
+
+**User Request**: "Please evaluate and let's decide how to incorporate into our v3.3 upgrade"
+
+### Proposed Solutions
+
+**Selected for v3.3.0** (3 additions, ~6 hours):
+
+1. **Enhanced `/save-full`** (2-3 hours)
+   - Add CONTEXT.md currency check (Step 9)
+   - Add README.md staleness warning (Step 10)
+   - Non-blocking warnings, preserve workflow
+   - Estimated: 2-3 hours implementation + 1 hour testing
+
+2. **Enhanced `/review-context`** (2-3 hours)
+   - Add staleness detection for all context/*.md files
+   - Check for missing module READMEs
+   - Check DECISIONS.md vs commit count
+   - Visual indicators: 🟢 current, 🟡 getting stale, 🔴 stale
+   - Estimated: 2-3 hours implementation + 1 hour testing
+
+3. **Decision Capture Guidance** (30 min)
+   - Update templates/claude.md.template
+   - Add section on when/how to document decisions
+   - Provide DECISIONS.md format examples
+   - List decision types to capture
+   - Estimated: 30 min update + 15 min testing
+
+**Deferred to v3.4.0**:
+- `/update-context` command (overlaps with enhanced `/save-full`)
+- Metadata tracking (.context-metadata.json)
+- Module README enforcement (project-specific)
+
+### Implementation Plan
+
+#### Phase 1: Investigation (30 min)
+- [ ] Read current `/save-full` implementation
+- [ ] Read current `/review-context` implementation
+- [ ] Read current claude.md.template
+- [ ] Identify integration points
+- [ ] Design helper functions needed
+
+#### Phase 2: Addition #1 - Enhanced `/save-full` (3 hours)
+- [ ] Create `days_since_date()` helper function
+- [ ] Add Step 9: CONTEXT.md currency check
+  - Extract "Last Updated" date
+  - Calculate days old
+  - Warn if >7 days
+  - Show current phase for verification
+- [ ] Add Step 10: README.md staleness check
+  - Get file modification date
+  - Calculate days old
+  - Warn if >14 days
+  - Suggest what to update
+- [ ] Test manually with various scenarios
+- [ ] Update step count (9/11, 10/11, 11/11)
+- [ ] Commit: "feat: Add staleness checks to /save-full"
+
+#### Phase 3: Addition #2 - Enhanced `/review-context` (3 hours)
+- [ ] Add "Documentation Staleness Analysis" section
+  - Loop through context/*.md files
+  - Calculate days since modification
+  - Color-coded output (🟢🟡🔴)
+  - Configurable thresholds (7, 14 days)
+- [ ] Add "Module Documentation Check" section
+  - Scan src/modules/*/README.md
+  - List missing READMEs
+  - Count coverage percentage
+- [ ] Add "Decision Documentation" section
+  - Count decisions in DECISIONS.md
+  - Count total commits
+  - Warn if ratio seems low
+- [ ] Test manually with various project states
+- [ ] Commit: "feat: Add staleness detection to /review-context"
+
+#### Phase 4: Addition #3 - Decision Guidance (30 min)
+- [ ] Read current claude.md.template structure
+- [ ] Add "Decision Documentation" section
+  - When to document decisions
+  - Format examples
+  - Decision types to capture
+  - When NOT to document
+- [ ] Update template markers (READ-ONLY)
+- [ ] Commit: "docs: Add decision capture guidance to claude.md"
+
+#### Phase 5: Testing (2 hours)
+- [ ] Create test-documentation-currency.sh
+  - Test staleness calculation functions
+  - Test CONTEXT.md date extraction
+  - Test README.md modification date
+  - Test color-coded output
+  - Test missing README detection
+  - Test decision count logic
+- [ ] Run all existing tests (48 tests)
+- [ ] Run new tests (~12 tests)
+- [ ] Verify 60/60 tests passing (100%)
+- [ ] Commit: "test: Add documentation currency test suite"
+
+#### Phase 6: Integration Testing (1 hour)
+- [ ] Test enhanced `/save-full` end-to-end
+- [ ] Test enhanced `/review-context` end-to-end
+- [ ] Verify backward compatibility
+- [ ] Test with various project states
+- [ ] Commit: "test: Integration tests for Day 3 features"
+
+#### Phase 7: Documentation (1 hour)
+- [ ] Update IMPLEMENTATION-LOG.md with results
+- [ ] Update CHANGELOG.md draft (still uncommitted)
+- [ ] Document new features in README.md
+- [ ] Add migration notes
+- [ ] Commit: "docs: Document Day 3 features"
+
+### Success Criteria
+
+**Functionality**:
+- ✅ `/save-full` warns about stale CONTEXT.md (>7 days)
+- ✅ `/save-full` warns about stale README.md (>14 days)
+- ✅ `/review-context` shows staleness for all context files
+- ✅ `/review-context` detects missing module READMEs
+- ✅ `/review-context` shows decision documentation ratio
+- ✅ claude.md.template has decision capture guidance
+
+**Quality**:
+- ✅ 60/60 tests passing (100% pass rate)
+- ✅ Backward compatible (no breaking changes)
+- ✅ Non-blocking warnings (doesn't interrupt workflow)
+- ✅ Clear, actionable messages
+- ✅ Configurable thresholds (uses existing config)
+
+**Documentation**:
+- ✅ Implementation log updated
+- ✅ Test results documented
+- ✅ User-facing documentation updated
+- ✅ Migration notes provided
+
+### Risk Assessment
+
+**Low Risk**:
+- Additive changes only (no removals)
+- Non-blocking warnings (doesn't fail commands)
+- Enhances existing commands (familiar to users)
+- Short implementation time (contained scope)
+
+**Potential Issues**:
+1. Date parsing might fail on some systems
+   - Mitigation: Graceful fallback, don't break command
+2. Module path assumptions (src/modules/)
+   - Mitigation: Make path configurable or detect
+3. Warning fatigue (too many warnings)
+   - Mitigation: Reasonable thresholds (7, 14 days)
+
+---
+
+## Day 3 Implementation Begins
+
+**Status**: 🚧 IN PROGRESS
+**Current Phase**: Investigation
+
+*Starting implementation...*

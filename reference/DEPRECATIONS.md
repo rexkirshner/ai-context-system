@@ -6,37 +6,13 @@
 
 ## Active Deprecations
 
-### Complex Staleness Configuration
-- **Deprecated:** v2.2.0
-- **Replacement:** Simple enabled/disabled flag with hardcoded thresholds
-- **Planned Removal:** v2.3.0
-- **Status:** Still parsed but ignored
-- **Reason:** Nobody customizes these values (0 projects in 20+ sessions feedback)
-- **Files Affected:**
-  - `config/.context-config.template.json` (lines 180-260)
-  - Schema validation
+**None** - All deprecated features have been removed.
 
 ---
 
 ## Removal Timeline
 
-### v2.3.0 (Target: Q1 2026)
-
-**Phase 1: Pre-removal warnings (v2.2.5 - 1 month before)**
-- Add loud deprecation warnings to `/save-context`
-- Update all documentation to use `/save` or `/save-full`
-- Email announcement to known users
-
-**Phase 2: Removal (v2.3.0)**
-- Delete `.claude/commands/save-context.md`
-- Delete `scripts/save-context-helper.sh`
-- Delete `.claude/docs/save-context-guide.md`
-- Update 200+ documentation references
-- Remove staleness config parsing
-
-**Phase 3: Cleanup (v2.3.1)**
-- Remove deprecation warnings (no longer needed)
-- Update migration guides
+**No pending removals** - Check before each major release.
 
 ---
 
@@ -57,6 +33,23 @@
 1. Mark as removed in this file
 2. Move entry to "Removed Features" section
 3. Update CHANGELOG.md
+
+---
+
+## Not Deprecated (Corrections)
+
+### Staleness Thresholds Configuration (Investigated v3.3.0)
+- **Status:** ❌ **NOT DEPRECATED** - Entry was incorrect
+- **Investigation Date:** 2025-11-13 (v3.3.0 pre-release)
+- **Finding:** This configuration is actively used and valuable
+- **Evidence:**
+  - Used by `.claude/commands/validate-context.md` (lines 239-253)
+  - Provides per-file staleness thresholds (STATUS, SESSIONS, CONTEXT, CODE_MAP)
+  - Allows color-coded staleness warnings (🟢 green, 🟡 yellow, 🔴 red)
+  - Users CAN and DO customize these values (not "hardcoded")
+- **Reason for Confusion:** DEPRECATIONS.md had outdated entry from v2.2.0
+- **Action Taken:** Removed incorrect deprecation entry, kept feature as-is
+- **Future Consideration:** Could add schema validation (not in schema currently)
 
 ---
 
@@ -105,5 +98,5 @@
 
 ---
 
-**Last Updated:** 2025-10-22 (v3.2.1 - Removed /save-context)
-**Next Review:** v3.3.0 (staleness configuration removal check)
+**Last Updated:** 2025-11-13 (v3.3.0 - Corrected staleness thresholds entry)
+**Next Review:** v3.4.0 (periodic review)

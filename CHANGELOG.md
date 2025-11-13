@@ -7,6 +7,140 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.3.0] - 2025-11-13
+
+### Added - Template Protection & Safety Features
+
+**MINOR RELEASE** - Major usability improvements based on 100+ user sessions feedback
+
+**Context:** Analysis of feedback from 100+ sessions across multiple projects revealed two critical issues: (1) Users and AI agents were accidentally deleting important template content thinking it was "just template text", and (2) Users had no protection against accidental deletion of customized documentation. This release adds safeguards to prevent both issues.
+
+#### Features Added
+
+**✨ FEATURE #1: Template Markers (Priority 1 Templates)**
+- **Problem**: Users and AI agents delete Core Principles, structural sections thinking they're template placeholders
+- **Impact**: Lost 65+ lines of coding standards, broke documentation structure
+- **Solution**: Added 5-marker system using HTML comments
+  - `<!-- TEMPLATE SECTION: KEEP ALL -->` - Protects standard content from deletion
+  - `<!-- TEMPLATE SECTION: CUSTOMIZE -->` - Marks customization zones clearly
+  - `<!-- TEMPLATE: READ-ONLY -->` - Entire file should not be modified
+  - `[FILL: description]` - Clear placeholders for user values
+  - `[FILL: e.g., example]` - Example text with guidance
+- **Templates Updated**:
+  - `CODE_STYLE.template.md` - Protected Core Principles (65+ lines), marked 4 customization zones
+  - `claude.md.template` - Marked entire file as READ-ONLY (instructional, not for editing)
+  - `CONTEXT.template.md` - Protected 3 critical structural sections
+- **Files**: `templates/CODE_STYLE.template.md`, `templates/claude.md.template`, `templates/CONTEXT.template.md`
+- **Testing**: 18/18 unit tests passing (marker completeness, placeholder consistency, content protection)
+- **Commits**: Multiple commits during Day 2 implementation
+
+**✨ FEATURE #2: Deletion Protection**
+- **Problem**: No confirmation before deleting user's customized documentation during updates
+- **Impact**: Data loss risk when running `/update-context-system` or `/update-templates`
+- **Solution**: Created `confirm_deletion()` function for interactive confirmation
+  - Shows which file will be deleted
+  - Displays file size and modification date
+  - Requires explicit "yes" confirmation (default: keep file)
+  - Skips confirmation if file doesn't exist
+- **Integration**: Applied to `/update-context-system` command for safety
+- **Files**: `scripts/common-functions.sh:609-653`, `.claude/commands/update-context-system.md`
+- **Testing**: 8/8 unit tests passing (function exists, correct exit codes, interactive prompts)
+- **Commits**: Multiple commits during Day 1 implementation
+
+**📁 FUTURE UPGRADES DOCUMENTATION**
+- **Problem**: Need systematic way to track deferred features and improvements
+- **Solution**: Created `development/planning/future-upgrades/` folder structure
+  - `README.md` - Process for documenting deferred features with status legend
+  - `sync-commits.md` - Documented /sync-commits deferral with full rationale
+- **Purpose**: Track what users requested vs what's delivered, avoid repeating analysis work
+- **Status Legend**: 📋 Planned, 🤔 Proposed, ⏸️ Deferred, ❌ Rejected
+- **Files**: `development/planning/future-upgrades/README.md`, `development/planning/future-upgrades/sync-commits.md`
+
+### Fixed
+
+**🐛 FIX: DEPRECATIONS.md Incorrect Entry**
+- **Issue**: DEPRECATIONS.md claimed "Complex Staleness Configuration" was deprecated and should be removed
+- **Investigation**: Feature is actively used by `/validate-context` (lines 239-253)
+- **Finding**: Configuration provides valuable per-file staleness thresholds, NOT deprecated
+- **Fix**: Removed incorrect entry, added "Not Deprecated (Corrections)" section
+- **Files**: `reference/DEPRECATIONS.md`
+- **Impact**: Prevented accidental removal of valuable feature
+
+### Changed
+
+**📝 DEFERRED: Multi-Developer Features (/sync-commits)**
+- **Reason**: Only 1 multi-developer team provided feedback (2% sample)
+- **Decision**: Wait for 5-10 teams before implementing
+- **Philosophy**: "Do less, better" - focus on proven needs
+- **Documentation**: Fully documented in `development/planning/future-upgrades/sync-commits.md`
+- **Reconsider**: v3.3.1 or v3.4.0 when more teams provide feedback
+
+#### Files Changed (9 files)
+
+1. `templates/CODE_STYLE.template.md` - Added KEEP ALL and CUSTOMIZE markers
+2. `templates/claude.md.template` - Marked as READ-ONLY
+3. `templates/CONTEXT.template.md` - Protected 3 structural sections
+4. `scripts/common-functions.sh` - Added confirm_deletion() function
+5. `.claude/commands/update-context-system.md` - Integrated deletion protection
+6. `development/planning/future-upgrades/README.md` - Created future upgrades process
+7. `development/planning/future-upgrades/sync-commits.md` - Documented /sync-commits deferral
+8. `reference/DEPRECATIONS.md` - Corrected staleness thresholds entry
+9. `VERSION` - Updated to 3.3.0
+
+#### Testing
+
+**Comprehensive test coverage:**
+- ✅ Unit Tests: 18/18 passing (template markers)
+- ✅ Unit Tests: 8/8 passing (deletion protection)
+- ✅ Integration Tests: 22/22 passing (Days 1 & 2 together)
+- ✅ **Total: 48/48 tests passing (100% pass rate)**
+
+Test suites:
+- `development/planning/v3.3.0/test-template-markers.sh`
+- `development/planning/v3.3.0/test-deletion-protection.sh`
+- `development/planning/v3.3.0/test-integration.sh`
+
+See `development/planning/v3.3.0/IMPLEMENTATION-LOG.md` for detailed test results and implementation phases.
+
+#### Upgrade Instructions
+
+From v3.2.3 or earlier:
+```bash
+/update-context-system
+```
+
+Or fresh install:
+```bash
+curl -sL https://raw.githubusercontent.com/rexkirshner/ai-context-system/main/install.sh | bash
+```
+
+**Expected results:**
+- Template markers visible in all Priority 1 templates
+- Deletion protection active for `/update-context-system`
+- No breaking changes (backward compatible)
+
+#### Migration Notes
+
+**Automatic:**
+- Template markers are additive (don't break existing files)
+- Deletion protection only activates during updates
+- No action required from users
+
+**Optional:**
+- Review template markers in your existing documentation
+- Customize marked sections as needed
+- Keep KEEP ALL sections unchanged
+
+#### Release Philosophy
+
+This release follows the **"Do less, better"** principle:
+- Focus on 2 high-impact features (deletion protection + template markers)
+- Defer experimental features until validated by more users
+- Achieve 100% test pass rate before release
+- Document deferrals transparently
+
+**Result:** Minimal, focused, thoroughly tested release addressing proven user needs.
+
 ## [3.2.3] - 2025-11-13
 
 ### Fixed - Production Feedback Bug Fixes
