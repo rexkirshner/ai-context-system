@@ -266,4 +266,50 @@ This logic is correct but duplicated and inconsistent across commands.
 
 ---
 
-*Testing complete. Next: Commit test fix and prepare release...*
+## v3.2.3 Release Preparation
+
+### Version and Changelog Updates
+
+**Version file updated:**
+- Changed VERSION from `3.2.2` to `3.2.3`
+
+**Changelog entry added:**
+- Comprehensive release notes for v3.2.3
+- Documents all 3 fixes with full context
+- Includes testing summary and upgrade instructions
+- Expected improvement: 89% → 100% installation success rate
+
+### Release Commits Summary
+
+Total commits for v3.2.3: **6 commits**
+
+1. `d3a7403` - Fix #1: Remove non-existent files from install.sh manifest
+2. `caeaca5` - Fix #2: Use validation function consistently for all downloads
+3. `c9f3a06` - Fix #3: Add consistent session numbering functions
+4. `4623104` - Testing: Remove missed save-context-guide.md reference
+5. `34de4ef` - Testing: Document comprehensive test results
+6. `1ec2cd2` - Release: Update version and changelog
+
+### Release Status: ✅ COMPLETE
+
+**Changes made:**
+- 3 critical bug fixes implemented and tested
+- 1 additional issue found and fixed during testing
+- All changes documented in CHANGELOG.md
+- VERSION file updated to 3.2.3
+- 6 commits ahead of origin/main (not pushed per user instruction)
+
+**Ready for deployment:**
+- All tests passed
+- Documentation complete
+- Version bumped
+- Changelog updated
+
+**Next steps:**
+- User review and approval
+- Push to remote when approved
+- Begin v3.3.0 implementation (3 features planned)
+
+---
+
+*v3.2.3 complete. Ready to proceed with v3.3.0 or await user direction.*
