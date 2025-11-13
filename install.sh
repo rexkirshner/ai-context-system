@@ -380,7 +380,6 @@ echo -e "${BLUE}⬇️  Downloading documentation...${NC}"
 
 DOCS=(
   "command-philosophy.md"
-  "save-context-guide.md"
 )
 
 for doc in "${DOCS[@]}"; do
@@ -409,21 +408,6 @@ else
   echo -e "${RED}✗${NC}"
   ((FAILED_DOWNLOADS++))
 fi
-
-# Download migration guides
-MIGRATION_GUIDES=(
-  "MIGRATION_GUIDE_v2.0_to_v2.1.md"
-  "MIGRATION_GUIDE_v2.1_to_v2.2.md"
-)
-
-for guide in "${MIGRATION_GUIDES[@]}"; do
-  echo -n "   Downloading $guide... "
-  if curl -sL "${RAW_URL}/${guide}" -o "reference/${guide}" 2>/dev/null; then
-    echo -e "${GREEN}✓${NC}"
-  else
-    echo -e "${YELLOW}⚠${NC} (not critical)"
-  fi
-done
 
 echo ""
 
