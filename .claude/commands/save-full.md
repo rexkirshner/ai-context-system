@@ -61,7 +61,7 @@ description: Comprehensive session documentation for breaks and handoffs (10-15 
 **ACTION:** Source the common functions library:
 
 ```bash
-echo "Step 0/8: Loading shared utilities..."
+echo "Step 0/10: Loading shared utilities..."
 echo ""
 
 # Load shared utilities (v2.3.0+)
@@ -87,7 +87,7 @@ echo ""
 ### Step 1: Find and Verify Context Directory
 
 ```bash
-echo "Step 1/8: Verifying context directory..."
+echo "Step 1/10: Verifying context directory..."
 echo "⏱️ Estimated time remaining: ~12-15 minutes"
 echo ""
 
@@ -132,7 +132,7 @@ echo ""
 ### Step 2: Analyze What Changed
 
 ```bash
-echo "Step 2/8: Analyzing what changed since last save..."
+echo "Step 2/10: Analyzing what changed since last save..."
 echo "⏱️ Estimated time remaining: ~10-12 minutes"
 echo ""
 
@@ -203,7 +203,7 @@ echo ""
 ### Step 3: Create SESSIONS.md Entry (Append-Only Strategy)
 
 ```bash
-echo "Step 3/8: Creating SESSIONS.md entry..."
+echo "Step 3/10: Creating SESSIONS.md entry..."
 echo "⏱️ Estimated time remaining: ~8-10 minutes"
 echo ""
 
@@ -334,7 +334,7 @@ echo ""
 ### Step 4: Update STATUS.md
 
 ```bash
-echo "Step 4/8: Updating STATUS.md..."
+echo "Step 4/10: Updating STATUS.md..."
 echo "⏱️ Estimated time remaining: ~6-8 minutes"
 echo ""
 
@@ -359,7 +359,7 @@ echo ""
 ### Step 5: Update DECISIONS.md (If Needed)
 
 ```bash
-echo "Step 5/8: Checking for new decisions..."
+echo "Step 5/10: Checking for new decisions..."
 echo "⏱️ Estimated time remaining: ~5-7 minutes"
 echo ""
 
@@ -394,7 +394,7 @@ echo ""
 ### Step 6: Update Quick Reference in STATUS.md
 
 ```bash
-echo "Step 6/8: Updating Quick Reference section..."
+echo "Step 6/10: Updating Quick Reference section..."
 echo "⏱️ Estimated time remaining: ~3-5 minutes"
 echo ""
 
@@ -429,7 +429,7 @@ echo ""
 ### Step 7: Optional Files
 
 ```bash
-echo "Step 7/8: Checking optional documentation files..."
+echo "Step 7/10: Checking optional documentation files..."
 echo "⏱️ Estimated time remaining: ~2-3 minutes"
 echo ""
 
@@ -471,10 +471,113 @@ echo ""
 
 ---
 
-### Step 8: Git Push Protection & Final Report
+### Step 8: Check CONTEXT.md Currency
 
 ```bash
-echo "Step 8/8: Finalizing save and checking git push approval..."
+echo "Step 8/10: Checking CONTEXT.md currency..."
+echo "⏱️ Estimated time remaining: ~2 minutes"
+echo ""
+
+# Check if CONTEXT.md exists
+if [ ! -f "$CONTEXT_DIR/CONTEXT.md" ]; then
+  echo "ℹ️  CONTEXT.md not found - skipping currency check"
+  echo ""
+else
+  # Extract "Last Updated" date from CONTEXT.md (common pattern: "Last Updated: YYYY-MM-DD")
+  CONTEXT_LAST_UPDATED=$(grep -iE "Last Updated:.*[0-9]{4}-[0-9]{2}-[0-9]{2}" "$CONTEXT_DIR/CONTEXT.md" | \
+                          grep -oE "[0-9]{4}-[0-9]{2}-[0-9]{2}" | head -1)
+
+  if [ -n "$CONTEXT_LAST_UPDATED" ]; then
+    # Calculate days since last update
+    CONTEXT_DAYS_OLD=$(days_since_date "$CONTEXT_LAST_UPDATED" 2>/dev/null || echo "-1")
+
+    if [ "$CONTEXT_DAYS_OLD" = "-1" ]; then
+      echo "ℹ️  Could not parse CONTEXT.md date: $CONTEXT_LAST_UPDATED"
+      echo ""
+    elif [ "$CONTEXT_DAYS_OLD" -gt 7 ]; then
+      echo "⚠️  CONTEXT.md is $CONTEXT_DAYS_OLD days old (last updated: $CONTEXT_LAST_UPDATED)"
+      echo ""
+      echo "   Consider updating:"
+      echo "   • Current Phase / Project Status"
+      echo "   • Recent accomplishments and goals"
+      echo "   • Last Updated date"
+      echo ""
+    else
+      echo "✅ CONTEXT.md is current ($CONTEXT_DAYS_OLD days old)"
+      echo ""
+    fi
+
+    # Show current phase for verification
+    echo "   Current Phase in CONTEXT.md:"
+    CURRENT_PHASE=$(grep -A2 "## Current Phase" "$CONTEXT_DIR/CONTEXT.md" | tail -2 | head -1 | sed 's/^[[:space:]]*//')
+    if [ -n "$CURRENT_PHASE" ]; then
+      echo "   $CURRENT_PHASE"
+    else
+      echo "   (Could not detect - verify manually)"
+    fi
+    echo ""
+  else
+    echo "ℹ️  No 'Last Updated' date found in CONTEXT.md"
+    echo "   Add a 'Last Updated: YYYY-MM-DD' line to enable staleness tracking"
+    echo ""
+  fi
+fi
+```
+
+**Why this matters:** CONTEXT.md is the main project overview file. Stale CONTEXT.md can mislead AI agents about project phase, goals, and current state.
+
+**Threshold:** 7 days - Projects evolve quickly, main context should stay current.
+
+**Non-blocking:** This is a warning only - won't prevent save from completing.
+
+---
+
+### Step 9: Check README.md Staleness
+
+```bash
+echo "Step 9/10: Checking README.md currency..."
+echo "⏱️ Estimated time remaining: ~1-2 minutes"
+echo ""
+
+# Check if README.md exists in project root
+if [ ! -f "README.md" ]; then
+  echo "ℹ️  README.md not found - skipping staleness check"
+  echo ""
+else
+  # Calculate days since README.md was last modified
+  README_DAYS_OLD=$(days_since_file_modified "README.md" 2>/dev/null || echo "-1")
+
+  if [ "$README_DAYS_OLD" = "-1" ]; then
+    echo "ℹ️  Could not check README.md modification date"
+    echo ""
+  elif [ "$README_DAYS_OLD" -gt 14 ]; then
+    echo "⚠️  README.md is $README_DAYS_OLD days old"
+    echo ""
+    echo "   Consider updating:"
+    echo "   • Tech stack versions (framework, runtime, major dependencies)"
+    echo "   • Module/feature list (if new modules added)"
+    echo "   • Accomplishments and project status"
+    echo "   • Installation or setup instructions (if changed)"
+    echo ""
+  else
+    echo "✅ README.md is current ($README_DAYS_OLD days old)"
+    echo ""
+  fi
+fi
+```
+
+**Why this matters:** README.md is the first file developers see. Outdated tech stack versions or missing features create confusion and slow onboarding.
+
+**Threshold:** 14 days - README evolves slower than CONTEXT.md, less frequent updates acceptable.
+
+**Non-blocking:** This is a warning only - won't prevent save from completing.
+
+---
+
+### Step 10: Git Push Protection & Final Report
+
+```bash
+echo "Step 10/10: Finalizing save and checking git push approval..."
 echo "⏱️ Estimated time remaining: ~1 minute"
 echo ""
 
