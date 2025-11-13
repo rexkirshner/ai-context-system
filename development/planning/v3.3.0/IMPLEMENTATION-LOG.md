@@ -598,3 +598,236 @@ fi
 ---
 
 *Day 1 complete. Pausing for assessment before proceeding to Day 2.*
+
+---
+
+## Day 2: Template Markers
+
+**Goal:** Add clear markers to templates so AI agents and users know what to preserve vs modify
+
+### Investigation Phase
+
+**Problem Statement:**
+- AI agents sometimes delete important template sections
+- Users unsure which parts of templates to customize
+- No clear visual indicators for "keep this" vs "fill this in"
+- Template structure gets lost during editing
+
+**Solution from simplified plan:**
+```markdown
+<!-- KEEP THIS SECTION - DO NOT DELETE -->
+## Communication & Workflow Preferences
+<!-- Only replace text marked [FILL_HERE: ...] -->
+
+**Project Name**: [FILL_HERE: Your project name]
+**Type**: [FILL_HERE: web-app|cli|library]
+<!-- END KEEP THIS SECTION -->
+```
+
+**Investigation needed:**
+1. Find all template files in the codebase
+2. Identify sections commonly deleted or modified incorrectly
+3. Design marker system (HTML comments + [FILL_HERE:] placeholders)
+4. Determine which templates need markers
+5. Define marker conventions and documentation
+
+### Status: 🔍 INVESTIGATING
+
+#### Template Inventory
+
+**Found 18 template files:**
+
+**Core context templates** (users fill in):
+- CONTEXT.template.md - Main project context
+- STATUS.template.md - Current status
+- SESSIONS.template.md - Session history
+- DECISIONS.template.md - Decision log
+- CODE_STYLE.template.md - Coding standards (mixed)
+- CODE_MAP.template.md - Codebase navigation
+- ARCHITECTURE.template.md - System design
+- PRD.template.md - Product requirements
+- KNOWN_ISSUES.template.md - Known issues
+
+**AI header files** (instructional only):
+- claude.md.template - Claude-specific instructions
+- aider.md.template - Aider-specific instructions
+- cursor.md.template - Cursor-specific instructions
+- codex.md.template - Codex-specific instructions
+- generic-ai-header.template.md - Generic AI instructions
+
+**Other:**
+- context-feedback.template.md - Feedback form
+
+**Legacy:** (skip for now)
+- legacy/ directory templates
+
+#### Template Analysis
+
+**Three types identified:**
+
+1. **Fill-in templates** (e.g., CONTEXT.template.md)
+   - Have structural sections (MUST KEEP)
+   - Have placeholders like `[Project Name]` (REPLACE)
+   - Have example text like `[e.g., Next.js 15]` (REPLACE)
+   - Problem: Users/AI might delete structural sections
+
+2. **Instruction-only templates** (e.g., claude.md.template)
+   - Entire file is instructional content (KEEP ALL)
+   - No customization needed
+   - Problem: Should never be modified, only read
+
+3. **Mixed templates** (e.g., CODE_STYLE.template.md)
+   - Some sections are standard principles (KEEP)
+   - Some sections have placeholders (FILL)
+   - Problem: Not clear which parts to keep vs customize
+
+#### Key Insights
+
+**What gets deleted by mistake:**
+- Core Principles sections in CODE_STYLE (deleted thinking "just template")
+- Structural headers in CONTEXT (deleted during customization)
+- Instructional sections (deleted thinking "not relevant")
+
+**What confuses users:**
+- Unclear which text is example vs instruction
+- Unclear which sections to keep vs delete
+- No visual distinction between preserve/modify/replace
+
+### Status: ✅ INVESTIGATION COMPLETE → DESIGN PHASE
+
+---
+
+### Design Phase
+
+#### Marker System Specification
+
+**Design goals:**
+1. Visual and unambiguous
+2. Works for both humans and AI agents
+3. Minimal markup (don't clutter templates)
+4. Use HTML comments (invisible when rendered)
+5. Clear action verbs: KEEP, FILL, CUSTOMIZE
+
+**Marker types:**
+
+**1. Section preservation markers** (for structural sections that must be kept):
+```markdown
+<!-- TEMPLATE SECTION: KEEP ALL - This structure must be preserved -->
+## Section Title
+Content here...
+<!-- END TEMPLATE SECTION -->
+```
+
+**2. Fill-in placeholders** (for values to be replaced):
+```markdown
+**Project Name**: [FILL: Your project name]
+**Type**: [FILL: web-app | cli | library | mobile]
+```
+
+**3. Customization zones** (for sections that can be modified):
+```markdown
+<!-- TEMPLATE SECTION: CUSTOMIZE - Replace with project-specific content -->
+### File Structure
+[FILL: Add your project-specific file organization here]
+<!-- END TEMPLATE SECTION -->
+```
+
+**4. Read-only markers** (for instructional files):
+```markdown
+<!-- TEMPLATE: READ-ONLY - Do not modify this file -->
+# Claude Context
+...
+<!-- END READ-ONLY TEMPLATE -->
+```
+
+**5. Example text indicators** (for replacing example values):
+```markdown
+**Framework**: [FILL: e.g., Next.js 15] - [FILL: One-line rationale]
+```
+
+#### Marker Conventions
+
+**For AI agents:**
+- `<!-- TEMPLATE SECTION: KEEP ALL -->` = Never delete this section
+- `<!-- TEMPLATE SECTION: CUSTOMIZE -->` = Replace content but keep structure
+- `<!-- TEMPLATE: READ-ONLY -->` = Never modify this file
+- `[FILL: ...]` = Replace this placeholder with actual value
+
+**For humans:**
+- HTML comments are visible in source but hidden in rendered markdown
+- Clear action words: KEEP, FILL, CUSTOMIZE, READ-ONLY
+- Examples provided with "e.g.," prefix
+
+#### Application Strategy
+
+**Priority 1 - Most critical** (apply first):
+- CODE_STYLE.template.md - Protect Core Principles section
+- claude.md.template - Mark as READ-ONLY
+- CONTEXT.template.md - Mark structural sections
+
+**Priority 2 - Important**:
+- Other AI header files (aider, cursor, codex, generic)
+- STATUS.template.md
+- DECISIONS.template.md
+
+**Priority 3 - Nice to have**:
+- Remaining context templates
+- Feedback template
+
+#### Before/After Examples
+
+**Example 1: CODE_STYLE.template.md Core Principles**
+
+Before:
+```markdown
+## Core Principles
+
+### 1. Simplicity Above All
+- Make the smallest possible change to fix issues
+...
+```
+
+After:
+```markdown
+<!-- TEMPLATE SECTION: KEEP ALL - These principles should be preserved -->
+## Core Principles
+
+### 1. Simplicity Above All
+- Make the smallest possible change to fix issues
+...
+<!-- END TEMPLATE SECTION -->
+```
+
+**Example 2: CONTEXT.template.md placeholders**
+
+Before:
+```markdown
+**[Project Name]** - [2-3 sentence description: what it does, why it exists, who it's for]
+```
+
+After:
+```markdown
+**[FILL: Project Name]** - [FILL: 2-3 sentence description of what this project does, why it exists, and who it's for]
+```
+
+**Example 3: claude.md.template**
+
+Before:
+```markdown
+# Claude Context
+
+**📍 Start here:** [CONTEXT.md](./CONTEXT.md)
+...
+```
+
+After:
+```markdown
+<!-- TEMPLATE: READ-ONLY - This file contains instructions for Claude. Do not modify. -->
+# Claude Context
+
+**📍 Start here:** [CONTEXT.md](./CONTEXT.md)
+...
+<!-- END READ-ONLY TEMPLATE -->
+```
+
+### Status: ✅ DESIGN COMPLETE → IMPLEMENTATION PHASE
