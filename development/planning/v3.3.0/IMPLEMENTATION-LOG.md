@@ -313,3 +313,201 @@ Total commits for v3.2.3: **6 commits**
 ---
 
 *v3.2.3 complete. Ready to proceed with v3.3.0 or await user direction.*
+
+---
+
+## v3.3.0 Implementation - Safety & Teams
+
+**Start Date**: 2025-11-13 (continued)
+**Approach**: Simplified plan - 3 focused features over 3 days
+**Philosophy**: Prevent data loss, improve clarity, enable teams
+
+---
+
+## Day 1: Deletion Protection
+
+**Goal**: Prevent accidental deletion of sensitive files (credentials, .env, etc.)
+
+### Investigation Phase
+
+**Problem Statement:**
+- Users might accidentally delete gitignored files containing sensitive data
+- No warning or confirmation before deletion
+- Potential for data loss with credentials, API keys, etc.
+
+**Solution from simplified plan:**
+```bash
+# Simple check before ANY deletion
+if git check-ignore "$file" &>/dev/null; then
+  echo "⚠️ WARNING: $file is gitignored (may be sensitive)"
+  echo "Type exactly: 'yes delete $file'"
+  read confirmation
+  [[ "$confirmation" == "yes delete $file" ]] || exit
+fi
+```
+
+**Investigation needed:**
+1. Find all locations where files are deleted in the codebase
+2. Determine which deletions need protection (user-initiated vs system cleanup)
+3. Design a shared protection function
+4. Apply protection to critical deletion points
+
+### Status: 🔍 INVESTIGATING
+
+#### Deletion Locations Found
+
+**Search Results:**
+- Searched for `rm -[rf]` and `\brm\b` across entire codebase
+- Found ~30 deletion operations
+
+**Analysis by Category:**
+
+1. **Temporary file cleanup (NO protection needed):**
+   - `install.sh:96, 102` - Remove failed downloads
+   - `install.sh:453` - Remove .bak files
+   - `scripts/common-functions.sh:77, 83` - Remove invalid downloads
+   - `scripts/common-functions.sh:245` - Cache clearing
+   - Various /tmp/ file cleanups
+
+2. **Context directory operations (PROTECTION NEEDED):**
+   - `update-context-system.md:193, 221` - Delete empty feedback template files
+   - These check if file is "just template" before deleting
+   - **Risk**: User might have gitignored sensitive file in context/
+
+3. **System directory operations (minimal risk):**
+   - `install.sh:119, 125` - Rollback operations (has backups)
+   - `scripts/common-functions.sh:478, 483` - Rollback operations (has backups)
+
+4. **Installation cleanup (NO protection needed):**
+   - Removing installation artifacts
+   - Removing ai-context-system directory after install
+
+#### Key Insight
+
+**Where protection is needed:**
+- Files in `context/` directory (where user data lives)
+- Files that might be gitignored (credentials, .env, etc.)
+
+**Where protection is NOT needed:**
+- Temporary files (/tmp/, *.bak, failed downloads)
+- Installation artifacts
+- System files with backups
+
+#### Design Decision
+
+**Targeted approach:**
+1. Create `confirm_deletion()` function in common-functions.sh
+2. Check if file is gitignored (potential sensitive data)
+3. Require explicit confirmation: "yes delete filename"
+4. Apply to context/ directory deletions only
+5. Skip for obvious temp files
+
+### Status: ✅ INVESTIGATION COMPLETE → DESIGN PHASE
+
+---
+
+### Design Phase
+
+#### Function Specification: `confirm_deletion()`
+
+**Purpose:** Protect gitignored files from accidental deletion
+
+**Location:** `scripts/common-functions.sh` (shared across all commands)
+
+**Function signature:**
+```bash
+confirm_deletion() {
+  local file="$1"
+
+  # Returns:
+  # 0 = proceed with deletion (safe or user confirmed)
+  # 1 = cancel deletion (user declined)
+}
+```
+
+**Logic flow:**
+1. Check if file exists (return 0 if doesn't exist - no protection needed)
+2. Check if in git repository (return 0 if not - no gitignore to check)
+3. Check if file is gitignored: `git check-ignore "$file"`
+4. If gitignored:
+   - Display warning with filename
+   - Require explicit confirmation: "yes delete FILENAME"
+   - Return 1 if user doesn't confirm
+5. Return 0 if safe to delete
+
+**Usage example:**
+```bash
+# Before deleting a file in context/
+if confirm_deletion "context/feedback.md"; then
+  rm -f "context/feedback.md"
+else
+  echo "Deletion cancelled"
+  exit 1
+fi
+```
+
+**Edge cases handled:**
+- File doesn't exist (return 0 - nothing to protect)
+- Not in git repo (return 0 - no gitignore to check)
+- Non-interactive mode (return 0 - don't block automation)
+- Empty input (return 0 - defensive programming)
+
+### Status: ✅ DESIGN COMPLETE → IMPLEMENTATION PHASE
+
+---
+
+### Implementation Phase
+
+#### Step 1: Create `confirm_deletion()` function
+
+**Location:** `scripts/common-functions.sh:250-319`
+
+**Added new section:** "File Safety Operations"
+
+**Function features:**
+- Takes file path as parameter
+- Returns 0 (safe to delete) or 1 (cancel deletion)
+- Checks if file exists (return 0 if not)
+- Checks if in git repo (return 0 if not)
+- Checks if gitignored: `git check-ignore -q "$file"`
+- If gitignored:
+  - Displays warning with file path
+  - Shows status: "Gitignored (may contain credentials, API keys, etc.)"
+  - Requires exact confirmation: "yes delete BASENAME"
+  - Returns 1 if confirmation doesn't match
+- Returns 0 for normal files
+
+**Code added:** 70 lines (including documentation and formatting)
+
+### Status: ✅ FUNCTION IMPLEMENTED → APPLYING PROTECTION
+
+---
+
+#### Step 2: Apply protection to critical deletion points
+
+**Target locations identified:**
+- `.claude/commands/update-context-system.md:193` - Old v2.x feedback file
+- `.claude/commands/update-context-system.md:221` - Current feedback file
+
+**Changes made:**
+
+1. **Line 193 (v2.x feedback file deletion):**
+   - **Before:** `rm -f "context/claude-context-feedback.md"`
+   - **After:** Wrapped in `if confirm_deletion ...` with cancellation handling
+   - Added warning message if deletion cancelled
+
+2. **Line 226 (current feedback file deletion):**
+   - **Before:** `rm -f context/context-feedback.md`
+   - **After:** Wrapped in `if confirm_deletion ...` with cancellation handling
+   - Added warning message if deletion cancelled
+
+**Protection behavior:**
+- If file is gitignored → User prompted for explicit confirmation
+- If user confirms → File deleted as normal
+- If user cancels → File kept, warning logged, script continues
+- If file not gitignored → Delete immediately (no prompt)
+
+**Files modified:**
+- `.claude/commands/update-context-system.md` (2 deletion points protected)
+
+### Status: ✅ PROTECTION APPLIED → TESTING PHASE

@@ -189,9 +189,13 @@ if [ -f "context/claude-context-feedback.md" ] && [ ! -f "context/context-feedba
     log_success "✅ Archived v2.x feedback to $ARCHIVE_FILE"
     log_info "   (Your old feedback preserved)"
   else
-    # Just template - remove it
-    rm -f "context/claude-context-feedback.md"
-    log_verbose "Removed empty v2.x feedback file"
+    # Just template - remove it (with deletion protection)
+    if confirm_deletion "context/claude-context-feedback.md"; then
+      rm -f "context/claude-context-feedback.md"
+      log_verbose "Removed empty v2.x feedback file"
+    else
+      log_warn "⚠️  Kept context/claude-context-feedback.md (deletion cancelled)"
+    fi
   fi
 fi
 
@@ -218,7 +222,13 @@ if [ -f "context/context-feedback.md" ]; then
     log_info "   (Feedback from v${CURRENT_VERSION} preserved)"
   else
     log_verbose "Feedback file exists but appears to be just template (no entries)"
-    rm -f context/context-feedback.md
+    # Deletion protection for potentially sensitive files
+    if confirm_deletion "context/context-feedback.md"; then
+      rm -f context/context-feedback.md
+      log_verbose "Removed empty feedback file"
+    else
+      log_warn "⚠️  Kept context/context-feedback.md (deletion cancelled)"
+    fi
   fi
 fi
 

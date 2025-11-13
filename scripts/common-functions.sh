@@ -248,6 +248,77 @@ clear_cache() {
 }
 
 # =============================================================================
+# File Safety Operations
+# =============================================================================
+
+# Confirm deletion of potentially sensitive files
+# Protects gitignored files from accidental deletion
+#
+# Args:
+#   $1 - File path to check before deletion
+#
+# Returns:
+#   0 - Safe to delete (not gitignored or user confirmed)
+#   1 - Do not delete (user declined)
+#
+# Usage:
+#   if confirm_deletion "context/file.md"; then
+#     rm -f "context/file.md"
+#   else
+#     echo "Deletion cancelled"
+#   fi
+confirm_deletion() {
+  local file="$1"
+
+  # Defensive: If no file specified, don't block
+  if [ -z "$file" ]; then
+    return 0
+  fi
+
+  # If file doesn't exist, nothing to protect
+  if [ ! -e "$file" ]; then
+    return 0
+  fi
+
+  # Check if we're in a git repository
+  if ! git rev-parse --git-dir >/dev/null 2>&1; then
+    # Not in git repo, no gitignore to check
+    return 0
+  fi
+
+  # Check if file is gitignored (potential sensitive data)
+  if git check-ignore -q "$file" 2>/dev/null; then
+    # File is gitignored - require explicit confirmation
+    echo ""
+    echo "⚠️  WARNING: Potentially sensitive file detected"
+    echo "   File: $file"
+    echo "   Status: Gitignored (may contain credentials, API keys, etc.)"
+    echo ""
+    echo "   This file is in .gitignore and may contain sensitive data."
+    echo "   Deletion is NOT recommended unless you're certain."
+    echo ""
+    echo -n "   To delete, type exactly: yes delete $(basename "$file")"
+    echo ""
+    echo -n "   > "
+
+    read -r confirmation
+
+    if [ "$confirmation" = "yes delete $(basename "$file")" ]; then
+      echo ""
+      echo "✓ Deletion confirmed"
+      return 0
+    else
+      echo ""
+      echo "✗ Deletion cancelled (input did not match)"
+      return 1
+    fi
+  fi
+
+  # File not gitignored, safe to delete
+  return 0
+}
+
+# =============================================================================
 # Logging and Output
 # =============================================================================
 
