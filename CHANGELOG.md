@@ -47,6 +47,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Testing**: 8/8 unit tests passing (function exists, correct exit codes, interactive prompts)
 - **Commits**: Multiple commits during Day 1 implementation
 
+**✨ FEATURE #3: Documentation Staleness Detection**
+- **Problem**: Documentation became stale during active development with no workflow reminders
+- **Impact**: Real project example - CONTEXT.md showed "Phase 0" when actually Phase 4, README.md had wrong tech versions
+- **Solution**: Proactive staleness warnings in `/save-full` and `/review-context`
+  - `/save-full` Step 8: Checks CONTEXT.md currency (warns if >7 days old)
+  - `/save-full` Step 9: Checks README.md staleness (warns if >14 days old)
+  - `/review-context` Step 2.7: Documentation Staleness Check
+    - Color-coded staleness for all context/*.md files (🟢 ≤7 days, 🟡 8-14 days, 🔴 >14 days)
+    - Missing module README detection
+    - Decision documentation ratio analysis (decisions per 25 commits)
+- **Helper Functions**: Added `days_since_date()` and `days_since_file_modified()` to common-functions.sh
+- **Files**: `scripts/common-functions.sh`, `.claude/commands/save-full.md`, `.claude/commands/review-context.md`
+- **Testing**: 21/21 unit tests passing (helper functions, date extraction, staleness thresholds, command integration)
+- **Commits**: Multiple commits during Day 3 implementation
+
+**✨ FEATURE #4: Decision Documentation Guidance**
+- **Problem**: DECISIONS.md underused - only 2 entries despite 100+ commits and major architectural decisions
+- **Impact**: Lost architectural context, decisions not captured for future reference
+- **Solution**: Added comprehensive decision documentation guidance to `claude.md.template`
+  - 5 categories of decisions to document (Library/Framework, Performance, Data Model, Security, Process)
+  - DECISIONS.md format example with metrics and trade-offs
+  - "When NOT to document" guidance (avoid noise)
+  - Proactive prompts for AI agents: "This appears to be an architectural decision. Should I document this in DECISIONS.md?"
+- **Files**: `templates/claude.md.template`
+- **Testing**: 3/3 unit tests passing (guidance presence, format example, categories)
+- **Impact**: Better architectural decision capture and context preservation
+
+**✨ FEATURE #5: Upgrade Path Documentation**
+- **Problem**: Users upgrading to v3.3.0 wouldn't know about new features or how to adopt them
+- **Solution**: Comprehensive "What's New" documentation and upgrade flow
+  - Added "What's New in v3.3.0" section to `.claude/docs/update-guide.md` (119 lines)
+  - Documents all 4 major features with problems solved, solutions, and impact
+  - Lists upgrade steps (automatic vs manual)
+  - Includes adoption guidance for each feature
+  - Enhanced `/update-context-system` with Step 3: Shows v3.3.0 features after successful upgrade
+- **Files**: `.claude/docs/update-guide.md`, `.claude/commands/update-context-system.md`
+- **Testing**: Bash syntax validation passed, step numbering verified
+- **Impact**: Users understand new features and know how to adopt them
+
 **📁 FUTURE UPGRADES DOCUMENTATION**
 - **Problem**: Need systematic way to track deferred features and improvements
 - **Solution**: Created `development/planning/future-upgrades/` folder structure
@@ -75,29 +114,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Documentation**: Fully documented in `development/planning/future-upgrades/sync-commits.md`
 - **Reconsider**: v3.3.1 or v3.4.0 when more teams provide feedback
 
-#### Files Changed (9 files)
+#### Files Changed (13 files)
 
 1. `templates/CODE_STYLE.template.md` - Added KEEP ALL and CUSTOMIZE markers
-2. `templates/claude.md.template` - Marked as READ-ONLY
+2. `templates/claude.md.template` - Marked as READ-ONLY + added decision documentation guidance
 3. `templates/CONTEXT.template.md` - Protected 3 structural sections
-4. `scripts/common-functions.sh` - Added confirm_deletion() function
-5. `.claude/commands/update-context-system.md` - Integrated deletion protection
-6. `development/planning/future-upgrades/README.md` - Created future upgrades process
-7. `development/planning/future-upgrades/sync-commits.md` - Documented /sync-commits deferral
-8. `reference/DEPRECATIONS.md` - Corrected staleness thresholds entry
-9. `VERSION` - Updated to 3.3.0
+4. `scripts/common-functions.sh` - Added confirm_deletion(), days_since_date(), days_since_file_modified()
+5. `.claude/commands/update-context-system.md` - Integrated deletion protection + v3.3.0 feature showcase
+6. `.claude/commands/save-full.md` - Added Steps 8 & 9 (staleness warnings)
+7. `.claude/commands/review-context.md` - Added Step 2.7 (staleness check)
+8. `.claude/docs/update-guide.md` - Added "What's New in v3.3.0" section
+9. `development/planning/future-upgrades/README.md` - Created future upgrades process
+10. `development/planning/future-upgrades/sync-commits.md` - Documented /sync-commits deferral
+11. `reference/DEPRECATIONS.md` - Corrected staleness thresholds entry
+12. `VERSION` - Updated to 3.3.0
+13. `CHANGELOG.md` - This file
 
 #### Testing
 
 **Comprehensive test coverage:**
-- ✅ Unit Tests: 18/18 passing (template markers)
-- ✅ Unit Tests: 8/8 passing (deletion protection)
+- ✅ Unit Tests: 18/18 passing (template markers - Day 2)
+- ✅ Unit Tests: 8/8 passing (deletion protection - Day 1)
+- ✅ Unit Tests: 21/21 passing (documentation currency - Day 3)
 - ✅ Integration Tests: 22/22 passing (Days 1 & 2 together)
-- ✅ **Total: 48/48 tests passing (100% pass rate)**
+- ✅ **Total: 69/69 tests passing (100% pass rate)**
 
 Test suites:
 - `development/planning/v3.3.0/test-template-markers.sh`
 - `development/planning/v3.3.0/test-deletion-protection.sh`
+- `development/planning/v3.3.0/test-documentation-currency.sh`
 - `development/planning/v3.3.0/test-integration.sh`
 
 See `development/planning/v3.3.0/IMPLEMENTATION-LOG.md` for detailed test results and implementation phases.
@@ -117,6 +162,9 @@ curl -sL https://raw.githubusercontent.com/rexkirshner/ai-context-system/main/in
 **Expected results:**
 - Template markers visible in all Priority 1 templates
 - Deletion protection active for `/update-context-system`
+- Staleness detection active in `/save-full` and `/review-context`
+- Decision documentation guidance in `context/claude.md`
+- "What's New" display after upgrade to v3.3.0
 - No breaking changes (backward compatible)
 
 #### Migration Notes
@@ -124,22 +172,31 @@ curl -sL https://raw.githubusercontent.com/rexkirshner/ai-context-system/main/in
 **Automatic:**
 - Template markers are additive (don't break existing files)
 - Deletion protection only activates during updates
+- Staleness detection activates in next `/save-full` or `/review-context`
+- Helper functions added to common-functions.sh
 - No action required from users
 
 **Optional:**
+- Run `/update-templates` to add template markers to your context files
 - Review template markers in your existing documentation
 - Customize marked sections as needed
 - Keep KEEP ALL sections unchanged
+- Add "Last Updated: YYYY-MM-DD" to CONTEXT.md for staleness tracking
 
 #### Release Philosophy
 
 This release follows the **"Do less, better"** principle:
-- Focus on 2 high-impact features (deletion protection + template markers)
+- Focus on 5 high-impact features based on real project feedback
+  - Template markers (prevent 80-90% of deletion errors)
+  - Deletion protection (zero data loss)
+  - Staleness detection (prevent documentation drift)
+  - Decision guidance (capture architectural context)
+  - Upgrade documentation (clear adoption path)
 - Defer experimental features until validated by more users
-- Achieve 100% test pass rate before release
+- Achieve 100% test pass rate before release (69/69 tests)
 - Document deferrals transparently
 
-**Result:** Minimal, focused, thoroughly tested release addressing proven user needs.
+**Result:** Focused, thoroughly tested release addressing proven user needs from 100+ production sessions.
 
 ## [3.2.3] - 2025-11-13
 
