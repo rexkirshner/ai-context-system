@@ -681,6 +681,86 @@ get_current_session_count() {
 # Initialization
 # =============================================================================
 
+# =============================================================================
+# Documentation Currency Functions (v3.3.0)
+# =============================================================================
+
+# Calculate days since a given date
+# Usage: days_since_date "2025-11-10"
+# Returns: Number of days since the date (or -1 if invalid date)
+days_since_date() {
+  local date_string="$1"
+
+  # Handle empty input
+  if [ -z "$date_string" ]; then
+    echo "-1"
+    return 1
+  fi
+
+  # Convert date string to epoch seconds (platform-independent approach)
+  local date_epoch
+  if date -j -f "%Y-%m-%d" "$date_string" "+%s" >/dev/null 2>&1; then
+    # BSD/macOS date command
+    date_epoch=$(date -j -f "%Y-%m-%d" "$date_string" "+%s" 2>/dev/null)
+  elif date -d "$date_string" "+%s" >/dev/null 2>&1; then
+    # GNU date command (Linux)
+    date_epoch=$(date -d "$date_string" "+%s" 2>/dev/null)
+  else
+    # Date parsing failed
+    echo "-1"
+    return 1
+  fi
+
+  # Get current time in epoch seconds
+  local now_epoch=$(date "+%s")
+
+  # Calculate difference in days
+  local diff_seconds=$((now_epoch - date_epoch))
+  local days=$((diff_seconds / 86400))
+
+  echo "$days"
+  return 0
+}
+
+# Calculate days since a file was last modified
+# Usage: days_since_file_modified "/path/to/file.md"
+# Returns: Number of days since last modification (or -1 if file doesn't exist)
+days_since_file_modified() {
+  local file_path="$1"
+
+  # Check if file exists
+  if [ ! -f "$file_path" ]; then
+    echo "-1"
+    return 1
+  fi
+
+  # Get file modification time in epoch seconds (platform-independent)
+  local file_epoch
+  if stat -f%m "$file_path" >/dev/null 2>&1; then
+    # BSD/macOS stat command
+    file_epoch=$(stat -f%m "$file_path" 2>/dev/null)
+  elif stat -c%Y "$file_path" >/dev/null 2>&1; then
+    # GNU stat command (Linux)
+    file_epoch=$(stat -c%Y "$file_path" 2>/dev/null)
+  else
+    # stat failed
+    echo "-1"
+    return 1
+  fi
+
+  # Get current time in epoch seconds
+  local now_epoch=$(date "+%s")
+
+  # Calculate difference in days
+  local diff_seconds=$((now_epoch - file_epoch))
+  local days=$((diff_seconds / 86400))
+
+  echo "$days"
+  return 0
+}
+
+# =============================================================================
+
 # Run auto-update check in background (non-blocking)
 # Only if not already running and not in quiet mode
 if [ "$VERBOSITY" != "quiet" ] && [ -z "$UPDATE_CHECK_RUNNING" ]; then
@@ -689,4 +769,4 @@ if [ "$VERBOSITY" != "quiet" ] && [ -z "$UPDATE_CHECK_RUNNING" ]; then
 fi
 
 # Log that common functions were loaded (debug only)
-log_debug "Loaded common-functions.sh v2.3.0"
+log_debug "Loaded common-functions.sh v3.3.0"
