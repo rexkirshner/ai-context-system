@@ -1,3 +1,4 @@
+<!-- TEMPLATE: READ-ONLY - This file contains instructions for Claude AI. Do not modify this file. -->
 # Claude Context
 
 **📍 Start here:** [CONTEXT.md](./CONTEXT.md)
@@ -21,3 +22,5 @@ This project uses the AI Context System v3.0. All documentation is in platform-n
 - EACH git push requires NEW explicit approval
 
 **See:** [command-philosophy.md](../.claude/docs/command-philosophy.md#2-user-approval-for-destructive-actions)
+
+<!-- END READ-ONLY TEMPLATE -->
