@@ -2,6 +2,7 @@
 
 This document defines coding standards and principles for this project.
 
+<!-- TEMPLATE SECTION: KEEP ALL - Core principles are standard and should be preserved -->
 ## Core Principles
 
 ### 1. Simplicity Above All
@@ -68,11 +69,15 @@ function processUser(user: User) {
 - Can this be done with fewer file changes?
 - Am I touching files that don't need to change?
 - Is this change as focused as possible?
+<!-- END TEMPLATE SECTION -->
 
 ## Code Organization
 
+<!-- TEMPLATE SECTION: CUSTOMIZE - Replace with your project-specific file structure -->
 ### File Structure
-[TODO: Add project-specific file organization rules]
+[FILL: Add your project-specific file organization rules]
+<!-- END TEMPLATE SECTION -->
+
 
 ### Naming Conventions
 
@@ -326,9 +331,12 @@ Before submitting code:
 
 ## Language-Specific Guidelines
 
-### [Language: e.g., TypeScript/React]
+<!-- TEMPLATE SECTION: CUSTOMIZE - Add your language/framework-specific guidelines -->
+### [FILL: Language: e.g., TypeScript/React]
 
-[TODO: Add language-specific conventions]
+[FILL: Add language-specific conventions here]
+<!-- END TEMPLATE SECTION -->
+
 
 **React-specific:**
 - Prefer function components over class components
@@ -348,8 +356,10 @@ Before submitting code:
 - ❌ Deeply nested code
 - ❌ Overly clever code
 
+<!-- TEMPLATE SECTION: CUSTOMIZE - Add anti-patterns specific to your project -->
 ### Project-Specific Anti-Patterns
-[TODO: Add patterns specific to this project to avoid]
+[FILL: Add patterns specific to this project to avoid]
+<!-- END TEMPLATE SECTION -->
 
 ## Refactoring Guidelines
 
@@ -368,20 +378,22 @@ Before submitting code:
 
 ## Code Quality Tools
 
+<!-- TEMPLATE SECTION: CUSTOMIZE - Configure your project's code quality tools -->
 ### Linting
-- [Tool: e.g., ESLint with specific config]
+- [FILL: Tool: e.g., ESLint with specific config]
 - Run before commits
 - Fix all errors, minimize warnings
 
 ### Formatting
-- [Tool: e.g., Prettier]
+- [FILL: Tool: e.g., Prettier]
 - Auto-format on save
 - Consistent config across team
 
 ### Type Checking
-- [Tool: e.g., TypeScript strict mode]
+- [FILL: Tool: e.g., TypeScript strict mode]
 - No errors allowed
 - CI/CD enforces type safety
+<!-- END TEMPLATE SECTION -->
 
 ## Review Process
 
