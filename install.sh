@@ -374,6 +374,7 @@ echo -e "${BLUE}⬇️  Downloading documentation...${NC}"
 
 DOCS=(
   "command-philosophy.md"
+  "update-guide.md"
 )
 
 for doc in "${DOCS[@]}"; do
