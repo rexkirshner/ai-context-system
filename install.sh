@@ -465,7 +465,6 @@ if [ $FAILED_DOWNLOADS -eq 0 ] && [ $VERIFICATION_FAILED -eq 0 ]; then
   echo ""
   echo -e "${BLUE}Documentation:${NC}"
   echo "   - Command philosophy: .claude/docs/command-philosophy.md"
-  echo "   - Save context guide: .claude/docs/save-context-guide.md"
   echo "   - GitHub: ${REPO_URL}"
   echo ""
   echo -e "${BLUE}v3.0.0 Features (Universal AI Support + Critical Fixes):${NC}"
