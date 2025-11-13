@@ -300,6 +300,143 @@ If Read tool returns error about token limits:
 - Avoids reading middle history (not needed for resuming)
 - Prevents timeouts on large files
 
+---
+
+### Step 2.7: Documentation Staleness Check ✨ v3.3.0
+
+**NEW in v3.3.0:** Proactive detection of stale documentation to prevent context drift.
+
+Check the currency of all context documentation files and identify gaps:
+
+```bash
+echo ""
+echo "📅 Documentation Staleness Analysis"
+echo ""
+
+# Define thresholds (configurable from .context-config.json in future)
+THRESHOLD_GREEN=7
+THRESHOLD_YELLOW=14
+
+# Check all context/*.md files
+for file in "$CONTEXT_DIR"/*.md; do
+  # Skip if no files found
+  [ -e "$file" ] || continue
+
+  FILENAME=$(basename "$file")
+
+  # Calculate days since last modification
+  DAYS_OLD=$(days_since_file_modified "$file" 2>/dev/null || echo "-1")
+
+  if [ "$DAYS_OLD" = "-1" ]; then
+    echo "  ⚠️  $FILENAME - Could not check staleness"
+  elif [ "$DAYS_OLD" -le "$THRESHOLD_GREEN" ]; then
+    echo "  🟢 $FILENAME - Current ($DAYS_OLD days old)"
+  elif [ "$DAYS_OLD" -le "$THRESHOLD_YELLOW" ]; then
+    echo "  🟡 $FILENAME - Getting stale ($DAYS_OLD days old)"
+  else
+    echo "  🔴 $FILENAME - Stale ($DAYS_OLD days old, update recommended)"
+  fi
+done
+
+echo ""
+```
+
+**Color coding:**
+- 🟢 Green: ≤7 days (current)
+- 🟡 Yellow: 8-14 days (getting stale)
+- 🔴 Red: >14 days (stale, update recommended)
+
+**Module Documentation Check:**
+
+```bash
+echo "📂 Module Documentation Check"
+echo ""
+
+# Check for src/modules/ directory (common pattern)
+if [ -d "src/modules" ]; then
+  MISSING_READMES=()
+  TOTAL_MODULES=0
+
+  for module_dir in src/modules/*/; do
+    # Skip if no modules found
+    [ -d "$module_dir" ] || continue
+
+    TOTAL_MODULES=$((TOTAL_MODULES + 1))
+    MODULE_NAME=$(basename "$module_dir")
+
+    if [ ! -f "${module_dir}README.md" ]; then
+      MISSING_READMES+=("$MODULE_NAME")
+    fi
+  done
+
+  # Report results
+  if [ "$TOTAL_MODULES" -eq 0 ]; then
+    echo "  ℹ️  No modules found in src/modules/"
+  elif [ ${#MISSING_READMES[@]} -eq 0 ]; then
+    echo "  ✅ All $TOTAL_MODULES modules have READMEs"
+  else
+    echo "  ⚠️  Missing READMEs for ${#MISSING_READMES[@]} of $TOTAL_MODULES modules:"
+    for missing in "${MISSING_READMES[@]}"; do
+      echo "     - $missing"
+    done
+  fi
+else
+  echo "  ℹ️  No src/modules/ directory found - skipping module check"
+fi
+
+echo ""
+```
+
+**Decision Documentation Check:**
+
+```bash
+echo "📋 Decision Documentation"
+echo ""
+
+if [ ! -f "$CONTEXT_DIR/DECISIONS.md" ]; then
+  echo "  ⚠️  DECISIONS.md not found"
+  echo ""
+else
+  # Count documented decisions
+  DECISION_COUNT=$(grep -c "^### D[0-9]" "$CONTEXT_DIR/DECISIONS.md" 2>/dev/null || echo "0")
+
+  # Count total git commits (if in git repo)
+  if git rev-parse --git-dir > /dev/null 2>&1; then
+    COMMIT_COUNT=$(git rev-list --count HEAD 2>/dev/null || echo "0")
+
+    echo "  Documented decisions: $DECISION_COUNT"
+    echo "  Total commits: $COMMIT_COUNT"
+
+    # Heuristic: Expect ~1 decision per 20-30 commits
+    EXPECTED_DECISIONS=$((COMMIT_COUNT / 25))
+
+    if [ "$DECISION_COUNT" -lt 5 ] && [ "$COMMIT_COUNT" -gt 50 ]; then
+      echo "  ⚠️  Consider documenting more architectural decisions"
+      echo "      (Expected ~$EXPECTED_DECISIONS decisions for $COMMIT_COUNT commits)"
+    elif [ "$DECISION_COUNT" -ge 5 ]; then
+      echo "  ✅ Good decision documentation coverage"
+    else
+      echo "  ✅ Decision count reasonable for project size"
+    fi
+  else
+    echo "  Documented decisions: $DECISION_COUNT"
+    echo "  ℹ️  Not a git repository - can't compare to commits"
+  fi
+fi
+
+echo ""
+```
+
+**Why this matters:**
+- Detects documentation drift before it becomes a problem
+- Identifies missing module READMEs (common gap)
+- Highlights underused DECISIONS.md (architectural context loss)
+- Proactive warnings = better context maintenance
+
+**Non-blocking:** This is informational only - won't prevent review from completing.
+
+---
+
 ### Step 3: Check Current Code State
 
 Analyze actual project state:
