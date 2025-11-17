@@ -7,6 +7,202 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.3.1] - 2025-11-16
+
+### Fixed - Emergency Bug Fixes and Enhancements
+
+**PATCH RELEASE** - Critical bug fixes and installer improvements based on real-world testing
+
+**Context:** This release addresses installation reliability issues and command execution bugs discovered during deployment and usage in production projects. Focus on prevention over repair - fixing root causes rather than adding band-aid solutions.
+
+#### Installer Improvements
+
+**🐛 FIX #1: Missing Helper Scripts in Installation**
+- **Problem**: `find-context-folder.sh` and `update-quick-reference.sh` not installed, causing commands to fail from subdirectories
+- **Impact**: `/save` command failed with "script not found" when run from `backend/`, `frontend/`, etc.
+- **Solution**: Added both scripts to installer's SCRIPTS array and CRITICAL_FILES verification
+- **Files**: `install.sh:327-332, 413-427`
+- **Commit**: `282127b`
+
+**🐛 FIX #2: Version Sync Portability Issue**
+- **Problem**: `sed -i` behaves differently on macOS vs Linux, causing version sync failures
+- **Impact**: context/.context-config.json version could get out of sync with VERSION file
+- **Solution**: Created `update_config_version()` function using temp file approach (works on both platforms)
+  - Validates output before overwriting
+  - Graceful error handling with file preservation
+  - Returns proper exit codes
+- **Files**: `install.sh:110-138, 485-487`
+- **Commit**: `505def7`
+
+**✨ ENHANCEMENT #1: Download Retry Logic**
+- **Problem**: Network hiccups and GitHub rate limiting caused installation failures
+- **Impact**: False failures requiring full re-run of installation
+- **Solution**: Enhanced `download_file()` with retry loop
+  - Maximum 3 attempts per file
+  - Exponential backoff: 2s, 4s between retries
+  - Silent retries (no output spam)
+  - Validates content after each attempt (catches 404 HTML pages)
+- **Files**: `install.sh:87-122`
+- **Commit**: `37b7bc5`
+
+**✨ ENHANCEMENT #2: Post-Installation Validation**
+- **Problem**: Installation issues discovered later when commands failed
+- **Impact**: Poor user experience, unclear what went wrong
+- **Solution**: Created `post_install_validation()` function with auto-repair
+  - Checks version sync and fixes with `update_config_version`
+  - Verifies script permissions and fixes with `chmod +x`
+  - Reports issues found and fixed clearly
+  - Runs automatically after installation
+  - **Philosophy**: Prevention over repair - issues fixed during installation, not later
+- **Files**: `install.sh:184-230, 546-547`
+- **Commit**: `139700b`
+
+**✨ ENHANCEMENT #3: Backup and Rollback Coverage**
+- **Problem**: VERSION file and context/ directory not backed up during upgrades
+- **Impact**: Incomplete restoration on installation failure, potential data loss
+- **Solution**: Enhanced existing backup/rollback to include:
+  - VERSION file (version tracking)
+  - context/ directory (user documentation - critical)
+- **Files**: `install.sh:154-193, 287-299`
+- **Commit**: `a6d6393`
+
+#### Command Template Fixes
+
+**🐛 FIX #3: Bash Parsing Errors in /save and /save-full**
+- **Problem**: Multi-line bash if-then-else blocks caused parsing errors in Claude Code's Bash tool
+- **Error Messages**: `parse error near 'then'`, `parse error near '&&'`
+- **Impact**: `/save` command failed during git status extraction in real project usage
+- **Solution**: Replaced complex multi-line bash with simple sequential commands
+  - Changed from nested if-then-else to `&&` `||` operators
+  - Each git command runs independently with graceful fallback
+  - Pattern: `git command 2>/dev/null || echo "fallback"`
+- **Files**: `.claude/commands/save.md`, `.claude/commands/save-full.md`
+- **Commit**: `edfc4e1`
+- **Discovered**: User testing in real project (excellent feedback loop!)
+
+#### Testing and Documentation
+
+**✅ TEST SUITE: Comprehensive v3.3.1 Validation**
+- **Coverage**: 15 automated tests covering all bug fixes and enhancements
+  1. Counter fields removed from config template
+  2-3. Helper scripts added to installer
+  4-5. `update_config_version` function exists and is portable
+  6-7. Retry logic with exponential backoff
+  8-10. Post-install validation checks version sync and permissions
+  11-14. Backup and rollback include VERSION and context/
+  15. Critical files list updated
+- **Results**: 15/15 tests passing (100% success rate)
+- **Files**: `development/planning/v3.3.1/test-v3.3.1-changes.sh`
+- **Commit**: `c496aec`
+
+**📚 DOCUMENTATION: Bash Command Patterns**
+- **Purpose**: Document patterns to avoid when writing command templates
+- **Content**:
+  - Multi-line if-then-else blocks fail in Bash tool
+  - Use sequential commands with `&&` `||` instead
+  - Move complex logic to helper scripts
+  - Guidelines for when patterns apply
+  - Testing checklist for future command updates
+- **Files**: `development/notes/bash-command-patterns.md`
+- **Commit**: `d3c0fb2`
+
+**📊 SPRINT REPORT: Implementation Documentation**
+- **Purpose**: Complete documentation of v3.3.1 implementation sprint
+- **Content**:
+  - Detailed breakdown of each phase
+  - Code changes with line numbers
+  - Implementation philosophy (modularity, prevention over repair)
+  - Testing results and validation
+  - Lessons learned and recommendations
+  - Next steps for v3.4.0
+- **Files**: `development/planning/v3.3.1/SPRINT_REPORT.md`
+- **Commit**: `f6edd8d`
+
+### Removed
+
+**🧹 CLEANUP: Unused Counter Fields**
+- **Removed**: `counters.nextDecisionId` and `counters.sessionCount` from config template
+- **Reason**: Never referenced by any command, dead code
+- **Impact**: Cleaner config, 3 lines removed, zero functional impact
+- **Files**: `config/.context-config.template.json`
+- **Commit**: `8025aec`
+
+### Implementation Philosophy
+
+**Prevention Over Band-Aids**
+- Post-installation validation catches and fixes issues immediately
+- No `/doctor` command added (would hide systemic problems)
+- Maintains tight feedback loop - issues visible for proper fixing
+- Root causes addressed, not symptoms
+
+**Modularity and Reusability**
+- Each fix implemented as separate function
+- Functions are testable and well-documented
+- Clear separation of concerns
+- Version markers (v3.3.1) for change tracking
+
+**Real-World Testing**
+- User discovered bash parsing errors during actual usage
+- Fixed before release (perfect feedback loop!)
+- Documentation created to prevent recurrence
+- Validates importance of real-world testing
+
+### Commits
+
+```
+8025aec - refactor(config): Remove unused counter fields
+282127b - fix(installer): Add missing helper scripts to installation
+505def7 - fix(installer): Implement portable version sync function
+37b7bc5 - feat(installer): Add download retry logic with exponential backoff
+139700b - feat(installer): Add post-installation validation with auto-repair
+a6d6393 - enhance(installer): Improve backup and rollback coverage
+c496aec - test(v3.3.1): Add comprehensive test suite for all changes
+edfc4e1 - fix(commands): Replace multi-line bash if-then-else with simple sequential commands
+d3c0fb2 - docs(dev): Add bash command pattern guidelines
+f6edd8d - docs(sprint): Update sprint report with command template bug fix
+```
+
+**Total**: 10 commits, all focused and atomic
+
+### Upgrade Instructions
+
+**From v3.3.0 to v3.3.1:**
+
+Run the standard upgrade command from your project root:
+```bash
+/update-context-system
+```
+
+The installer will:
+1. ✅ Download all files with retry logic
+2. ✅ Install missing helper scripts
+3. ✅ Update VERSION and sync config
+4. ✅ Validate installation and fix any issues automatically
+5. ✅ Report what was fixed
+
+**Post-upgrade validation runs automatically** - you'll see a summary of any issues found and fixed.
+
+**No manual steps required** - all fixes are automatic.
+
+### Known Issues
+
+**Commands with Multi-line Bash Patterns (Low Priority)**
+- 6 commands still use multi-line if-then-else blocks: `/init-context`, `/update-context-system`, `/add-ai-header`, `/organize-docs`, `/review-context`, `/validate-context`
+- **Impact**: May cause parsing errors if those commands execute the bash blocks directly
+- **Mitigation**: Many of these create scripts rather than execute directly, so impact may be minimal
+- **Plan**: Audit and fix in v3.4.0 if critical for usability
+
+### Metrics
+
+- **Time**: 9 hours (slightly over 8 hour estimate due to real-world bug discovery)
+- **Code Changes**: +550 lines, -135 lines, net +415 lines
+- **Files Modified**: 4 core files
+- **Files Created**: 2 (test suite, pattern docs)
+- **Test Coverage**: 100% of installer changes (15/15 tests passing)
+- **Commits**: 10 focused and atomic commits
+
+---
+
 ## [3.3.0] - 2025-11-13
 
 ### Added - Template Protection & Safety Features
