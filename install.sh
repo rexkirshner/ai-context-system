@@ -327,6 +327,8 @@ echo -e "${BLUE}⬇️  Downloading scripts...${NC}"
 SCRIPTS=(
   "validate-context.sh"
   "save-full-helper.sh"
+  "find-context-folder.sh"
+  "update-quick-reference.sh"
 )
 
 for script in "${SCRIPTS[@]}"; do
@@ -408,7 +410,7 @@ echo -e "${BLUE}🔍 Verifying installation...${NC}"
 
 VERIFICATION_FAILED=0
 
-# Check critical files (v3.0.0)
+# Check critical files (v3.3.1)
 CRITICAL_FILES=(
   "VERSION"
   "scripts/common-functions.sh"
@@ -420,6 +422,8 @@ CRITICAL_FILES=(
   "templates/STATUS.template.md"
   "templates/DECISIONS.template.md"
   "scripts/validate-context.sh"
+  "scripts/find-context-folder.sh"
+  "scripts/update-quick-reference.sh"
 )
 
 for file in "${CRITICAL_FILES[@]}"; do
