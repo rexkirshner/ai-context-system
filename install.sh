@@ -151,7 +151,7 @@ update_config_version() {
   fi
 }
 
-# Rollback installation on error
+# Rollback installation on error (v3.3.1: enhanced)
 rollback_installation() {
   if [ -n "$BACKUP_DIR" ] && [ -d "$BACKUP_DIR" ]; then
     echo ""
@@ -168,6 +168,17 @@ rollback_installation() {
     if [ -d "$BACKUP_DIR/scripts" ]; then
       rm -rf scripts 2>/dev/null || true
       cp -r "$BACKUP_DIR/scripts" . 2>/dev/null || true
+    fi
+
+    # Restore VERSION file
+    if [ -f "$BACKUP_DIR/VERSION" ]; then
+      cp "$BACKUP_DIR/VERSION" . 2>/dev/null || true
+    fi
+
+    # Restore context directory
+    if [ -d "$BACKUP_DIR/context" ]; then
+      rm -rf context 2>/dev/null || true
+      cp -r "$BACKUP_DIR/context" . 2>/dev/null || true
     fi
 
     echo -e "${GREEN}✅ System restored from backup${NC}"
@@ -284,11 +295,18 @@ if [ -d ".claude/commands" ] && [ -f ".claude/commands/init-context.md" ]; then
   BACKUP_DIR=".claude-backup-$(date +%Y%m%d-%H%M%S)"
   mkdir -p "$BACKUP_DIR"
 
+  # Backup system directories and files (v3.3.1: enhanced)
   if [ -d ".claude" ]; then
     cp -r .claude "$BACKUP_DIR/" 2>/dev/null || true
   fi
   if [ -d "scripts" ]; then
     cp -r scripts "$BACKUP_DIR/" 2>/dev/null || true
+  fi
+  if [ -f "VERSION" ]; then
+    cp VERSION "$BACKUP_DIR/" 2>/dev/null || true
+  fi
+  if [ -d "context" ]; then
+    cp -r context "$BACKUP_DIR/" 2>/dev/null || true
   fi
 
   echo "   ✅ Backup created: $BACKUP_DIR"
