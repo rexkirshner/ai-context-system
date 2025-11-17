@@ -107,6 +107,36 @@ download_file() {
   return 0
 }
 
+# Update version field in context/.context-config.json
+# Uses temp file approach for portability (macOS/Linux compatible)
+update_config_version() {
+  local config_file="context/.context-config.json"
+  local new_version="${1:-$VERSION}"
+
+  # Check if config file exists
+  if [ ! -f "$config_file" ]; then
+    return 0  # Skip if no config file (fresh install)
+  fi
+
+  # Use temp file for portable sed (works on macOS and Linux)
+  if sed "s/\"version\": \"[^\"]*\"/\"version\": \"$new_version\"/" "$config_file" > "$config_file.tmp"; then
+    # Validate output before overwriting
+    if [ -s "$config_file.tmp" ]; then
+      mv "$config_file.tmp" "$config_file"
+      echo -e "${BLUE}📝 Updated config version to v${new_version}${NC}"
+      return 0
+    else
+      echo -e "${YELLOW}⚠️  Version update failed (empty output), preserving original${NC}"
+      rm -f "$config_file.tmp"
+      return 1
+    fi
+  else
+    echo -e "${YELLOW}⚠️  Version update failed, preserving original${NC}"
+    rm -f "$config_file.tmp"
+    return 1
+  fi
+}
+
 # Rollback installation on error
 rollback_installation() {
   if [ -n "$BACKUP_DIR" ] && [ -d "$BACKUP_DIR" ]; then
@@ -452,13 +482,9 @@ if [ $FAILED_DOWNLOADS -eq 0 ] && [ $VERIFICATION_FAILED -eq 0 ]; then
   echo "AI Context System v${VERSION} is now installed."
   echo ""
 
-  # Update version in config if it exists
-  if [ -f "context/.context-config.json" ]; then
-    sed -i.bak "s/\"version\": \"[^\"]*\"/\"version\": \"$VERSION\"/" context/.context-config.json
-    rm -f context/.context-config.json.bak
-    echo -e "${BLUE}📝 Updated config version to v${VERSION}${NC}"
-    echo ""
-  fi
+  # Update version in config if it exists (v3.3.1: uses portable function)
+  update_config_version
+  echo ""
 
   echo -e "${BLUE}Next steps:${NC}"
   echo "   1. Run /init-context to initialize your project"
