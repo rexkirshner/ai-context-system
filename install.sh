@@ -181,6 +181,54 @@ rollback_installation() {
   fi
 }
 
+# Post-installation validation and auto-repair (v3.3.1)
+post_install_validation() {
+  echo ""
+  echo -e "${BLUE}🔍 Validating installation...${NC}"
+
+  local issues_found=0
+  local issues_fixed=0
+
+  # Check 1: Version sync
+  if [ -f "VERSION" ] && [ -f "context/.context-config.json" ]; then
+    local version_file=$(cat VERSION | tr -d ' \n')
+    local config_version=$(grep '"version"' context/.context-config.json | sed 's/.*"version": "\([^"]*\)".*/\1/')
+
+    if [ "$version_file" != "$config_version" ]; then
+      echo -e "   ${YELLOW}⚠️  Version mismatch detected${NC} (VERSION=$version_file, config=$config_version)"
+      issues_found=$((issues_found + 1))
+
+      # Auto-fix
+      if update_config_version "$version_file" >/dev/null 2>&1; then
+        echo "   ${GREEN}✅ Fixed version sync${NC}"
+        issues_fixed=$((issues_fixed + 1))
+      fi
+    fi
+  fi
+
+  # Check 2: Script permissions
+  for script in scripts/*.sh; do
+    if [ -f "$script" ] && [ ! -x "$script" ]; then
+      echo -e "   ${YELLOW}⚠️  Script not executable${NC}: $script"
+      issues_found=$((issues_found + 1))
+      chmod +x "$script" 2>/dev/null && {
+        echo "   ${GREEN}✅ Fixed permissions${NC}: $script"
+        issues_fixed=$((issues_fixed + 1))
+      }
+    fi
+  done
+
+  # Summary
+  echo ""
+  if [ $issues_found -eq 0 ]; then
+    echo -e "${GREEN}✅ Installation validated${NC} - no issues found"
+  elif [ $issues_fixed -eq $issues_found ]; then
+    echo -e "${GREEN}✅ Installation validated${NC} - all $issues_fixed issue(s) auto-fixed"
+  else
+    echo -e "${YELLOW}⚠️  Installation validated${NC} - fixed $issues_fixed/$issues_found issue(s)"
+  fi
+}
+
 # Set error trap
 trap 'rollback_installation' ERR
 
@@ -494,11 +542,9 @@ if [ $FAILED_DOWNLOADS -eq 0 ] && [ $VERIFICATION_FAILED -eq 0 ]; then
   echo -e "${GREEN}✅ Installation successful!${NC}"
   echo ""
   echo "AI Context System v${VERSION} is now installed."
-  echo ""
 
-  # Update version in config if it exists (v3.3.1: uses portable function)
-  update_config_version
-  echo ""
+  # Run post-installation validation (v3.3.1: auto-fixes common issues)
+  post_install_validation
 
   echo -e "${BLUE}Next steps:${NC}"
   echo "   1. Run /init-context to initialize your project"
