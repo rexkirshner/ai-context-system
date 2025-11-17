@@ -60,25 +60,14 @@ description: Comprehensive session documentation for breaks and handoffs (10-15 
 
 **ACTION:** Source the common functions library:
 
+**Note:** The Bash tool doesn't handle multi-line if-then-else blocks well. Use simple sequential commands instead.
+
+**Check if common-functions.sh exists:**
 ```bash
-echo "Step 0/10: Loading shared utilities..."
-echo ""
-
-# Load shared utilities (v2.3.0+)
-if [ -f "scripts/common-functions.sh" ]; then
-  source scripts/common-functions.sh
-  echo "✅ Common functions loaded"
-else
-  echo "⚠️  Warning: common-functions.sh not found (using legacy mode)"
-  # Define minimal fallback functions
-  log_info() { echo "$1"; }
-  log_success() { echo "✅ $1"; }
-  log_warn() { echo "⚠️  $1"; }
-  log_error() { echo "❌ $1"; }
-fi
-
-echo ""
+test -f "scripts/common-functions.sh" && echo "common-functions.sh found" || echo "common-functions.sh not found (will use direct commands)"
 ```
+
+**If found, you can source it, but continue with direct bash commands either way for compatibility.**
 
 **Why this matters:** Provides access to performance-optimized functions, input validation, progress indicators, and standardized error handling.
 
@@ -86,38 +75,22 @@ echo ""
 
 ### Step 1: Find and Verify Context Directory
 
+**v3.0.0:** Commands now work from subdirectories using find-context-folder.sh helper script.
+
+**ACTION:** Use the helper script to find context folder:
+
 ```bash
-echo "Step 1/10: Verifying context directory..."
-echo "⏱️ Estimated time remaining: ~12-15 minutes"
-echo ""
-
-# Find context/ directory (searches up to 2 parent dirs)
-find_context_dir() {
-  for dir in "context" "../context" "../../context"; do
-    if [ -d "$dir" ] && [ -f "$dir/.context-config.json" ]; then
-      echo "$dir"
-      return 0
-    fi
-  done
-  return 1
-}
-
-CONTEXT_DIR=$(find_context_dir)
-
-if [ -z "$CONTEXT_DIR" ]; then
-  echo "❌ No context/ directory found"
-  echo ""
-  echo "Searched:"
-  echo "  • ./ (current directory)"
-  echo "  • ../ (parent directory)"
-  echo "  • ../../ (grandparent directory)"
-  echo ""
-  echo "Run /init-context from project root first"
-  exit 1
-fi
+source "$(dirname "${BASH_SOURCE[0]}")/../scripts/find-context-folder.sh" || exit 1
+CONTEXT_DIR=$(find_context_folder) || exit 1
 
 echo "✅ Found context at: $CONTEXT_DIR"
-echo ""
+```
+
+**Note:** This searches current directory, parent directory, and grandparent directory for context/ folder. Use `$CONTEXT_DIR` variable throughout this command instead of hardcoded `context/`.
+
+**Alternative if script not available:**
+```bash
+test -d "context" && echo "context" || test -d "../context" && echo "../context" || test -d "../../context" && echo "../../context" || echo "ERROR: context/ not found"
 ```
 
 **Why this works:**
@@ -131,61 +104,38 @@ echo ""
 
 ### Step 2: Analyze What Changed
 
+**Try helper script first (optional):**
 ```bash
-echo "Step 2/10: Analyzing what changed since last save..."
-echo "⏱️ Estimated time remaining: ~10-12 minutes"
-echo ""
+test -x "scripts/save-full-helper.sh" && echo "Helper script available" || echo "Helper script not available - will use manual process"
+```
 
-# Try helper script first (auto-executes if available)
-if [ -x "scripts/save-full-helper.sh" ]; then
-  echo "Using save-full-helper.sh for automated analysis..."
-  echo ""
+**If helper is available, you can try running it:**
+```bash
+./scripts/save-full-helper.sh 2>/dev/null && echo "Helper succeeded - draft at context/.session-draft.md" || echo "Helper failed or not available - using manual process"
+```
 
-  if ./scripts/save-full-helper.sh; then
-    echo ""
-    echo "✅ Helper created draft session entry"
-    echo "   Review: context/.session-draft.md"
-    echo ""
-    echo "You can edit the draft and append to SESSIONS.md when ready:"
-    echo "  cat context/.session-draft.md >> $CONTEXT_DIR/SESSIONS.md"
-    echo "  rm context/.session-draft.md"
-    echo ""
-    echo "Or continue with manual process below."
-    echo ""
-  else
-    echo "⚠️  Helper script failed, falling back to manual process"
-    echo ""
-  fi
-fi
-
-# Manual analysis process
+**Manual analysis process - use simple sequential commands:**
+```bash
 echo "Gathering session information..."
 echo ""
 
-# Check for git repository
-if git rev-parse --git-dir > /dev/null 2>&1; then
-  echo "Git repository detected - analyzing changes:"
-  echo ""
+# Check for git repository and analyze changes
+echo "Checking for git repository..."
+git rev-parse --git-dir > /dev/null 2>&1 && echo "Git repository detected" || echo "Not a git repository"
+echo ""
 
-  echo "Recent commits (last 10):"
-  git log --oneline -10
-  echo ""
+# If git repository, get change information
+echo "Recent commits (last 10):"
+git log --oneline -10 2>/dev/null || echo "No git history available"
+echo ""
 
-  echo "Working directory status:"
-  git status
-  echo ""
+echo "Working directory status:"
+git status 2>/dev/null || echo "Not a git repository"
+echo ""
 
-  echo "Staged changes:"
-  git diff --cached --stat
-  echo ""
-else
-  echo "Not a git repository - using file timestamps for change detection"
-  echo ""
-
-  echo "Recently modified files (last 24 hours):"
-  find . -type f -mtime -1 -not -path "*/node_modules/*" -not -path "*/.git/*" 2>/dev/null | head -20
-  echo ""
-fi
+echo "Staged changes:"
+git diff --cached --stat 2>/dev/null || echo "No git repository or no staged changes"
+echo ""
 
 echo "✅ Analysis complete - ready to create session entry"
 echo ""

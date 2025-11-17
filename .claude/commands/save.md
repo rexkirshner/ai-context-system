@@ -48,35 +48,27 @@ echo "✅ Found context at: $CONTEXT_DIR"
 
 ### Step 2: Auto-Extract Git Data
 
-**ACTION:** Use Bash tool to extract git information:
+**ACTION:** Use Bash tool to extract git information with simple sequential commands:
+
+**Check if git repository:**
+```bash
+git rev-parse --git-dir > /dev/null 2>&1 && echo "Git repository detected" || echo "Not a git repository"
+```
+
+**If git repository detected, get branch and status:**
+```bash
+git branch --show-current
+```
 
 ```bash
-echo "📊 Analyzing changes..."
-echo ""
-
-# Get git status
-if git rev-parse --git-dir > /dev/null 2>&1; then
-  GIT_STATUS=$(git status --short 2>/dev/null || echo "No changes")
-  GIT_BRANCH=$(git branch --show-current 2>/dev/null || echo "unknown")
-
-  # Count changes
-  NEW_FILES=$(echo "$GIT_STATUS" | grep "^??" | wc -l | tr -d ' ')
-  MODIFIED_FILES=$(echo "$GIT_STATUS" | grep "^ M\|^M " | wc -l | tr -d ' ')
-  STAGED_FILES=$(echo "$GIT_STATUS" | grep "^A \|^M " | wc -l | tr -d ' ')
-
-  echo "✅ Git repository detected"
-  echo "Branch: $GIT_BRANCH"
-  echo "New: $NEW_FILES | Modified: $MODIFIED_FILES | Staged: $STAGED_FILES"
-  echo ""
-elif find . -maxdepth 2 -name ".git" -type d 2>/dev/null | grep -q .; then
-  echo "ℹ️  Meta-project detected (sub-repos have git repositories)"
-  echo "💡 Tip: Track file changes manually or run from sub-repo"
-  echo ""
-else
-  echo "⏭️  Not a git repository (skipping git data)"
-  echo ""
-fi
+git status --short
 ```
+
+```bash
+git log --oneline -5
+```
+
+**Note:** The Bash tool works best with simple, single-line commands. Avoid complex multi-line if-then-else blocks. Use multiple sequential Bash tool calls instead.
 
 ### Step 3: Update STATUS.md
 
