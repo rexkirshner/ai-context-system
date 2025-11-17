@@ -1,3 +1,6 @@
+# Development files (internal use only - not distributed)
+development/
+
 # Artifacts (tracked by default per preferences.yaml)
 # Uncomment to ignore in specific projects:
 # artifacts/
