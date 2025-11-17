@@ -217,7 +217,16 @@ post_install_validation() {
     fi
   fi
 
-  # Check 2: Script permissions
+  # Check 2: jq dependency (required for v3.4.0 code review features)
+  if ! command -v jq &> /dev/null; then
+    echo -e "   ${YELLOW}⚠️  Optional dependency 'jq' not found${NC}"
+    echo "   ${BLUE}ℹ️  Required for /code-review smart grouping and TodoWrite generation${NC}"
+    echo "   Install: brew install jq (macOS) or apt-get install jq (Linux)"
+    issues_found=$((issues_found + 1))
+    # Note: This is informational, not critical - don't block installation
+  fi
+
+  # Check 3: Script permissions
   for script in scripts/*.sh; do
     if [ -f "$script" ] && [ ! -x "$script" ]; then
       echo -e "   ${YELLOW}⚠️  Script not executable${NC}: $script"
@@ -439,6 +448,7 @@ SCRIPTS=(
   "save-full-helper.sh"
   "find-context-folder.sh"
   "update-quick-reference.sh"
+  "code-review-helpers.sh"
 )
 
 for script in "${SCRIPTS[@]}"; do
@@ -527,6 +537,7 @@ CRITICAL_FILES=(
   ".claude/commands/init-context.md"
   ".claude/commands/save.md"
   ".claude/commands/save-full.md"
+  ".claude/commands/code-review.md"
   "templates/claude.md.template"
   "templates/CONTEXT.template.md"
   "templates/STATUS.template.md"
@@ -534,6 +545,7 @@ CRITICAL_FILES=(
   "scripts/validate-context.sh"
   "scripts/find-context-folder.sh"
   "scripts/update-quick-reference.sh"
+  "scripts/code-review-helpers.sh"
 )
 
 for file in "${CRITICAL_FILES[@]}"; do
@@ -576,13 +588,25 @@ if [ $FAILED_DOWNLOADS -eq 0 ] && [ $VERIFICATION_FAILED -eq 0 ]; then
   echo "   - Command philosophy: .claude/docs/command-philosophy.md"
   echo "   - GitHub: ${REPO_URL}"
   echo ""
-  echo -e "${BLUE}v3.0.0 Features (Universal AI Support + Critical Fixes):${NC}"
+  echo -e "${BLUE}v3.4.0 Features (Code Review Actionability):${NC}"
+  echo "   - Smart issue grouping (25 errors → 1 task)"
+  echo "   - Auto-generate TodoWrite tasks (30+ min → 30 sec)"
+  echo "   - Context integration (KNOWN_ISSUES.md, STATUS.md)"
+  echo "   - Review history tracking (INDEX.md)"
+  echo "   - Auto-comparison with previous reviews"
+  echo "   - Comprehensive test suite (33 tests)"
+  echo "   - Note: Requires 'jq' for JSON processing"
+  echo ""
+  echo -e "${BLUE}v3.3.1 Features (Installer Improvements):${NC}"
+  echo "   - Download retry logic with exponential backoff"
+  echo "   - Post-installation validation with auto-repair"
+  echo "   - Enhanced backup/rollback (includes context/)"
+  echo "   - Bash parsing fixes for /save and /save-full"
+  echo ""
+  echo -e "${BLUE}v3.0.0 Features (Universal AI Support):${NC}"
   echo "   - Rebrand: Claude Context System → AI Context System"
-  echo "   - Enhanced git push protection (commit ≠ push)"
-  echo "   - Smart SESSIONS.md loading (handles large files)"
-  echo "   - Context folder detection (works from subdirectories)"
-  echo "   - Validated with real-world production feedback"
   echo "   - Multi-AI support (Claude, Cursor, Aider, Codex)"
+  echo "   - Validated with real-world production feedback"
   echo ""
   echo -e "${BLUE}v2.3.1 Features (Feedback System):${NC}"
   echo "   - Built-in feedback collection (context-feedback.md)"
