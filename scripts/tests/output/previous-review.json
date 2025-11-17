@@ -1,0 +1,34 @@
+[
+  {
+    "id": "C1",
+    "severity": "CRITICAL",
+    "message": "SQL injection vulnerability in search API",
+    "file": "api/search.ts",
+    "line": 123,
+    "category": "Security"
+  },
+  {
+    "id": "C2",
+    "severity": "CRITICAL",
+    "message": "Missing rate limiting on authentication endpoints",
+    "file": "api/auth/register.ts",
+    "line": 45,
+    "category": "Security"
+  },
+  {
+    "id": "H1",
+    "severity": "HIGH",
+    "message": "Missing error handling in async database operations",
+    "file": "api/users.ts",
+    "line": 456,
+    "category": "Error Handling"
+  },
+  {
+    "id": "M1",
+    "severity": "MEDIUM",
+    "message": "Console.log statement in production code",
+    "file": "utils/logger.ts",
+    "line": 45,
+    "category": "Code Quality"
+  }
+]

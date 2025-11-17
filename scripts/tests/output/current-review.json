@@ -1,0 +1,26 @@
+[
+  {
+    "id": "C2",
+    "severity": "CRITICAL",
+    "message": "Missing rate limiting on authentication endpoints",
+    "file": "api/auth/register.ts",
+    "line": 45,
+    "category": "Security"
+  },
+  {
+    "id": "M1",
+    "severity": "MEDIUM",
+    "message": "Console.log statement in production code",
+    "file": "utils/logger.ts",
+    "line": 45,
+    "category": "Code Quality"
+  },
+  {
+    "id": "M2",
+    "severity": "MEDIUM",
+    "message": "Missing JSDoc comment",
+    "file": "utils/helpers.ts",
+    "line": 67,
+    "category": "Documentation"
+  }
+]

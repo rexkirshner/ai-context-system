@@ -1,0 +1,117 @@
+{
+  "previous_review": {
+    "issues": [
+      {
+        "id": "C1",
+        "severity": "CRITICAL",
+        "message": "SQL injection vulnerability in search API",
+        "file": "api/search.ts",
+        "line": 123,
+        "category": "Security"
+      },
+      {
+        "id": "C2",
+        "severity": "CRITICAL",
+        "message": "Missing rate limiting on authentication endpoints",
+        "file": "api/auth/register.ts",
+        "line": 45,
+        "category": "Security"
+      },
+      {
+        "id": "H1",
+        "severity": "HIGH",
+        "message": "Missing error handling in async database operations",
+        "file": "api/users.ts",
+        "line": 456,
+        "category": "Error Handling"
+      },
+      {
+        "id": "M1",
+        "severity": "MEDIUM",
+        "message": "Console.log statement in production code",
+        "file": "utils/logger.ts",
+        "line": 45,
+        "category": "Code Quality"
+      }
+    ],
+    "count": 4
+  },
+  "current_review": {
+    "issues": [
+      {
+        "id": "C2",
+        "severity": "CRITICAL",
+        "message": "Missing rate limiting on authentication endpoints",
+        "file": "api/auth/register.ts",
+        "line": 45,
+        "category": "Security"
+      },
+      {
+        "id": "M1",
+        "severity": "MEDIUM",
+        "message": "Console.log statement in production code",
+        "file": "utils/logger.ts",
+        "line": 45,
+        "category": "Code Quality"
+      },
+      {
+        "id": "M2",
+        "severity": "MEDIUM",
+        "message": "Missing JSDoc comment",
+        "file": "utils/helpers.ts",
+        "line": 67,
+        "category": "Documentation"
+      }
+    ],
+    "count": 3
+  },
+  "resolved": [
+    {
+      "id": "C1",
+      "severity": "CRITICAL",
+      "message": "SQL injection vulnerability in search API",
+      "file": "api/search.ts",
+      "line": 123,
+      "category": "Security"
+    },
+    {
+      "id": "H1",
+      "severity": "HIGH",
+      "message": "Missing error handling in async database operations",
+      "file": "api/users.ts",
+      "line": 456,
+      "category": "Error Handling"
+    }
+  ],
+  "still_open": [
+    {
+      "id": "C2",
+      "severity": "CRITICAL",
+      "message": "Missing rate limiting on authentication endpoints",
+      "file": "api/auth/register.ts",
+      "line": 45,
+      "category": "Security"
+    },
+    {
+      "id": "M1",
+      "severity": "MEDIUM",
+      "message": "Console.log statement in production code",
+      "file": "utils/logger.ts",
+      "line": 45,
+      "category": "Code Quality"
+    }
+  ],
+  "new_issues": [
+    {
+      "id": "M2",
+      "severity": "MEDIUM",
+      "message": "Missing JSDoc comment",
+      "file": "utils/helpers.ts",
+      "line": 67,
+      "category": "Documentation"
+    }
+  ],
+  "resolved_count": 2,
+  "still_open_count": 2,
+  "new_issues_count": 1
+}
