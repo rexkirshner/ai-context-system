@@ -84,27 +84,41 @@ validate_file() {
   return 0
 }
 
-# Download and validate file
+# Download and validate file with retry logic (v3.3.1)
 download_file() {
   local url="$1"
   local output="$2"
   local min_size="${3:-50}"
+  local max_attempts=3
+  local attempt=1
+  local sleep_time=2
 
-  # Download file
-  if ! curl -sL "$url" -o "$output" 2>/dev/null; then
-    echo -e "${RED}✗${NC} (download failed)"
+  while [ $attempt -le $max_attempts ]; do
+    # Download file
+    if curl -sL "$url" -o "$output" 2>/dev/null; then
+      # Validate content
+      if validate_file "$output" "$min_size"; then
+        echo -e "${GREEN}✓${NC}"
+        return 0
+      fi
+    fi
+
+    # Failed - clean up and retry if attempts remain
     rm -f "$output"
-    return 1
-  fi
 
-  # Validate content
-  if ! validate_file "$output" "$min_size"; then
-    rm -f "$output"
-    return 1
-  fi
+    if [ $attempt -lt $max_attempts ]; then
+      # Silent retry (don't spam output)
+      sleep $sleep_time
+      attempt=$((attempt + 1))
+      sleep_time=$((sleep_time * 2))  # Exponential backoff
+    else
+      # Final attempt failed
+      echo -e "${RED}✗${NC} (failed after $max_attempts attempts)"
+      return 1
+    fi
+  done
 
-  echo -e "${GREEN}✓${NC}"
-  return 0
+  return 1
 }
 
 # Update version field in context/.context-config.json
