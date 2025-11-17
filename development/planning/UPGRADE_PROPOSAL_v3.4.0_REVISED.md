@@ -1,7 +1,7 @@
 # AI Context System - Upgrade Proposal v3.4.0 (REVISED)
 
 **Date**: 2025-11-16 (Revision 2)
-**Analysis Source**: Real-world feedback from 2 production projects (ncl, kex-financial-tracker)
+**Analysis Source**: Real-world feedback from 2 production projects (Project Alpha, Project Beta)
 **Feedback Sessions**: 100+ sessions across multiple projects
 **Current Version**: 3.3.0
 **Proposed Version**: 3.4.0 (with emergency 3.3.1 patch)
@@ -104,7 +104,7 @@ with potentially wrong/generic content.
 **Better solution**: Improve placeholder text
 ```diff
 - [FILL: Project Name]
-+ [FILL: Project Name] (e.g., "kex-financial-tracker")
++ [FILL: Project Name] (e.g., "Project Beta")
 
 - [FILL: 2-3 sentence description]
 + [FILL: 2-3 sentence description of what this project does, why it exists, and who it's for]
@@ -352,7 +352,7 @@ OPTIONAL_FILES=(
 
 **Evidence**:
 ```
-kex-financial-tracker:
+Project Beta:
   Step 0.5: Find context folder
   source scripts/find-context-folder.sh
   ❌ Exit code 1: Script not found
@@ -889,7 +889,7 @@ These require **human judgment**:
 **2. Auto-population creates illusion of completeness**
 ```bash
 # What auto-population would produce:
-Project: kex-financial-tracker (from package.json name - OK)
+Project: Project Beta (from package.json name - OK)
 Description: "Financial tracking app" (from package.json - generic)
 Tech Stack: Next.js, React, Prisma (from dependencies - OK)
 Goals: [FILL: Primary goal 1] (can't auto-extract - FAIL)

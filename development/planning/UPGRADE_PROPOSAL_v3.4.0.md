@@ -1,7 +1,7 @@
 # AI Context System - Upgrade Proposal v3.4.0
 
 **Date**: 2025-11-15
-**Analysis Source**: Real-world feedback from 2 production projects (ncl, kex-financial-tracker)
+**Analysis Source**: Real-world feedback from 2 production projects (Project Alpha, Project Beta)
 **Feedback Sessions**: 100+ sessions across multiple projects
 **Current Version**: 3.3.0
 **Proposed Version**: 3.4.0 (with emergency 3.3.1 patch)
@@ -23,8 +23,8 @@ Analysis of comprehensive feedback from two production projects reveals **3 crit
 ## Methodology
 
 ### Feedback Sources
-- **Project 1 (ncl)**: Next.js 15 monorepo, 11 sessions, 64KB feedback log, v3.3.0
-- **Project 2 (kex-financial-tracker)**: Next.js web app, fresh installation, 35KB feedback log, v3.0.0→3.3.0 upgrade
+- **Project 1 (Project Alpha)**: Next.js 15 monorepo, 11 sessions, 64KB feedback log, v3.3.0
+- **Project 2 (Project Beta)**: Next.js web app, fresh installation, 35KB feedback log, v3.0.0→3.3.0 upgrade
 
 ### Analysis Approach
 1. **Cross-project validation**: Issues reported in both projects = real bugs
@@ -57,11 +57,11 @@ These bugs cause user confusion, undermine trust, and block workflows despite co
 
 **Evidence**:
 ```
-kex-financial-tracker:
+Project Beta:
   Before: context/.context-config.json "version": "3.0.0"
   After:  VERSION = 3.3.0, config still "3.0.0" ❌
 
-ncl:
+Project Alpha:
   Before: context/.context-config.json "version": "3.0.0"
   After:  VERSION = 3.3.0, config still "3.0.0" ❌
 ```
@@ -75,7 +75,7 @@ Installer updates `VERSION` file but doesn't update `context/.context-config.jso
 - Different commands read different version sources
 - Trust in version reporting undermined
 
-**User Quote** (kex-financial-tracker):
+**User Quote** (Project Beta):
 > "Inconsistent version reporting undermines confidence... 'Installation completed with errors' message is alarming despite minor issue."
 
 **Fix**:
@@ -142,7 +142,7 @@ Both projects:
 - **Trust erosion**: Error message is alarming for minor issue
 - **Success rate**: 97% reported as failure
 
-**User Quote** (kex-financial-tracker):
+**User Quote** (Project Beta):
 > "Installer reports failure despite 32/33 files succeeding... Confusing error message (doesn't explain WHY file is too small)"
 
 **Fix Strategy**:
@@ -223,13 +223,13 @@ Show:
 
 ### Bug #3: find-context-folder.sh Script Missing from Installation 🔴
 
-**Status**: ✅ Real Bug - Confirmed in kex-financial-tracker
+**Status**: ✅ Real Bug - Confirmed in Project Beta
 **Severity**: Critical (Command fails at Step 0.5)
 **Impact**: All users running `/review-context` from subdirectories
 
 **Evidence**:
 ```
-kex-financial-tracker:
+Project Beta:
   Step 0.5: Find context folder
   source scripts/find-context-folder.sh
   ❌ Exit code 1: Context folder detection script not found
@@ -394,7 +394,7 @@ User created excellent documentation but received 85/100 confidence score due to
 
 **Total**: 15 points deducted for **system infrastructure bugs**, not documentation quality.
 
-**User Quote** (kex-financial-tracker):
+**User Quote** (Project Beta):
 > "User creates excellent documentation, gets penalized for system bugs. Low confidence score undermines trust in their work. Score should reflect resumability, not installer quality."
 
 **Analysis**:
@@ -512,7 +512,7 @@ After `/init-context`, CONTEXT.md contains 17 `[FILL: ...]` placeholders:
 - Information already exists in other files (config, package.json, PRD.md)
 - Multi-machine workflow broken (template doesn't transfer context)
 
-**User Quote** (ncl):
+**User Quote** (Project Alpha):
 > "CONTEXT.md contains 17 [FILL:] template placeholders... Reduces orientation value for new developers and AI agents."
 
 **Design Intent Analysis**:
@@ -586,10 +586,10 @@ Detect and extract project metadata from available sources:
 🔍 Auto-Population Available
 
 Detected project metadata from config and package files:
-- Project: kex-financial-tracker
+- Project: Project Beta
 - Tech Stack: Next.js 15, React 19, Prisma 6, PostgreSQL
 - Commands: dev, test, build (from package.json)
-- Repository: git@github.com:user/kex-financial-tracker.git
+- Repository: git@github.com:user/Project Beta.git
 
 Auto-populate CONTEXT.md with this data? [Y/n]
 
@@ -730,10 +730,10 @@ nothing to commit, working tree clean
 
 **User Quotes**:
 
-ncl:
+Project Alpha:
 > "Git Status Discrepancy: STATUS.md shows '9 commits ahead' but git shows 'up to date'"
 
-kex-financial-tracker:
+Project Beta:
 > "Git status shows 'up to date' but STATUS.md shows '9 commits ahead'. Update STATUS.md? [Y/n]"
 
 **Fix**:
@@ -860,7 +860,7 @@ Actual content:
 - Cosmetic inconsistency (doesn't break anything)
 - User must manually sync if they use counter
 
-**User Quote** (ncl):
+**User Quote** (Project Alpha):
 > "Configuration Counter Mismatch: nextDecisionId shows 1 but DECISIONS.md has D001-D019"
 
 **Fix**:
@@ -940,7 +940,7 @@ Users don't know:
 - Can they continue or must they fix?
 - What's the impact of the failure?
 
-**User Quote** (kex-financial-tracker):
+**User Quote** (Project Beta):
 > "Confusing error message (doesn't explain WHY file is too small)... Better error context needed"
 
 **Fix**:
@@ -1157,7 +1157,7 @@ fi
 
 ### Clarification #1: Slash Command Execution Model 📚
 
-**User Confusion** (ncl):
+**User Confusion** (Project Alpha):
 > "Are slash commands bash scripts to execute or instructions for Claude to read?"
 
 **Answer**: **Instructions for Claude Code to interpret and execute**
@@ -1241,7 +1241,7 @@ These 6 files handle 80% of projects without additional complexity.
 
 ### Clarification #3: Bash Complexity in Autonomous Execution 📚
 
-**User Confusion** (ncl):
+**User Confusion** (Project Alpha):
 > "Complex bash commands fail with parse errors"
 
 **Answer**: **Expected behavior - Claude Code's Bash tool has limitations**
@@ -1318,7 +1318,7 @@ If the following bash command fails, use Read tool to check files individually r
 
 ### 1. Append-Only SESSIONS.md Strategy 👍
 
-**User Quote** (ncl):
+**User Quote** (Project Alpha):
 > "Brilliant! Works with files of ANY size, no Read tool 25K token limit. Fast operation regardless of file size."
 
 **What makes it great**:
@@ -1341,7 +1341,7 @@ rm .session-draft.md
 
 ### 2. Session Entry Template Quality 👍
 
-**User Quote** (ncl):
+**User Quote** (Project Alpha):
 > "Perfect balance of structure and depth. TL;DR makes scanning effortless. Mental Models section is invaluable for AI agent understanding."
 
 **What makes it great**:
@@ -1357,7 +1357,7 @@ rm .session-draft.md
 
 ### 3. Git Push Protection 👍
 
-**User Quote** (ncl):
+**User Quote** (Project Alpha):
 > "Exactly the kind of safeguard that prevents costly mistakes. Systematic approach makes it impossible to accidentally push without approval."
 
 **What makes it great**:
@@ -1372,7 +1372,7 @@ rm .session-draft.md
 
 ### 4. Feedback Archival System 👍
 
-**User Quote** (kex-financial-tracker):
+**User Quote** (Project Beta):
 > "EXCELLENT! Preserves historical feedback with version number, creates fresh file, automatic process."
 
 **What makes it great**:
@@ -1387,7 +1387,7 @@ rm .session-draft.md
 
 ### 5. Smart SESSIONS.md Loading 👍
 
-**User Quote** (ncl):
+**User Quote** (Project Alpha):
 > "Handled 829-line file gracefully. Index + recent sessions strategy works perfectly. Scales to large files without issues."
 
 **What makes it great**:
@@ -1402,7 +1402,7 @@ rm .session-draft.md
 
 ### 6. Progress Indicators & Time Estimates 👍
 
-**User Quote** (ncl):
+**User Quote** (Project Alpha):
 > "Excellent UX for comprehensive command. Knowing '3 more minutes' helps users decide whether to wait or resume later."
 
 **What makes it great**:
