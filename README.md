@@ -1,6 +1,6 @@
 # AI Context System
 
-**Version 3.2.2** • [What's New](#-v322-released---critical-installer-fixes)
+**Version 3.4.0** • [What's New](#-v340-released---code-review-actionability)
 
 > **Externalize AI context. Enable human-AI collaboration. Perfect session continuity.**
 >
@@ -26,19 +26,23 @@ Facilitate peer review, project handoffs, and collaborative development between 
 
 ---
 
-## 🎉 v3.2.2 Released - Critical Installer Fixes
+## 🎉 v3.4.0 Released - Code Review Actionability
 
-**Emergency patch fixing installer bugs blocking all upgrades**
+**Major enhancement to `/code-review` based on real-world user feedback**
 
-**Critical Fixes:**
-- ✅ **Deprecated command bug** - Removed save-context.md causing 404 errors (100% upgrade failure)
-- ✅ **Version detection** - Now shows actual version instead of blank
-- ✅ **Misleading error message** - Fixed "success then failure" confusion in non-interactive mode
+**New Features:**
+- ✨ **Smart issue grouping** - 25 identical errors → 1 grouped task
+- ✨ **Auto-TodoWrite generation** - 40+ findings → 7-10 actionable tasks (30 min → 30 sec)
+- ✨ **KNOWN_ISSUES.md integration** - Critical issues persist across sessions
+- ✨ **STATUS.md auto-update** - Review summary visible in project status
+- ✨ **Review history tracking** - All reviews tracked in artifacts/code-reviews/INDEX.md
+- ✨ **Automatic comparison** - Auto-detects and compares with previous reviews
 
 **Impact:**
-- Upgrades now work reliably
-- Clear success messaging
-- Perfect non-interactive (--yes) support
+- Transforms reviews from "excellent analysis" to "immediately actionable"
+- 30-60 minutes of manual work → automated in seconds
+- Full context system integration
+- Quality trends visible over time
 
 **Full details:** [CHANGELOG.md](./CHANGELOG.md) • **Upgrade:** `/update-context-system`
 

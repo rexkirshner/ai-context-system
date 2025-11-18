@@ -2,7 +2,7 @@
 
 # validate-context.sh
 # Validates AI Context System documentation and configuration files
-# v3.0.0 - Multi-AI support and real-world feedback improvements
+# v3.4.0 - Multi-AI support and real-world feedback improvements
 # Exit codes: 0 = pass, 1 = warnings, 2 = errors
 
 set -e

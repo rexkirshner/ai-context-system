@@ -1,6 +1,6 @@
 #!/bin/bash
 # Common functions used across AI Context System commands
-# Version: 3.0.0
+# Version: 3.4.0
 #
 # This file extracts duplicate code from multiple commands into shared utilities.
 # Source this file at the beginning of any command that needs these functions.
@@ -482,13 +482,11 @@ check_for_updates() {
     fi
   fi
 
-  # Get latest version from GitHub (timeout quickly, don't block)
-  local repo_url=$(get_repo_url)
-  local repo_path="${repo_url#https://github.com/}"
-
+  # Get latest version from GitHub VERSION file (timeout quickly, don't block)
+  # Changed from /releases/latest API to VERSION file for accurate version tracking
   local latest=$(curl -s --connect-timeout 3 --max-time 5 \
-    "https://api.github.com/repos/$repo_path/releases/latest" 2>/dev/null \
-    | grep '"tag_name"' | cut -d'"' -f4 | sed 's/^v//')
+    "https://raw.githubusercontent.com/rexkirshner/ai-context-system/main/VERSION" 2>/dev/null \
+    | tr -d '[:space:]')
 
   local current=$(get_system_version)
 
@@ -682,7 +680,7 @@ get_current_session_count() {
 # =============================================================================
 
 # =============================================================================
-# Documentation Currency Functions (v3.3.0)
+# Documentation Currency Functions (v3.4.0)
 # =============================================================================
 
 # Calculate days since a given date
@@ -769,4 +767,4 @@ if [ "$VERBOSITY" != "quiet" ] && [ -z "$UPDATE_CHECK_RUNNING" ]; then
 fi
 
 # Log that common functions were loaded (debug only)
-log_debug "Loaded common-functions.sh v3.3.0"
+log_debug "Loaded common-functions.sh v3.4.0"
