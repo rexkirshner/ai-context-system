@@ -230,9 +230,21 @@ First, check if SESSIONS.md exists and get its line count:
 ```bash
 if [ -f "$CONTEXT_DIR/SESSIONS.md" ]; then
   FILE_SIZE=$(wc -l < "$CONTEXT_DIR/SESSIONS.md" 2>/dev/null | tr -d ' ')
-  echo "📖 SESSIONS.md size: $FILE_SIZE lines"
+
+  # Validate FILE_SIZE is a number
+  if ! [[ "$FILE_SIZE" =~ ^[0-9]+$ ]]; then
+    echo "⚠️  Could not determine SESSIONS.md size"
+    FILE_SIZE=0
+  fi
+
+  if [ "$FILE_SIZE" -eq 0 ]; then
+    echo "⚠️  SESSIONS.md is empty"
+  else
+    echo "📖 SESSIONS.md size: $FILE_SIZE lines"
+  fi
 else
   echo "⚠️  SESSIONS.md not found"
+  FILE_SIZE=0
 fi
 ```
 
