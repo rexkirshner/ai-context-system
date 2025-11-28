@@ -188,7 +188,11 @@ for i in $(seq 0 $((KEEP_START_INDEX - 1))); do
 
   # Extract session
   sed -n "${SESSION_START},${SESSION_END}p" "$SESSIONS_FILE" >> "$ARCHIVE_TEMP"
-  echo "" >> "$ARCHIVE_TEMP"  # Add blank line between sessions
+
+  # Only add separator if not last session
+  if [ $i -lt $((KEEP_START_INDEX - 1)) ]; then
+    echo "" >> "$ARCHIVE_TEMP"
+  fi
 done
 
 mv "$ARCHIVE_TEMP" "$ARCHIVE_FILE"
@@ -209,7 +213,11 @@ for i in $(seq "$KEEP_START_INDEX" $((TOTAL_SESSIONS - 1))); do
 
   # Extract session
   sed -n "${SESSION_START},${SESSION_END}p" "$SESSIONS_FILE" >> "$TEMP_FILE"
-  echo "" >> "$TEMP_FILE"  # Add blank line between sessions
+
+  # Only add separator if not last session
+  if [ $i -lt $((TOTAL_SESSIONS - 1)) ]; then
+    echo "" >> "$TEMP_FILE"
+  fi
 done
 
 # Replace original file (with validation to prevent data loss)
