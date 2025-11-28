@@ -446,7 +446,7 @@ echo ""
 # 3. Session Count
 echo "📊 Session Statistics:"
 if [ -f "$CONTEXT_DIR/SESSIONS.md" ]; then
-  SESSION_COUNT=$(grep -c "^## Session" "$CONTEXT_DIR/SESSIONS.md" 2>/dev/null || echo "0")
+  SESSION_COUNT=$(grep -cE "^## Session [0-9]+" "$CONTEXT_DIR/SESSIONS.md" 2>/dev/null || echo "0")
   echo "  Total sessions documented: $SESSION_COUNT"
 else
   echo "  SESSIONS.md not found"
