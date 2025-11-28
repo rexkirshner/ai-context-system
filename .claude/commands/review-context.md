@@ -453,7 +453,17 @@ echo "  CONTEXT.md: ${CONTEXT_PHASE:-not found}"
 echo "  STATUS.md:  ${STATUS_PHASE:-not found}"
 
 if [ -n "$CONTEXT_PHASE" ] && [ -n "$STATUS_PHASE" ] && [ "$CONTEXT_PHASE" != "$STATUS_PHASE" ]; then
-  echo "  ⚠️  Phase drift detected - files show different phases"
+  echo ""
+  echo "  ⚠️  Phase mismatch detected:"
+  echo "      CONTEXT.md: \"$CONTEXT_PHASE\""
+  echo "      STATUS.md:  \"$STATUS_PHASE\""
+  echo ""
+  echo "  📝 Action Required:"
+  echo "     1. Determine which phase is correct (usually STATUS.md is most current)"
+  echo "     2. Update the out-of-date file to match"
+  echo "     3. Typically: Edit CONTEXT.md to match STATUS.md"
+  echo "     4. Or if CONTEXT.md is correct: Update STATUS.md with /save command"
+  echo ""
 fi
 echo ""
 
