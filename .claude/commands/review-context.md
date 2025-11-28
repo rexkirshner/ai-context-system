@@ -451,9 +451,10 @@ echo ""
 
 # 1. Last Updated Dates
 echo "📅 Last Updated Dates:"
-CONTEXT_DATE=$(grep "Last Updated:" "$CONTEXT_DIR/CONTEXT.md" 2>/dev/null | sed 's/.*Last Updated: *//' | head -1)
-STATUS_DATE=$(grep "Last Updated:" "$CONTEXT_DIR/STATUS.md" 2>/dev/null | sed 's/.*Last Updated: *//' | head -1)
-SESSIONS_DATE=$(grep "Last Updated:" "$CONTEXT_DIR/SESSIONS.md" 2>/dev/null | sed 's/.*Last Updated: *//' | head -1)
+# Extract just the YYYY-MM-DD portion for flexibility (handles dates with times, etc.)
+CONTEXT_DATE=$(grep "Last Updated:" "$CONTEXT_DIR/CONTEXT.md" 2>/dev/null | head -1 | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}')
+STATUS_DATE=$(grep "Last Updated:" "$CONTEXT_DIR/STATUS.md" 2>/dev/null | head -1 | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}')
+SESSIONS_DATE=$(grep "Last Updated:" "$CONTEXT_DIR/SESSIONS.md" 2>/dev/null | head -1 | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}')
 
 echo "  CONTEXT.md:  ${CONTEXT_DATE:-not found}"
 echo "  STATUS.md:   ${STATUS_DATE:-not found}"
