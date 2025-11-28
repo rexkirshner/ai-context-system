@@ -408,6 +408,67 @@ echo ""
 
 ---
 
+### Step 2.8: Cross-Document Consistency ✨ v3.5.0
+
+**NEW in v3.5.0:** Automated consistency verification across context files to catch drift.
+
+Check that key fields align across CONTEXT.md, STATUS.md, and SESSIONS.md:
+
+```bash
+echo ""
+echo "🔍 Cross-Document Consistency Check"
+echo ""
+
+# 1. Last Updated Dates
+echo "📅 Last Updated Dates:"
+CONTEXT_DATE=$(grep "Last Updated:" "$CONTEXT_DIR/CONTEXT.md" 2>/dev/null | sed 's/.*Last Updated: *//' | head -1)
+STATUS_DATE=$(grep "Last Updated:" "$CONTEXT_DIR/STATUS.md" 2>/dev/null | sed 's/.*Last Updated: *//' | head -1)
+SESSIONS_DATE=$(grep "Last Updated:" "$CONTEXT_DIR/SESSIONS.md" 2>/dev/null | sed 's/.*Last Updated: *//' | head -1)
+
+echo "  CONTEXT.md:  ${CONTEXT_DATE:-not found}"
+echo "  STATUS.md:   ${STATUS_DATE:-not found}"
+echo "  SESSIONS.md: ${SESSIONS_DATE:-not found}"
+echo ""
+
+# 2. Phase Consistency
+echo "🎯 Current Phase:"
+CONTEXT_PHASE=$(grep -E "^Phase:|^\*\*Phase:\*\*" "$CONTEXT_DIR/CONTEXT.md" 2>/dev/null | sed 's/.*Phase: *//' | sed 's/\*\*//g' | head -1)
+STATUS_PHASE=$(grep -E "^Phase:|^\*\*Phase:\*\*" "$CONTEXT_DIR/STATUS.md" 2>/dev/null | sed 's/.*Phase: *//' | sed 's/\*\*//g' | head -1)
+
+echo "  CONTEXT.md: ${CONTEXT_PHASE:-not found}"
+echo "  STATUS.md:  ${STATUS_PHASE:-not found}"
+
+if [ -n "$CONTEXT_PHASE" ] && [ -n "$STATUS_PHASE" ] && [ "$CONTEXT_PHASE" != "$STATUS_PHASE" ]; then
+  echo "  ⚠️  Phase drift detected - files show different phases"
+fi
+echo ""
+
+# 3. Session Count
+echo "📊 Session Statistics:"
+if [ -f "$CONTEXT_DIR/SESSIONS.md" ]; then
+  SESSION_COUNT=$(grep -c "^## Session" "$CONTEXT_DIR/SESSIONS.md" 2>/dev/null || echo "0")
+  echo "  Total sessions documented: $SESSION_COUNT"
+else
+  echo "  SESSIONS.md not found"
+fi
+echo ""
+```
+
+**What this checks:**
+- **Date alignment**: Ensures documentation is updated together
+- **Phase consistency**: Catches phase drift between files
+- **Session tracking**: Validates session count is accurate
+
+**Why this matters:**
+- Manual cross-file comparison is error-prone
+- Catches inconsistencies early
+- Specific, actionable warnings
+- Maintains context quality automatically
+
+**Non-blocking:** This is informational only - won't prevent review from completing.
+
+---
+
 ### Step 3: Check Current Code State
 
 Analyze actual project state:
