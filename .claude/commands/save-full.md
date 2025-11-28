@@ -271,7 +271,7 @@ if [ "$SESSIONS_LINES" -gt 2000 ]; then
   if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
     echo ""
     echo "🗄️  Archiving old sessions..."
-    bash scripts/archive-sessions-helper.sh --keep 10 --context "$CONTEXT_DIR"
+    bash "$(dirname "$CONTEXT_DIR")/scripts/archive-sessions-helper.sh" --keep 10 --context "$CONTEXT_DIR"
 
     if [ $? -eq 0 ]; then
       echo "✅ Old sessions archived successfully"
