@@ -36,6 +36,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --context)
       CONTEXT_DIR="$2"
+      if [ ! -d "$CONTEXT_DIR" ]; then
+        echo "❌ Error: Context directory does not exist: $CONTEXT_DIR"
+        exit 1
+      fi
       shift 2
       ;;
     --no-backup)
