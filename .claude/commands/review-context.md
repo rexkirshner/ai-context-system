@@ -248,7 +248,23 @@ else
 fi
 ```
 
-**Step 2: Apply smart loading strategy based on file size**
+**Step 2: Determine Session Index size (for medium/large files)**
+
+For medium and large files, we need to know where Session Index ends to load it completely.
+
+```bash
+# Find line number where Session Index ends (first --- separator after index)
+if [ "$FILE_SIZE" -ge 1000 ]; then
+  INDEX_END=$(grep -n "^---$" "$CONTEXT_DIR/SESSIONS.md" | head -1 | cut -d: -f1)
+  if [ -z "$INDEX_END" ]; then
+    # No separator found, assume index is first 300 lines
+    INDEX_END=300
+  fi
+  echo "📋 Session Index ends at line $INDEX_END"
+fi
+```
+
+**Step 3: Apply smart loading strategy based on file size**
 
 **If file size < 1000 lines (small file):**
 - Use Read tool to load entire file: `Read "$CONTEXT_DIR/SESSIONS.md"`
@@ -257,14 +273,14 @@ fi
 **If file size 1000-5000 lines (medium file):**
 - Display: "📖 Loading SESSIONS.md strategically ($FILE_SIZE lines)"
 - Display: "   Reading: Session index + recent sessions"
-- Part 1: Use Read tool with `limit=300` to get session index
+- Part 1: Use Read tool with `limit=$INDEX_END` to get complete session index
 - Part 2: Calculate offset: `OFFSET = FILE_SIZE - 500`
 - Part 2: Use Read tool with `offset=$OFFSET limit=500` to get recent sessions
 
 **If file size > 5000 lines (large file):**
 - Display: "📖 Loading SESSIONS.md minimally ($FILE_SIZE lines - very large)"
 - Display: "   Reading: Session index + current session only"
-- Part 1: Use Read tool with `limit=200` to get session index
+- Part 1: Use Read tool with `limit=$INDEX_END` to get complete session index
 - Part 2: Calculate offset: `OFFSET = FILE_SIZE - 300`
 - Part 2: Use Read tool with `offset=$OFFSET limit=300` to get current session
 - Display warning:
