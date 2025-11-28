@@ -463,6 +463,7 @@ SCRIPTS=(
   "find-context-folder.sh"
   "update-quick-reference.sh"
   "code-review-helpers.sh"
+  "archive-sessions-helper.sh"
 )
 
 for script in "${SCRIPTS[@]}"; do
