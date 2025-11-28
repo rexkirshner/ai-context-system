@@ -22,6 +22,11 @@ NC='\033[0m' # No Color
 REPO_URL="https://github.com/rexkirshner/ai-context-system"
 RAW_URL="https://raw.githubusercontent.com/rexkirshner/ai-context-system/main"
 
+# Optional files (download failures won't block installation)
+OPTIONAL_FILES=(
+  "reference/ORGANIZATION.md"
+)
+
 # Get version from GitHub VERSION file (with validation)
 VERSION=$(curl -sL "${RAW_URL}/VERSION" 2>/dev/null || echo "3.0.0")
 
@@ -82,6 +87,15 @@ validate_file() {
   fi
 
   return 0
+}
+
+# Check if a file is in the optional files list
+is_optional() {
+  local file="$1"
+  for opt in "${OPTIONAL_FILES[@]}"; do
+    [[ "$file" == "$opt" ]] && return 0
+  done
+  return 1
 }
 
 # Download and validate file with retry logic (v3.3.1)
@@ -517,7 +531,12 @@ echo -e "${BLUE}⬇️  Downloading reference files...${NC}"
 # Download ORGANIZATION.md to reference/ (users can copy to root if desired)
 echo -n "   Downloading ORGANIZATION.md... "
 if ! download_file "${RAW_URL}/ORGANIZATION.md" "reference/ORGANIZATION.md" 100; then
-  ((FAILED_DOWNLOADS++))
+  # Check if this is an optional file
+  if is_optional "reference/ORGANIZATION.md"; then
+    echo "   (optional file, skipping)"
+  else
+    ((FAILED_DOWNLOADS++))
+  fi
 fi
 
 echo ""
