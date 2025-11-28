@@ -223,49 +223,51 @@ Files to load:
 
 #### SESSIONS.md Smart Loading (v3.5.0 - Automated)
 
-Run this bash code to detect file size and apply smart loading:
+**Step 1: Detect file size**
+
+First, check if SESSIONS.md exists and get its line count:
 
 ```bash
 if [ -f "$CONTEXT_DIR/SESSIONS.md" ]; then
   FILE_SIZE=$(wc -l < "$CONTEXT_DIR/SESSIONS.md" 2>/dev/null | tr -d ' ')
-
-  if [ "$FILE_SIZE" -lt 1000 ]; then
-    echo "📖 Loading SESSIONS.md fully ($FILE_SIZE lines)"
-    # Read entire file
-    Read "$CONTEXT_DIR/SESSIONS.md"
-
-  elif [ "$FILE_SIZE" -lt 5000 ]; then
-    echo "📖 Loading SESSIONS.md strategically ($FILE_SIZE lines)"
-    echo "   Reading: Session index + recent sessions"
-    # Part 1: Session index (first 300 lines)
-    Read "$CONTEXT_DIR/SESSIONS.md" limit=300
-    # Part 2: Recent sessions (last 500 lines)
-    OFFSET=$((FILE_SIZE - 500))
-    Read "$CONTEXT_DIR/SESSIONS.md" offset=$OFFSET limit=500
-
-  else
-    echo "📖 Loading SESSIONS.md minimally ($FILE_SIZE lines - very large)"
-    echo "   Reading: Session index + current session only"
-    # Part 1: Session index (first 200 lines)
-    Read "$CONTEXT_DIR/SESSIONS.md" limit=200
-    # Part 2: Current session (last 300 lines)
-    OFFSET=$((FILE_SIZE - 300))
-    Read "$CONTEXT_DIR/SESSIONS.md" offset=$OFFSET limit=300
-    echo ""
-    echo "⚠️  SESSIONS.md is very large ($FILE_SIZE lines)"
-    echo "   Consider archiving old sessions to improve performance"
-  fi
+  echo "📖 SESSIONS.md size: $FILE_SIZE lines"
 else
   echo "⚠️  SESSIONS.md not found"
 fi
 ```
 
+**Step 2: Apply smart loading strategy based on file size**
+
+**If file size < 1000 lines (small file):**
+- Use Read tool to load entire file: `Read "$CONTEXT_DIR/SESSIONS.md"`
+- Display: "📖 Loading SESSIONS.md fully ($FILE_SIZE lines)"
+
+**If file size 1000-5000 lines (medium file):**
+- Display: "📖 Loading SESSIONS.md strategically ($FILE_SIZE lines)"
+- Display: "   Reading: Session index + recent sessions"
+- Part 1: Use Read tool with `limit=300` to get session index
+- Part 2: Calculate offset: `OFFSET = FILE_SIZE - 500`
+- Part 2: Use Read tool with `offset=$OFFSET limit=500` to get recent sessions
+
+**If file size > 5000 lines (large file):**
+- Display: "📖 Loading SESSIONS.md minimally ($FILE_SIZE lines - very large)"
+- Display: "   Reading: Session index + current session only"
+- Part 1: Use Read tool with `limit=200` to get session index
+- Part 2: Calculate offset: `OFFSET = FILE_SIZE - 300`
+- Part 2: Use Read tool with `offset=$OFFSET limit=300` to get current session
+- Display warning:
+  ```
+  ⚠️  SESSIONS.md is very large ($FILE_SIZE lines)
+     Consider archiving old sessions to improve performance
+  ```
+
 **Why this works:**
 - Auto-detects file size and chooses optimal strategy
 - Small files (<1000 lines): Full read
-- Medium files (1000-5000): Index + recent sessions
-- Large files (>5000): Index + current session only + warning
+- Medium files (1000-5000 lines): Index + recent sessions (800 lines total)
+- Large files (>5000 lines): Index + current session only (500 lines total) + warning
 - Prevents token limit crashes on large files
+- Clear instructions, not mixed bash/tool calls
 
 ---
 
