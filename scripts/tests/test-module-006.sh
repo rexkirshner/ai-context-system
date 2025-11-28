@@ -105,9 +105,9 @@ test_review_context_has_smart_loading() {
   echo "Test 4: review-context.md should contain smart loading bash code"
 
   # Check for the bash code pattern that implements smart loading
-  if grep -q "FILE_SIZE=.*wc -l.*SESSIONS.md" .claude/commands/review-context.md; then
+  if grep -q "FILE_SIZE=.*wc -l.*SESSIONS.md" "$PROJECT_ROOT/.claude/commands/review-context.md"; then
     # Check for the conditional logic
-    if grep -A 10 "FILE_SIZE=.*SESSIONS.md" .claude/commands/review-context.md | grep -q "if.*FILE_SIZE.*1000"; then
+    if grep -A 10 "FILE_SIZE=.*SESSIONS.md" "$PROJECT_ROOT/.claude/commands/review-context.md" | grep -q "if.*FILE_SIZE.*1000"; then
       echo -e "\033[0;32m✓\033[0m Smart loading bash code exists"
       TESTS_RUN=$((TESTS_RUN + 1))
       TESTS_PASSED=$((TESTS_PASSED + 1))

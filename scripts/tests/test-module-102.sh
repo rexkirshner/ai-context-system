@@ -45,9 +45,9 @@ test_archiving_threshold() {
   echo "Test 3: Archiving threshold should be reasonable (>1000 lines)"
 
   # Look for the threshold value in the archiving check
-  if grep -qE "LINE_COUNT.*-gt [0-9]+" "$PROJECT_ROOT/.claude/commands/save-full.md"; then
+  if grep -qE "SESSIONS_LINES.*-gt [0-9]+|LINE_COUNT.*-gt [0-9]+" "$PROJECT_ROOT/.claude/commands/save-full.md"; then
     # Extract the threshold value
-    THRESHOLD=$(grep -oE "\-gt [0-9]+" "$PROJECT_ROOT/.claude/commands/save-full.md" | grep -oE "[0-9]+" | head -1)
+    THRESHOLD=$(grep -oE "SESSIONS_LINES.*-gt [0-9]+|LINE_COUNT.*-gt [0-9]+" "$PROJECT_ROOT/.claude/commands/save-full.md" | grep -oE "[0-9]+" | head -1)
 
     if [ -n "$THRESHOLD" ] && [ "$THRESHOLD" -gt 1000 ]; then
       echo -e "\033[0;32m✓\033[0m Threshold is reasonable: $THRESHOLD"
