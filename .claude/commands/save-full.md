@@ -253,25 +253,38 @@ echo ""
 - Decisions linked to DECISIONS.md - Full rationale available
 - Structured but comprehensive (40-60 lines, not 10 or 190)
 
-**File Size Warning:**
+**Auto-Archiving Check (v3.5.0 - MODULE-102):**
 
 ```bash
-# Check SESSIONS.md size
+# Check SESSIONS.md size and offer archiving (v3.5.0+)
 echo "Checking SESSIONS.md file size..."
 SESSIONS_LINES=$(wc -l < "$CONTEXT_DIR/SESSIONS.md" | tr -d ' ')
 
-if [ "$SESSIONS_LINES" -gt 5000 ]; then
+if [ "$SESSIONS_LINES" -gt 2000 ]; then
   echo ""
-  echo "⚠️  SESSIONS.md is large ($SESSIONS_LINES lines)"
+  echo "📦 SESSIONS.md is large ($SESSIONS_LINES lines)"
+  echo "   Archiving old sessions improves performance."
   echo ""
-  echo "Recommendation: Consider archiving old sessions:"
-  echo "  • Move sessions 1-50 to artifacts/sessions/archive-2024-Q4.md"
-  echo "  • Keep only recent 50-100 sessions in main file"
-  echo ""
-  echo "Benefits:"
-  echo "  • Faster file operations"
-  echo "  • Better performance with Edit/Read tools"
-  echo "  • Historical sessions preserved in archives"
+  read -p "Archive old sessions (keep last 10)? [Y/n] " -n 1 -r
+  echo
+
+  if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
+    echo ""
+    echo "🗄️  Archiving old sessions..."
+    bash scripts/archive-sessions-helper.sh --keep 10 --context "$CONTEXT_DIR"
+
+    if [ $? -eq 0 ]; then
+      echo "✅ Old sessions archived successfully"
+      echo ""
+      # Refresh line count after archiving
+      SESSIONS_LINES=$(wc -l < "$CONTEXT_DIR/SESSIONS.md" | tr -d ' ')
+      echo "📊 SESSIONS.md now has $SESSIONS_LINES lines"
+    else
+      echo "⚠️  Archiving failed, continuing without archiving"
+    fi
+  else
+    echo "Skipped archiving (file will continue growing)"
+  fi
   echo ""
 fi
 
