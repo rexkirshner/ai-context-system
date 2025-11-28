@@ -14,6 +14,12 @@
 
 set -e
 
+# Cleanup function to remove temp files on exit
+cleanup() {
+  rm -f "$TEMP_FILE" "$ARCHIVE_TEMP" 2>/dev/null
+}
+trap cleanup EXIT ERR
+
 # Default values
 KEEP_RECENT=10
 CONTEXT_DIR="context"
