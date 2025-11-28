@@ -363,6 +363,39 @@ Create detailed report in `artifacts/code-reviews/session-[N]-review.md`:
 - [✅] Report is actionable
 ```
 
+**IMPORTANT**: After completing the analysis above, AUTOMATICALLY save the report to a file using the bash code below:
+
+```bash
+# Auto-generate report file
+echo ""
+echo "💾 Saving detailed report..."
+
+# Detect session number from SESSIONS.md
+SESSION_NUM=$(grep -c "^## Session" context/SESSIONS.md 2>/dev/null || echo "unknown")
+
+# Get current date
+REVIEW_DATE=$(date +%Y-%m-%d)
+
+# Create directory
+mkdir -p artifacts/code-reviews
+
+# Generate report filename
+REPORT_FILE="artifacts/code-reviews/session-${SESSION_NUM}-review.md"
+
+# Write the comprehensive report from Step 6 above to the file
+# (Copy the entire report content from Step 6 into this file)
+# Replace placeholders:
+#   - [N] with $SESSION_NUM
+#   - YYYY-MM-DD with $REVIEW_DATE
+#   - Fill in actual findings, grades, metrics from the analysis
+
+echo "✅ Report saved to: $REPORT_FILE"
+echo ""
+echo "📄 You can view the detailed report at: $REPORT_FILE"
+```
+
+**Note**: The report content written to `$REPORT_FILE` should be the complete analysis from Step 6, replacing `[N]` placeholders with actual values (session number, date, findings, etc.).
+
 ### Step 7: Report Completion
 
 **Console output:**
