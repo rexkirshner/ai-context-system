@@ -1,6 +1,6 @@
 #!/bin/bash
 # Archive old sessions from SESSIONS.md
-# Part of AI Context System v3.5.0 - MODULE-101
+# Part of AI Context System v3.5.0 - MODULE-102
 #
 # Usage:
 #   ./archive-sessions-helper.sh [--keep N] [--context DIR]
