@@ -261,17 +261,25 @@ echo "Checking SESSIONS.md file size..."
 SESSIONS_LINES=$(wc -l < "$CONTEXT_DIR/SESSIONS.md" | tr -d ' ')
 
 if [ "$SESSIONS_LINES" -gt 2000 ]; then
-  echo ""
-  echo "📦 SESSIONS.md is large ($SESSIONS_LINES lines)"
-  echo "   Archiving old sessions improves performance."
-  echo ""
-  read -p "Archive old sessions (keep last 10)? [Y/n] " -n 1 -r
-  echo
-
-  if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
+  # Check if user has disabled auto-archiving
+  if [ -f "$CONTEXT_DIR/.no-archive" ]; then
     echo ""
-    echo "🗄️  Archiving old sessions..."
-    bash "$(dirname "$CONTEXT_DIR")/scripts/archive-sessions-helper.sh" --keep 10 --context "$CONTEXT_DIR"
+    echo "ℹ️  Auto-archiving disabled for this project"
+    echo "   SESSIONS.md is large ($SESSIONS_LINES lines) but archiving is skipped"
+    echo "   To re-enable: rm $CONTEXT_DIR/.no-archive"
+    echo ""
+  else
+    echo ""
+    echo "📦 SESSIONS.md is large ($SESSIONS_LINES lines)"
+    echo "   Archiving old sessions improves performance."
+    echo ""
+    read -p "Archive old sessions (keep last 10)? [Y/n] " -n 1 -r
+    echo
+
+    if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
+      echo ""
+      echo "🗄️  Archiving old sessions..."
+      bash "$(dirname "$CONTEXT_DIR")/scripts/archive-sessions-helper.sh" --keep 10 --context "$CONTEXT_DIR"
 
     if [ $? -eq 0 ]; then
       echo "✅ Old sessions archived successfully"
@@ -297,10 +305,20 @@ if [ "$SESSIONS_LINES" -gt 2000 ]; then
       echo "   bash scripts/archive-sessions-helper.sh --keep 10 --context $CONTEXT_DIR"
       echo ""
     fi
-  else
-    echo "Skipped archiving (file will continue growing)"
+    else
+      echo "Skipped archiving (file will continue growing)"
+      echo ""
+      # Offer to disable future prompts
+      read -p "Don't ask again? [y/N] " -n 1 -r
+      echo
+      if [[ $REPLY =~ ^[Yy]$ ]]; then
+        touch "$CONTEXT_DIR/.no-archive"
+        echo "✅ Auto-archiving disabled for this project"
+        echo "   To re-enable: rm $CONTEXT_DIR/.no-archive"
+      fi
+    fi
+    echo ""
   fi
-  echo ""
 fi
 
 echo "✅ Session entry ready to append"
