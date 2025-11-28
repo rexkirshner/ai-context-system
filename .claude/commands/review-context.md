@@ -221,91 +221,51 @@ Files to load:
 
 **Note any missing files** - will affect confidence score.
 
-#### SESSIONS.md Smart Loading Strategy (v3.0.0 - MANDATORY)
+#### SESSIONS.md Smart Loading (v3.5.0 - Automated)
 
-**🔴 CRITICAL:** NEVER attempt to read entire SESSIONS.md without checking size first
-
-**Real-world issue:** Files >25K tokens cause Read tool failures and command crashes
-
-**MANDATORY STEPS:**
-
-**Step 1: Check file size FIRST**
+Run this bash code to detect file size and apply smart loading:
 
 ```bash
-wc -l $CONTEXT_DIR/SESSIONS.md
-# This shows line count - use this to determine loading strategy
+if [ -f "$CONTEXT_DIR/SESSIONS.md" ]; then
+  FILE_SIZE=$(wc -l < "$CONTEXT_DIR/SESSIONS.md" 2>/dev/null | tr -d ' ')
+
+  if [ "$FILE_SIZE" -lt 1000 ]; then
+    echo "📖 Loading SESSIONS.md fully ($FILE_SIZE lines)"
+    # Read entire file
+    Read "$CONTEXT_DIR/SESSIONS.md"
+
+  elif [ "$FILE_SIZE" -lt 5000 ]; then
+    echo "📖 Loading SESSIONS.md strategically ($FILE_SIZE lines)"
+    echo "   Reading: Session index + recent sessions"
+    # Part 1: Session index (first 300 lines)
+    Read "$CONTEXT_DIR/SESSIONS.md" limit=300
+    # Part 2: Recent sessions (last 500 lines)
+    OFFSET=$((FILE_SIZE - 500))
+    Read "$CONTEXT_DIR/SESSIONS.md" offset=$OFFSET limit=500
+
+  else
+    echo "📖 Loading SESSIONS.md minimally ($FILE_SIZE lines - very large)"
+    echo "   Reading: Session index + current session only"
+    # Part 1: Session index (first 200 lines)
+    Read "$CONTEXT_DIR/SESSIONS.md" limit=200
+    # Part 2: Current session (last 300 lines)
+    OFFSET=$((FILE_SIZE - 300))
+    Read "$CONTEXT_DIR/SESSIONS.md" offset=$OFFSET limit=300
+    echo ""
+    echo "⚠️  SESSIONS.md is very large ($FILE_SIZE lines)"
+    echo "   Consider archiving old sessions to improve performance"
+  fi
+else
+  echo "⚠️  SESSIONS.md not found"
+fi
 ```
-
-**Step 2: Choose loading strategy based on size**
-
-**If < 1000 lines: Read entire file**
-
-```
-Use Read tool:
-- file_path: $CONTEXT_DIR/SESSIONS.md
-- No offset/limit needed
-```
-
-**If 1000-5000 lines: Strategic reading (RECOMMENDED threshold)**
-
-```
-⚠️ File is medium-sized - using strategic loading
-
-Part 1 - Session Index:
-  Use Read tool with:
-  - file_path: $CONTEXT_DIR/SESSIONS.md
-  - offset: 0 (or omit)
-  - limit: 300
-
-Part 2 - Recent Sessions:
-  Calculate offset: <SESSIONS_LINES> - 800
-  Use Read tool with:
-  - file_path: $CONTEXT_DIR/SESSIONS.md
-  - offset: <calculated>
-  - limit: 800
-
-Result: Loaded session index + last ~2 sessions
-```
-
-**If > 5000 lines: Index + current session only**
-
-```
-⚠️ File is large - loading index + current session only
-
-Part 1 - Session Index:
-  Use Read tool with:
-  - file_path: $CONTEXT_DIR/SESSIONS.md
-  - offset: 0 (or omit)
-  - limit: 200
-
-Part 2 - Current Session:
-  Calculate offset: <SESSIONS_LINES> - 400
-  Use Read tool with:
-  - file_path: $CONTEXT_DIR/SESSIONS.md
-  - offset: <calculated>
-  - limit: 400
-
-Show file statistics:
-  Total sessions: (count "^## Session" with grep)
-  Total lines: <SESSIONS_LINES>
-  Loaded: Index + latest session
-
-💡 Suggest: Run /session-summary for condensed full history
-```
-
-**Step 3: Handle Read failures gracefully**
-
-If Read tool returns error about token limits:
-1. Report the error clearly
-2. Fall back to smaller load (reduce limits by 50%)
-3. Suggest session archiving if file > 3000 lines
-4. NEVER crash - partial load is better than none
 
 **Why this works:**
-- Session index at top shows all session titles
-- Most recent session has current WIP state
-- Avoids reading middle history (not needed for resuming)
-- Prevents timeouts on large files
+- Auto-detects file size and chooses optimal strategy
+- Small files (<1000 lines): Full read
+- Medium files (1000-5000): Index + recent sessions
+- Large files (>5000): Index + current session only + warning
+- Prevents token limit crashes on large files
 
 ---
 

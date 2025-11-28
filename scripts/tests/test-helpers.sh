@@ -303,8 +303,8 @@ create_large_sessions_file() {
 
   mkdir -p "$(dirname "$sessions_file")"
 
-  # Each session is ~50 lines, so calculate sessions needed
-  local sessions=$((lines / 50))
+  # Each session is ~20 lines, so calculate sessions needed
+  local sessions=$((lines / 20))
   create_test_sessions "$sessions" "$sessions_file"
 }
 
