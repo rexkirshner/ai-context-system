@@ -157,6 +157,39 @@ The installer will:
 - Installer will show version change (if any)
 - Installer will list all updated files
 
+---
+
+### Step 2.3: Update Configuration Version
+
+**ACTION:** Update the version fields in `.context-config.json` to match the new system version:
+
+```bash
+echo "🔄 Updating configuration version..."
+
+# Detect new system version
+SYSTEM_VERSION=$(cat VERSION 2>/dev/null || echo "unknown")
+
+if [ "$SYSTEM_VERSION" != "unknown" ] && [ -f "context/.context-config.json" ]; then
+  # Update both version and configVersion fields
+  # macOS uses different sed syntax than Linux
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    sed -i '' "s/\"version\": \"[^\"]*\"/\"version\": \"$SYSTEM_VERSION\"/g" context/.context-config.json
+    sed -i '' "s/\"configVersion\": \"[^\"]*\"/\"configVersion\": \"$SYSTEM_VERSION\"/g" context/.context-config.json
+  else
+    sed -i "s/\"version\": \"[^\"]*\"/\"version\": \"$SYSTEM_VERSION\"/g" context/.context-config.json
+    sed -i "s/\"configVersion\": \"[^\"]*\"/\"configVersion\": \"$SYSTEM_VERSION\"/g" context/.context-config.json
+  fi
+
+  echo "✅ Updated config version to $SYSTEM_VERSION"
+else
+  echo "⚠️  Could not update config version (VERSION file or config missing)"
+fi
+```
+
+**Why this matters:** Ensures the configuration file accurately reflects the upgraded system version, preventing version mismatch warnings in `/review-context`.
+
+---
+
 ### Step 2.5: Archive Feedback and Create Fresh File
 
 **v2.3.1: Feedback System**
