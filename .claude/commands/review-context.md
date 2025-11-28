@@ -405,7 +405,11 @@ if [ ! -f "$CONTEXT_DIR/DECISIONS.md" ]; then
   echo ""
 else
   # Count documented decisions
-  DECISION_COUNT=$(grep -c "^### D[0-9]" "$CONTEXT_DIR/DECISIONS.md" 2>/dev/null || echo "0")
+  DECISION_COUNT=$(grep "^### D[0-9]" "$CONTEXT_DIR/DECISIONS.md" 2>/dev/null | wc -l | tr -d ' ')
+  # Use wc -l instead of grep -c to avoid multiline output issues
+  if [ -z "$DECISION_COUNT" ]; then
+    DECISION_COUNT="0"
+  fi
 
   # Count total git commits (if in git repo)
   if git rev-parse --git-dir > /dev/null 2>&1; then
