@@ -280,7 +280,22 @@ if [ "$SESSIONS_LINES" -gt 2000 ]; then
       SESSIONS_LINES=$(wc -l < "$CONTEXT_DIR/SESSIONS.md" | tr -d ' ')
       echo "📊 SESSIONS.md now has $SESSIONS_LINES lines"
     else
-      echo "⚠️  Archiving failed, continuing without archiving"
+      echo ""
+      echo "❌ Archiving failed!"
+      echo ""
+      echo "⚠️  IMPORTANT: Check your SESSIONS.md file"
+      echo "   • Backup available at: $CONTEXT_DIR/SESSIONS.md.backup"
+      echo "   • To restore: cp $CONTEXT_DIR/SESSIONS.md.backup $CONTEXT_DIR/SESSIONS.md"
+      echo "   • Verify SESSIONS.md has correct content before proceeding"
+      echo ""
+      echo "   Possible causes:"
+      echo "   - Disk full (check available space)"
+      echo "   - Permissions issue (check file permissions)"
+      echo "   - Corrupted SESSIONS.md format"
+      echo ""
+      echo "   Recommended: Fix the issue and run archiving manually:"
+      echo "   bash scripts/archive-sessions-helper.sh --keep 10 --context $CONTEXT_DIR"
+      echo ""
     fi
   else
     echo "Skipped archiving (file will continue growing)"
