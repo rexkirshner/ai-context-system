@@ -86,8 +86,15 @@ If context/ exists:
 **ACTION:** Use the Bash tool to check version using shared functions:
 
 ```bash
-# Get current version (from .context-config.json or fallback to VERSION file)
-CURRENT_VERSION=$(get_system_version)
+# Get current version using shell-compatible approach (v3.5.0+ - fixes zsh parsing error)
+# Fallback chain: VERSION file → .context-config.json → "unknown"
+CURRENT_VERSION=$(cat VERSION 2>/dev/null)
+if [ -z "$CURRENT_VERSION" ]; then
+  CURRENT_VERSION=$(grep -m 1 '"version":' context/.context-config.json 2>/dev/null | sed 's/.*"version": "\([^"]*\)".*/\1/')
+fi
+if [ -z "$CURRENT_VERSION" ]; then
+  CURRENT_VERSION="unknown"
+fi
 
 # Fetch latest version from GitHub (with retry logic)
 log_verbose "Checking for system updates..."
@@ -101,8 +108,8 @@ if [ -z "$LATEST_VERSION" ]; then
     | grep -m 1 '"version":' | sed 's/.*"version": "\([^"]*\)".*/\1/' 2>/dev/null)
 fi
 
-# Compare versions
-if [ -n "$LATEST_VERSION" ] && [ "$CURRENT_VERSION" != "$LATEST_VERSION" ]; then
+# Compare versions (skip if current version is unknown)
+if [ "$CURRENT_VERSION" != "unknown" ] && [ -n "$LATEST_VERSION" ] && [ "$CURRENT_VERSION" != "$LATEST_VERSION" ]; then
   echo "UPDATE_AVAILABLE|$CURRENT_VERSION|$LATEST_VERSION"
 else
   echo "UP_TO_DATE|$CURRENT_VERSION"
