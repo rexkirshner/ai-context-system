@@ -140,6 +140,13 @@ KEEP_START_INDEX=$((TOTAL_SESSIONS - KEEP_RECENT))
 # Extract sessions to archive (first SESSIONS_TO_ARCHIVE)
 echo "📦 Creating archive file..."
 
+# Extract actual session numbers from headers (not line numbers)
+FIRST_SESSION_LINE=$(sed -n "${SESSION_LINES[0]}p" "$SESSIONS_FILE")
+FIRST_SESSION_NUM=$(echo "$FIRST_SESSION_LINE" | grep -oE 'Session [0-9]+' | grep -oE '[0-9]+')
+
+LAST_SESSION_LINE=$(sed -n "${SESSION_LINES[$((KEEP_START_INDEX - 1))]}p" "$SESSIONS_FILE")
+LAST_SESSION_NUM=$(echo "$LAST_SESSION_LINE" | grep -oE 'Session [0-9]+' | grep -oE '[0-9]+')
+
 if [ -f "$ARCHIVE_FILE" ]; then
   echo "   ℹ️  Archive file already exists, appending..."
   ARCHIVE_TEMP="$ARCHIVE_FILE.tmp"
@@ -152,7 +159,7 @@ else
 This file contains archived sessions from SESSIONS.md.
 
 **Archived:** $(date +%Y-%m-%d)
-**Sessions:** ${SESSION_LINES[0]} through ${SESSION_LINES[$((KEEP_START_INDEX - 1))]}
+**Sessions:** Session $FIRST_SESSION_NUM through Session $LAST_SESSION_NUM
 
 ---
 
