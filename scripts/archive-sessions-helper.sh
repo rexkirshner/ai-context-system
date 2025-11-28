@@ -10,6 +10,7 @@
 #   --context DIR   Context directory (default: context)
 #   --no-backup     Skip backup creation (not recommended)
 #   --dry-run       Show what would be done without making changes
+#   --force         Skip confirmation prompts (for automation)
 
 set -e
 
@@ -18,6 +19,7 @@ KEEP_RECENT=10
 CONTEXT_DIR="context"
 CREATE_BACKUP=true
 DRY_RUN=false
+FORCE=false
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -38,9 +40,13 @@ while [[ $# -gt 0 ]]; do
       DRY_RUN=true
       shift
       ;;
+    --force)
+      FORCE=true
+      shift
+      ;;
     *)
       echo "Unknown option: $1"
-      echo "Usage: $0 [--keep N] [--context DIR] [--no-backup] [--dry-run]"
+      echo "Usage: $0 [--keep N] [--context DIR] [--no-backup] [--dry-run] [--force]"
       exit 1
       ;;
   esac
@@ -50,7 +56,9 @@ done
 SESSIONS_FILE="$CONTEXT_DIR/SESSIONS.md"
 BACKUP_FILE="$SESSIONS_FILE.backup"
 YEAR=$(date +%Y)
-ARCHIVE_FILE="$CONTEXT_DIR/SESSIONS-archive-$YEAR.md"
+DATE=$(date +%Y-%m-%d)
+TIMESTAMP=$(date +%Y-%m-%d-%H%M%S)
+ARCHIVE_FILE="$CONTEXT_DIR/SESSIONS-archive-$TIMESTAMP.md"
 TEMP_FILE="$SESSIONS_FILE.tmp"
 
 # Validate inputs
@@ -147,24 +155,19 @@ FIRST_SESSION_NUM=$(echo "$FIRST_SESSION_LINE" | grep -oE 'Session [0-9]+' | gre
 LAST_SESSION_LINE=$(sed -n "${SESSION_LINES[$((KEEP_START_INDEX - 1))]}p" "$SESSIONS_FILE")
 LAST_SESSION_NUM=$(echo "$LAST_SESSION_LINE" | grep -oE 'Session [0-9]+' | grep -oE '[0-9]+')
 
-if [ -f "$ARCHIVE_FILE" ]; then
-  echo "   ℹ️  Archive file already exists, appending..."
-  ARCHIVE_TEMP="$ARCHIVE_FILE.tmp"
-  cp "$ARCHIVE_FILE" "$ARCHIVE_TEMP"
-else
-  ARCHIVE_TEMP="$ARCHIVE_FILE.tmp"
-  cat > "$ARCHIVE_TEMP" << EOF
-# Archived Sessions ($YEAR)
+# Create new archive file (timestamp ensures uniqueness, no need to check for existing file)
+ARCHIVE_TEMP="$ARCHIVE_FILE.tmp"
+cat > "$ARCHIVE_TEMP" << EOF
+# Archived Sessions ($DATE)
 
 This file contains archived sessions from SESSIONS.md.
 
-**Archived:** $(date +%Y-%m-%d)
+**Archived:** $TIMESTAMP
 **Sessions:** Session $FIRST_SESSION_NUM through Session $LAST_SESSION_NUM
 
 ---
 
 EOF
-fi
 
 # Extract old sessions for archive
 for i in $(seq 0 $((KEEP_START_INDEX - 1))); do
