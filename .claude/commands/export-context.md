@@ -31,10 +31,26 @@ Generate a comprehensive export package combining all context documentation in b
 
 ## Execution Steps
 
+### Step 0.5: Find Context Folder
+
+**ACTION:** Source the context folder detection script and find the context directory:
+
+```bash
+# Load context folder detection (v3.5.0+ - fixes BUG-6)
+source "$(dirname "${BASH_SOURCE[0]}")/../scripts/find-context-folder.sh" || exit 1
+CONTEXT_DIR=$(find_context_folder) || exit 1
+
+echo "✅ Found context at: $CONTEXT_DIR"
+```
+
+**Why this matters:** Allows command to work from subdirectories (backend/, src/, etc.) by searching up to 2 parent directories.
+
+---
+
 ### Step 1: Verify Context Exists
 
 ```bash
-if [ ! -d "context" ]; then
+if [ ! -d "$CONTEXT_DIR" ]; then
   echo "❌ No context/ directory found"
   echo "Run /init-context or /migrate-context first"
   exit 1
@@ -70,24 +86,24 @@ Gather all markdown files in order:
 ```bash
 # Core documentation files (in logical order)
 FILES=(
-  "context/CONTEXT.md"          # or CLAUDE.md for pre-v2.0
-  "context/STATUS.md"            # v2.0+ single source of truth
-  "context/STATUS.md (includes Quick Reference)"         # v2.0+ auto-generated dashboard
-  "context/DECISIONS.md"
-  "context/SESSIONS.md"
-  "context/PRD.md"               # optional
-  "context/ARCHITECTURE.md"      # optional
-  "context/CODE_STYLE.md"        # optional
-  "context/KNOWN_ISSUES.md"      # optional
+  "$CONTEXT_DIR/CONTEXT.md"          # or CLAUDE.md for pre-v2.0
+  "$CONTEXT_DIR/STATUS.md"            # v2.0+ single source of truth
+  "$CONTEXT_DIR/STATUS.md (includes Quick Reference)"         # v2.0+ auto-generated dashboard
+  "$CONTEXT_DIR/DECISIONS.md"
+  "$CONTEXT_DIR/SESSIONS.md"
+  "$CONTEXT_DIR/PRD.md"               # optional
+  "$CONTEXT_DIR/ARCHITECTURE.md"      # optional
+  "$CONTEXT_DIR/CODE_STYLE.md"        # optional
+  "$CONTEXT_DIR/KNOWN_ISSUES.md"      # optional
 )
 
 # Support both v1.x and v2.0 structures
-if [ -f "context/CLAUDE.md" ] && [ ! -f "context/CONTEXT.md" ]; then
-  FILES[0]="context/CLAUDE.md"
+if [ -f "$CONTEXT_DIR/CLAUDE.md" ] && [ ! -f "$CONTEXT_DIR/CONTEXT.md" ]; then
+  FILES[0]="$CONTEXT_DIR/CLAUDE.md"
 fi
 
 # Additional files if they exist
-for file in context/*.md; do
+for file in $CONTEXT_DIR/*.md; do
   if [ -f "$file" ] && ! echo "${FILES[@]}" | grep -q "$file"; then
     FILES+=("$file")
   fi
