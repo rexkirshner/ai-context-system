@@ -190,6 +190,15 @@ for i in $(seq 0 $((KEEP_START_INDEX - 1))); do
     SESSION_END=$(wc -l < "$SESSIONS_FILE" | tr -d ' ')
   fi
 
+  # Validate session header before extraction
+  FIRST_LINE=$(sed -n "${SESSION_START}p" "$SESSIONS_FILE")
+  if ! echo "$FIRST_LINE" | grep -qE "^## Session [0-9]+"; then
+    echo "❌ Error: Invalid session header at line $SESSION_START"
+    echo "   Expected: ## Session N"
+    echo "   Found: $FIRST_LINE"
+    exit 1
+  fi
+
   # Extract session
   sed -n "${SESSION_START},${SESSION_END}p" "$SESSIONS_FILE" >> "$ARCHIVE_TEMP"
 
@@ -213,6 +222,15 @@ for i in $(seq "$KEEP_START_INDEX" $((TOTAL_SESSIONS - 1))); do
     SESSION_END=$((${SESSION_LINES[$((i + 1))]} - 1))
   else
     SESSION_END=$(wc -l < "$SESSIONS_FILE" | tr -d ' ')
+  fi
+
+  # Validate session header before extraction
+  FIRST_LINE=$(sed -n "${SESSION_START}p" "$SESSIONS_FILE")
+  if ! echo "$FIRST_LINE" | grep -qE "^## Session [0-9]+"; then
+    echo "❌ Error: Invalid session header at line $SESSION_START"
+    echo "   Expected: ## Session N"
+    echo "   Found: $FIRST_LINE"
+    exit 1
   fi
 
   # Extract session
