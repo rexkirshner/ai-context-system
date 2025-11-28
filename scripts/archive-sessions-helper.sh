@@ -212,8 +212,14 @@ for i in $(seq "$KEEP_START_INDEX" $((TOTAL_SESSIONS - 1))); do
   echo "" >> "$TEMP_FILE"  # Add blank line between sessions
 done
 
-# Replace original file
-mv "$TEMP_FILE" "$SESSIONS_FILE"
+# Replace original file (with validation to prevent data loss)
+if [ -f "$TEMP_FILE" ] && [ -s "$TEMP_FILE" ]; then
+  mv "$TEMP_FILE" "$SESSIONS_FILE"
+else
+  echo "❌ Error: Generated SESSIONS.md is empty or missing"
+  echo "   This should not happen. Backup is at: $BACKUP_FILE"
+  exit 1
+fi
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
