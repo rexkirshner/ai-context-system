@@ -367,6 +367,20 @@ fi
 - Archived on `/update-context-system` (if has content)
 - **Helps make AI Context System better for everyone**
 
+### Step 4.5: Detect System Version
+
+**ACTION:** Detect the current system version from the VERSION file for accurate config initialization:
+
+```bash
+echo "🔍 Detecting system version..."
+SYSTEM_VERSION=$(cat VERSION 2>/dev/null || echo "unknown")
+echo "   System version: $SYSTEM_VERSION"
+```
+
+**Why this matters:** Ensures the configuration file reflects the actual installed version, preventing version mismatch confusion.
+
+---
+
 ### Step 5: Create Configuration
 
 **ACTION:** Use the Bash tool to copy the template config and update placeholders:
@@ -374,6 +388,19 @@ fi
 ```bash
 # Download the latest config template from GitHub
 curl -sL https://raw.githubusercontent.com/rexkirshner/ai-context-system/main/config/.context-config.template.json -o context/.context-config.json
+
+# Update version fields to match system version (v3.5.0+)
+if [ "$SYSTEM_VERSION" != "unknown" ]; then
+  # macOS uses different sed syntax than Linux
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    sed -i '' "s/\"3.0.0\"/\"$SYSTEM_VERSION\"/g" context/.context-config.json
+  else
+    sed -i "s/\"3.0.0\"/\"$SYSTEM_VERSION\"/g" context/.context-config.json
+  fi
+  echo "✅ Configuration created with version $SYSTEM_VERSION"
+else
+  echo "⚠️  VERSION file not found - using template version"
+fi
 
 # Update placeholders (project name, owner, dates)
 # Use Read tool to get current config, then Edit tool to replace placeholders with actual values
