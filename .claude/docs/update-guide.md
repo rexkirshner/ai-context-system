@@ -393,8 +393,8 @@ unzip /tmp/latest.zip -d /tmp/
 # Compare versions
 diff -u .claude/commands/save-context.md /tmp/ai-context-system-main/.claude/commands/save-context.md
 
-# Compare templates
-diff -u context/CLAUDE.md /tmp/ai-context-system-main/templates/CLAUDE.template.md
+# Compare templates (CLAUDE.md is at project root in v3.6.0+)
+diff -u ./CLAUDE.md /tmp/ai-context-system-main/templates/CLAUDE.md.template
 ```
 
 No changes made. Just preview.
@@ -638,8 +638,8 @@ cp /tmp/acs-update/.claude/commands/* .claude/commands/
 ### 4. Review Template Changes
 
 ```bash
-# Compare each template
-diff -u context/CLAUDE.md /tmp/acs-update/templates/CLAUDE.template.md
+# Compare each template (CLAUDE.md is at project root in v3.6.0+)
+diff -u ./CLAUDE.md /tmp/acs-update/templates/CLAUDE.md.template
 diff -u context/CODE_STYLE.md /tmp/acs-update/templates/CODE_STYLE.template.md
 
 # Manually apply changes you want

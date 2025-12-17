@@ -257,7 +257,7 @@ cat >> "$SESSION_TEMPLATE" <<EOF
 - ✅ [Completed todo 1]
 - [ ] [Incomplete todo - in WIP]
 
-[TODO: Extract actual TodoWrite state if available]
+*(Copy current TodoWrite tasks from Claude Code's todo list if any)*
 
 ### Next Session
 
