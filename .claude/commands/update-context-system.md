@@ -477,6 +477,105 @@ echo "   useful additions. Your project-specific content remains untouched."
 
 Templates are reference files - you choose what to adopt.
 
+### Step 5.5: CLAUDE.md Migration Check (v3.6.0+)
+
+**CRITICAL:** Check if user needs to migrate CLAUDE.md from old location to project root.
+
+**ACTION:** Detect old location and offer migration:
+
+```bash
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "🔍 CLAUDE.md Location Check (v3.6.0)"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+
+OLD_CLAUDE="context/claude.md"
+NEW_CLAUDE="CLAUDE.md"
+MIGRATION_NEEDED=false
+
+# Case 1: Old location exists, new doesn't - offer migration
+if [ -f "$OLD_CLAUDE" ] && [ ! -f "$NEW_CLAUDE" ]; then
+  MIGRATION_NEEDED=true
+  echo "⚠️  Found CLAUDE.md at old location: context/claude.md"
+  echo ""
+  echo "Starting v3.6.0, CLAUDE.md should be at project root for auto-loading by Claude Code."
+  echo ""
+  echo "Options:"
+  echo "  1. MOVE existing file (preserves your customizations)"
+  echo "  2. CREATE fresh file (uses new v3.6.0 template)"
+  echo "  3. SKIP (I'll handle it manually)"
+  echo ""
+  read -p "Choose option [1/2/3]: " -n 1 -r MIGRATE_CHOICE
+  echo ""
+
+  case "$MIGRATE_CHOICE" in
+    1)
+      echo ""
+      echo "Moving context/claude.md → ./CLAUDE.md..."
+      mv "$OLD_CLAUDE" "$NEW_CLAUDE"
+      echo "✅ Moved successfully!"
+      echo ""
+      echo "💡 Tip: Review ./CLAUDE.md - the v3.6.0 template has new sections"
+      echo "   you may want to add (Project Identity, Critical Rules, etc.)"
+      echo "   See: templates/CLAUDE.md.template"
+      ;;
+    2)
+      echo ""
+      echo "Creating fresh CLAUDE.md from v3.6.0 template..."
+      if [ -f "templates/CLAUDE.md.template" ]; then
+        cp "templates/CLAUDE.md.template" "$NEW_CLAUDE"
+        echo "✅ Created ./CLAUDE.md from template"
+        echo ""
+        echo "⚠️  Your old file remains at context/claude.md"
+        echo "   Review it for any customizations to merge, then delete it:"
+        echo "   rm context/claude.md"
+      else
+        echo "❌ Template not found. Run /update-context-system again."
+      fi
+      ;;
+    3|*)
+      echo ""
+      echo "Skipped. To migrate manually:"
+      echo "  mv context/claude.md ./CLAUDE.md"
+      echo ""
+      echo "Or create fresh from template:"
+      echo "  cp templates/CLAUDE.md.template ./CLAUDE.md"
+      ;;
+  esac
+
+# Case 2: Both exist - warn about duplicate
+elif [ -f "$OLD_CLAUDE" ] && [ -f "$NEW_CLAUDE" ]; then
+  echo "⚠️  Both locations exist:"
+  echo "   - ./CLAUDE.md (correct - auto-loaded)"
+  echo "   - context/claude.md (old - not auto-loaded)"
+  echo ""
+  echo "Recommendation:"
+  echo "  1. Review context/claude.md for any unique customizations"
+  echo "  2. Merge any customizations into ./CLAUDE.md"
+  echo "  3. Delete the old file: rm context/claude.md"
+
+# Case 3: Only new location exists - good!
+elif [ -f "$NEW_CLAUDE" ]; then
+  echo "✅ CLAUDE.md is at correct location (project root)"
+
+# Case 4: Neither exists - create new
+else
+  echo "ℹ️  No CLAUDE.md found. Creating from template..."
+  if [ -f "templates/CLAUDE.md.template" ]; then
+    cp "templates/CLAUDE.md.template" "$NEW_CLAUDE"
+    echo "✅ Created ./CLAUDE.md from template"
+    echo "   📝 Customize with your project details"
+  else
+    echo "⚠️  Template not found. CLAUDE.md will be created by /init-context"
+  fi
+fi
+
+echo ""
+```
+
+**Why this matters:** CLAUDE.md at project root is auto-loaded by Claude Code at every conversation start. The old location `context/claude.md` is NOT auto-loaded, meaning critical project context wasn't available by default.
+
 ### Step 6: Generate Update Report
 
 Provide a clear summary to the user:

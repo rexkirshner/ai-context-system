@@ -51,6 +51,25 @@ for doc in "${REQUIRED_CORE[@]}"; do
     ((ERRORS++))
   fi
 done
+
+# Check for old CLAUDE.md location (v3.5.0 and earlier)
+if [ -f "$BASE_DIR/context/claude.md" ]; then
+  echo ""
+  echo -e "  ${YELLOW}⚠️  MIGRATION NEEDED: Found old location context/claude.md${NC}"
+  echo "     CLAUDE.md should be at project root for auto-loading by Claude Code"
+  echo ""
+  echo "     To migrate:"
+  if [ ! -f "$BASE_DIR/CLAUDE.md" ]; then
+    echo "       mv context/claude.md ./CLAUDE.md"
+  else
+    echo "       # Both files exist - merge or remove old file:"
+    echo "       # 1. Review both files for unique content"
+    echo "       # 2. Merge customizations into ./CLAUDE.md"
+    echo "       # 3. rm context/claude.md"
+  fi
+  echo ""
+  ((WARNINGS++))
+fi
 echo ""
 
 # =============================================================================
