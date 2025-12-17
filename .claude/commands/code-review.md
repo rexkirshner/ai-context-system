@@ -195,6 +195,8 @@ Use specialized checklists for thoroughness:
 
 ### Step 6: Generate Comprehensive Report
 
+**MANDATORY: You MUST save the report to a file. Do NOT just display it in chat.**
+
 Create detailed report in `artifacts/code-reviews/session-[N]-review.md`:
 
 ```markdown
@@ -363,38 +365,33 @@ Create detailed report in `artifacts/code-reviews/session-[N]-review.md`:
 - [✅] Report is actionable
 ```
 
-**IMPORTANT**: After completing the analysis above, AUTOMATICALLY save the report to a file using the bash code below:
+**CRITICAL REQUIREMENT**: You MUST save the report to a file. This is NOT optional.
 
-```bash
-# Auto-generate report file
-echo ""
-echo "💾 Saving detailed report..."
+**ACTION REQUIRED - Do this NOW after completing your analysis:**
 
-# Detect session number from SESSIONS.md
-SESSION_NUM=$(grep -c "^## Session" context/SESSIONS.md 2>/dev/null || echo "unknown")
+1. Create the directory: `mkdir -p artifacts/code-reviews`
+2. Determine the session number from SESSIONS.md
+3. Use the Write tool to save the complete report to `artifacts/code-reviews/session-[N]-review.md`
 
-# Get current date
-REVIEW_DATE=$(date +%Y-%m-%d)
+The report file MUST contain:
+- All findings from your analysis (not a summary)
+- Actual issue details, file locations, and line numbers
+- The complete markdown structure shown in Step 6
+- Real values replacing all `[N]`, `[YYYY-MM-DD]`, and other placeholders
 
-# Create directory
-mkdir -p artifacts/code-reviews
+**DO NOT:**
+- Skip saving the file
+- Only display the report in chat
+- Save a template with unfilled placeholders
+- Save a summary instead of the full report
 
-# Generate report filename
-REPORT_FILE="artifacts/code-reviews/session-${SESSION_NUM}-review.md"
+**Example filename:** `artifacts/code-reviews/session-14-review.md`
 
-# Write the comprehensive report from Step 6 above to the file
-# (Copy the entire report content from Step 6 into this file)
-# Replace placeholders:
-#   - [N] with $SESSION_NUM
-#   - YYYY-MM-DD with $REVIEW_DATE
-#   - Fill in actual findings, grades, metrics from the analysis
-
-echo "✅ Report saved to: $REPORT_FILE"
-echo ""
-echo "📄 You can view the detailed report at: $REPORT_FILE"
+After saving, confirm with:
 ```
-
-**Note**: The report content written to `$REPORT_FILE` should be the complete analysis from Step 6, replacing `[N]` placeholders with actual values (session number, date, findings, etc.).
+✅ Report saved to: artifacts/code-reviews/session-[N]-review.md
+📄 You can view the detailed report at: artifacts/code-reviews/session-[N]-review.md
+```
 
 ### Step 7: Report Completion
 
@@ -762,5 +759,19 @@ User runs this when they have time. Be thorough:
 
 ---
 
+## Final Checklist Before Completing
+
+Before saying the review is complete, verify:
+
+- [ ] **Report file saved** to `artifacts/code-reviews/session-[N]-review.md`
+- [ ] Report contains actual findings (not placeholders)
+- [ ] All critical and high priority issues documented
+- [ ] Grade assigned with justification
+- [ ] No code changes were made
+
+**If the report file does not exist, the review is NOT complete.**
+
+---
+
 **Version:** 3.6.0
-**Updated:** v3.4.0 - Added Step 8: Integration & Actionability (TodoWrite generation, context integration, review history, comparison)
+**Updated:** v3.6.0 - Strengthened requirement to save report file to artifacts/
