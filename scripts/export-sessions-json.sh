@@ -2,19 +2,24 @@
 
 # export-sessions-json.sh
 # Exports SESSIONS.md to machine-readable JSON format
-# v1.8.0 - Enables multi-agent workflows
+# v3.6.0 - Enables multi-agent workflows
 
 set -e
 
-# Color codes
-GREEN='\033[0;32m'
-BLUE='\033[0;34m'
-YELLOW='\033[1;33m'
-RED='\033[0;31m'
-NC='\033[0m' # No Color
+# Source common functions for colors, exit codes, and utilities
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ -f "$SCRIPT_DIR/common-functions.sh" ]; then
+  source "$SCRIPT_DIR/common-functions.sh"
+else
+  # Fallback colors if common-functions.sh not available
+  GREEN='\033[0;32m'
+  BLUE='\033[0;34m'
+  YELLOW='\033[1;33m'
+  RED='\033[0;31m'
+  NC='\033[0m'
+fi
 
 # Base directory
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BASE_DIR="$(dirname "$SCRIPT_DIR")"
 CONTEXT_DIR="${BASE_DIR}/context"
 
@@ -26,11 +31,11 @@ echo ""
 # =============================================================================
 
 if [ ! -f "$CONTEXT_DIR/SESSIONS.md" ]; then
-  echo -e "${RED}❌ SESSIONS.md not found${NC}"
+  log_error "SESSIONS.md not found"
   echo "   Expected: $CONTEXT_DIR/SESSIONS.md"
   echo ""
   echo "Run /init-context first to initialize the context system"
-  exit 1
+  exit ${EXIT_NOT_FOUND:-1}
 fi
 
 # =============================================================================
@@ -167,9 +172,9 @@ if command -v jq &> /dev/null; then
 
     echo "   ✅ Formatted with jq"
   else
-    echo -e "   ${RED}❌ Invalid JSON generated${NC}"
+    log_error "Invalid JSON generated"
     echo "   File: $OUTPUT_FILE"
-    exit 1
+    exit ${EXIT_VALIDATION:-1}
   fi
 else
   echo "   ⚠️  jq not installed (skipping validation)"
@@ -218,4 +223,4 @@ if [ -f "$BASE_DIR/config/sessions-data-schema.json" ]; then
   fi
 fi
 
-exit 0
+exit ${EXIT_SUCCESS:-0}

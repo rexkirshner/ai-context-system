@@ -1,6 +1,6 @@
 #!/bin/bash
 # Archive old sessions from SESSIONS.md
-# Part of AI Context System v3.5.0 - MODULE-102
+# Part of AI Context System v3.6.0 - MODULE-102
 #
 # Usage:
 #   ./archive-sessions-helper.sh [--keep N] [--context DIR]
@@ -13,6 +13,12 @@
 #   --force         Skip confirmation prompts (for automation)
 
 set -e
+
+# Source common functions for colors and exit codes (if available)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ -f "$SCRIPT_DIR/common-functions.sh" ]; then
+  source "$SCRIPT_DIR/common-functions.sh"
+fi
 
 # Cleanup function to remove temp files on exit
 cleanup() {
