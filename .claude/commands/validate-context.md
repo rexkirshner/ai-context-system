@@ -93,7 +93,7 @@ The script performs these checks:
 🔍 Validating AI Context System...
 
 📄 Checking required documentation files...
-  ✅ context/claude.md (AI header)
+  ✅ CLAUDE.md (AI entry point - auto-loaded)
   ✅ context/CONTEXT.md
   ✅ context/STATUS.md (with Quick Reference section)
   ✅ context/DECISIONS.md

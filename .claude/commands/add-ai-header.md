@@ -112,7 +112,16 @@ if ! validate_input "$TOOL_NAME" '^[a-zA-Z0-9_-]+$' 50; then
   exit 1
 fi
 
-TOOL_FILE="context/${TOOL_NAME}.md"
+# Normalize tool name to lowercase for comparisons
+TOOL_NAME_LOWER=$(echo "$TOOL_NAME" | tr '[:upper:]' '[:lower:]')
+
+# CLAUDE.md is special - goes at project root (auto-loaded by Claude Code)
+# Other AI headers go in context/
+if [ "$TOOL_NAME_LOWER" = "claude" ]; then
+  TOOL_FILE="CLAUDE.md"
+else
+  TOOL_FILE="context/${TOOL_NAME}.md"
+fi
 ```
 
 ### Step 3: Check if Header Already Exists
@@ -135,7 +144,7 @@ fi
 **ACTION:** Check if we have a specific template for this tool
 
 **Known tools with templates:**
-- claude → claude.md.template
+- claude → CLAUDE.md.template (placed at project root, auto-loaded)
 - cursor → cursor.md.template
 - aider → aider.md.template
 - codex → codex.md.template
@@ -148,7 +157,7 @@ TOOL_NAME_LOWER=$(echo "$TOOL_NAME" | tr '[:upper:]' '[:lower:]')
 
 case "$TOOL_NAME_LOWER" in
   claude)
-    TEMPLATE_FILE="templates/claude.md.template"
+    TEMPLATE_FILE="templates/CLAUDE.md.template"
     ;;
   cursor)
     TEMPLATE_FILE="templates/cursor.md.template"
@@ -249,12 +258,13 @@ All AI tools use the same platform-neutral documentation:
 
 **Architecture:**
 ```
-context/
-├── claude.md        # Claude/Claude Code entry point
-├── cursor.md        # Cursor entry point (if created)
-├── aider.md         # Aider entry point (if created)
-├── codex.md         # GitHub Copilot entry point (if created)
-└── CONTEXT.md       # Platform-neutral documentation (actual content)
+project-root/
+├── CLAUDE.md        # Claude Code entry point (auto-loaded at project root)
+└── context/
+    ├── cursor.md    # Cursor entry point (if created)
+    ├── aider.md     # Aider entry point (if created)
+    ├── codex.md     # GitHub Copilot entry point (if created)
+    └── CONTEXT.md   # Platform-neutral documentation (actual content)
 ```
 
 All header files are 7 lines and point to the same documentation.

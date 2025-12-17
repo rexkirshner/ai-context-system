@@ -5,7 +5,7 @@ description: Initialize AI Context System for this project
 
 # /init-context Command
 
-Initialize a **minimal overhead** context system for this project. Creates 5 core files (CONTEXT.md, STATUS.md, DECISIONS.md, SESSIONS.md, context-feedback.md) plus 1 AI header (claude.md), with optional files (CODE_MAP.md, other AI headers) suggested when complexity demands.
+Initialize a **minimal overhead** context system for this project. Creates 5 core files (CONTEXT.md, STATUS.md, DECISIONS.md, SESSIONS.md, context-feedback.md) plus CLAUDE.md at project root (auto-loaded by Claude Code), with optional files (CODE_MAP.md, other AI headers) suggested when complexity demands.
 
 **Philosophy:** Minimal overhead during work. Good-enough recovery when needed. Single source of truth. Platform-neutral core with tool-specific entry points.
 
@@ -15,7 +15,7 @@ Initialize a **minimal overhead** context system for this project. Creates 5 cor
 ## What This Command Does
 
 Creates **5 core files + 1 AI header** that serve dual purpose (developer productivity + AI agent review/takeover):
-1. **claude.md** - AI header (entry point for Claude, points to CONTEXT.md)
+1. **CLAUDE.md** - AI entry point (auto-loaded by Claude Code, contains critical rules and project context)
 2. **CONTEXT.md** - Orientation (rarely changes: who/what/how/why, platform-neutral)
 3. **STATUS.md** - Current state with auto-generated Quick Reference at top
 4. **DECISIONS.md** - Decision log (WHY choices made - critical for AI agents)
@@ -37,7 +37,7 @@ Optional files (CODE_MAP.md, cursor.md, aider.md, PRD.md, ARCHITECTURE.md) sugge
 - DECISIONS.md is critical - AI needs rationale, constraints, tradeoffs
 
 **v2.1.0 approach:**
-- claude.md as AI header (tool-specific entry point)
+- CLAUDE.md at project root (auto-loaded by Claude Code)
 - CONTEXT.md for orientation (platform-neutral, ~300 lines)
 - STATUS.md for current state (with auto-generated Quick Reference section)
 - **DECISIONS.md for rationale (AI agents understand WHY)**
@@ -268,12 +268,12 @@ Create the **4 core files + 1 AI header** from templates:
 ```bash
 log_info "Creating core documentation files in context/ directory..."
 
-# 1. AI Header (claude.md)
-if [ ! -f "context/claude.md" ]; then
-  cp templates/claude.md.template context/claude.md
-  log_success "✅ Created context/claude.md"
+# 1. CLAUDE.md at project root (auto-loaded by Claude Code)
+if [ ! -f "CLAUDE.md" ]; then
+  cp templates/CLAUDE.md.template CLAUDE.md
+  log_success "✅ Created CLAUDE.md (project root - auto-loaded by Claude Code)"
 else
-  log_verbose "claude.md already exists, skipping"
+  log_verbose "CLAUDE.md already exists, skipping"
 fi
 
 # 2. CONTEXT.md - Orientation (analyze project and customize from template)
@@ -323,9 +323,9 @@ fi
 
 **What each file contains:**
 
-**context/claude.md** - AI header (entry point)
-- 7-line file pointing to CONTEXT.md
-- **Tool-specific entry point for platform-neutral docs**
+**./CLAUDE.md** - AI entry point (auto-loaded by Claude Code)
+- Contains critical rules, project identity, working style, session management
+- **Auto-loaded at every conversation start - prime real estate for essential context**
 
 **context/CONTEXT.md** - Orientation (platform-neutral, ~300 lines)
 - Project overview (from README or git description)
@@ -584,8 +584,8 @@ After initialization, explain to the user:
 ```
 ✅ Context System Initialized (v3.0.0)
 
-Created 4 core files + 1 AI header:
-- context/claude.md - AI header (entry point for Claude)
+Created CLAUDE.md + 5 core files:
+- CLAUDE.md - AI entry point (auto-loaded by Claude Code)
 - context/CONTEXT.md - Orientation (platform-neutral, ~300 lines)
 - context/STATUS.md - Current state (with auto-generated Quick Reference)
 - context/DECISIONS.md - Decision log (WHY choices made)
@@ -745,7 +745,7 @@ If errors occur:
 ## Success Criteria
 
 Command succeeds when:
-- 5 core files + 1 AI header (claude.md, CONTEXT.md, STATUS.md, DECISIONS.md, SESSIONS.md, context-feedback.md) created with available data
+- CLAUDE.md at project root + 5 core files in context/ (CONTEXT.md, STATUS.md, DECISIONS.md, SESSIONS.md, context-feedback.md) created with available data
 - All files use v2.1 structure and format
 - STATUS.md includes auto-generated Quick Reference section
 - Configuration valid

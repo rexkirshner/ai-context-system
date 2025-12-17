@@ -153,9 +153,9 @@ your-project/
 │   ├── save-full-helper.sh         # Session template generator
 │   ├── update-quick-reference.sh   # Auto-generates Quick Reference
 │   └── validate-context.sh         # Documentation health check
+├── CLAUDE.md                       # ← Claude Code entry point (auto-loaded at project root)
 ├── context/                        # ← EXTERNALIZED AI CONTEXT (visible to humans)
 │   ├── .context-config.json        # Project configuration
-│   ├── claude.md                   # Claude Code entry point (7-line header)
 │   ├── cursor.md                   # Cursor entry point (optional)
 │   ├── aider.md                    # Aider entry point (optional)
 │   ├── CONTEXT.md                  # Orientation (who/what/how/why)
@@ -219,7 +219,7 @@ your-project/
 ### Setup Commands (Run Once)
 
 #### `/init-context`
-Creates 5 core files: claude.md, CONTEXT.md, STATUS.md (with auto-generated Quick Reference), DECISIONS.md, SESSIONS.md. Optional files suggested when complexity demands. **Start simple, grow naturally.**
+Creates CLAUDE.md at project root (auto-loaded by Claude Code) + 5 core files in context/: CONTEXT.md, STATUS.md (with auto-generated Quick Reference), DECISIONS.md, SESSIONS.md. Optional files suggested when complexity demands. **Start simple, grow naturally.**
 
 #### `/migrate-context`
 Migrates existing documentation to AI Context System structure. Preserves ALL existing content while organizing into context/ folder. Consolidates to single source of truth.

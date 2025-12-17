@@ -424,7 +424,7 @@ echo ""
 echo -e "${BLUE}⬇️  Downloading templates...${NC}"
 
 TEMPLATES=(
-  "claude.md.template"
+  "CLAUDE.md.template"
   "cursor.md.template"
   "aider.md.template"
   "codex.md.template"
@@ -558,7 +558,7 @@ CRITICAL_FILES=(
   ".claude/commands/save.md"
   ".claude/commands/save-full.md"
   ".claude/commands/code-review.md"
-  "templates/claude.md.template"
+  "templates/CLAUDE.md.template"
   "templates/CONTEXT.template.md"
   "templates/STATUS.template.md"
   "templates/DECISIONS.template.md"

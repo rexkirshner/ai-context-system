@@ -36,7 +36,7 @@ echo ""
 echo "📄 Checking REQUIRED core files (4 core + 1 AI header)..."
 
 REQUIRED_CORE=(
-  "context/claude.md"
+  "CLAUDE.md"
   "context/CONTEXT.md"
   "context/STATUS.md"
   "context/DECISIONS.md"
@@ -220,7 +220,7 @@ echo ""
 echo "📋 Checking template files..."
 
 TEMPLATE_FILES=(
-  "templates/claude.md.template"
+  "templates/CLAUDE.md.template"
   "templates/CONTEXT.template.md"
   "templates/STATUS.template.md"
   "templates/DECISIONS.template.md"

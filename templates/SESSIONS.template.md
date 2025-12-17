@@ -111,12 +111,12 @@ Here's what your first session entry might look like after running `/init-contex
 
 ### TL;DR
 
-Initialized AI Context System v2.1 with 4 core files + 1 AI header (claude.md). System ready for minimal-overhead documentation during development with comprehensive save points before breaks.
+Initialized AI Context System with CLAUDE.md at project root + 5 core files in context/. System ready for minimal-overhead documentation during development with comprehensive save points before breaks.
 
 ### Changed
 
 - ✅ Initialized AI Context System v2.1
-- ✅ Created 4 core documentation files + 1 AI header (claude.md, CONTEXT, STATUS, DECISIONS, SESSIONS)
+- ✅ Created CLAUDE.md at project root + 5 core files in context/ (CONTEXT, STATUS, DECISIONS, SESSIONS)
 - ✅ Configured .context-config.json with version 2.1.0
 
 ### Decisions
@@ -127,7 +127,7 @@ Initialized AI Context System v2.1 with 4 core files + 1 AI header (claude.md). 
 ### Files
 
 **NEW:**
-- `context/claude.md` - AI header (entry point for Claude)
+- `CLAUDE.md` - AI entry point (auto-loaded by Claude Code, at project root)
 - `context/CONTEXT.md` - Project orientation (platform-neutral)
 - `context/STATUS.md` - Single source of truth with auto-generated Quick Reference section
 - `context/DECISIONS.md` - Decision log with rationale

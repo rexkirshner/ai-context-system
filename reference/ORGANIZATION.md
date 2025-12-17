@@ -28,9 +28,9 @@ project-root/
 ├── CONTRIBUTING.md             # Contribution guide (if applicable)
 ├── LICENSE.md                  # License (required)
 ├── CHANGELOG.md                # Version history (recommended)
+├── CLAUDE.md                   # Claude Code entry point (auto-loaded)
 │
 ├── context/                    # AI Context System (active)
-│   ├── claude.md               # AI header (7-line redirect)
 │   ├── CONTEXT.md              # Project orientation
 │   ├── STATUS.md               # Current state
 │   ├── SESSIONS.md             # Session history
@@ -84,6 +84,7 @@ project-root/
 - `LICENSE.md` - License
 - `CHANGELOG.md` - Version history
 - `ORGANIZATION.md` - This file
+- `CLAUDE.md` - Claude Code entry point (auto-loaded)
 
 **Everything else goes in organized folders.**
 
@@ -95,7 +96,7 @@ project-root/
 
 **Contents:**
 - Platform-neutral documentation (CONTEXT.md, STATUS.md, etc.)
-- AI headers (claude.md, cursor.md, etc.)
+- Other AI headers (cursor.md, aider.md, etc.) - note: CLAUDE.md is at project root
 - Configuration (.context-config.json)
 
 **Rules:**

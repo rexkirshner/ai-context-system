@@ -60,7 +60,7 @@ else
     "DECISIONS.template.md"
     "SESSIONS.template.md"
     "CODE_MAP.template.md"
-    "claude.md.template"
+    "CLAUDE.md.template"
     "cursor.md.template"
     "aider.md.template"
     "codex.md.template"
@@ -106,7 +106,7 @@ declare -A FILE_MAPPINGS=(
   ["DECISIONS.template.md"]="context/DECISIONS.md"
   ["SESSIONS.template.md"]="context/SESSIONS.md"
   ["CODE_MAP.template.md"]="context/CODE_MAP.md"
-  ["claude.md.template"]="context/claude.md"
+  ["CLAUDE.md.template"]="CLAUDE.md"
 )
 
 UPDATES_AVAILABLE=0
