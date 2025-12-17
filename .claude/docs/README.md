@@ -53,6 +53,20 @@ Real-world usage patterns:
 - Team handoff
 - Quality checks
 
+### TROUBLESHOOTING.md
+Quick solutions to common issues:
+- CLAUDE.md not auto-loading
+- Context directory not found
+- Download failures
+- JSON validation errors
+- Permission issues
+
+### MIGRATION_v3.5_to_v3.6.md
+Step-by-step migration guide for v3.6.0:
+- CLAUDE.md location change
+- File migration options
+- Verification steps
+
 ## Checklists
 
 Specialized checklists extracted from commands:
