@@ -7,6 +7,101 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.6.0] - 2025-12-16
+
+### Changed - CLAUDE.md Auto-Loading Architecture
+
+**MINOR RELEASE** - Moves CLAUDE.md to project root for automatic loading by Claude Code
+
+**Context:** The CLAUDE.md file was previously placed in the `context/` folder, which meant Claude Code did not automatically load it at conversation start. Since CLAUDE.md is specifically designed for Claude Code and contains critical context that should be present in every conversation, this was a missed opportunity. This release fixes this architectural oversight.
+
+#### Breaking Change
+
+**CLAUDE.md Location Changed**
+- **Before**: `context/claude.md` (lowercase, not auto-loaded)
+- **After**: `./CLAUDE.md` (project root, auto-loaded by Claude Code)
+- **Impact**: New projects will have CLAUDE.md at project root
+- **Migration**: Existing users should move `context/claude.md` to `./CLAUDE.md`
+
+#### Enhanced CLAUDE.md Template
+
+**✨ Comprehensive Template Rewrite**
+- **Project Identity Section**: Project name, tech stack, current phase reference
+- **Critical Rules Section**:
+  - Git push protocol (never push without approval)
+  - No lazy coding (root cause fixes only)
+  - Simplicity above all (smallest possible changes)
+- **Working Style Section**:
+  - Communication preferences (direct, concise, high-level summaries)
+  - Complex tasks workflow (plan → approve → execute → review)
+  - Simple tasks (just do the work)
+  - "Let's make sure it works first" protocol
+- **Debugging Protocol**: Trace entire code flow, no assumptions, no shortcuts
+- **Before Committing Checklist**: Dev environment verification steps
+- **Session Management**: Commands reference (/save, /save-full, /review-context, /code-review)
+- **Context Files Table**: Links to STATUS.md, DECISIONS.md, SESSIONS.md, CONTEXT.md
+- **Decision Documentation Guidance**: When to document, when to skip
+- **Project-Specific Notes Section**: Constraints, gotchas, integration points
+
+**Files Changed:**
+- `templates/CLAUDE.md.template` (renamed from `claude.md.template`, rewritten)
+- `.claude/commands/init-context.md` (creates CLAUDE.md at root)
+- `.claude/commands/add-ai-header.md` (special handling for Claude vs other tools)
+- `.claude/commands/update-templates.md` (updated template path)
+- `.claude/commands/validate-context.md` (checks CLAUDE.md at root)
+- `.claude/commands/update-context-system.md` (updated references)
+- `install.sh` (updated template name)
+- `scripts/validate-context.sh` (updated validation path)
+- `templates/SESSIONS.template.md` (updated example)
+- `README.md` (updated directory structure and version)
+- `config/.context-config.template.json` (updated aiHeaders)
+- `.claude/docs/update-guide.md` (updated references)
+- `reference/ORGANIZATION.md` (updated folder structure)
+
+#### Multi-AI Header Architecture
+
+**Other AI Headers Remain in context/**
+- `context/cursor.md` - Cursor entry point
+- `context/aider.md` - Aider entry point
+- `context/codex.md` - GitHub Copilot entry point
+- Only CLAUDE.md is special (auto-loaded by Claude Code)
+
+#### Version Consistency
+
+**Updated All Version References**
+- VERSION file: 3.5.0 → 3.6.0
+- README.md: Updated header and version section
+- config/.context-config.template.json: configVersion 3.6.0
+- All command files: Version footers updated to 3.6.0
+- Scripts: Version comments updated to 3.6.0
+- reference/ORGANIZATION.md: Version 3.6.0
+
+---
+
+### Migration Guide (v3.5.0 → v3.6.0)
+
+**For Existing Projects:**
+
+```bash
+# Move claude.md to project root (if exists)
+mv context/claude.md ./CLAUDE.md
+
+# Update with new template content (optional but recommended)
+# The new template has significantly enhanced content
+```
+
+**For New Projects:**
+
+Run `/init-context` - CLAUDE.md will be created at project root automatically.
+
+---
+
+## [3.5.0] - 2025-11-28
+
+*(Previous release - see below for details)*
+
+---
+
 ## [3.4.0] - 2025-11-17
 
 ### Added - Code Review Actionability Features

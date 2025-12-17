@@ -799,5 +799,5 @@ Understood?
 
 ---
 
-**Version:** 3.0.0
+**Version:** 3.6.0
 **Updated:** v2.3.2 - Fixed files created in root instead of context/ directory

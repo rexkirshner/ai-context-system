@@ -239,7 +239,7 @@
   "metadata": {
     "createdAt": "[YYYY-MM-DD]",
     "lastUpdated": "[YYYY-MM-DD]",
-    "configVersion": "3.0.0",
+    "configVersion": "3.6.0",
     "notes": "Configuration for AI Context System"
   },
   "metrics": {

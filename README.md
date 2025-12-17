@@ -1,6 +1,6 @@
 # AI Context System
 
-**Version 3.4.0** • [What's New](#-v340-released---code-review-actionability)
+**Version 3.6.0** • [What's New](#-v360-released---claude-code-auto-loading)
 
 > **Externalize AI context. Enable human-AI collaboration. Perfect session continuity.**
 >
@@ -26,23 +26,21 @@ Facilitate peer review, project handoffs, and collaborative development between 
 
 ---
 
-## 🎉 v3.4.0 Released - Code Review Actionability
+## 🎉 v3.6.0 Released - Claude Code Auto-Loading
 
-**Major enhancement to `/code-review` based on real-world user feedback**
+**CLAUDE.md now at project root for automatic loading by Claude Code**
 
-**New Features:**
-- ✨ **Smart issue grouping** - 25 identical errors → 1 grouped task
-- ✨ **Auto-TodoWrite generation** - 40+ findings → 7-10 actionable tasks (30 min → 30 sec)
-- ✨ **KNOWN_ISSUES.md integration** - Critical issues persist across sessions
-- ✨ **STATUS.md auto-update** - Review summary visible in project status
-- ✨ **Review history tracking** - All reviews tracked in artifacts/code-reviews/INDEX.md
-- ✨ **Automatic comparison** - Auto-detects and compares with previous reviews
+**Key Changes:**
+- ✨ **CLAUDE.md at project root** - Auto-loaded by Claude Code at every conversation start
+- ✨ **Enhanced CLAUDE.md template** - Project identity, critical rules, working style, debugging protocol
+- ✨ **Better context hierarchy** - Essential context always available, detailed docs in context/
+- ✨ **Other AI headers in context/** - cursor.md, aider.md stay in context/ folder
 
-**Impact:**
-- Transforms reviews from "excellent analysis" to "immediately actionable"
-- 30-60 minutes of manual work → automated in seconds
-- Full context system integration
-- Quality trends visible over time
+**Why This Matters:**
+- Claude Code automatically loads `./CLAUDE.md` at conversation start
+- No manual reading required for critical project context
+- Essential rules (git push, simplicity, debugging) always present
+- Session commands and context file references immediately available
 
 **Full details:** [CHANGELOG.md](./CHANGELOG.md) • **Upgrade:** `/update-context-system`
 
@@ -423,15 +421,15 @@ See [SETUP_GUIDE.md](./SETUP_GUIDE.md) for detailed troubleshooting.
 
 ## Version
 
-**Current Version:** 3.2.2
+**Current Version:** 3.6.0
 **Status:** Production Ready
-**Last Updated:** 2025-10-23
+**Last Updated:** 2025-12-16
 
-**What's New in v3.2.2:**
-- Fixed critical installer bug blocking all upgrades (save-context.md 404)
-- Fixed version detection showing blank
-- Fixed misleading error messages in non-interactive mode
-- Installer now works reliably with --yes flag
+**What's New in v3.6.0:**
+- CLAUDE.md now at project root (auto-loaded by Claude Code)
+- Enhanced CLAUDE.md template with project identity, critical rules, working style
+- Other AI headers (cursor.md, aider.md) remain in context/
+- Consistent version numbering across all files
 
 **See:** [CHANGELOG.md](./CHANGELOG.md) for complete version history
 

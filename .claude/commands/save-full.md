@@ -789,5 +789,5 @@ echo ""
 
 ---
 
-**Version:** 3.1.0
+**Version:** 3.6.0
 **Updated:** v3.1.0 - Removed all command substitution, added progress indicators, implemented append-only SESSIONS.md strategy, added git repo checks, added file size warnings

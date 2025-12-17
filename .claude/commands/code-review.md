@@ -762,5 +762,5 @@ User runs this when they have time. Be thorough:
 
 ---
 
-**Version:** 3.4.0
+**Version:** 3.6.0
 **Updated:** v3.4.0 - Added Step 8: Integration & Actionability (TodoWrite generation, context integration, review history, comparison)
