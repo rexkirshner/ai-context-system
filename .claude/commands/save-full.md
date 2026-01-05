@@ -348,6 +348,15 @@ echo "STATUS.md is the single source of truth for 'what's happening now'"
 echo ""
 echo "✅ Use Edit tool to update each section"
 echo ""
+
+# Auto-update timestamp (v3.7.0+)
+echo "Auto-updating timestamp..."
+source scripts/common-functions.sh 2>/dev/null || true
+if type update_last_modified &>/dev/null; then
+  update_last_modified "$CONTEXT_DIR/STATUS.md"
+  echo "✅ STATUS.md timestamp updated to $(date +%Y-%m-%d)"
+fi
+echo ""
 ```
 
 ---
@@ -526,6 +535,16 @@ fi
 
 **Non-blocking:** This is a warning only - won't prevent save from completing.
 
+**v3.7.0+:** If you update CONTEXT.md, the timestamp will be auto-updated:
+```bash
+# If CONTEXT.md was modified, update its timestamp
+source scripts/common-functions.sh 2>/dev/null || true
+if type update_last_modified &>/dev/null; then
+  update_last_modified "$CONTEXT_DIR/CONTEXT.md"
+  echo "✅ CONTEXT.md timestamp updated"
+fi
+```
+
 ---
 
 ### Step 9: Check README.md Staleness
@@ -655,8 +674,9 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 echo ""
 echo "Core Updates:"
 echo "  ✅ SESSIONS.md - Comprehensive session entry (mental models, WIP)"
-echo "  ✅ STATUS.md - Updated tasks, blockers, priorities, Quick Reference"
+echo "  ✅ STATUS.md - Updated tasks, blockers, priorities, Quick Reference, timestamp"
 echo "  ✅ DECISIONS.md - [Updated / No new decisions]"
+echo "  ✅ Timestamps - Auto-updated (v3.7.0+)"
 echo ""
 echo "Optional Updates:"
 echo "  • ARCHITECTURE.md - [Updated / Skipped]"
@@ -789,5 +809,5 @@ echo ""
 
 ---
 
-**Version:** 3.6.0
-**Updated:** v3.1.0 - Removed all command substitution, added progress indicators, implemented append-only SESSIONS.md strategy, added git repo checks, added file size warnings
+**Version:** 3.7.0
+**Updated:** v3.7.0 - Added auto-timestamp functionality for STATUS.md and CONTEXT.md

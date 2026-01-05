@@ -1,6 +1,6 @@
 #!/bin/bash
 # Common functions used across AI Context System commands
-# Version: 3.6.0
+# Version: 3.7.0
 #
 # This file extracts duplicate code from multiple commands into shared utilities.
 # Source this file at the beginning of any command that needs these functions.
@@ -837,6 +837,317 @@ get_current_session_count() {
 }
 
 # =============================================================================
+# Auto-Timestamp Functions (v3.7.0)
+# =============================================================================
+
+# Update "Last Updated" date in a markdown file
+# Supports the pattern: **Last Updated:** [anything]
+# Cross-platform compatible (macOS + Linux)
+#
+# Args:
+#   $1 - File path to update
+#
+# Returns:
+#   0 on success (even if no timestamp found - that's OK)
+#   1 if file doesn't exist
+#
+# Usage:
+#   update_last_modified "context/STATUS.md"
+update_last_modified() {
+  local file="$1"
+  local today=$(date +%Y-%m-%d)
+
+  # Check if file exists
+  if [ ! -f "$file" ]; then
+    log_debug "update_last_modified: File not found: $file"
+    return 1
+  fi
+
+  # Check if file has "Last Updated" pattern
+  if grep -q '\*\*Last Updated:\*\*' "$file"; then
+    # Platform-independent sed
+    if sed --version 2>&1 | grep -q GNU; then
+      # GNU sed (Linux)
+      sed -i "s/\*\*Last Updated:\*\* .*/\*\*Last Updated:\*\* $today/" "$file"
+    else
+      # BSD sed (macOS)
+      sed -i '' "s/\*\*Last Updated:\*\* .*/\*\*Last Updated:\*\* $today/" "$file"
+    fi
+    log_debug "update_last_modified: Updated timestamp in $file to $today"
+    return 0
+  fi
+
+  # No timestamp pattern found - that's OK, don't add one
+  log_debug "update_last_modified: No timestamp pattern found in $file (skipping)"
+  return 0
+}
+
+# =============================================================================
+# Audit System Functions (v4.0.0)
+# =============================================================================
+
+# Get the next audit number for a given audit type
+# Scans existing audit files and returns the next number (01, 02, etc.)
+#
+# Args:
+#   $1 - Audit type (e.g., "security", "performance", "database")
+#   $2 - Directory to scan (optional, default: "docs/audits")
+#
+# Returns:
+#   Two-digit number string (e.g., "01", "02", "15")
+#
+# Usage:
+#   num=$(get_next_audit_number "security")
+#   # Creates: security-audit-01.md, security-audit-02.md, etc.
+get_next_audit_number() {
+  local audit_type="$1"
+  local directory="${2:-docs/audits}"
+  local max=0
+
+  # Ensure directory exists
+  if [ ! -d "$directory" ]; then
+    printf "%02d" 1
+    return 0
+  fi
+
+  # Find highest existing number for this audit type
+  for file in "$directory/${audit_type}-audit-"*.md; do
+    if [ -f "$file" ]; then
+      # Extract number from filename (e.g., security-audit-03.md -> 03 -> 3)
+      local num=$(echo "$file" | grep -oE '[0-9]+\.md$' | grep -oE '[0-9]+')
+      if [ -n "$num" ]; then
+        # Remove leading zeros for comparison
+        num=$((10#$num))
+        [ "$num" -gt "$max" ] && max="$num"
+      fi
+    fi
+  done
+
+  # Return next number with zero-padding
+  printf "%02d" $((max + 1))
+}
+
+# Update the audit INDEX.md with a new entry
+# Adds a row to the "Recent Audits" table
+#
+# Args:
+#   $1 - Directory containing INDEX.md (e.g., "docs/audits")
+#   $2 - Audit type (e.g., "Security", "Performance")
+#   $3 - Audit filename (e.g., "security-audit-01.md")
+#   $4 - Grade (e.g., "B+", "A-")
+#   $5 - Key findings summary (e.g., "2 high, 5 medium issues")
+#
+# Returns:
+#   0 on success, 1 on failure
+#
+# Usage:
+#   update_audit_index "docs/audits" "Security" "security-audit-01.md" "B+" "2 high, 5 medium"
+update_audit_index() {
+  local directory="$1"
+  local audit_type="$2"
+  local filename="$3"
+  local grade="$4"
+  local findings="$5"
+  local index_file="$directory/INDEX.md"
+  local today=$(date +%Y-%m-%d)
+
+  # Create INDEX.md from template if it doesn't exist
+  if [ ! -f "$index_file" ]; then
+    if [ -f "templates/audits-index.template.md" ]; then
+      mkdir -p "$directory"
+      cp "templates/audits-index.template.md" "$index_file"
+      log_info "Created INDEX.md from template"
+    else
+      log_error "INDEX.md not found and template not available"
+      return 1
+    fi
+  fi
+
+  # Create the new row
+  local new_row="| $today | $audit_type | [$filename](./$filename) | $grade | $findings |"
+
+  # Insert new row after the table header (after the |---| line in Recent Audits section)
+  # We look for the comment marker we added in the template
+  if grep -q "<!-- New audit entries will be added above this line -->" "$index_file"; then
+    # Platform-independent sed
+    if sed --version 2>&1 | grep -q GNU; then
+      sed -i "s|<!-- New audit entries will be added above this line -->|$new_row\n<!-- New audit entries will be added above this line -->|" "$index_file"
+    else
+      sed -i '' "s|<!-- New audit entries will be added above this line -->|$new_row\\
+<!-- New audit entries will be added above this line -->|" "$index_file"
+    fi
+    log_success "Added audit entry to INDEX.md"
+    return 0
+  else
+    log_warn "Could not find insertion point in INDEX.md"
+    return 1
+  fi
+}
+
+# =============================================================================
+# Platform Detection Functions (v4.0.0)
+# =============================================================================
+
+# Detect the database platform/ORM in use
+# Checks for common database tools in the project
+#
+# Returns:
+#   String: "prisma" | "drizzle" | "typeorm" | "sequelize" | "knex" | "raw" | "unknown"
+#
+# Usage:
+#   platform=$(detect_database_platform)
+detect_database_platform() {
+  # Check for Prisma
+  if [ -f "prisma/schema.prisma" ]; then
+    echo "prisma"
+    return 0
+  fi
+
+  # Check package.json for various ORMs
+  if [ -f "package.json" ]; then
+    if grep -q '"drizzle-orm"' package.json 2>/dev/null; then
+      echo "drizzle"
+      return 0
+    fi
+    if grep -q '"typeorm"' package.json 2>/dev/null; then
+      echo "typeorm"
+      return 0
+    fi
+    if grep -q '"sequelize"' package.json 2>/dev/null; then
+      echo "sequelize"
+      return 0
+    fi
+    if grep -q '"knex"' package.json 2>/dev/null; then
+      echo "knex"
+      return 0
+    fi
+    # Check for raw database drivers
+    if grep -qE '"pg"|"mysql2"|"sqlite3"|"better-sqlite3"' package.json 2>/dev/null; then
+      echo "raw"
+      return 0
+    fi
+  fi
+
+  echo "unknown"
+}
+
+# Detect the hosting/deployment platform
+# Checks for platform-specific configuration files and dependencies
+#
+# Returns:
+#   String: "vercel" | "aws" | "cloudflare" | "netlify" | "railway" | "fly" | "unknown"
+#
+# Usage:
+#   platform=$(detect_hosting_platform)
+detect_hosting_platform() {
+  # Check for Vercel
+  if [ -f "vercel.json" ] || [ -d ".vercel" ]; then
+    echo "vercel"
+    return 0
+  fi
+  if [ -f "package.json" ] && grep -q '"@vercel/' package.json 2>/dev/null; then
+    echo "vercel"
+    return 0
+  fi
+
+  # Check for AWS
+  if [ -f "serverless.yml" ] || [ -f "serverless.yaml" ] || [ -f "sam.yaml" ] || [ -f "template.yaml" ]; then
+    echo "aws"
+    return 0
+  fi
+  if [ -d ".aws" ] || [ -f "cdk.json" ]; then
+    echo "aws"
+    return 0
+  fi
+
+  # Check for Cloudflare
+  if [ -f "wrangler.toml" ] || [ -f "wrangler.json" ]; then
+    echo "cloudflare"
+    return 0
+  fi
+
+  # Check for Netlify
+  if [ -f "netlify.toml" ] || [ -d ".netlify" ]; then
+    echo "netlify"
+    return 0
+  fi
+
+  # Check for Railway
+  if [ -f "railway.json" ] || [ -f "railway.toml" ]; then
+    echo "railway"
+    return 0
+  fi
+
+  # Check for Fly.io
+  if [ -f "fly.toml" ]; then
+    echo "fly"
+    return 0
+  fi
+
+  echo "unknown"
+}
+
+# Detect the web framework in use
+# Checks for common JavaScript/TypeScript frameworks
+#
+# Returns:
+#   String: "nextjs" | "remix" | "astro" | "nuxt" | "sveltekit" | "vite" | "express" | "unknown"
+#
+# Usage:
+#   framework=$(detect_framework)
+detect_framework() {
+  if [ ! -f "package.json" ]; then
+    echo "unknown"
+    return 0
+  fi
+
+  # Check for Next.js
+  if grep -q '"next"' package.json 2>/dev/null; then
+    echo "nextjs"
+    return 0
+  fi
+
+  # Check for Remix
+  if grep -q '"@remix-run/' package.json 2>/dev/null; then
+    echo "remix"
+    return 0
+  fi
+
+  # Check for Astro
+  if grep -q '"astro"' package.json 2>/dev/null; then
+    echo "astro"
+    return 0
+  fi
+
+  # Check for Nuxt
+  if grep -q '"nuxt"' package.json 2>/dev/null; then
+    echo "nuxt"
+    return 0
+  fi
+
+  # Check for SvelteKit
+  if grep -q '"@sveltejs/kit"' package.json 2>/dev/null; then
+    echo "sveltekit"
+    return 0
+  fi
+
+  # Check for Vite (standalone, not as part of another framework)
+  if grep -q '"vite"' package.json 2>/dev/null && \
+     ! grep -qE '"astro"|"nuxt"|"@sveltejs/kit"' package.json 2>/dev/null; then
+    echo "vite"
+    return 0
+  fi
+
+  # Check for Express
+  if grep -q '"express"' package.json 2>/dev/null; then
+    echo "express"
+    return 0
+  fi
+
+  echo "unknown"
+}
+
+# =============================================================================
 # Initialization
 # =============================================================================
 
@@ -928,4 +1239,4 @@ if [ "$VERBOSITY" != "quiet" ] && [ -z "$UPDATE_CHECK_RUNNING" ]; then
 fi
 
 # Log that common functions were loaded (debug only)
-log_debug "Loaded common-functions.sh v3.4.0"
+log_debug "Loaded common-functions.sh v3.7.0"

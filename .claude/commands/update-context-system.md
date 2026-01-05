@@ -537,6 +537,82 @@ echo ""
 
 **v3.6.1 change:** Migration is now automatic (non-interactive) to ensure it actually happens. The v3.6.0 interactive prompts didn't work in Claude Code's execution environment.
 
+### Step 5.6: Audit System Migration (v4.0.0+)
+
+**v4.0.0:** Migrate existing code review artifacts to new docs/audits/ structure.
+
+**ACTION:** Migrate old code review files to new location:
+
+```bash
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "🔍 Audit System Migration (v4.0.0)"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+
+# Create new audit directory structure
+mkdir -p docs/audits/archive/pre-v4.0.0-migration
+
+# Check for old code review artifacts
+if [ -d "artifacts/code-reviews" ]; then
+  # Check if directory has files
+  FILE_COUNT=$(find artifacts/code-reviews -type f 2>/dev/null | wc -l | tr -d ' ')
+
+  if [ "$FILE_COUNT" -gt 0 ]; then
+    echo "📦 Found $FILE_COUNT existing code review file(s)"
+    echo "   Migrating to docs/audits/archive/pre-v4.0.0-migration/..."
+
+    # Move all files to archive
+    mv artifacts/code-reviews/* docs/audits/archive/pre-v4.0.0-migration/ 2>/dev/null || true
+
+    # Remove empty directory
+    rmdir artifacts/code-reviews 2>/dev/null || true
+
+    echo "✅ Migrated to docs/audits/archive/pre-v4.0.0-migration/"
+    echo ""
+    echo "💡 Old code reviews preserved in archive."
+    echo "   New audits will be created in docs/audits/"
+  else
+    echo "ℹ️  artifacts/code-reviews/ exists but is empty"
+    rmdir artifacts/code-reviews 2>/dev/null || true
+  fi
+else
+  echo "ℹ️  No existing code reviews to migrate"
+fi
+
+# Create INDEX.md from template if it doesn't exist
+if [ ! -f "docs/audits/INDEX.md" ]; then
+  if [ -f "templates/audits-index.template.md" ]; then
+    cp templates/audits-index.template.md docs/audits/INDEX.md
+    echo "✅ Created docs/audits/INDEX.md"
+  fi
+fi
+
+echo ""
+echo "📊 New audit system structure:"
+echo "   docs/audits/                    - New audit reports"
+echo "   docs/audits/INDEX.md            - Audit history index"
+echo "   docs/audits/archive/            - Archived audits"
+echo ""
+```
+
+**What this does:**
+- Creates new `docs/audits/` directory structure
+- Migrates existing `artifacts/code-reviews/*` to `docs/audits/archive/pre-v4.0.0-migration/`
+- Creates `INDEX.md` for tracking audit history
+- Preserves all existing code review files
+
+**New audit commands (v4.0.0):**
+- `/code-review` - Interactive selection of audit types
+- `/code-review-security` - OWASP-style security audit
+- `/code-review-performance` - Core Web Vitals, bundle analysis
+- `/code-review-database` - Query optimization, N+1 detection
+- `/code-review-infrastructure` - Serverless costs, caching
+- `/code-review-seo` - Technical SEO audit
+- Plus: accessibility, typescript, testing audits
+
+---
+
 ### Step 6: Generate Update Report
 
 Provide a clear summary to the user:
@@ -680,5 +756,5 @@ Understood?
 
 ---
 
-**Version:** 3.6.1
-**Updated:** v3.6.1 - Fixed CLAUDE.md migration (now automatic, non-interactive)
+**Version:** 3.7.0
+**Updated:** v3.7.0 - Added auto-timestamps; v4.0.0 - Added audit system migration
