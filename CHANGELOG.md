@@ -46,6 +46,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `/code-review-performance` - Core Web Vitals audit
   - LCP, INP, CLS analysis
   - Bundle size, image optimization, caching
+- `/code-review-accessibility` - WCAG 2.1 AA compliance audit
+  - POUR principles (Perceivable, Operable, Understandable, Robust)
+  - Keyboard navigation, focus management
+  - Color contrast analysis, ARIA usage
+- `/code-review-typescript` - TypeScript type safety audit
+  - tsconfig.json analysis, strict mode assessment
+  - Explicit any tracking, type coverage metrics
+  - Runtime validation recommendations (Zod)
+- `/code-review-testing` - Test coverage and quality audit
+  - Coverage analysis with metrics
+  - Test pyramid distribution (unit/integration/e2e)
+  - Mock strategy review, CI integration
+- `/build-check` - Pre-push build gate
+  - Sequential: lint -> typecheck -> tests -> build
+  - Framework auto-detection
+  - Common failure patterns and fixes
 
 **Report Features**
 - All reports saved to `docs/audits/{type}-audit-NN.md`
