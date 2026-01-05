@@ -1,6 +1,6 @@
 # AI Context System
 
-**Version 3.6.0** • [What's New](#-v360-released---claude-code-auto-loading)
+**Version 3.6.1** • [What's New](#-v361-released---claude-code-auto-loading-fix)
 
 > **Externalize AI context. Enable human-AI collaboration. Perfect session continuity.**
 >
@@ -26,21 +26,19 @@ Facilitate peer review, project handoffs, and collaborative development between 
 
 ---
 
-## 🎉 v3.6.0 Released - Claude Code Auto-Loading
+## 🎉 v3.6.1 Released - Claude Code Auto-Loading Fix
 
-**CLAUDE.md now at project root for automatic loading by Claude Code**
+**Fixes CLAUDE.md migration that wasn't working in v3.6.0**
 
-**Key Changes:**
+**What's Fixed:**
+- ✅ **Auto-migration now works** - `context/claude.md` automatically moves to `./CLAUDE.md`
+- ✅ **Non-interactive** - No prompts that fail in Claude Code's bash environment
+- ✅ **Updated git rules** - Clearer "commit often, push with permission" wording
+
+**v3.6.0 Features (now working):**
 - ✨ **CLAUDE.md at project root** - Auto-loaded by Claude Code at every conversation start
 - ✨ **Enhanced CLAUDE.md template** - Project identity, critical rules, working style, debugging protocol
 - ✨ **Better context hierarchy** - Essential context always available, detailed docs in context/
-- ✨ **Other AI headers in context/** - cursor.md, aider.md stay in context/ folder
-
-**Why This Matters:**
-- Claude Code automatically loads `./CLAUDE.md` at conversation start
-- No manual reading required for critical project context
-- Essential rules (git push, simplicity, debugging) always present
-- Session commands and context file references immediately available
 
 **Full details:** [CHANGELOG.md](./CHANGELOG.md) • **Upgrade:** `/update-context-system`
 

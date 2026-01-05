@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.6.1] - 2026-01-05
+
+### Fixed - CLAUDE.md Auto-Migration
+
+**PATCH RELEASE** - Fixes CLAUDE.md migration that wasn't working in v3.6.0
+
+**Problem:** The v3.6.0 CLAUDE.md migration used interactive `read -p` prompts which don't work in Claude Code's bash execution environment. As a result, running `/update-context-system` never actually moved `context/claude.md` to the project root.
+
+**Solution:** Made migration automatic and non-interactive:
+- If `context/claude.md` exists and `./CLAUDE.md` doesn't → auto-move (no prompt)
+- If neither exists → auto-create from template
+- If both exist → warn user to manually resolve (can't auto-decide which to keep)
+
+#### Files Changed
+
+- `.claude/commands/update-context-system.md` - Step 5.5 now auto-migrates
+- `.claude/commands/init-context.md` - Step 4 now auto-migrates
+- `templates/CLAUDE.md.template` - Updated git rules wording
+- `VERSION` - Bumped to 3.6.1
+
+#### Updated CLAUDE.md Template
+
+**Git Workflow section refined:**
+- "Commit liberally and often" - encourages frequent local commits
+- "NEVER push without EXPLICIT permission" - clearer wording
+- "Permission does NOT carry forward" - explicit about per-push approval
+- "Local commits = safe. Remote pushes = require approval each time."
+
+---
+
 ## [3.6.0] - 2025-12-16
 
 ### Changed - CLAUDE.md Auto-Loading Architecture

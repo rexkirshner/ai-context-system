@@ -22,11 +22,11 @@
 
 **These are non-negotiable. Violating these breaks trust.**
 
-### Git Push Protocol
-- **NEVER push without EXPLICIT approval** - each push requires fresh permission
-- "commit" means commit locally, then STOP
-- "push" or "commit and push" means OK to push
-- Wait for user to confirm changes work before pushing
+### Git Workflow
+- **Commit liberally and often** - create commits for each logical unit of work
+- **NEVER push without EXPLICIT permission** - stage (git add) and commit locally anytime, but ONLY push when user explicitly says "push" or "push to github"
+- **Permission does NOT carry forward** - each push requires NEW explicit approval
+- Local commits = safe and encouraged. Remote pushes = require approval each time.
 
 ### No Lazy Coding
 - Find and fix ROOT CAUSES - no band-aids, no temporary fixes
