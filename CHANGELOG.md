@@ -69,13 +69,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Consistent report templates with executive summary
 - INDEX.md auto-updated with each audit
 
+**Master Orchestrator (`/code-review`)**
+- Transformed from monolithic command to modular orchestrator
+- Interactive menu for audit type selection
+- Command-line arguments: `--security`, `--performance`, `--accessibility`, etc.
+- Preset combinations:
+  - `--all` - Run all 8 audits
+  - `--prelaunch` - Security, Performance, Accessibility, SEO
+  - `--backend` - Security, Database, Testing
+  - `--frontend` - Performance, Accessibility, SEO
+- Combined summary report with weighted grading
+- Platform flags passed through to sub-commands
+
 ### Changed
 
 - `scripts/common-functions.sh` version bumped to 3.7.0 (pre-release)
+- `/code-review` completely rewritten as orchestrator (was monolithic)
+- Audit reports now go to `docs/audits/` (was `artifacts/code-reviews/`)
+- Report naming: `{type}-audit-NN.md` (was `session-N-review.md`)
 
 ### Fixed
 
 - `get_next_audit_number()` glob pattern issue when no audit files exist
+- `update_audit_index()` sed issue on macOS - now uses awk for cross-platform reliability
+
+### Removed
+
+- `.claude/checklists/` directory - checklists now integrated into audit commands
+- Old monolithic code review behavior - replaced by modular system
+
+### Breaking Changes
+
+- `/code-review` is now an orchestrator that runs specialized audit commands
+- Reports directory changed: `docs/audits/` replaces `artifacts/code-reviews/`
+- Report format changed: Individual audit reports instead of combined session reports
+- Checklists removed: Use `/code-review-security`, `/code-review-accessibility`, etc.
 
 ---
 
