@@ -27,6 +27,9 @@ Thumbs.db
 # Node modules if testing
 node_modules/
 
+# Test output files
+scripts/tests/output/
+
 # Temporary files
 *.tmp
 *.temp
