@@ -967,16 +967,14 @@ update_audit_index() {
   # Create the new row
   local new_row="| $today | $audit_type | [$filename](./$filename) | $grade | $findings |"
 
-  # Insert new row after the table header (after the |---| line in Recent Audits section)
-  # We look for the comment marker we added in the template
-  if grep -q "<!-- New audit entries will be added above this line -->" "$index_file"; then
-    # Platform-independent sed
-    if sed --version 2>&1 | grep -q GNU; then
-      sed -i "s|<!-- New audit entries will be added above this line -->|$new_row\n<!-- New audit entries will be added above this line -->|" "$index_file"
-    else
-      sed -i '' "s|<!-- New audit entries will be added above this line -->|$new_row\\
-<!-- New audit entries will be added above this line -->|" "$index_file"
-    fi
+  # Insert new row before the comment marker using awk (more portable than sed for this)
+  local marker="<!-- New audit entries will be added above this line -->"
+  if grep -q "$marker" "$index_file"; then
+    # Use awk for reliable cross-platform insertion
+    awk -v row="$new_row" -v marker="$marker" '
+      $0 ~ marker { print row }
+      { print }
+    ' "$index_file" > "$index_file.tmp" && mv "$index_file.tmp" "$index_file"
     log_success "Added audit entry to INDEX.md"
     return 0
   else
