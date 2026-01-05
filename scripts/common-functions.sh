@@ -911,8 +911,9 @@ get_next_audit_number() {
   fi
 
   # Find highest existing number for this audit type
-  for file in "$directory/${audit_type}-audit-"*.md; do
-    if [ -f "$file" ]; then
+  # Use find to avoid glob expansion issues when no files match
+  while IFS= read -r file; do
+    if [ -n "$file" ] && [ -f "$file" ]; then
       # Extract number from filename (e.g., security-audit-03.md -> 03 -> 3)
       local num=$(echo "$file" | grep -oE '[0-9]+\.md$' | grep -oE '[0-9]+')
       if [ -n "$num" ]; then
@@ -921,7 +922,7 @@ get_next_audit_number() {
         [ "$num" -gt "$max" ] && max="$num"
       fi
     fi
-  done
+  done < <(find "$directory" -maxdepth 1 -name "${audit_type}-audit-*.md" -type f 2>/dev/null)
 
   # Return next number with zero-padding
   printf "%02d" $((max + 1))
