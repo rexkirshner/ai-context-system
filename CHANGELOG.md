@@ -7,6 +7,62 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added - v3.7.0 Features (Friction Reduction)
+
+**Auto-Timestamp Updates**
+- New `update_last_modified()` function in `scripts/common-functions.sh`
+- Automatically updates `**Last Updated:** YYYY-MM-DD` patterns in markdown files
+- Integrated into `/save` and `/save-full` commands
+- Cross-platform compatible (macOS and Linux)
+- Test suite: `scripts/tests/test-auto-timestamps.sh`
+
+### Added - v4.0.0 Features (Modular Code Review System)
+
+**New Audit Infrastructure**
+- New directory structure: `docs/audits/` for all audit reports
+- Template: `templates/audits-index.template.md` for audit tracking
+- Migration logic in `/update-context-system` to move `artifacts/code-reviews/` to `docs/audits/`
+
+**New Helper Functions** (in `scripts/common-functions.sh`)
+- `get_next_audit_number()` - Returns incrementing audit number (01, 02, etc.)
+- `update_audit_index()` - Updates `docs/audits/INDEX.md` with new entries
+- `detect_database_platform()` - Detects Prisma, Drizzle, TypeORM, etc.
+- `detect_hosting_platform()` - Detects Vercel, AWS, Cloudflare, etc.
+- `detect_framework()` - Detects Next.js, Remix, Astro, etc.
+
+**New Modular Audit Commands**
+- `/code-review-database` - Database efficiency audit (N+1, indexes, caching)
+  - Platform flags: `--prisma`, `--drizzle`, `--typeorm`, `--raw`
+  - Auto-detects database platform from project files
+- `/code-review-infrastructure` - Serverless cost optimization audit
+  - Platform flags: `--vercel`, `--aws`, `--cloudflare`, `--netlify`
+  - Cost surface inventory, rendering strategy analysis
+- `/code-review-seo` - Technical SEO audit
+  - Metadata, structured data (JSON-LD), crawlability
+  - Framework-aware (Next.js metadata API, etc.)
+- `/code-review-security` - OWASP Top 10 security audit
+  - Covers all 10 categories with grep patterns
+  - Dependency vulnerability scanning (npm audit)
+- `/code-review-performance` - Core Web Vitals audit
+  - LCP, INP, CLS analysis
+  - Bundle size, image optimization, caching
+
+**Report Features**
+- All reports saved to `docs/audits/{type}-audit-NN.md`
+- Incrementing numbering per audit type
+- Consistent report templates with executive summary
+- INDEX.md auto-updated with each audit
+
+### Changed
+
+- `scripts/common-functions.sh` version bumped to 3.7.0 (pre-release)
+
+### Fixed
+
+- `get_next_audit_number()` glob pattern issue when no audit files exist
+
+---
+
 ## [3.6.1] - 2026-01-05
 
 ### Fixed - CLAUDE.md Auto-Migration
