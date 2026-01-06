@@ -5,18 +5,22 @@ All notable changes to the AI Context System will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [4.0.0] - 2026-01-05
 
-### Added - v3.7.0 Features (Friction Reduction)
+**MAJOR RELEASE** - Modular Code Review System
+
+This release transforms the monolithic `/code-review` command into a modular system with 8 specialized audit commands and a master orchestrator.
+
+### Added
 
 **Auto-Timestamp Updates**
-- New `update_last_modified()` function in `scripts/common-functions.sh`
+- `update_last_modified()` function in `scripts/common-functions.sh`
 - Automatically updates `**Last Updated:** YYYY-MM-DD` patterns in markdown files
 - Integrated into `/save` and `/save-full` commands
 - Cross-platform compatible (macOS and Linux)
 - Test suite: `scripts/tests/test-auto-timestamps.sh`
 
-### Added - v4.0.0 Features (Modular Code Review System)
+**Modular Code Review System**
 
 **New Audit Infrastructure**
 - New directory structure: `docs/audits/` for all audit reports
@@ -83,7 +87,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- `scripts/common-functions.sh` version bumped to 3.7.0 (pre-release)
+- `scripts/common-functions.sh` version bumped to 4.0.0
 - `/code-review` completely rewritten as orchestrator (was monolithic)
 - Audit reports now go to `docs/audits/` (was `artifacts/code-reviews/`)
 - Report naming: `{type}-audit-NN.md` (was `session-N-review.md`)

@@ -809,5 +809,4 @@ echo ""
 
 ---
 
-**Version:** 3.7.0
-**Updated:** v3.7.0 - Added auto-timestamp functionality for STATUS.md and CONTEXT.md
+**Version:** 4.0.0

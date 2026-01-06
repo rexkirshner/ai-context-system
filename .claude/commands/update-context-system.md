@@ -291,157 +291,99 @@ log_info ""
 
 ---
 
-### Step 3: Show What's New (v3.3.0+)
+### Step 3: Show What's New
 
 **ACTION:** Display what's new in the upgraded version:
 
 ```bash
 log_info ""
-log_info "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-log_info "  🎉 What's New in v3.3.0"
-log_info "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+log_info "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+log_info "  🎉 What's New in v4.0.0"
+log_info "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 log_info ""
 
 CURRENT_VERSION=$(get_system_version)
 
-# Show what's new for v3.3.0 upgrades
-if [[ "$CURRENT_VERSION" == "3.3.0" ]]; then
-  echo "✨ You now have these new features:"
-  echo ""
-  echo "1️⃣  Template Markers (Template Protection)"
-  echo "   • HTML comment markers protect critical sections"
-  echo "   • <!-- TEMPLATE SECTION: KEEP ALL --> preserves structure"
-  echo "   • <!-- TEMPLATE: READ-ONLY --> prevents modifications"
-  echo "   • Prevents 80-90% of template deletion errors"
-  echo ""
-  echo "2️⃣  Documentation Staleness Detection"
-  echo "   • /save-full warns when CONTEXT.md is >7 days old"
-  echo "   • /save-full warns when README.md is >14 days old"
-  echo "   • /review-context shows color-coded staleness 🟢🟡🔴"
-  echo "   • Proactive reminders prevent documentation drift"
-  echo ""
-  echo "3️⃣  Decision Documentation Guidance"
-  echo "   • CLAUDE.md now has decision capture prompts"
-  echo "   • 5 categories of decisions with examples"
-  echo "   • DECISIONS.md format guidance with metrics"
-  echo "   • Better architectural decision preservation"
-  echo ""
-  echo "4️⃣  Deletion Protection"
-  echo "   • Interactive confirmation before file deletion"
-  echo "   • Shows file details and requires explicit 'yes'"
-  echo "   • Default: keep file (safe by default)"
-  echo "   • Zero data loss from accidental deletions"
-  echo ""
-  echo "📖 Detailed documentation: .claude/docs/update-guide.md"
-  echo ""
-  echo "🎯 To adopt template markers (recommended):"
-  echo "   Run /update-templates to add markers to your context files"
-  echo ""
-  echo "🎯 To use staleness detection:"
-  echo "   Already active! Next /save-full will check documentation currency"
-  echo ""
-fi
+echo "✨ Modular Code Review System"
+echo ""
+echo "The /code-review command is now a master orchestrator with"
+echo "8 specialized audit commands:"
+echo ""
+echo "   /code-review-security      OWASP Top 10 audit"
+echo "   /code-review-performance   Core Web Vitals audit"
+echo "   /code-review-accessibility WCAG 2.1 AA compliance"
+echo "   /code-review-seo           Technical SEO audit"
+echo "   /code-review-database      N+1, indexes, query optimization"
+echo "   /code-review-infrastructure Serverless costs, caching"
+echo "   /code-review-typescript    Type safety audit"
+echo "   /code-review-testing       Coverage and quality audit"
+echo "   /build-check               Pre-push quality gate"
+echo ""
+echo "📂 New Structure:"
+echo "   • Reports saved to docs/audits/{type}-audit-NN.md"
+echo "   • INDEX.md tracks all audits with grades"
+echo "   • Old reports migrated to docs/audits/archive/"
+echo ""
+echo "🎯 Quick Start:"
+echo "   /code-review               Interactive selection menu"
+echo "   /code-review --prelaunch   Security + Perf + A11y + SEO"
+echo "   /code-review --all         Run all 8 audits"
+echo "   /code-review-security      Run single audit directly"
+echo ""
 
 log_info "📦 Current version: $CURRENT_VERSION"
 log_info ""
 ```
 
-### Step 4: Check Version and Migration Path
+### Step 4: Check Version and Migration Notes
 
-**ACTION:** Check current version to determine if migration is needed:
+**ACTION:** Show migration notes based on previous version:
 
 ```bash
-if [[ "$CURRENT_VERSION" == "2.1.0" ]]; then
-  echo "🔄 Migration to v2.2.1 available!"
+# Extract major version number for comparison
+PREV_MAJOR=$(echo "$CURRENT_VERSION" | cut -d. -f1)
+
+if [[ "$PREV_MAJOR" == "3" ]]; then
   echo ""
-  echo "✨ v2.2.1 includes organization features + bug fixes:"
-  echo "   - Bug fixes: Git push protection, large file handling, subdirectory support"
-  echo "   - ORGANIZATION.md guidelines (in reference/ folder)"
-  echo "   - /organize-docs command (interactive cleanup wizard)"
-  echo "   - Organization validation (0-100 scoring)"
-  echo "   - Cleanup reminders (gentle, skippable)"
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo "📋 v3.x → v4.0.0 Migration Notes"
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
   echo ""
-  echo "Migration time: 5 minutes (automatic) + 10-15 minutes (optional cleanup)"
-  echo "Difficulty: Easy (non-breaking, opt-in features)"
+  echo "Breaking Changes:"
+  echo "  • /code-review is now an orchestrator (not monolithic)"
+  echo "  • Reports save to docs/audits/ (was artifacts/code-reviews/)"
+  echo "  • Report naming: {type}-audit-NN.md (was session-N-review.md)"
+  echo "  • .claude/checklists/ deleted (integrated into commands)"
   echo ""
-  echo "📖 Full migration guide:"
-  echo "   reference/MIGRATION_GUIDE_v2.1_to_v2.2.md"
-  echo "   https://github.com/rexkirshner/ai-context-system/blob/main/MIGRATION_GUIDE_v2.1_to_v2.2.md"
+  echo "Your existing code review files will be migrated automatically"
+  echo "to docs/audits/archive/pre-v4.0.0-migration/"
   echo ""
-  echo "🎯 Quick adoption (optional):"
-  echo "   1. cp reference/ORGANIZATION.md ./ORGANIZATION.md"
-  echo "   2. Add /organize-docs to context/.context-config.json enabled commands"
-  echo "   3. Run /validate-context to check organization score"
-  echo "   4. Run /organize-docs if score < 90"
+  echo "No action required - migration is automatic!"
   echo ""
-elif [[ "$CURRENT_VERSION" == "2.0.0" ]]; then
-  echo "🔄 Migration to v2.1.0 available!"
+elif [[ "$PREV_MAJOR" -lt "3" ]]; then
   echo ""
-  echo "⚠️  v2.1.0 includes file consolidation:"
-  echo "   - QUICK_REF.md merged into STATUS.md (auto-generated section)"
-  echo "   - Creates CLAUDE.md at project root (auto-loaded)"
-  echo "   - Reduces file count: 6 → 5 files"
-  echo "   - Adds automated staleness detection"
+  echo "⚠️  Upgrading from v$CURRENT_VERSION (very old version)"
   echo ""
-  echo "Migration time: 10-15 minutes"
-  echo "Difficulty: Easy (mostly automatic)"
-  echo ""
-  echo "📖 Full migration guide:"
-  echo "  https://github.com/rexkirshner/ai-context-system/blob/main/MIGRATION_GUIDE_v2.0_to_v2.1.md"
-  echo ""
-  echo "Quick migration (copy-paste to terminal):"
-  echo "  curl -sL https://raw.githubusercontent.com/rexkirshner/ai-context-system/main/MIGRATION_GUIDE_v2.0_to_v2.1.md | grep -A 100 'Run in terminal:' | bash"
-  echo ""
-elif [[ "$CURRENT_VERSION" == "1.9.0" ]]; then
-  echo "🔄 Migration to v2.0.0 available!"
-  echo ""
-  echo "⚠️  v2.0.0 includes major file structure changes:"
-  echo "   - CLAUDE.md → CONTEXT.md"
-  echo "   - Creates STATUS.md (single source of truth)"
-  echo "   - Creates DECISIONS.md, SESSIONS.md (structured)"
-  echo "   - Auto-generates Quick Reference"
-  echo ""
-  echo "Migration options:"
-  echo "  1. MANUAL: Follow MIGRATION_GUIDE.md (recommended)"
-  echo "  2. AUTOMATED: Use migration script (backup first)"
-  echo ""
-  echo "For manual migration, see:"
-  echo "  https://github.com/rexkirshner/ai-context-system/blob/main/MIGRATION_GUIDE.md"
-  echo ""
-elif [[ "$CURRENT_VERSION" < "1.9.0" ]]; then
-  echo "🔄 Multi-step migration required..."
-  echo ""
-  echo "Your version: $CURRENT_VERSION"
-  echo "Latest version: 2.2.1"
-  echo ""
-  echo "Migration path:"
-  echo "  1. Upgrade to v1.9.0 first"
-  echo "  2. Then upgrade to v2.0.0"
-  echo "  3. Then upgrade to v2.1.0"
-  echo "  4. Finally upgrade to v2.2.1"
-  echo ""
-  echo "Start with:"
-  echo "  https://github.com/rexkirshner/ai-context-system/releases"
+  echo "Your version is quite old. The upgrade will work, but you may"
+  echo "want to review the CHANGELOG for all changes since your version:"
+  echo "  https://github.com/rexkirshner/ai-context-system/blob/main/CHANGELOG.md"
   echo ""
 else
-  echo "✅ Already on latest version structure"
+  echo "✅ Already on v4.x - no migration needed"
 fi
 ```
 
-**About v2.0.0 Migration:**
+**v4.0.0 Breaking Changes Summary:**
 
-Automated migration with dry-run, backup, and rollback is planned for v2.1. For now, v2.0.0 migration is manual:
+| Before (v3.x) | After (v4.0.0) |
+|---------------|----------------|
+| `/code-review` runs full monolithic review | `/code-review` shows interactive menu |
+| Single long report | Multiple focused reports + summary |
+| `artifacts/code-reviews/` | `docs/audits/` |
+| `session-N-review.md` | `{type}-audit-NN.md` |
+| `.claude/checklists/*.md` | Integrated into audit commands |
 
-1. Read [MIGRATION_GUIDE.md](https://github.com/rexkirshner/ai-context-system/blob/main/MIGRATION_GUIDE.md)
-2. Backup your `context/` folder
-3. Follow the step-by-step migration process
-4. Verify with `/validate-context`
-
-**Why manual for now?**
-- v2.0.0 focuses on getting the new structure right
-- Automated migration requires extensive testing (10+ real projects)
-- Manual migration ensures you understand changes
-- v2.1 will add full automation with safety features
+All existing files are preserved in `docs/audits/archive/`.
 
 ### Step 5: Review Template Updates (Optional)
 
@@ -756,5 +698,4 @@ Understood?
 
 ---
 
-**Version:** 3.7.0
-**Updated:** v3.7.0 - Added auto-timestamps; v4.0.0 - Added audit system migration
+**Version:** 4.0.0
