@@ -2,7 +2,7 @@
 
 # save-full-helper.sh
 # Pre-populates session data for /save-full command
-# Version: 4.0.0
+# Version: 4.0.1
 
 set -e
 
