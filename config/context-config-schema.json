@@ -509,6 +509,66 @@
           "type": "string"
         }
       }
+    },
+    "audits": {
+      "type": "object",
+      "description": "Configuration for modular code review audits",
+      "properties": {
+        "custom": {
+          "type": "array",
+          "description": "Custom audit definitions. Create .claude/commands/code-review-{name}.md for each",
+          "items": {
+            "type": "object",
+            "required": ["name", "description"],
+            "properties": {
+              "name": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9-]*$",
+                "description": "Audit name (matches code-review-{name}.md)"
+              },
+              "description": {
+                "type": "string",
+                "description": "Short description for menu display"
+              },
+              "weight": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 2,
+                "default": 1.0,
+                "description": "Grade weighting (0-2, default 1.0)"
+              },
+              "presets": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Presets this audit belongs to (e.g., 'backend', 'all')"
+              }
+            }
+          }
+        },
+        "presets": {
+          "type": "object",
+          "description": "Custom preset definitions (in addition to built-in presets)",
+          "patternProperties": {
+            "^[a-z][a-z0-9-]*$": {
+              "type": "object",
+              "properties": {
+                "description": {
+                  "type": "string"
+                },
+                "audits": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "List of audit names to include"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   }
 }

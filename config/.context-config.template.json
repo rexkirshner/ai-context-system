@@ -262,5 +262,9 @@
       "lastSaveDuration": null,
       "totalSaves": 0
     }
+  },
+  "audits": {
+    "custom": [],
+    "presets": {}
   }
 }

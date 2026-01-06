@@ -14,7 +14,27 @@ Master orchestrator for modular code reviews. Select one or more specialized aud
 3. **Use specialized commands** - Each audit type has its own detailed command
 4. **Aggregate results** - Combine findings into a unified summary
 
-## Available Audit Types
+## Audit Discovery
+
+**Before showing the menu, discover all available audits:**
+
+```bash
+# Step 1: Find all audit command files
+ls .claude/commands/code-review-*.md 2>/dev/null | grep -v "code-review.md$"
+
+# Step 2: Read custom audit definitions from config
+jq '.audits.custom // []' context/.context-config.json 2>/dev/null
+
+# Step 3: Read custom presets from config
+jq '.audits.presets // {}' context/.context-config.json 2>/dev/null
+```
+
+The orchestrator automatically discovers:
+- **Built-in audits**: The 8 core audits included with the system
+- **Custom audits**: Any `code-review-{name}.md` files in `.claude/commands/`
+- **Custom presets**: Groupings defined in `context/.context-config.json`
+
+## Built-in Audit Types
 
 | Audit | Command | Description | When to Use |
 |-------|---------|-------------|-------------|
@@ -26,6 +46,68 @@ Master orchestrator for modular code reviews. Select one or more specialized aud
 | Infrastructure | `/code-review-infrastructure` | Serverless costs, caching, builds | Monthly cost reviews, scaling prep |
 | TypeScript | `/code-review-typescript` | Type safety, strict mode, any usage | Before enabling strict, tech debt cleanup |
 | Testing | `/code-review-testing` | Coverage, quality, CI integration | Before major releases, quality gates |
+
+## Adding Custom Audits
+
+### Step 1: Create the Command File
+
+Create `.claude/commands/code-review-{name}.md`:
+
+```markdown
+---
+name: code-review-{name}
+description: Your audit description
+---
+
+# /code-review-{name} Command
+
+[Your audit instructions here - follow the pattern of built-in audits]
+
+## Checklist
+- [ ] Check item 1
+- [ ] Check item 2
+
+## Report Template
+[Define report structure]
+```
+
+### Step 2: Register in Config (Optional but Recommended)
+
+Add to `context/.context-config.json`:
+
+```json
+{
+  "audits": {
+    "custom": [
+      {
+        "name": "api",
+        "description": "REST API design and consistency audit",
+        "weight": 1.0,
+        "presets": ["backend", "all"]
+      }
+    ],
+    "presets": {
+      "api-focus": {
+        "description": "API-centric review",
+        "audits": ["security", "api", "testing"]
+      }
+    }
+  }
+}
+```
+
+### Step 3: Automatic Pickup
+
+The orchestrator will automatically:
+- Detect the new command file
+- Add it to the interactive menu
+- Include it in specified presets
+- Apply the weight for grade calculations
+
+**Unregistered audits** (command file exists but not in config) will:
+- Appear in the menu with name derived from filename
+- Use default weight of 1.0
+- Only appear in `--all` preset
 
 ## Quick Reference
 
@@ -47,13 +129,14 @@ Master orchestrator for modular code reviews. Select one or more specialized aud
 
 ### Pattern 1: Interactive Selection
 
-When run without arguments, present an interactive menu:
+When run without arguments, present an interactive menu built from discovered audits:
 
 ```
 Code Review Orchestrator
 
 Select audits to run (enter numbers separated by commas, or 'all'):
 
+Built-in Audits:
 1. Security      - OWASP Top 10, authentication, injection, XSS
 2. Performance   - Core Web Vitals, bundle analysis, runtime
 3. Accessibility - WCAG 2.1 AA, keyboard navigation, screen readers
@@ -63,34 +146,56 @@ Select audits to run (enter numbers separated by commas, or 'all'):
 7. TypeScript    - Type safety, strict mode, any usage
 8. Testing       - Coverage, test quality, CI integration
 
+Custom Audits:                          <-- Only shown if custom audits exist
+9. API           - REST API design and consistency audit
+
 Presets:
 A. All audits (comprehensive)
 P. Pre-launch (Security + Performance + Accessibility + SEO)
 B. Backend focus (Security + Database + Testing)
 F. Frontend focus (Performance + Accessibility + SEO)
+X. API-focus     - API-centric review   <-- Custom presets from config
 
 Selection: >
 ```
+
+**Dynamic Menu Building:**
+1. Always show built-in audits (1-8)
+2. Append custom audits discovered from `.claude/commands/code-review-*.md`
+3. Show custom presets from `audits.presets` in config
+4. Custom audits without config entries shown with name derived from filename
 
 ### Pattern 2: Command Line Arguments
 
 Support these argument patterns:
 
 ```bash
-# Individual audits
+# Individual audits (built-in)
 /code-review --security
 /code-review --performance --accessibility
 
-# Presets
-/code-review --all          # Run all 8 audits
+# Custom audits (if registered)
+/code-review --api
+/code-review --security --api
+
+# Built-in presets
+/code-review --all          # Run all audits (built-in + custom)
 /code-review --prelaunch    # Security, Performance, A11y, SEO
 /code-review --backend      # Security, Database, Testing
 /code-review --frontend     # Performance, Accessibility, SEO
+
+# Custom presets (from config)
+/code-review --api-focus    # Uses audits.presets.api-focus from config
 
 # Platform-specific (passed to sub-commands)
 /code-review --database --prisma
 /code-review --infrastructure --vercel
 ```
+
+**Argument parsing:**
+- `--{audit-name}` runs that specific audit
+- `--{preset-name}` runs all audits in that preset
+- Unknown flags passed through to sub-commands (e.g., `--prisma`)
 
 ## Execution Steps
 
@@ -310,15 +415,40 @@ For UI-heavy applications:
 
 ### --all (Comprehensive)
 
-Run all 8 audit types. Best for:
+Run all audit types (built-in + custom). Best for:
 - Major releases
 - Annual reviews
 - New team onboarding
 - Quality certifications
 
+### Custom Presets
+
+Define in `context/.context-config.json`:
+
+```json
+{
+  "audits": {
+    "presets": {
+      "api-focus": {
+        "description": "API-centric review",
+        "audits": ["security", "api", "testing"]
+      },
+      "quick": {
+        "description": "Fast sanity check",
+        "audits": ["security", "typescript"]
+      }
+    }
+  }
+}
+```
+
+Use with: `/code-review --api-focus` or `/code-review --quick`
+
 ## Grading Calculation
 
 Combined grade is weighted by severity:
+
+**Built-in Audit Weights:**
 
 | Audit | Weight | Rationale |
 |-------|--------|-----------|
@@ -330,6 +460,20 @@ Combined grade is weighted by severity:
 | Infrastructure | 0.8x | Cost optimization |
 | TypeScript | 0.8x | Maintainability |
 | Testing | 1.0x | Quality assurance |
+
+**Custom Audit Weights:**
+
+Custom audits use the `weight` field from their config entry (default: 1.0):
+
+```json
+{
+  "audits": {
+    "custom": [
+      { "name": "api", "weight": 1.2, ... }
+    ]
+  }
+}
+```
 
 Formula: `(sum of weighted grades) / (sum of weights)`
 

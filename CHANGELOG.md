@@ -77,6 +77,7 @@ This release transforms the monolithic `/code-review` command into a modular sys
 - Transformed from monolithic command to modular orchestrator
 - Interactive menu for audit type selection
 - Command-line arguments: `--security`, `--performance`, `--accessibility`, etc.
+- Autodiscovery of custom audit commands
 - Preset combinations:
   - `--all` - Run all 8 audits
   - `--prelaunch` - Security, Performance, Accessibility, SEO
@@ -84,6 +85,15 @@ This release transforms the monolithic `/code-review` command into a modular sys
   - `--frontend` - Performance, Accessibility, SEO
 - Combined summary report with weighted grading
 - Platform flags passed through to sub-commands
+
+**Custom Audit Extensibility**
+- Autodiscovery of `code-review-*.md` command files
+- Config section `audits.custom` for registering custom audits with metadata
+- Config section `audits.presets` for defining custom preset combinations
+- Custom audits automatically appear in interactive menu
+- Custom audits can specify weight (0-2) for grading calculations
+- Custom presets usable via `--{preset-name}` flag
+- Unregistered audits (command file only) use sensible defaults
 
 ### Changed
 
