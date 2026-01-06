@@ -258,3 +258,7 @@ Save succeeds when:
 - Current state captured
 - Ready to resume work
 - Comprehensive docs when actually needed (use /save-full)
+
+---
+
+**Version:** 4.0.0

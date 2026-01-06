@@ -2,7 +2,7 @@
 
 # install.sh
 # Bootstrap installer for AI Context System
-# v3.0.0 - Multi-AI support and real-world feedback improvements
+# v4.0.0 - Modular Code Review System
 #
 # Usage:
 #   curl -sL https://raw.githubusercontent.com/rexkirshner/ai-context-system/main/install.sh | bash
@@ -348,6 +348,7 @@ mkdir -p scripts
 mkdir -p templates
 mkdir -p config
 mkdir -p reference
+mkdir -p docs/audits/archive  # v4.0.0 audit system
 
 echo "   ✅ Directories created"
 echo ""
@@ -392,12 +393,12 @@ VERIFICATION_FAILED=0
 echo -e "${BLUE}⬇️  Downloading slash commands...${NC}"
 
 COMMANDS=(
+  # Core commands
   "init-context.md"
   "migrate-context.md"
   "save.md"
   "save-full.md"
   "review-context.md"
-  "code-review.md"
   "validate-context.md"
   "export-context.md"
   "update-context-system.md"
@@ -405,6 +406,17 @@ COMMANDS=(
   "add-ai-header.md"
   "session-summary.md"
   "organize-docs.md"
+  # Modular code review system (v4.0.0)
+  "code-review.md"
+  "code-review-security.md"
+  "code-review-performance.md"
+  "code-review-accessibility.md"
+  "code-review-seo.md"
+  "code-review-database.md"
+  "code-review-infrastructure.md"
+  "code-review-typescript.md"
+  "code-review-testing.md"
+  "build-check.md"
 )
 
 for cmd in "${COMMANDS[@]}"; do
@@ -437,6 +449,7 @@ TEMPLATES=(
   "PRD.template.md"
   "ARCHITECTURE.template.md"
   "context-feedback.template.md"
+  "audits-index.template.md"
 )
 
 echo "   ℹ️  Note: QUICK_REF.template.md removed in v2.1 (Quick Reference now in STATUS.md)"
@@ -608,42 +621,14 @@ if [ $FAILED_DOWNLOADS -eq 0 ] && [ $VERIFICATION_FAILED -eq 0 ]; then
   echo "   - Command philosophy: .claude/docs/command-philosophy.md"
   echo "   - GitHub: ${REPO_URL}"
   echo ""
-  echo -e "${BLUE}v3.4.0 Features (Code Review Actionability):${NC}"
-  echo "   - Smart issue grouping (25 errors → 1 task)"
-  echo "   - Auto-generate TodoWrite tasks (30+ min → 30 sec)"
-  echo "   - Context integration (KNOWN_ISSUES.md, STATUS.md)"
-  echo "   - Review history tracking (INDEX.md)"
-  echo "   - Auto-comparison with previous reviews"
-  echo "   - Comprehensive test suite (33 tests)"
-  echo "   - Note: Requires 'jq' for JSON processing"
-  echo ""
-  echo -e "${BLUE}v3.3.1 Features (Installer Improvements):${NC}"
-  echo "   - Download retry logic with exponential backoff"
-  echo "   - Post-installation validation with auto-repair"
-  echo "   - Enhanced backup/rollback (includes context/)"
-  echo "   - Bash parsing fixes for /save and /save-full"
-  echo ""
-  echo -e "${BLUE}v3.0.0 Features (Universal AI Support):${NC}"
-  echo "   - Rebrand: Claude Context System → AI Context System"
-  echo "   - Multi-AI support (Claude, Cursor, Aider, Codex)"
-  echo "   - Validated with real-world production feedback"
-  echo ""
-  echo -e "${BLUE}v2.3.1 Features (Feedback System):${NC}"
-  echo "   - Built-in feedback collection (context-feedback.md)"
-  echo "   - Structured templates for bugs, improvements, questions"
-  echo "   - Auto-archive on update with version tracking"
-  echo ""
-  echo -e "${BLUE}v2.3.0 Features (Production-Ready Quality):${NC}"
-  echo "   - Performance: 10-100x faster on large repos"
-  echo "   - Network: Robust error handling with retry logic"
-  echo "   - Security: Input validation, download verification"
-  echo "   - Shared utilities: scripts/common-functions.sh"
-  echo "   - Single VERSION file source of truth"
-  echo ""
-  echo -e "${BLUE}v2.2.1 Features (Organization):${NC}"
-  echo "   - ORGANIZATION.md guidelines (in reference/)"
-  echo "   - /organize-docs (interactive cleanup wizard)"
-  echo "   - Organization validation (0-100 scoring)"
+  echo -e "${BLUE}v4.0.0 Features (Modular Code Review System):${NC}"
+  echo "   - 8 specialized audit commands: security, performance,"
+  echo "     accessibility, SEO, database, infrastructure,"
+  echo "     TypeScript, and testing"
+  echo "   - /code-review now interactive orchestrator"
+  echo "   - Reports saved to docs/audits/{type}-audit-NN.md"
+  echo "   - Auto-detect platform (Prisma, Vercel, Next.js, etc.)"
+  echo "   - Pre-launch presets: --prelaunch, --backend, --frontend"
   echo ""
   echo -e "${BLUE}Helpful commands:${NC}"
   echo "   /init-context          - Initialize context system"

@@ -328,8 +328,8 @@ Compare your context files with latest templates. Interactive updates with visua
 ### AI Peer Review
 ```
 1. /save-full (ensure context is current)
-2. /code-review (AI reviews with full context)
-3. Review artifacts/code-reviews/ output
+2. /code-review (select audit types - security, performance, etc.)
+3. Review docs/audits/ output
 4. Address issues in new session
 ```
 

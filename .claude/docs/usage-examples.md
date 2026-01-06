@@ -459,7 +459,7 @@ All issues found will be documented for fixing later.
 
 ✅ Code Review Complete
 
-**Report saved to:** artifacts/code-reviews/session-24-review.md
+**Report saved to:** docs/audits/combined-audit-01.md
 
 **Summary:**
 - Grade: B+
@@ -481,7 +481,7 @@ All issues found will be documented for fixing later.
 
 ### Step 4: Review Report
 
-**Read:** `artifacts/code-reviews/session-24-review.md`
+**Read:** `docs/audits/combined-audit-01.md`
 
 **Example issue from report:**
 ```markdown

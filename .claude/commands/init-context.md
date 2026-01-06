@@ -251,7 +251,7 @@ Create only what we need right now:
 
 ```bash
 mkdir -p context
-mkdir -p artifacts/code-reviews
+mkdir -p docs/audits/archive  # v4.0.0 audit system
 mkdir -p artifacts/lighthouse
 mkdir -p artifacts/performance
 mkdir -p artifacts/security
@@ -812,5 +812,5 @@ Understood?
 
 ---
 
-**Version:** 3.6.1
+**Version:** 4.0.0
 **Updated:** v3.6.1 - Fixed CLAUDE.md migration (now automatic, non-interactive)
