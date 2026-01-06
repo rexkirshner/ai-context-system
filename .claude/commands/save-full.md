@@ -157,17 +157,19 @@ echo "Step 3/10: Creating SESSIONS.md entry..."
 echo "⏱️ Estimated time remaining: ~8-10 minutes"
 echo ""
 
-# Detect next session number (NO command substitution)
+# Detect next session number by finding highest existing number
+# This handles gaps from archiving (e.g., sessions 1,2,3,8,9,10 -> next is 11)
 echo "Detecting next session number..."
-grep -c "^## Session" "$CONTEXT_DIR/SESSIONS.md"
+echo "Highest session found:"
+grep -oE "^## Session [0-9]+" "$CONTEXT_DIR/SESSIONS.md" 2>/dev/null | grep -oE "[0-9]+" | sort -n | tail -1 | awk '{print} END {if (NR==0) print "0"}'
 echo ""
 
-# AI reads the output above (e.g., "12") and uses it
-# The AI will create the session entry with the next number
+# AI reads the highest number above and adds 1 for the next session
+# Example: if highest is "10", next session is 11
 
 echo "Please provide the following information for the session entry:"
 echo ""
-echo "1. Session number (based on count above + 1):"
+echo "1. Session number (highest above + 1):"
 echo "2. Today's date (YYYY-MM-DD):"
 echo "3. Current phase/focus:"
 echo "4. Session duration (hours):"
