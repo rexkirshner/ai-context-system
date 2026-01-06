@@ -1,5 +1,5 @@
 {
-  "version": "3.6.1",
+  "version": "4.0.0",
   "owner": "[Your Name]",
   "project": {
     "name": "[Project Name]",
@@ -74,6 +74,15 @@
       "/save-full",
       "/review-context",
       "/code-review",
+      "/code-review-security",
+      "/code-review-performance",
+      "/code-review-accessibility",
+      "/code-review-seo",
+      "/code-review-database",
+      "/code-review-infrastructure",
+      "/code-review-typescript",
+      "/code-review-testing",
+      "/build-check",
       "/validate-context",
       "/export-context",
       "/update-context-system",
@@ -239,7 +248,7 @@
   "metadata": {
     "createdAt": "[YYYY-MM-DD]",
     "lastUpdated": "[YYYY-MM-DD]",
-    "configVersion": "3.6.1",
+    "configVersion": "4.0.0",
     "notes": "Configuration for AI Context System"
   },
   "metrics": {

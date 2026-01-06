@@ -2,7 +2,7 @@
 
 # export-sessions-json.sh
 # Exports SESSIONS.md to machine-readable JSON format
-# v3.6.0 - Enables multi-agent workflows
+# Version: 4.0.0
 
 set -e
 

@@ -2,7 +2,7 @@
 
 # save-full-helper.sh
 # Pre-populates session data for /save-full command
-# v3.6.0 - Auto-detects context folder, fixes session numbering, improves meta-project support
+# Version: 4.0.0
 
 set -e
 
