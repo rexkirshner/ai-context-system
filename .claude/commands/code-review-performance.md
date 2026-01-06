@@ -144,8 +144,10 @@ grep -rn "\.filter\|\.map\|\.reduce" --include="*.tsx" app/ | head -20
 **Check for INP issues:**
 - [ ] **No blocking operations in handlers** - Async where possible
 - [ ] **Debounced inputs** - Search, filters debounced
-- [ ] **useMemo for expensive ops** - Computed values memoized
-- [ ] **useCallback for handlers** - Stable function references
+- [ ] **Memoized expensive computations:**
+  - React: `useMemo` / `useCallback`
+  - Svelte: `$derived` / `$derived.by()`
+  - Vue: `computed` / `ref` with caching
 - [ ] **Virtual scrolling for lists** - Long lists virtualized
 
 #### CLS (Cumulative Layout Shift)
@@ -195,14 +197,21 @@ grep -rn "<img " --include="*.tsx" --include="*.jsx"
 **Check for common performance issues:**
 
 ```bash
-# Find potential memory leaks (useEffect without cleanup)
+# Memory leaks - effects without cleanup
+# React: useEffect without return cleanup
 grep -rn "useEffect" --include="*.tsx" -A 10 | grep -B 5 "addEventListener\|setInterval\|setTimeout" | grep -v "return"
+# Svelte: onMount/onDestroy or $effect without cleanup
+grep -rn "onMount\|\\$effect" --include="*.svelte" -A 10 | grep "addEventListener\|setInterval"
+# Vue: onMounted without onUnmounted cleanup
+grep -rn "onMounted" --include="*.vue" -A 10 | grep "addEventListener\|setInterval"
 
-# Find heavy re-renders (missing useMemo/useCallback)
-grep -rn "useMemo\|useCallback" --include="*.tsx" | wc -l
+# Check memoization usage (framework-specific)
+echo "React memoization:" && grep -rn "useMemo\|useCallback" --include="*.tsx" | wc -l
+echo "Svelte derived:" && grep -rn "\\$derived" --include="*.svelte" | wc -l
+echo "Vue computed:" && grep -rn "computed(" --include="*.vue" --include="*.ts" | wc -l
 
-# Find expensive operations in render
-grep -rn "JSON.parse\|JSON.stringify" --include="*.tsx"
+# Find expensive operations in render/reactive code
+grep -rn "JSON.parse\|JSON.stringify" --include="*.tsx" --include="*.svelte" --include="*.vue"
 ```
 
 **Performance patterns to check:**

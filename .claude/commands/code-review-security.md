@@ -204,6 +204,9 @@ grep -rn "dangerouslySetInnerHTML" --include="*.tsx" --include="*.jsx"
 # Vue v-html
 grep -rn "v-html" --include="*.vue"
 
+# Svelte {@html}
+grep -rn "{@html" --include="*.svelte"
+
 # Direct innerHTML usage
 grep -rn "innerHTML\s*=" --include="*.ts" --include="*.tsx"
 
@@ -211,8 +214,10 @@ grep -rn "innerHTML\s*=" --include="*.ts" --include="*.tsx"
 grep -rn "eval\(" --include="*.ts" --include="*.tsx"
 ```
 
-**Verify:**
-- [ ] **No dangerouslySetInnerHTML with user input** - Sanitize first
+**Verify (framework-specific raw HTML):**
+- [ ] **React: No dangerouslySetInnerHTML with user input** - Sanitize first
+- [ ] **Svelte: No {@html} with user input** - Sanitize with DOMPurify
+- [ ] **Vue: No v-html with user input** - Sanitize first
 - [ ] **No innerHTML with user input** - Use textContent
 - [ ] **No eval() with user input** - Never use eval
 - [ ] **CSP headers configured** - Restrict script sources

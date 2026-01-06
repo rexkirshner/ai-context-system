@@ -14,6 +14,14 @@ Conduct a thorough WCAG 2.1 accessibility audit. This command **NEVER makes chan
 3. **Cover all user groups** - Visual, motor, cognitive, hearing impairments
 4. **Follow WCAG 2.1 AA** - This is the standard compliance level
 
+## Framework Note
+
+This audit uses `.tsx/.jsx` in grep patterns. **Adjust for your framework:**
+- **React/Next.js**: `--include="*.tsx" --include="*.jsx"` (default)
+- **Svelte/SvelteKit**: `--include="*.svelte"`
+- **Vue/Nuxt**: `--include="*.vue"`
+- **Astro**: `--include="*.astro"`
+
 ## When to Use This Command
 
 **Good times:**
