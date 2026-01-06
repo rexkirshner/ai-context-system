@@ -110,7 +110,7 @@ The command reviews these areas systematically:
 - Large bundle sizes
 - Unoptimized images/assets
 
-**Reference:** See `.claude/checklists/performance.md` for comprehensive checklist
+**Reference:** Run `/code-review-performance` for comprehensive audit
 
 ### 4. Security
 
@@ -123,7 +123,7 @@ The command reviews these areas systematically:
 - Secrets in code
 - Insecure dependencies
 
-**Reference:** See `.claude/checklists/security.md` for comprehensive checklist
+**Reference:** Run `/code-review-security` for comprehensive OWASP Top 10 audit
 
 ### 5. Error Handling
 
@@ -155,7 +155,7 @@ The command reviews these areas systematically:
 - Screen reader support
 - Focus management
 
-**Reference:** See `.claude/checklists/accessibility.md` for comprehensive checklist
+**Reference:** Run `/code-review-accessibility` for comprehensive WCAG 2.1 audit
 
 ### 8. SEO (Public Web Projects)
 
@@ -169,7 +169,7 @@ The command reviews these areas systematically:
 - URL structure
 - Sitemap and robots.txt
 
-**Reference:** See `.claude/checklists/seo-review.md` for comprehensive checklist
+**Reference:** Run `/code-review-seo` for comprehensive technical SEO audit
 
 ## Grading Rubric
 
@@ -609,52 +609,53 @@ Always include "Positive Findings" section:
 - Maintains morale
 - Shows you're being fair
 
-## Using The Checklists
+## Using The Modular Audit Commands (v4.0.0)
 
-The specialized checklists provide comprehensive criteria:
+Run specialized audits for comprehensive analysis:
 
-**Security (.claude/checklists/security.md):**
-- Input validation
-- SQL injection prevention
-- XSS protection
+**Security (`/code-review-security`):**
+- OWASP Top 10 (2021) framework
+- Input validation, SQL injection, XSS
 - Authentication/authorization
 - Secrets management
-- OWASP Top 10 coverage
+- Dependency vulnerability scanning
 
-**Accessibility (.claude/checklists/accessibility.md):**
+**Accessibility (`/code-review-accessibility`):**
+- WCAG 2.1 AA compliance
 - Keyboard navigation
 - Screen reader support
-- Color contrast
-- ARIA labels
-- WCAG compliance levels
+- Color contrast, ARIA labels
+- Focus management
 
-**SEO (.claude/checklists/seo-review.md):**
-- Meta tags
+**SEO (`/code-review-seo`):**
+- Meta tags, Open Graph
 - Heading hierarchy
-- Core Web Vitals
-- Structured data
-- URL structure
-- Image optimization
+- Core Web Vitals impact
+- Structured data (JSON-LD)
+- URL structure, sitemap
 
-**Performance (.claude/checklists/performance.md):**
-- Bundle size
-- Code splitting
+**Performance (`/code-review-performance`):**
+- Core Web Vitals (LCP, INP, CLS)
+- Bundle size analysis
 - Image optimization
 - Caching strategy
 - Database query optimization
-- Core Web Vitals
+
+**Additional Audits:**
+- `/code-review-database` - N+1, indexes, query optimization
+- `/code-review-infrastructure` - Serverless costs, caching
+- `/code-review-typescript` - Type safety, strict mode
+- `/code-review-testing` - Coverage, test quality
 
 **When to use:**
-- Reference during review
-- Verify nothing missed
-- Cross-check findings
-- Learn new criteria
+- Run specific audits for focused analysis
+- Run `/code-review --all` for comprehensive review
+- Use presets: `--prelaunch`, `--backend`, `--frontend`
 
 **How to use:**
-- Don't just checkbox mechanically
-- Understand **why** each item matters
-- Adapt to project context
-- Focus on what's relevant
+- Each command generates a detailed report in `docs/audits/`
+- Reports include grading rubrics and prioritized fixes
+- Run focused audits after making fixes to verify
 
 ## Examples
 
@@ -726,7 +727,7 @@ The specialized checklists provide comprehensive criteria:
   <input type="email" id="email" placeholder="you@example.com" />
   ```
 - **Effort:** 10 minutes (4 form fields need labels)
-- **Reference:** WCAG 3.3.2, .claude/checklists/accessibility.md
+- **Reference:** WCAG 3.3.2 (run `/code-review-accessibility` for full audit)
 ```
 
 ## After The Review

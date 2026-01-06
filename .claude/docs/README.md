@@ -67,12 +67,17 @@ Step-by-step migration guide for v3.6.0:
 - File migration options
 - Verification steps
 
-## Checklists
+## Modular Audit Commands (v4.0.0)
 
-Specialized checklists extracted from commands:
-- `.claude/checklists/seo-review.md` - SEO audit checklist
-- `.claude/checklists/accessibility.md` - A11Y checklist
-- `.claude/checklists/security.md` - Security review checklist
+Specialized audit commands with integrated checklists:
+- `/code-review-security` - OWASP Top 10 security audit
+- `/code-review-accessibility` - WCAG 2.1 AA compliance
+- `/code-review-performance` - Core Web Vitals audit
+- `/code-review-seo` - Technical SEO audit
+- `/code-review-database` - Database efficiency audit
+- `/code-review-infrastructure` - Serverless cost optimization
+- `/code-review-typescript` - Type safety audit
+- `/code-review-testing` - Coverage and quality audit
 
 ## Benefits
 
