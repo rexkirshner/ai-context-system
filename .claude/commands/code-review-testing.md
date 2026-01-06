@@ -311,12 +311,17 @@ grep -rn "matrix\|parallel\|shard" .github/workflows/ 2>/dev/null
 
 **MANDATORY: Save report to file.**
 
+**Determine the next audit number:**
+
 ```bash
-# Get next audit number
-source scripts/common-functions.sh
-NUM=$(get_next_audit_number "testing" "docs/audits")
-REPORT_FILE="docs/audits/testing-audit-${NUM}.md"
+# Option 1: Use helper function (if available)
+source scripts/common-functions.sh 2>/dev/null && get_next_audit_number "testing" "docs/audits"
+
+# Option 2: Manual check - list existing testing audits
+ls docs/audits/testing-audit-*.md 2>/dev/null || echo "No existing audits"
 ```
+
+**Numbering rule:** Use two-digit format (01, 02, 03...). If no existing audits, start with 01. Otherwise, use the next number after the highest existing.
 
 Create report at `docs/audits/testing-audit-NN.md`:
 
@@ -621,9 +626,17 @@ E2E:         ██░░░░░░░░░░░░░░░░░░ 5-10%
 
 ### Step 11: Update INDEX.md
 
+**Add entry to docs/audits/INDEX.md:**
+
 ```bash
-source scripts/common-functions.sh
-update_audit_index "docs/audits" "Testing" "testing-audit-${NUM}.md" "[Grade]" "[Summary]"
+# Option 1: Use helper function (if available)
+source scripts/common-functions.sh 2>/dev/null && update_audit_index "docs/audits" "Testing" "testing-audit-NN.md" "[Grade]" "[Summary]"
+```
+
+**Option 2: Manual update** - Add this row to the table in INDEX.md (before the comment marker):
+
+```markdown
+| YYYY-MM-DD | Testing | [testing-audit-NN.md](./testing-audit-NN.md) | [Grade] | [Coverage: X%, N gaps identified] |
 ```
 
 ### Step 12: Report Completion

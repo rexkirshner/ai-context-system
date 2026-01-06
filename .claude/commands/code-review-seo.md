@@ -351,12 +351,17 @@ grep -rn "font-family\|@font-face" --include="*.css" --include="*.scss"
 
 **MANDATORY: Save report to file.**
 
+**Determine the next audit number:**
+
 ```bash
-# Get next audit number
-source scripts/common-functions.sh
-NUM=$(get_next_audit_number "seo" "docs/audits")
-REPORT_FILE="docs/audits/seo-audit-${NUM}.md"
+# Option 1: Use helper function (if available)
+source scripts/common-functions.sh 2>/dev/null && get_next_audit_number "seo" "docs/audits"
+
+# Option 2: Manual check - list existing SEO audits
+ls docs/audits/seo-audit-*.md 2>/dev/null || echo "No existing audits"
 ```
+
+**Numbering rule:** Use two-digit format (01, 02, 03...). If no existing audits, start with 01. Otherwise, use the next number after the highest existing.
 
 Create report at `docs/audits/seo-audit-NN.md`:
 
@@ -576,9 +581,17 @@ Before and after fixes, test with:
 
 ### Step 11: Update INDEX.md
 
+**Add entry to docs/audits/INDEX.md:**
+
 ```bash
-source scripts/common-functions.sh
-update_audit_index "docs/audits" "SEO" "seo-audit-${NUM}.md" "[Grade]" "[Summary]"
+# Option 1: Use helper function (if available)
+source scripts/common-functions.sh 2>/dev/null && update_audit_index "docs/audits" "SEO" "seo-audit-NN.md" "[Grade]" "[Summary]"
+```
+
+**Option 2: Manual update** - Add this row to the table in INDEX.md (before the comment marker):
+
+```markdown
+| YYYY-MM-DD | SEO | [seo-audit-NN.md](./seo-audit-NN.md) | [Grade] | [Missing meta, sitemap issues, etc.] |
 ```
 
 ### Step 12: Report Completion

@@ -427,12 +427,17 @@ grep -rn "aria-live\|role=\"alert\"\|role=\"status\"" --include="*.tsx"
 
 **MANDATORY: Save report to file.**
 
+**Determine the next audit number:**
+
 ```bash
-# Get next audit number
-source scripts/common-functions.sh
-NUM=$(get_next_audit_number "accessibility" "docs/audits")
-REPORT_FILE="docs/audits/accessibility-audit-${NUM}.md"
+# Option 1: Use helper function (if available)
+source scripts/common-functions.sh 2>/dev/null && get_next_audit_number "accessibility" "docs/audits"
+
+# Option 2: Manual check - list existing accessibility audits
+ls docs/audits/accessibility-audit-*.md 2>/dev/null || echo "No existing audits"
 ```
+
+**Numbering rule:** Use two-digit format (01, 02, 03...). If no existing audits, start with 01. Otherwise, use the next number after the highest existing.
 
 Create report at `docs/audits/accessibility-audit-NN.md`:
 
@@ -641,9 +646,17 @@ Create report at `docs/audits/accessibility-audit-NN.md`:
 
 ### Step 7: Update INDEX.md
 
+**Add entry to docs/audits/INDEX.md:**
+
 ```bash
-source scripts/common-functions.sh
-update_audit_index "docs/audits" "Accessibility" "accessibility-audit-${NUM}.md" "[Grade]" "[Summary]"
+# Option 1: Use helper function (if available)
+source scripts/common-functions.sh 2>/dev/null && update_audit_index "docs/audits" "Accessibility" "accessibility-audit-NN.md" "[Grade]" "[Summary]"
+```
+
+**Option 2: Manual update** - Add this row to the table in INDEX.md (before the comment marker):
+
+```markdown
+| YYYY-MM-DD | Accessibility | [accessibility-audit-NN.md](./accessibility-audit-NN.md) | [Grade] | [N critical WCAG failures] |
 ```
 
 ### Step 8: Report Completion

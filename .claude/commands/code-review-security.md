@@ -317,12 +317,17 @@ grep -rn "fetch\|axios\|request\|got" --include="*.ts" | grep -v "node_modules"
 
 **MANDATORY: Save report to file.**
 
+**Determine the next audit number:**
+
 ```bash
-# Get next audit number
-source scripts/common-functions.sh
-NUM=$(get_next_audit_number "security" "docs/audits")
-REPORT_FILE="docs/audits/security-audit-${NUM}.md"
+# Option 1: Use helper function (if available)
+source scripts/common-functions.sh 2>/dev/null && get_next_audit_number "security" "docs/audits"
+
+# Option 2: Manual check - list existing security audits
+ls docs/audits/security-audit-*.md 2>/dev/null || echo "No existing audits"
 ```
+
+**Numbering rule:** Use two-digit format (01, 02, 03...). If no existing audits, start with 01. Otherwise, use the next number after the highest existing.
 
 Create report at `docs/audits/security-audit-NN.md`:
 
@@ -538,9 +543,17 @@ npm audit results:
 
 ### Step 11: Update INDEX.md
 
+**Add entry to docs/audits/INDEX.md:**
+
 ```bash
-source scripts/common-functions.sh
-update_audit_index "docs/audits" "Security" "security-audit-${NUM}.md" "[Grade]" "[Summary]"
+# Option 1: Use helper function (if available)
+source scripts/common-functions.sh 2>/dev/null && update_audit_index "docs/audits" "Security" "security-audit-NN.md" "[Grade]" "[Summary]"
+```
+
+**Option 2: Manual update** - Add this row to the table in INDEX.md (before the comment marker):
+
+```markdown
+| YYYY-MM-DD | Security | [security-audit-NN.md](./security-audit-NN.md) | [Grade] | [N critical, N high issues] |
 ```
 
 ### Step 12: Report Completion
