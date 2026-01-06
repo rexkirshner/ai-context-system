@@ -25,6 +25,7 @@ TESTS_FAILED=0
 # Test output directory
 TEST_DIR="scripts/tests"
 OUTPUT_DIR="$TEST_DIR/output"
+rm -rf "$OUTPUT_DIR"  # Clean up from previous runs
 mkdir -p "$OUTPUT_DIR"
 
 # =============================================================================
