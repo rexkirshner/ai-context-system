@@ -135,7 +135,7 @@ download_file() {
   return 1
 }
 
-# Update version field in context/.context-config.json
+# Update version fields in context/.context-config.json
 # Uses temp file approach for portability (macOS/Linux compatible)
 update_config_version() {
   local config_file="context/.context-config.json"
@@ -147,7 +147,10 @@ update_config_version() {
   fi
 
   # Use temp file for portable sed (works on macOS and Linux)
-  if sed "s/\"version\": \"[^\"]*\"/\"version\": \"$new_version\"/" "$config_file" > "$config_file.tmp"; then
+  # Update both "version" and "configVersion" fields
+  if sed -e "s/\"version\": \"[^\"]*\"/\"version\": \"$new_version\"/" \
+         -e "s/\"configVersion\": \"[^\"]*\"/\"configVersion\": \"$new_version\"/" \
+         "$config_file" > "$config_file.tmp"; then
     # Validate output before overwriting
     if [ -s "$config_file.tmp" ]; then
       mv "$config_file.tmp" "$config_file"

@@ -402,13 +402,16 @@ echo "   System version: $SYSTEM_VERSION"
 # Download the latest config template from GitHub
 curl -sL https://raw.githubusercontent.com/rexkirshner/ai-context-system/main/config/.context-config.template.json -o context/.context-config.json
 
-# Update version fields to match system version (v3.5.0+)
+# Update version fields to match system version
 if [ "$SYSTEM_VERSION" != "unknown" ]; then
   # macOS uses different sed syntax than Linux
+  # Use regex to match any semver pattern (handles template version changes)
   if [[ "$OSTYPE" == "darwin"* ]]; then
-    sed -i '' "s/\"3.0.0\"/\"$SYSTEM_VERSION\"/g" context/.context-config.json
+    sed -i '' "s/\"version\": \"[^\"]*\"/\"version\": \"$SYSTEM_VERSION\"/g" context/.context-config.json
+    sed -i '' "s/\"configVersion\": \"[^\"]*\"/\"configVersion\": \"$SYSTEM_VERSION\"/g" context/.context-config.json
   else
-    sed -i "s/\"3.0.0\"/\"$SYSTEM_VERSION\"/g" context/.context-config.json
+    sed -i "s/\"version\": \"[^\"]*\"/\"version\": \"$SYSTEM_VERSION\"/g" context/.context-config.json
+    sed -i "s/\"configVersion\": \"[^\"]*\"/\"configVersion\": \"$SYSTEM_VERSION\"/g" context/.context-config.json
   fi
   echo "✅ Configuration created with version $SYSTEM_VERSION"
 else
@@ -595,7 +598,7 @@ fi
 After initialization, explain to the user:
 
 ```
-✅ Context System Initialized (v3.0.0)
+✅ Context System Initialized
 
 Created CLAUDE.md + 5 core files:
 - CLAUDE.md - AI entry point (auto-loaded by Claude Code)
