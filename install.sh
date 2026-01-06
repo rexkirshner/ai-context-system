@@ -547,7 +547,7 @@ echo -e "${BLUE}⬇️  Downloading reference files...${NC}"
 
 # Download ORGANIZATION.md to reference/ (users can copy to root if desired)
 echo -n "   Downloading ORGANIZATION.md... "
-if ! download_file "${RAW_URL}/ORGANIZATION.md" "reference/ORGANIZATION.md" 100; then
+if ! download_file "${RAW_URL}/reference/ORGANIZATION.md" "reference/ORGANIZATION.md" 100; then
   # Check if this is an optional file
   if is_optional "reference/ORGANIZATION.md"; then
     echo "   (optional file, skipping)"
