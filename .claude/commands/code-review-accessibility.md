@@ -438,11 +438,14 @@ grep -rn "aria-live\|role=\"alert\"\|role=\"status\"" --include="*.tsx"
 **Determine the next audit number:**
 
 ```bash
+# Find repo root (works from any subdirectory)
+REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
+
 # Option 1: Use helper function (if available)
-source scripts/common-functions.sh 2>/dev/null && get_next_audit_number "accessibility" "docs/audits"
+source "$REPO_ROOT/scripts/common-functions.sh" 2>/dev/null && get_next_audit_number "accessibility" "$REPO_ROOT/docs/audits"
 
 # Option 2: Manual check - list existing accessibility audits
-ls docs/audits/accessibility-audit-*.md 2>/dev/null || echo "No existing audits"
+ls "$REPO_ROOT/docs/audits/accessibility-audit-*.md" 2>/dev/null || echo "No existing audits"
 ```
 
 **Numbering rule:** Use two-digit format (01, 02, 03...). If no existing audits, start with 01. Otherwise, use the next number after the highest existing.
@@ -658,7 +661,8 @@ Create report at `docs/audits/accessibility-audit-NN.md`:
 
 ```bash
 # Option 1: Use helper function (if available)
-source scripts/common-functions.sh 2>/dev/null && update_audit_index "docs/audits" "Accessibility" "accessibility-audit-NN.md" "[Grade]" "[Summary]"
+REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
+source "$REPO_ROOT/scripts/common-functions.sh" 2>/dev/null && update_audit_index "$REPO_ROOT/docs/audits" "Accessibility" "accessibility-audit-NN.md" "[Grade]" "[Summary]"
 ```
 
 **Option 2: Manual update** - Add this row to the table in INDEX.md (before the comment marker):

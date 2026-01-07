@@ -19,14 +19,20 @@ Master orchestrator for modular code reviews. Select one or more specialized aud
 **Before showing the menu, discover all available audits:**
 
 ```bash
-# Step 1: Find all audit command files
-ls .claude/commands/code-review-*.md 2>/dev/null | grep -v "code-review.md$"
+# Step 1: Find repo root (works from any subdirectory)
+REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
 
-# Step 2: Read custom audit definitions from config
-jq '.audits.custom // []' context/.context-config.json 2>/dev/null
+# Step 2: Source common-functions.sh for helper functions
+source "$REPO_ROOT/scripts/common-functions.sh" 2>/dev/null
 
-# Step 3: Read custom presets from config
-jq '.audits.presets // {}' context/.context-config.json 2>/dev/null
+# Step 3: Find all audit command files
+ls "$REPO_ROOT/.claude/commands/code-review-*.md" 2>/dev/null | grep -v "code-review.md$"
+
+# Step 4: Read custom audit definitions from config
+jq '.audits.custom // []' "$REPO_ROOT/context/.context-config.json" 2>/dev/null
+
+# Step 5: Read custom presets from config
+jq '.audits.presets // {}' "$REPO_ROOT/context/.context-config.json" 2>/dev/null
 ```
 
 The orchestrator automatically discovers:
@@ -246,9 +252,10 @@ After all audits complete, create a combined summary:
 
 ```bash
 # Get next audit number for combined report
-source scripts/common-functions.sh
-NUM=$(get_next_audit_number "combined" "docs/audits")
-REPORT_FILE="docs/audits/combined-audit-${NUM}.md"
+REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
+source "$REPO_ROOT/scripts/common-functions.sh"
+NUM=$(get_next_audit_number "combined" "$REPO_ROOT/docs/audits")
+REPORT_FILE="$REPO_ROOT/docs/audits/combined-audit-${NUM}.md"
 ```
 
 **Summary report structure:**
@@ -348,8 +355,9 @@ REPORT_FILE="docs/audits/combined-audit-${NUM}.md"
 ### Step 3: Update INDEX.md
 
 ```bash
-source scripts/common-functions.sh
-update_audit_index "docs/audits" "Combined" "combined-audit-${NUM}.md" "[Grade]" "Security + Performance + Accessibility"
+REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
+source "$REPO_ROOT/scripts/common-functions.sh"
+update_audit_index "$REPO_ROOT/docs/audits" "Combined" "combined-audit-${NUM}.md" "[Grade]" "Security + Performance + Accessibility"
 ```
 
 ### Step 4: Report Completion

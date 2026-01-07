@@ -33,7 +33,8 @@ Conduct a thorough database and ORM efficiency audit. This command **NEVER makes
 
 ```bash
 # Auto-detect platform from project files
-source scripts/common-functions.sh
+REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
+source "$REPO_ROOT/scripts/common-functions.sh"
 PLATFORM=$(detect_database_platform)
 echo "Detected platform: $PLATFORM"
 ```
@@ -61,8 +62,9 @@ Taking time to be thorough...
 ### Step 1: Platform Detection & Setup
 
 ```bash
-# Detect platform
-source scripts/common-functions.sh
+# Find repo root and detect platform
+REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
+source "$REPO_ROOT/scripts/common-functions.sh"
 PLATFORM=$(detect_database_platform)
 
 # Verify detection
@@ -299,11 +301,14 @@ export const getUser = cache(async (userId: string) => {
 **Determine the next audit number:**
 
 ```bash
+# Find repo root (works from any subdirectory)
+REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
+
 # Option 1: Use helper function (if available)
-source scripts/common-functions.sh 2>/dev/null && get_next_audit_number "database" "docs/audits"
+source "$REPO_ROOT/scripts/common-functions.sh" 2>/dev/null && get_next_audit_number "database" "$REPO_ROOT/docs/audits"
 
 # Option 2: Manual check - list existing database audits
-ls docs/audits/database-audit-*.md 2>/dev/null || echo "No existing audits"
+ls "$REPO_ROOT/docs/audits/database-audit-*.md" 2>/dev/null || echo "No existing audits"
 ```
 
 **Numbering rule:** Use two-digit format (01, 02, 03...). If no existing audits, start with 01. Otherwise, use the next number after the highest existing.
@@ -486,7 +491,8 @@ model Post {
 
 ```bash
 # Option 1: Use helper function (if available)
-source scripts/common-functions.sh 2>/dev/null && update_audit_index "docs/audits" "Database" "database-audit-NN.md" "[Grade]" "[Summary]"
+REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
+source "$REPO_ROOT/scripts/common-functions.sh" 2>/dev/null && update_audit_index "$REPO_ROOT/docs/audits" "Database" "database-audit-NN.md" "[Grade]" "[Summary]"
 ```
 
 **Option 2: Manual update** - Add this row to the table in INDEX.md (before the comment marker):
