@@ -1247,6 +1247,146 @@ days_since_file_modified() {
 }
 
 # =============================================================================
+# Documentation Health Check (v4.1.0)
+# =============================================================================
+
+# Check health of project documentation
+# Compares CLAUDE.md against CONTEXT.md for staleness and drift
+#
+# Usage:
+#   check_documentation_health [context_dir]
+#
+# Returns (via global variables):
+#   DOC_HEALTH_STATUS    - "healthy" | "stale" | "drift" | "incomplete"
+#   DOC_HEALTH_DETAILS   - Array of issue descriptions
+#   DOC_HEALTH_WARNINGS  - Count of warnings found
+#
+# Exit codes:
+#   0 - Check completed (regardless of health status)
+#   1 - Could not run check (missing files, etc.)
+check_documentation_health() {
+  local context_dir="${1:-context}"
+  local repo_root
+  repo_root=$(get_repo_root)
+
+  # Initialize return variables
+  DOC_HEALTH_STATUS="healthy"
+  DOC_HEALTH_DETAILS=()
+  DOC_HEALTH_WARNINGS=0
+
+  local claude_md="$repo_root/CLAUDE.md"
+  local context_md="$repo_root/$context_dir/CONTEXT.md"
+
+  # Check 1: Files exist
+  if [ ! -f "$claude_md" ]; then
+    DOC_HEALTH_STATUS="incomplete"
+    DOC_HEALTH_DETAILS+=("CLAUDE.md not found at project root")
+    DOC_HEALTH_WARNINGS=$((DOC_HEALTH_WARNINGS + 1))
+  fi
+
+  if [ ! -f "$context_md" ]; then
+    DOC_HEALTH_STATUS="incomplete"
+    DOC_HEALTH_DETAILS+=("CONTEXT.md not found in $context_dir/")
+    DOC_HEALTH_WARNINGS=$((DOC_HEALTH_WARNINGS + 1))
+    return 0  # Can't do further checks
+  fi
+
+  # Check 2: Template placeholders in CONTEXT.md
+  local placeholders
+  placeholders=$(grep -c '\[FILL:' "$context_md" 2>/dev/null | tr -d '\n' || echo "0")
+  placeholders=${placeholders:-0}
+  if [ "$placeholders" -gt 0 ]; then
+    DOC_HEALTH_DETAILS+=("CONTEXT.md has $placeholders unfilled [FILL:...] placeholders")
+    DOC_HEALTH_WARNINGS=$((DOC_HEALTH_WARNINGS + 1))
+    [ "$DOC_HEALTH_STATUS" = "healthy" ] && DOC_HEALTH_STATUS="incomplete"
+  fi
+
+  # Check 3: Staleness comparison (if both files exist)
+  if [ -f "$claude_md" ] && [ -f "$context_md" ]; then
+    local claude_age context_age
+    claude_age=$(days_since_file_modified "$claude_md")
+    context_age=$(days_since_file_modified "$context_md")
+
+    if [ "$claude_age" -ge 0 ] && [ "$context_age" -ge 0 ]; then
+      local age_diff=$((claude_age - context_age))
+
+      if [ "$age_diff" -gt 30 ]; then
+        DOC_HEALTH_DETAILS+=("CLAUDE.md is ${claude_age} days old (CONTEXT.md: ${context_age} days) - significantly stale")
+        DOC_HEALTH_WARNINGS=$((DOC_HEALTH_WARNINGS + 1))
+        DOC_HEALTH_STATUS="stale"
+      elif [ "$age_diff" -gt 14 ]; then
+        DOC_HEALTH_DETAILS+=("CLAUDE.md is ${claude_age} days old (CONTEXT.md: ${context_age} days) - consider updating")
+        DOC_HEALTH_WARNINGS=$((DOC_HEALTH_WARNINGS + 1))
+        [ "$DOC_HEALTH_STATUS" = "healthy" ] && DOC_HEALTH_STATUS="stale"
+      fi
+    fi
+  fi
+
+  # Check 4: Tech stack drift (if both files exist)
+  if [ -f "$claude_md" ] && [ -f "$context_md" ]; then
+    # Extract tech keywords from CONTEXT.md
+    local context_tech
+    context_tech=$(grep -oE '\b(React|Next\.js|Vue|Svelte|Angular|Node|Express|Prisma|Drizzle|TypeORM|PostgreSQL|MySQL|MongoDB|Redis|Docker|Kubernetes|Vercel|AWS|Cloudflare|Supabase|Firebase)\b' "$context_md" 2>/dev/null | sort -u | tr '\n' ' ')
+
+    # Check if each tech is mentioned in CLAUDE.md
+    local missing_tech=()
+    for tech in $context_tech; do
+      if ! grep -qi "$tech" "$claude_md" 2>/dev/null; then
+        missing_tech+=("$tech")
+      fi
+    done
+
+    # Only flag if 2+ technologies missing (reduce false positives)
+    if [ ${#missing_tech[@]} -ge 2 ]; then
+      DOC_HEALTH_DETAILS+=("Tech drift: CONTEXT.md mentions ${missing_tech[*]} - not in CLAUDE.md")
+      DOC_HEALTH_WARNINGS=$((DOC_HEALTH_WARNINGS + 1))
+      [ "$DOC_HEALTH_STATUS" = "healthy" ] && DOC_HEALTH_STATUS="drift"
+    fi
+  fi
+
+  return 0
+}
+
+# Format documentation health check results for display
+# Usage: format_documentation_health
+format_documentation_health() {
+  echo ""
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo "Documentation Health Check"
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo ""
+
+  if [ "$DOC_HEALTH_WARNINGS" -eq 0 ]; then
+    local claude_age
+    claude_age=$(days_since_file_modified "$(get_repo_root)/CLAUDE.md")
+    echo "  CLAUDE.md current (${claude_age} days old)"
+    echo "  CONTEXT.md fully configured"
+  else
+    for detail in "${DOC_HEALTH_DETAILS[@]}"; do
+      echo "  - $detail"
+    done
+    echo ""
+    echo "Recommendations:"
+
+    case "$DOC_HEALTH_STATUS" in
+      "incomplete")
+        echo "  - Run /init-context to create missing files"
+        echo "  - Fill in [FILL:...] placeholders with project details"
+        ;;
+      "stale")
+        echo "  - Review CLAUDE.md and update with current project info"
+        echo "  - Compare with CONTEXT.md for accuracy"
+        ;;
+      "drift")
+        echo "  - Update CLAUDE.md tech stack section"
+        echo "  - Ensure CLAUDE.md reflects current architecture"
+        ;;
+    esac
+  fi
+  echo ""
+}
+
+# =============================================================================
 
 # Run auto-update check in background (non-blocking)
 # Only if not already running and not in quiet mode
