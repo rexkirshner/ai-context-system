@@ -5,6 +5,49 @@ All notable changes to the AI Context System will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.1.1] - 2026-01-07
+
+**PATCH RELEASE** - Context Completeness Detection & Auto-Population
+
+### Added
+
+- **Context completeness detection** - New functions in common-functions.sh:
+  - `count_unfilled_placeholders()` - Count `[FILL:...]` placeholders in files
+  - `is_template_only()` - Check if file is still mostly template
+  - `check_context_completeness()` - Check all core context files for completeness
+  - `format_context_completeness()` - Display completeness report
+
+- **Project auto-detection** - Automatically gather project info from codebase:
+  - `detect_project_name()` - From package.json, Cargo.toml, pyproject.toml, or directory
+  - `detect_project_description()` - From package.json or README
+  - `detect_repo_url()` - From git remote (converts SSH to HTTPS)
+  - `detect_tech_stack()` - Detects frameworks, languages, databases, hosting platforms
+  - `detect_project_type()` - Infers web-app, api, cli, library, or unknown
+
+- **`/save` context warning** - Step 7 warns when CONTEXT.md has 5+ unfilled placeholders
+
+- **`/save-full` template detection** - Step 8 now:
+  - Checks placeholders FIRST (more important than staleness)
+  - Shows auto-detected project info when template-only detected
+  - Prompts "ACTION REQUIRED" to fill in placeholders
+
+- **`/init-context` auto-detection** - Step 3.5 shows auto-detected project info before creating files
+
+- **`/init-context` validation** - Step 8 (CRITICAL) ensures:
+  - AI assistant fills in template placeholders
+  - Lists key placeholders to fill
+  - Includes verification check at the end
+
+### Fixed
+
+- **CONTEXT.md staying as template** - Addresses user feedback where CONTEXT.md remained template-only despite regular /save and /save-full usage. Commands now actively detect and prompt for filling templates.
+
+### Why This Matters
+
+Context files left as templates defeat the purpose of the system. AI agents and future sessions need actual project information, not placeholder text. This release ensures the context system gets filled with real project information.
+
+---
+
 ## [4.1.0] - 2026-01-06
 
 **MINOR RELEASE** - Documentation Health Checking & Shell Robustness
