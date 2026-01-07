@@ -1357,9 +1357,14 @@ format_documentation_health() {
   echo ""
 
   if [ "$DOC_HEALTH_WARNINGS" -eq 0 ]; then
-    local claude_age
-    claude_age=$(days_since_file_modified "$(get_repo_root)/CLAUDE.md")
-    echo "  CLAUDE.md current (${claude_age} days old)"
+    local claude_md_path="$(get_repo_root)/CLAUDE.md"
+    if [ -f "$claude_md_path" ]; then
+      local claude_age
+      claude_age=$(days_since_file_modified "$claude_md_path")
+      echo "  CLAUDE.md current (${claude_age} days old)"
+    else
+      echo "  CLAUDE.md not found"
+    fi
     echo "  CONTEXT.md fully configured"
   else
     for detail in "${DOC_HEALTH_DETAILS[@]}"; do
@@ -1396,4 +1401,4 @@ if [ "$VERBOSITY" != "quiet" ] && [ -z "$UPDATE_CHECK_RUNNING" ]; then
 fi
 
 # Log that common functions were loaded (debug only)
-log_debug "Loaded common-functions.sh v4.0.2"
+log_debug "Loaded common-functions.sh v4.1.0"

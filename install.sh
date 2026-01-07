@@ -2,7 +2,7 @@
 
 # install.sh
 # Bootstrap installer for AI Context System
-# v4.0.2 - Graceful File Existence Detection
+# v4.1.0 - Documentation Health Check
 #
 # Usage:
 #   curl -sL https://raw.githubusercontent.com/rexkirshner/ai-context-system/main/install.sh | bash

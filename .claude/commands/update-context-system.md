@@ -287,8 +287,8 @@ echo ""
 **ACTION:** Show migration notes based on previous version:
 
 ```bash
-# Extract major version number for comparison
-PREV_MAJOR=$(echo "$CURRENT_VERSION" | cut -d. -f1)
+# Extract major version number for comparison (use PRE_UPGRADE_VERSION from Step 1)
+PREV_MAJOR=$(echo "$PRE_UPGRADE_VERSION" | cut -d. -f1)
 
 if [[ "$PREV_MAJOR" == "3" ]]; then
   echo ""
@@ -309,7 +309,7 @@ if [[ "$PREV_MAJOR" == "3" ]]; then
   echo ""
 elif [[ "$PREV_MAJOR" -lt "3" ]]; then
   echo ""
-  echo "⚠️  Upgrading from v$CURRENT_VERSION (very old version)"
+  echo "⚠️  Upgrading from v$PRE_UPGRADE_VERSION (very old version)"
   echo ""
   echo "Your version is quite old. The upgrade will work, but you may"
   echo "want to review the CHANGELOG for all changes since your version:"
