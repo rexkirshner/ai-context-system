@@ -2,7 +2,7 @@
 
 # install.sh
 # Bootstrap installer for AI Context System
-# v4.1.0 - Documentation Health Check
+# v4.1.1 - Context Completeness Detection
 #
 # Usage:
 #   curl -sL https://raw.githubusercontent.com/rexkirshner/ai-context-system/main/install.sh | bash

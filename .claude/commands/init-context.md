@@ -915,5 +915,5 @@ Understood?
 
 ---
 
-**Version:** 4.1.0
-**Updated:** v3.6.1 - Fixed CLAUDE.md migration (now automatic, non-interactive)
+**Version:** 4.1.1
+**Updated:** v4.1.1 - Added auto-detection and template placeholder filling
