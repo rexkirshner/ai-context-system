@@ -945,5 +945,5 @@ Understood?
 
 ---
 
-**Version:** 4.0.1
+**Version:** 4.0.2
 **Updated:** v3.0.4 - Added git workflow reminder for session start

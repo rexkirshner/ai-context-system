@@ -2,7 +2,7 @@
 
 # update-quick-reference.sh
 # Auto-generates Quick Reference section in STATUS.md
-# Version: 4.0.1
+# Version: 4.0.2
 
 set -e
 

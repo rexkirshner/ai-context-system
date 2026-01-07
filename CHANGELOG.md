@@ -5,6 +5,27 @@ All notable changes to the AI Context System will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.0.2] - 2026-01-06
+
+**PATCH RELEASE** - Graceful File Existence Detection
+
+### Fixed
+
+- **File existence detection in /save-full** - Now detects which context files exist before proceeding, gracefully skipping steps for missing files
+- **File existence detection in /save** - Checks for STATUS.md before attempting updates, suggests `/init-context` if missing
+- **File existence detection in /review-context** - Detects both core and optional files, adjusts review scope accordingly
+
+### Improved
+
+- **Better user guidance** - Commands now suggest `/init-context` when multiple core files are missing
+- **Dynamic final reports** - Save commands show exactly which files were updated vs. skipped
+
+### Added
+
+- **Test suite** - `scripts/tests/test-file-detection.sh` with 24 assertions covering file detection across all 3 commands
+
+---
+
 ## [4.0.1] - 2026-01-06
 
 **PATCH RELEASE** - Bug Fixes from First User Feedback
