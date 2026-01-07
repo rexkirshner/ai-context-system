@@ -18,6 +18,12 @@ GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
+# Portable colored output (works on bash, zsh, sh)
+# Use this instead of echo -e for color output
+color_echo() {
+  printf "%b\n" "$1"
+}
+
 # Repository configuration
 REPO_URL="https://github.com/rexkirshner/ai-context-system"
 RAW_URL="https://raw.githubusercontent.com/rexkirshner/ai-context-system/main"
@@ -32,14 +38,14 @@ VERSION=$(curl -sL "${RAW_URL}/VERSION" 2>/dev/null || echo "3.0.0")
 
 # Validate VERSION format (must be X.Y.Z)
 if ! echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
-  echo -e "${YELLOW}⚠️  Warning: Could not fetch version from GitHub${NC}"
+  color_echo "${YELLOW}⚠️  Warning: Could not fetch version from GitHub${NC}"
   echo "   Using fallback version: 3.0.0"
   VERSION="3.0.0"
 fi
 
-echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${BLUE}  AI Context System Installer (v${VERSION})${NC}"
-echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+color_echo "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+color_echo "${BLUE}  AI Context System Installer (v${VERSION})${NC}"
+color_echo "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
 
 # =============================================================================
@@ -68,7 +74,7 @@ validate_file() {
   # Check file size (404 errors are typically ~14 bytes)
   local size=$(wc -c < "$file" | tr -d ' ')
   if [ "$size" -lt "$min_size" ]; then
-    echo -e "${RED}✗${NC} (file too small: ${size} bytes)"
+    color_echo "${RED}✗${NC} (file too small: ${size} bytes)"
     return 1
   fi
 
@@ -76,13 +82,13 @@ validate_file() {
   # Real 404 errors appear at the start: "404: Not Found" or "HTTP/1.1 404"
   # Don't check entire file - legitimate code may contain "NOT_FOUND" constants
   if head -3 "$file" | grep -Eq "^404: Not Found$|^HTTP.*404|404.*Not Found"; then
-    echo -e "${RED}✗${NC} (404 error page)"
+    color_echo "${RED}✗${NC} (404 error page)"
     return 1
   fi
 
   # Check for HTML error pages
   if head -3 "$file" | grep -qi "<!DOCTYPE\|<html"; then
-    echo -e "${RED}✗${NC} (HTML error page)"
+    color_echo "${RED}✗${NC} (HTML error page)"
     return 1
   fi
 
@@ -112,7 +118,7 @@ download_file() {
     if curl -sL "$url" -o "$output" 2>/dev/null; then
       # Validate content
       if validate_file "$output" "$min_size"; then
-        echo -e "${GREEN}✓${NC}"
+        color_echo "${GREEN}✓${NC}"
         return 0
       fi
     fi
@@ -127,7 +133,7 @@ download_file() {
       sleep_time=$((sleep_time * 2))  # Exponential backoff
     else
       # Final attempt failed
-      echo -e "${RED}✗${NC} (failed after $max_attempts attempts)"
+      color_echo "${RED}✗${NC} (failed after $max_attempts attempts)"
       return 1
     fi
   done
@@ -154,15 +160,15 @@ update_config_version() {
     # Validate output before overwriting
     if [ -s "$config_file.tmp" ]; then
       mv "$config_file.tmp" "$config_file"
-      echo -e "${BLUE}📝 Updated config version to v${new_version}${NC}"
+      color_echo "${BLUE}📝 Updated config version to v${new_version}${NC}"
       return 0
     else
-      echo -e "${YELLOW}⚠️  Version update failed (empty output), preserving original${NC}"
+      color_echo "${YELLOW}⚠️  Version update failed (empty output), preserving original${NC}"
       rm -f "$config_file.tmp"
       return 1
     fi
   else
-    echo -e "${YELLOW}⚠️  Version update failed, preserving original${NC}"
+    color_echo "${YELLOW}⚠️  Version update failed, preserving original${NC}"
     rm -f "$config_file.tmp"
     return 1
   fi
@@ -172,8 +178,8 @@ update_config_version() {
 rollback_installation() {
   if [ -n "$BACKUP_DIR" ] && [ -d "$BACKUP_DIR" ]; then
     echo ""
-    echo -e "${RED}❌ Installation failed${NC}"
-    echo -e "${BLUE}🔄 Restoring from backup...${NC}"
+    color_echo "${RED}❌ Installation failed${NC}"
+    color_echo "${BLUE}🔄 Restoring from backup...${NC}"
 
     # Restore .claude directory
     if [ -d "$BACKUP_DIR/.claude" ]; then
@@ -198,13 +204,13 @@ rollback_installation() {
       cp -r "$BACKUP_DIR/context" . 2>/dev/null || true
     fi
 
-    echo -e "${GREEN}✅ System restored from backup${NC}"
+    color_echo "${GREEN}✅ System restored from backup${NC}"
     echo ""
     echo "Backup preserved at: $BACKUP_DIR"
     exit 1
   else
     echo ""
-    echo -e "${RED}❌ Installation failed (no backup available)${NC}"
+    color_echo "${RED}❌ Installation failed (no backup available)${NC}"
     exit 1
   fi
 }
@@ -212,7 +218,7 @@ rollback_installation() {
 # Post-installation validation and auto-repair (v3.3.1)
 post_install_validation() {
   echo ""
-  echo -e "${BLUE}🔍 Validating installation...${NC}"
+  color_echo "${BLUE}🔍 Validating installation...${NC}"
 
   local issues_found=0
   local issues_fixed=0
@@ -223,12 +229,12 @@ post_install_validation() {
     local config_version=$(grep '"version"' context/.context-config.json | sed 's/.*"version": "\([^"]*\)".*/\1/')
 
     if [ "$version_file" != "$config_version" ]; then
-      echo -e "   ${YELLOW}⚠️  Version mismatch detected${NC} (VERSION=$version_file, config=$config_version)"
+      color_echo "   ${YELLOW}⚠️  Version mismatch detected${NC} (VERSION=$version_file, config=$config_version)"
       issues_found=$((issues_found + 1))
 
       # Auto-fix
       if update_config_version "$version_file" >/dev/null 2>&1; then
-        echo "   ${GREEN}✅ Fixed version sync${NC}"
+        color_echo "   ${GREEN}✅ Fixed version sync${NC}"
         issues_fixed=$((issues_fixed + 1))
       fi
     fi
@@ -236,8 +242,8 @@ post_install_validation() {
 
   # Check 2: jq dependency (required for v3.4.0 code review features)
   if ! command -v jq &> /dev/null; then
-    echo -e "   ${YELLOW}⚠️  Optional dependency 'jq' not found${NC}"
-    echo "   ${BLUE}ℹ️  Required for /code-review smart grouping and TodoWrite generation${NC}"
+    color_echo "   ${YELLOW}⚠️  Optional dependency 'jq' not found${NC}"
+    color_echo "   ${BLUE}ℹ️  Required for /code-review smart grouping and TodoWrite generation${NC}"
     echo "   Install: brew install jq (macOS) or apt-get install jq (Linux)"
     issues_found=$((issues_found + 1))
     # Note: This is informational, not critical - don't block installation
@@ -246,10 +252,10 @@ post_install_validation() {
   # Check 3: Script permissions
   for script in scripts/*.sh; do
     if [ -f "$script" ] && [ ! -x "$script" ]; then
-      echo -e "   ${YELLOW}⚠️  Script not executable${NC}: $script"
+      color_echo "   ${YELLOW}⚠️  Script not executable${NC}: $script"
       issues_found=$((issues_found + 1))
       chmod +x "$script" 2>/dev/null && {
-        echo "   ${GREEN}✅ Fixed permissions${NC}: $script"
+        color_echo "   ${GREEN}✅ Fixed permissions${NC}: $script"
         issues_fixed=$((issues_fixed + 1))
       }
     fi
@@ -258,11 +264,11 @@ post_install_validation() {
   # Summary
   echo ""
   if [ $issues_found -eq 0 ]; then
-    echo -e "${GREEN}✅ Installation validated${NC} - no issues found"
+    color_echo "${GREEN}✅ Installation validated${NC} - no issues found"
   elif [ $issues_fixed -eq $issues_found ]; then
-    echo -e "${GREEN}✅ Installation validated${NC} - all $issues_fixed issue(s) auto-fixed"
+    color_echo "${GREEN}✅ Installation validated${NC} - all $issues_fixed issue(s) auto-fixed"
   else
-    echo -e "${YELLOW}⚠️  Installation validated${NC} - fixed $issues_fixed/$issues_found issue(s)"
+    color_echo "${YELLOW}⚠️  Installation validated${NC} - fixed $issues_fixed/$issues_found issue(s)"
   fi
 }
 
@@ -274,7 +280,7 @@ trap 'rollback_installation' ERR
 # =============================================================================
 
 CURRENT_DIR=$(pwd)
-echo -e "${BLUE}📁 Installation directory:${NC} $CURRENT_DIR"
+color_echo "${BLUE}📁 Installation directory:${NC} $CURRENT_DIR"
 echo ""
 
 # =============================================================================
@@ -282,7 +288,7 @@ echo ""
 # =============================================================================
 
 if [ -d ".claude/commands" ] && [ -f ".claude/commands/init-context.md" ]; then
-  echo -e "${YELLOW}⚠️  Existing installation detected${NC}"
+  color_echo "${YELLOW}⚠️  Existing installation detected${NC}"
   echo ""
 
   # Try to detect version (priority order)
@@ -312,12 +318,12 @@ if [ -d ".claude/commands" ] && [ -f ".claude/commands/init-context.md" ]; then
     read -p "Overwrite existing installation? [y/N] " -n 1 -r
     echo
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-      echo -e "${YELLOW}Installation cancelled${NC}"
+      color_echo "${YELLOW}Installation cancelled${NC}"
       exit 0
     fi
   fi
 
-  echo -e "${BLUE}📦 Backing up existing installation...${NC}"
+  color_echo "${BLUE}📦 Backing up existing installation...${NC}"
   BACKUP_DIR=".claude-backup-$(date +%Y%m%d-%H%M%S)"
   mkdir -p "$BACKUP_DIR"
 
@@ -343,7 +349,7 @@ fi
 # Step 3: Create directory structure
 # =============================================================================
 
-echo -e "${BLUE}📂 Creating directory structure...${NC}"
+color_echo "${BLUE}📂 Creating directory structure...${NC}"
 
 mkdir -p .claude/commands
 mkdir -p .claude/docs
@@ -360,14 +366,14 @@ echo ""
 # Step 4: Download VERSION file and scripts
 # =============================================================================
 
-echo -e "${BLUE}⬇️  Downloading VERSION and scripts...${NC}"
+color_echo "${BLUE}⬇️  Downloading VERSION and scripts...${NC}"
 
 # Download VERSION file
 echo -n "   Downloading VERSION... "
 if download_file "${RAW_URL}/VERSION" "VERSION" 1; then
   : # Success message already printed
 else
-  echo -e "${RED}CRITICAL: VERSION file download failed${NC}"
+  color_echo "${RED}CRITICAL: VERSION file download failed${NC}"
   rollback_installation
 fi
 
@@ -376,7 +382,7 @@ echo -n "   Downloading common-functions.sh... "
 if download_file "${RAW_URL}/scripts/common-functions.sh" "scripts/common-functions.sh" 100; then
   chmod +x "scripts/common-functions.sh"
 else
-  echo -e "${RED}CRITICAL: common-functions.sh download failed${NC}"
+  color_echo "${RED}CRITICAL: common-functions.sh download failed${NC}"
   rollback_installation
 fi
 
@@ -393,7 +399,7 @@ VERIFICATION_FAILED=0
 # Step 5: Download commands
 # =============================================================================
 
-echo -e "${BLUE}⬇️  Downloading slash commands...${NC}"
+color_echo "${BLUE}⬇️  Downloading slash commands...${NC}"
 
 COMMANDS=(
   # Core commands
@@ -425,7 +431,7 @@ COMMANDS=(
 for cmd in "${COMMANDS[@]}"; do
   echo -n "   Downloading $cmd... "
   if ! download_file "${RAW_URL}/.claude/commands/${cmd}" ".claude/commands/${cmd}" 100; then
-    echo -e "${RED}CRITICAL: Command download failed${NC}"
+    color_echo "${RED}CRITICAL: Command download failed${NC}"
     rollback_installation
   fi
 done
@@ -436,7 +442,7 @@ echo ""
 # Step 6: Download templates
 # =============================================================================
 
-echo -e "${BLUE}⬇️  Downloading templates...${NC}"
+color_echo "${BLUE}⬇️  Downloading templates...${NC}"
 
 TEMPLATES=(
   "CLAUDE.md.template"
@@ -460,7 +466,7 @@ echo "   ℹ️  Note: QUICK_REF.template.md removed in v2.1 (Quick Reference no
 for tmpl in "${TEMPLATES[@]}"; do
   echo -n "   Downloading $tmpl... "
   if ! download_file "${RAW_URL}/templates/${tmpl}" "templates/${tmpl}" 100; then
-    echo -e "${RED}CRITICAL: Template download failed${NC}"
+    color_echo "${RED}CRITICAL: Template download failed${NC}"
     rollback_installation
   fi
 done
@@ -471,7 +477,7 @@ echo ""
 # Step 7: Download remaining scripts
 # =============================================================================
 
-echo -e "${BLUE}⬇️  Downloading scripts...${NC}"
+color_echo "${BLUE}⬇️  Downloading scripts...${NC}"
 
 SCRIPTS=(
   "validate-context.sh"
@@ -487,7 +493,7 @@ for script in "${SCRIPTS[@]}"; do
   if download_file "${RAW_URL}/scripts/${script}" "scripts/${script}" 100; then
     chmod +x "scripts/${script}"
   else
-    echo -e "${RED}CRITICAL: Script download failed${NC}"
+    color_echo "${RED}CRITICAL: Script download failed${NC}"
     rollback_installation
   fi
 done
@@ -498,7 +504,7 @@ echo ""
 # Step 8: Download configuration
 # =============================================================================
 
-echo -e "${BLUE}⬇️  Downloading configuration...${NC}"
+color_echo "${BLUE}⬇️  Downloading configuration...${NC}"
 
 CONFIG_FILES=(
   "context-config-schema.json"
@@ -523,7 +529,7 @@ echo ""
 # Step 9: Download documentation
 # =============================================================================
 
-echo -e "${BLUE}⬇️  Downloading documentation...${NC}"
+color_echo "${BLUE}⬇️  Downloading documentation...${NC}"
 
 DOCS=(
   "command-philosophy.md"
@@ -543,7 +549,7 @@ echo ""
 # Step 10: Download reference files
 # =============================================================================
 
-echo -e "${BLUE}⬇️  Downloading reference files...${NC}"
+color_echo "${BLUE}⬇️  Downloading reference files...${NC}"
 
 # Download ORGANIZATION.md to reference/ (users can copy to root if desired)
 echo -n "   Downloading ORGANIZATION.md... "
@@ -562,7 +568,7 @@ echo ""
 # Step 11: Verify installation
 # =============================================================================
 
-echo -e "${BLUE}🔍 Verifying installation...${NC}"
+color_echo "${BLUE}🔍 Verifying installation...${NC}"
 
 VERIFICATION_FAILED=0
 
@@ -588,7 +594,7 @@ for file in "${CRITICAL_FILES[@]}"; do
   if [ -f "$file" ]; then
     echo "   ✅ $file"
   else
-    echo -e "   ${RED}❌ $file${NC}"
+    color_echo "   ${RED}❌ $file${NC}"
     ((VERIFICATION_FAILED++))
   fi
 done
@@ -599,20 +605,20 @@ echo ""
 # Step 12: Installation summary
 # =============================================================================
 
-echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+color_echo "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 
 if [ $FAILED_DOWNLOADS -eq 0 ] && [ $VERIFICATION_FAILED -eq 0 ]; then
   # Disable error trap - installation complete, don't rollback for prompt failures
   trap - ERR
 
-  echo -e "${GREEN}✅ Installation successful!${NC}"
+  color_echo "${GREEN}✅ Installation successful!${NC}"
   echo ""
   echo "AI Context System v${VERSION} is now installed."
 
   # Run post-installation validation (v3.3.1: auto-fixes common issues)
   post_install_validation
 
-  echo -e "${BLUE}Next steps:${NC}"
+  color_echo "${BLUE}Next steps:${NC}"
   echo "   1. Run /init-context to initialize your project"
   echo "   2. Review context/CONTEXT.md for accuracy"
   echo "   3. Use TodoWrite during active work"
@@ -620,11 +626,11 @@ if [ $FAILED_DOWNLOADS -eq 0 ] && [ $VERIFICATION_FAILED -eq 0 ]; then
   echo "   5. Run /save-full before breaks (10-15 min comprehensive)"
   echo "   6. Use /code-review for AI agent review"
   echo ""
-  echo -e "${BLUE}Documentation:${NC}"
+  color_echo "${BLUE}Documentation:${NC}"
   echo "   - Command philosophy: .claude/docs/command-philosophy.md"
   echo "   - GitHub: ${REPO_URL}"
   echo ""
-  echo -e "${BLUE}v4.0.0 Features (Modular Code Review System):${NC}"
+  color_echo "${BLUE}v4.0.0 Features (Modular Code Review System):${NC}"
   echo "   - 8 specialized audit commands: security, performance,"
   echo "     accessibility, SEO, database, infrastructure,"
   echo "     TypeScript, and testing"
@@ -633,7 +639,7 @@ if [ $FAILED_DOWNLOADS -eq 0 ] && [ $VERIFICATION_FAILED -eq 0 ]; then
   echo "   - Auto-detect platform (Prisma, Vercel, Next.js, etc.)"
   echo "   - Pre-launch presets: --prelaunch, --backend, --frontend"
   echo ""
-  echo -e "${BLUE}Helpful commands:${NC}"
+  color_echo "${BLUE}Helpful commands:${NC}"
   echo "   /init-context          - Initialize context system"
   echo "   /save                  - Quick save (2-3 min)"
   echo "   /save-full             - Comprehensive save (10-15 min)"
@@ -649,19 +655,19 @@ if [ $FAILED_DOWNLOADS -eq 0 ] && [ $VERIFICATION_FAILED -eq 0 ]; then
 
   if [ "$NON_INTERACTIVE" = true ]; then
     # Skip prompt in non-interactive mode
-    echo -e "${BLUE}Non-interactive mode: Skipping initialization prompt${NC}"
+    color_echo "${BLUE}Non-interactive mode: Skipping initialization prompt${NC}"
     echo ""
     echo "To initialize context system later, run: /init-context"
     echo ""
   else
-    echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    color_echo "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo ""
     read -p "Initialize context system now? This will run /init-context. [Y/n] " -n 1 -r
     echo ""
 
     if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
       echo ""
-      echo -e "${GREEN}Running /init-context...${NC}"
+      color_echo "${GREEN}Running /init-context...${NC}"
       echo ""
 
       # Check if Claude Code is available
@@ -671,7 +677,7 @@ if [ $FAILED_DOWNLOADS -eq 0 ] && [ $VERIFICATION_FAILED -eq 0 ]; then
         echo ""
         claude /init-context
       else
-        echo -e "${YELLOW}Claude Code not found in PATH${NC}"
+        color_echo "${YELLOW}Claude Code not found in PATH${NC}"
         echo ""
         echo "To initialize context:"
         echo "  1. Open this project in Claude Code"
@@ -680,7 +686,7 @@ if [ $FAILED_DOWNLOADS -eq 0 ] && [ $VERIFICATION_FAILED -eq 0 ]; then
       fi
     else
       echo ""
-      echo -e "${BLUE}Skipped initialization${NC}"
+      color_echo "${BLUE}Skipped initialization${NC}"
       echo ""
       echo "When ready, run: /init-context"
       echo ""
@@ -689,7 +695,7 @@ if [ $FAILED_DOWNLOADS -eq 0 ] && [ $VERIFICATION_FAILED -eq 0 ]; then
 
   exit 0
 else
-  echo -e "${RED}❌ Installation completed with errors${NC}"
+  color_echo "${RED}❌ Installation completed with errors${NC}"
   echo ""
   echo "   Failed downloads: $FAILED_DOWNLOADS"
   echo "   Failed verifications: $VERIFICATION_FAILED"
