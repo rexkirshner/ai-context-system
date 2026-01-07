@@ -29,6 +29,24 @@ export BLUE='\033[0;34m'
 export NC='\033[0m' # No Color
 
 # =============================================================================
+# Repository Root Detection
+# =============================================================================
+
+# Get the repository root directory
+# Works from any subdirectory within a git repository
+# Falls back to current directory if not in a git repo
+#
+# Usage:
+#   REPO_ROOT=$(get_repo_root)
+#   ls "$REPO_ROOT/.claude/commands/"
+#
+# Returns:
+#   Absolute path to repository root, or pwd if not in git repo
+get_repo_root() {
+  git rev-parse --show-toplevel 2>/dev/null || pwd
+}
+
+# =============================================================================
 # Context Directory Management
 # =============================================================================
 
