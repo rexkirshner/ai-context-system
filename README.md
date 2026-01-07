@@ -1,6 +1,6 @@
 # AI Context System
 
-**Version 3.6.1** • [What's New](#-v361-released---claude-code-auto-loading-fix)
+**Version 4.1.1** • [What's New](#-v411-context-completeness-detection)
 
 > **Externalize AI context. Enable human-AI collaboration. Perfect session continuity.**
 >
@@ -26,19 +26,20 @@ Facilitate peer review, project handoffs, and collaborative development between 
 
 ---
 
-## 🎉 v3.6.1 Released - Claude Code Auto-Loading Fix
+## 🎉 v4.1.1 Context Completeness Detection
 
-**Fixes CLAUDE.md migration that wasn't working in v3.6.0**
+**Ensures context documentation actually gets filled in**
 
-**What's Fixed:**
-- ✅ **Auto-migration now works** - `context/claude.md` automatically moves to `./CLAUDE.md`
-- ✅ **Non-interactive** - No prompts that fail in Claude Code's bash environment
-- ✅ **Updated git rules** - Clearer "commit often, push with permission" wording
+**New Features:**
+- ✅ **Context completeness detection** - Detects unfilled `[FILL:...]` placeholders in CONTEXT.md
+- ✅ **Project auto-detection** - Automatically detects project name, tech stack, type from codebase
+- ✅ **Smart warnings** - `/save` warns when CONTEXT.md has 5+ unfilled placeholders
+- ✅ **Template guidance** - `/save-full` and `/init-context` actively guide filling in templates
 
-**v3.6.0 Features (now working):**
-- ✨ **CLAUDE.md at project root** - Auto-loaded by Claude Code at every conversation start
-- ✨ **Enhanced CLAUDE.md template** - Project identity, critical rules, working style, debugging protocol
-- ✨ **Better context hierarchy** - Essential context always available, detailed docs in context/
+**Recent Major Releases:**
+- **v4.1.0** - Documentation health checking, shell robustness, color output
+- **v4.0.0** - Modular code review system with specialized audits (security, performance, etc.)
+- **v3.7.0** - Auto-timestamps, audit index management
 
 **Full details:** [CHANGELOG.md](./CHANGELOG.md) • **Upgrade:** `/update-context-system`
 
@@ -82,7 +83,7 @@ Everything AI thinks gets documented. No hidden context. Perfect session continu
 ### Optimized for Claude Code
 
 **Claude-specific features:**
-- **Slash commands** - `/save`, `/save-full`, `/init-context`, etc. (14 commands)
+- **Slash commands** - `/save`, `/save-full`, `/init-context`, etc. (22 commands)
 - **TodoWrite integration** - Automatic capture of task state
 - **Interactive workflows** - Approval checkpoints, validation prompts
 - **Command system** - Structured `.claude/commands/` architecture
