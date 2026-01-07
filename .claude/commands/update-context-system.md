@@ -203,12 +203,11 @@ fi
 
 # Check if feedback file exists and has actual content (not just template)
 if [ -f "context/context-feedback.md" ]; then
-  # Count lines in Feedback Entries section (between "## Feedback Entries" and "## Examples")
-  # Fresh template has ~7 lines, template with entries has 15+
-  CONTENT_LINES=$(awk '/^## Feedback Entries$/,/^## Examples/' \
-    context/context-feedback.md | wc -l | tr -d ' ')
+  # Count only real user entries (## YYYY-MM-DD format headers)
+  # This ignores template examples which use different formats
+  USER_ENTRIES=$(grep -c "^## [0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\}" context/context-feedback.md 2>/dev/null || echo "0")
 
-  if [ "$CONTENT_LINES" -gt 10 ]; then  # Has actual entries beyond template
+  if [ "$USER_ENTRIES" -gt 0 ]; then  # Has actual user feedback entries
     # Use PRE_UPGRADE_VERSION captured in Step 1 for archive filename
     ARCHIVE_DATE=$(date +%Y-%m-%d)
 
@@ -393,16 +392,11 @@ if [ -f "$OLD_CLAUDE" ] && [ ! -f "$NEW_CLAUDE" ]; then
   echo "   Review ./CLAUDE.md - the v3.6.1 template has updated sections."
   echo "   See: templates/CLAUDE.md.template for latest structure"
 
-# Case 2: Both exist - warn about duplicate (user must resolve manually)
+# Case 2: Both exist - AUTO-REMOVE old file (v4.1.0: no longer requires manual action)
 elif [ -f "$OLD_CLAUDE" ] && [ -f "$NEW_CLAUDE" ]; then
-  echo "⚠️  Both locations exist:"
-  echo "   - ./CLAUDE.md (correct - auto-loaded by Claude Code)"
-  echo "   - context/claude.md (old - NOT auto-loaded)"
-  echo ""
-  echo "Action required:"
-  echo "  1. Review context/claude.md for any unique customizations"
-  echo "  2. Merge any customizations into ./CLAUDE.md"
-  echo "  3. Delete the old file: rm context/claude.md"
+  echo "🧹 Removing deprecated context/claude.md (root CLAUDE.md is active)"
+  rm "$OLD_CLAUDE"
+  echo "✅ Cleaned up old CLAUDE.md location"
 
 # Case 3: Only new location exists - good!
 elif [ -f "$NEW_CLAUDE" ]; then
@@ -544,6 +538,27 @@ Review templates/ directory for new reference content you may want to adopt:
 
 📚 Full changelog: https://github.com/rexkirshner/ai-context-system/releases
 ```
+
+---
+
+### Step 7: Post-Upgrade Commit Guidance (v4.1.0)
+
+```bash
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "COMMIT SYSTEM UPDATE"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+echo "System files were updated. Recommended commit:"
+echo ""
+echo "  git add .claude scripts templates config VERSION"
+echo "  git commit -m \"chore: upgrade AI Context System to v\$(cat VERSION)\""
+echo ""
+echo "Or include with your next feature commit."
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+```
+
+---
 
 ## Important Notes
 

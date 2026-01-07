@@ -241,6 +241,30 @@ If YES → Set PUSH_APPROVED=true, verify by re-reading, auto-log approval
 
 **This reminder is displayed at session start to prevent git push violations.**
 
+### Step 1.7: Documentation Health Check (v4.1.0)
+
+**ACTION:** Check health of CLAUDE.md and CONTEXT.md:
+
+```bash
+REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
+source "$REPO_ROOT/scripts/common-functions.sh"
+
+# Run health check
+if check_documentation_health "$CONTEXT_DIR"; then
+  format_documentation_health
+else
+  log_warn "Could not complete documentation health check"
+fi
+```
+
+This check:
+- Compares modification dates of CLAUDE.md vs CONTEXT.md
+- Detects unfilled template placeholders
+- Identifies tech stack drift between files
+- Provides specific recommendations
+
+---
+
 ### Step 2: Load All Documentation
 
 Read and parse all context files:

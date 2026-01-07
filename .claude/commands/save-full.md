@@ -824,6 +824,25 @@ echo "Optional Updates:"
 echo "  • ARCHITECTURE.md - [Updated / Skipped]"
 echo "  • PRD.md - [Updated / Skipped]"
 echo ""
+
+# Documentation Health Check (v4.1.0)
+REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
+source "$REPO_ROOT/scripts/common-functions.sh" 2>/dev/null
+
+if type check_documentation_health &>/dev/null; then
+  check_documentation_health "$CONTEXT_DIR"
+  echo "Documentation Health:"
+  if [ "$DOC_HEALTH_WARNINGS" -eq 0 ]; then
+    echo "  ✅ All documentation current and configured"
+  else
+    echo "  ⚠️  $DOC_HEALTH_WARNINGS issue(s) detected"
+    for detail in "${DOC_HEALTH_DETAILS[@]}"; do
+      echo "  - $detail"
+    done
+  fi
+  echo ""
+fi
+
 echo "For AI Agents:"
 echo "  • Mental models captured in SESSIONS.md"
 echo "  • Decision rationale in DECISIONS.md"
