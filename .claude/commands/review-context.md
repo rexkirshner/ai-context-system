@@ -66,18 +66,58 @@ echo "✅ Found context at: $CONTEXT_DIR"
 
 ---
 
-### Step 1: Verify Context Exists
+### Step 1: Detect Available Context Files
 
-**NOTE:** This step is now handled by Step 0.5 (find_context_folder fails if context/ not found)
+**ACTION:** Check which context files exist and show status:
 
+```bash
+echo ""
+echo "📁 Detecting context files..."
+echo ""
+
+# Core files
+echo "Core files:"
+test -f "$CONTEXT_DIR/CONTEXT.md" && echo "  ✅ CONTEXT.md" || echo "  ⚠️ CONTEXT.md not found"
+test -f "$CONTEXT_DIR/STATUS.md" && echo "  ✅ STATUS.md" || echo "  ⚠️ STATUS.md not found"
+test -f "$CONTEXT_DIR/DECISIONS.md" && echo "  ✅ DECISIONS.md" || echo "  ⚠️ DECISIONS.md not found"
+test -f "$CONTEXT_DIR/SESSIONS.md" && echo "  ✅ SESSIONS.md" || echo "  ⚠️ SESSIONS.md not found"
+echo ""
+
+# Optional files
+echo "Optional files:"
+test -f "$CONTEXT_DIR/PRD.md" && echo "  ✅ PRD.md" || echo "  - PRD.md (not found)"
+test -f "$CONTEXT_DIR/ARCHITECTURE.md" && echo "  ✅ ARCHITECTURE.md" || echo "  - ARCHITECTURE.md (not found)"
+test -f "$CONTEXT_DIR/CODE_STYLE.md" && echo "  ✅ CODE_STYLE.md" || echo "  - CODE_STYLE.md (not found)"
+test -f "$CONTEXT_DIR/KNOWN_ISSUES.md" && echo "  ✅ KNOWN_ISSUES.md" || echo "  - KNOWN_ISSUES.md (not found)"
+echo ""
+
+# Config
+echo "Configuration:"
+test -f "$CONTEXT_DIR/.context-config.json" && echo "  ✅ .context-config.json" || echo "  ⚠️ .context-config.json not found"
+echo ""
+
+# Count missing core files
+MISSING_CORE=0
+test -f "$CONTEXT_DIR/CONTEXT.md" || MISSING_CORE=$((MISSING_CORE + 1))
+test -f "$CONTEXT_DIR/STATUS.md" || MISSING_CORE=$((MISSING_CORE + 1))
+test -f "$CONTEXT_DIR/SESSIONS.md" || MISSING_CORE=$((MISSING_CORE + 1))
+
+if [ "$MISSING_CORE" -gt 2 ]; then
+  echo "💡 Multiple core files missing. Consider running /init-context to set up the full context system."
+  echo ""
+fi
+
+echo "✅ File detection complete"
+echo ""
 ```
-If context/ folder missing:
-- Report: "No context found. Run /init-context to set up."
-- Stop execution
 
-If context/ exists:
-- Proceed to Step 1.5
-```
+**Why this matters:**
+- Shows exactly which files will be reviewed
+- Projects may have partial setups (old installations, minimal configs)
+- Missing core files affect confidence score
+- Suggests /init-context if many files missing
+
+**AI Note:** Missing files will be skipped in subsequent steps. Adjust confidence score accordingly.
 
 ### Step 1.5: Check for System Updates
 

@@ -232,6 +232,71 @@ assert_contains "$OUTPUT" "/init-context" "/save suggests init-context"
 echo ""
 
 # ============================================================
+# Test 7: /review-context - All files present
+# ============================================================
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "Test 7: /review-context - All files present"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+# Recreate all files
+touch "$CONTEXT_DIR/CONTEXT.md"
+touch "$CONTEXT_DIR/STATUS.md"
+touch "$CONTEXT_DIR/DECISIONS.md"
+touch "$CONTEXT_DIR/SESSIONS.md"
+
+OUTPUT=$(cat <<'SCRIPT' | CONTEXT_DIR="$CONTEXT_DIR" bash
+echo "📁 Detecting context files..."
+echo ""
+echo "Core files:"
+test -f "$CONTEXT_DIR/CONTEXT.md" && echo "  ✅ CONTEXT.md" || echo "  ⚠️ CONTEXT.md not found"
+test -f "$CONTEXT_DIR/STATUS.md" && echo "  ✅ STATUS.md" || echo "  ⚠️ STATUS.md not found"
+test -f "$CONTEXT_DIR/DECISIONS.md" && echo "  ✅ DECISIONS.md" || echo "  ⚠️ DECISIONS.md not found"
+test -f "$CONTEXT_DIR/SESSIONS.md" && echo "  ✅ SESSIONS.md" || echo "  ⚠️ SESSIONS.md not found"
+SCRIPT
+)
+
+assert_contains "$OUTPUT" "✅ CONTEXT.md" "/review-context detects CONTEXT.md"
+assert_contains "$OUTPUT" "✅ STATUS.md" "/review-context detects STATUS.md"
+assert_contains "$OUTPUT" "✅ SESSIONS.md" "/review-context detects SESSIONS.md"
+assert_not_contains "$OUTPUT" "not found" "No missing files in /review-context"
+echo ""
+
+# ============================================================
+# Test 8: /review-context - Multiple files missing
+# ============================================================
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "Test 8: /review-context - Multiple core files missing"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+# Delete all 3 core files checked by MISSING_CORE counter
+rm -f "$CONTEXT_DIR/CONTEXT.md"
+rm -f "$CONTEXT_DIR/STATUS.md"
+rm -f "$CONTEXT_DIR/SESSIONS.md"
+
+OUTPUT=$(cat <<'SCRIPT' | CONTEXT_DIR="$CONTEXT_DIR" bash
+echo "Core files:"
+test -f "$CONTEXT_DIR/CONTEXT.md" && echo "  ✅ CONTEXT.md" || echo "  ⚠️ CONTEXT.md not found"
+test -f "$CONTEXT_DIR/STATUS.md" && echo "  ✅ STATUS.md" || echo "  ⚠️ STATUS.md not found"
+test -f "$CONTEXT_DIR/SESSIONS.md" && echo "  ✅ SESSIONS.md" || echo "  ⚠️ SESSIONS.md not found"
+
+MISSING_CORE=0
+test -f "$CONTEXT_DIR/CONTEXT.md" || MISSING_CORE=$((MISSING_CORE + 1))
+test -f "$CONTEXT_DIR/STATUS.md" || MISSING_CORE=$((MISSING_CORE + 1))
+test -f "$CONTEXT_DIR/SESSIONS.md" || MISSING_CORE=$((MISSING_CORE + 1))
+
+if [ "$MISSING_CORE" -gt 2 ]; then
+  echo "💡 Multiple core files missing. Consider running /init-context to set up the full context system."
+fi
+SCRIPT
+)
+
+assert_contains "$OUTPUT" "⚠️ CONTEXT.md not found" "/review-context detects missing CONTEXT.md"
+assert_contains "$OUTPUT" "⚠️ STATUS.md not found" "/review-context detects missing STATUS.md"
+assert_contains "$OUTPUT" "⚠️ SESSIONS.md not found" "/review-context detects missing SESSIONS.md"
+assert_contains "$OUTPUT" "/init-context" "/review-context suggests init when multiple missing"
+echo ""
+
+# ============================================================
 # Cleanup and Summary
 # ============================================================
 rm -rf "$TEST_DIR"
