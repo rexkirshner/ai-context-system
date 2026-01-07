@@ -1,6 +1,6 @@
 #!/bin/bash
-# Test MODULE-103: Code Review Auto-Report Generation
-# Issue: PERF-2 - Manual report creation friction
+# Test MODULE-103: Modular Code Review System (v4.0.0+)
+# Tests the new modular audit command structure
 
 # Get the directory of this script
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -9,125 +9,143 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 # Source test helpers
 source "$SCRIPT_DIR/test-helpers.sh"
 
-# Test 1: code-review.md has report generation code
-test_has_report_generation_code() {
-  echo "Test 1: code-review.md should have bash code to generate report"
+# Test 1: code-review.md is an orchestrator (not monolithic)
+test_is_orchestrator() {
+  echo "Test 1: code-review.md should be an interactive orchestrator"
 
-  if grep -q "mkdir -p artifacts/code-reviews\|cat > .*artifacts/code-reviews/session.*review\.md" "$PROJECT_ROOT/.claude/commands/code-review.md"; then
-    echo -e "\033[0;32m✓\033[0m code-review.md has report generation bash code"
+  # Check for orchestrator patterns
+  if grep -q "interactive\|menu\|select\|choose" "$PROJECT_ROOT/.claude/commands/code-review.md"; then
+    echo -e "\033[0;32m✓\033[0m code-review.md is an orchestrator"
     TESTS_RUN=$((TESTS_RUN + 1))
     TESTS_PASSED=$((TESTS_PASSED + 1))
   else
-    echo -e "\033[0;31m✗\033[0m code-review.md missing report generation bash code"
+    echo -e "\033[0;31m✗\033[0m code-review.md missing orchestrator patterns"
     TESTS_RUN=$((TESTS_RUN + 1))
   fi
 }
 
-# Test 2: Report includes session number detection
-test_session_number_detection() {
+# Test 2: All 8 specialized audit commands exist
+test_specialized_commands_exist() {
   echo ""
-  echo "Test 2: Should detect session number from SESSIONS.md"
+  echo "Test 2: All 8 specialized audit commands should exist"
 
-  # Check for session detection logic
-  if grep -q "grep.*Session.*SESSIONS\.md\|wc -l.*SESSIONS\.md" "$PROJECT_ROOT/.claude/commands/code-review.md"; then
-    echo -e "\033[0;32m✓\033[0m Session number detection exists"
+  local missing=0
+  local commands=(
+    "code-review-security.md"
+    "code-review-performance.md"
+    "code-review-accessibility.md"
+    "code-review-seo.md"
+    "code-review-database.md"
+    "code-review-infrastructure.md"
+    "code-review-typescript.md"
+    "code-review-testing.md"
+  )
+
+  for cmd in "${commands[@]}"; do
+    if [ ! -f "$PROJECT_ROOT/.claude/commands/$cmd" ]; then
+      echo "  Missing: $cmd"
+      missing=$((missing + 1))
+    fi
+  done
+
+  if [ "$missing" -eq 0 ]; then
+    echo -e "\033[0;32m✓\033[0m All 8 specialized audit commands exist"
     TESTS_RUN=$((TESTS_RUN + 1))
     TESTS_PASSED=$((TESTS_PASSED + 1))
   else
-    echo -e "\033[0;31m✗\033[0m Session number detection missing"
+    echo -e "\033[0;31m✗\033[0m Missing $missing audit commands"
     TESTS_RUN=$((TESTS_RUN + 1))
   fi
 }
 
-# Test 3: Report filename format is correct
-test_report_filename_format() {
+# Test 3: Audit commands use docs/audits/ directory
+test_uses_docs_audits() {
   echo ""
-  echo "Test 3: Report filename should follow session-N-review.md format"
+  echo "Test 3: Audit commands should use docs/audits/ directory"
 
-  # Check for correct filename pattern
-  if grep -q "session.*review\.md\|REPORT_FILE.*session" "$PROJECT_ROOT/.claude/commands/code-review.md"; then
-    echo -e "\033[0;32m✓\033[0m Correct filename format"
+  # Check if audit commands reference docs/audits/
+  if grep -q "docs/audits" "$PROJECT_ROOT/.claude/commands/code-review-security.md"; then
+    echo -e "\033[0;32m✓\033[0m Uses docs/audits/ directory"
     TESTS_RUN=$((TESTS_RUN + 1))
     TESTS_PASSED=$((TESTS_PASSED + 1))
   else
-    echo -e "\033[0;31m✗\033[0m Incorrect or missing filename format"
+    echo -e "\033[0;31m✗\033[0m Not using docs/audits/ directory"
     TESTS_RUN=$((TESTS_RUN + 1))
   fi
 }
 
-# Test 4: Report includes required sections
-test_report_sections() {
+# Test 4: Audit commands have REPO_ROOT detection
+test_repo_root_detection() {
   echo ""
-  echo "Test 4: Report template should include required sections"
+  echo "Test 4: Audit commands should have REPO_ROOT detection"
 
-  # Check for key sections in the report template
-  if grep -q "# Code Review Report" "$PROJECT_ROOT/.claude/commands/code-review.md" && \
-     grep -q "Executive Summary" "$PROJECT_ROOT/.claude/commands/code-review.md" && \
-     grep -q "Detailed Findings" "$PROJECT_ROOT/.claude/commands/code-review.md"; then
-    echo -e "\033[0;32m✓\033[0m Report has required sections"
+  if grep -q "REPO_ROOT=\$(git rev-parse --show-toplevel" "$PROJECT_ROOT/.claude/commands/code-review-security.md"; then
+    echo -e "\033[0;32m✓\033[0m Has REPO_ROOT detection"
     TESTS_RUN=$((TESTS_RUN + 1))
     TESTS_PASSED=$((TESTS_PASSED + 1))
   else
-    echo -e "\033[0;31m✗\033[0m Report missing required sections"
+    echo -e "\033[0;31m✗\033[0m Missing REPO_ROOT detection"
     TESTS_RUN=$((TESTS_RUN + 1))
   fi
 }
 
-# Test 5: Creates artifacts directory if missing
-test_creates_directory() {
+# Test 5: Audit report naming follows type-audit-NN.md format
+test_audit_naming_format() {
   echo ""
-  echo "Test 5: Should create artifacts/code-reviews directory"
+  echo "Test 5: Reports should follow {type}-audit-NN.md format"
 
-  # Check for mkdir -p command
-  if grep -q "mkdir -p artifacts/code-reviews" "$PROJECT_ROOT/.claude/commands/code-review.md"; then
-    echo -e "\033[0;32m✓\033[0m Creates directory if missing"
+  # Check for the new naming pattern
+  if grep -q "security-audit-\|performance-audit-\|audit-.*\.md" "$PROJECT_ROOT/.claude/commands/code-review-security.md"; then
+    echo -e "\033[0;32m✓\033[0m Correct audit naming format"
     TESTS_RUN=$((TESTS_RUN + 1))
     TESTS_PASSED=$((TESTS_PASSED + 1))
   else
-    echo -e "\033[0;31m✗\033[0m Directory creation missing"
+    echo -e "\033[0;31m✗\033[0m Incorrect naming format"
     TESTS_RUN=$((TESTS_RUN + 1))
   fi
 }
 
-# Test 6: Report shows confirmation message
-test_confirmation_message() {
+# Test 6: code-review-helpers.sh exists and sources common-functions.sh
+test_helpers_script() {
   echo ""
-  echo "Test 6: Should show confirmation message after creating report"
+  echo "Test 6: code-review-helpers.sh should exist and be properly configured"
 
-  # Check for success message
-  if grep -q "Report saved\|saved to.*artifacts/code-reviews\|✅.*artifacts/code-reviews" "$PROJECT_ROOT/.claude/commands/code-review.md"; then
-    echo -e "\033[0;32m✓\033[0m Confirmation message exists"
-    TESTS_RUN=$((TESTS_RUN + 1))
-    TESTS_PASSED=$((TESTS_PASSED + 1))
+  if [ -f "$PROJECT_ROOT/scripts/code-review-helpers.sh" ]; then
+    if grep -q "source.*common-functions\.sh" "$PROJECT_ROOT/scripts/code-review-helpers.sh"; then
+      echo -e "\033[0;32m✓\033[0m code-review-helpers.sh is properly configured"
+      TESTS_RUN=$((TESTS_RUN + 1))
+      TESTS_PASSED=$((TESTS_PASSED + 1))
+    else
+      echo -e "\033[0;31m✗\033[0m code-review-helpers.sh doesn't source common-functions.sh"
+      TESTS_RUN=$((TESTS_RUN + 1))
+    fi
   else
-    echo -e "\033[0;31m✗\033[0m Confirmation message missing"
+    echo -e "\033[0;31m✗\033[0m code-review-helpers.sh missing"
     TESTS_RUN=$((TESTS_RUN + 1))
   fi
 }
 
-# Test 7: Report includes date stamp
-test_date_stamp() {
+# Test 7: audits-index.template.md exists
+test_index_template() {
   echo ""
-  echo "Test 7: Report should include current date"
+  echo "Test 7: audits-index.template.md should exist"
 
-  # Check for date command in report generation
-  if grep -q "date.*%Y-%m-%d\|\$(date)" "$PROJECT_ROOT/.claude/commands/code-review.md"; then
-    echo -e "\033[0;32m✓\033[0m Date stamp included"
+  if [ -f "$PROJECT_ROOT/templates/audits-index.template.md" ]; then
+    echo -e "\033[0;32m✓\033[0m audits-index.template.md exists"
     TESTS_RUN=$((TESTS_RUN + 1))
     TESTS_PASSED=$((TESTS_PASSED + 1))
   else
-    echo -e "\033[0;31m✗\033[0m Date stamp missing"
+    echo -e "\033[0;31m✗\033[0m audits-index.template.md missing"
     TESTS_RUN=$((TESTS_RUN + 1))
   fi
 }
 
-# Test 8: Integration test - verify report template has Grade field
+# Test 8: Audit commands have Grade field
 test_grade_field() {
   echo ""
-  echo "Test 8: Report template should include Grade field"
+  echo "Test 8: Audit commands should include Grade field"
 
-  # Check for Grade field in template
-  if grep -q "Grade:\|Overall Grade:" "$PROJECT_ROOT/.claude/commands/code-review.md"; then
+  if grep -q "Grade:\|Overall Grade:" "$PROJECT_ROOT/.claude/commands/code-review-security.md"; then
     echo -e "\033[0;32m✓\033[0m Grade field exists"
     TESTS_RUN=$((TESTS_RUN + 1))
     TESTS_PASSED=$((TESTS_PASSED + 1))
@@ -139,17 +157,17 @@ test_grade_field() {
 
 # Run all tests
 echo "╔════════════════════════════════════════════════════════════╗"
-echo "║  MODULE-103: Code Review Auto-Report Generation          ║"
+echo "║  MODULE-103: Modular Code Review System (v4.0.0+)         ║"
 echo "╚════════════════════════════════════════════════════════════╝"
 echo ""
 
-test_has_report_generation_code
-test_session_number_detection
-test_report_filename_format
-test_report_sections
-test_creates_directory
-test_confirmation_message
-test_date_stamp
+test_is_orchestrator
+test_specialized_commands_exist
+test_uses_docs_audits
+test_repo_root_detection
+test_audit_naming_format
+test_helpers_script
+test_index_template
 test_grade_field
 
 print_test_summary

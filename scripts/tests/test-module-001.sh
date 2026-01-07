@@ -25,11 +25,11 @@ test_version_detection_init_context() {
   SYSTEM_VERSION=$(cat VERSION 2>/dev/null || echo "unknown")
   cp config/.context-config.template.json context/.context-config.json
 
-  # Apply version substitution (macOS compatible)
+  # Apply version substitution (macOS compatible) - replace any X.Y.Z version pattern
   if [[ "$OSTYPE" == "darwin"* ]]; then
-    sed -i '' "s/\"3.0.0\"/\"$SYSTEM_VERSION\"/g" context/.context-config.json
+    sed -i '' "s/\"[0-9]*\.[0-9]*\.[0-9]*\"/\"$SYSTEM_VERSION\"/g" context/.context-config.json
   else
-    sed -i "s/\"3.0.0\"/\"$SYSTEM_VERSION\"/g" context/.context-config.json
+    sed -i "s/\"[0-9]*\.[0-9]*\.[0-9]*\"/\"$SYSTEM_VERSION\"/g" context/.context-config.json
   fi
 
   # Verify
@@ -57,10 +57,11 @@ test_version_detection_missing_file() {
   SYSTEM_VERSION=$(cat VERSION 2>/dev/null || echo "unknown")
   cp config/.context-config.template.json context/.context-config.json
 
+  # Apply version substitution - replace any X.Y.Z version pattern
   if [[ "$OSTYPE" == "darwin"* ]]; then
-    sed -i '' "s/\"3.0.0\"/\"$SYSTEM_VERSION\"/g" context/.context-config.json
+    sed -i '' "s/\"[0-9]*\.[0-9]*\.[0-9]*\"/\"$SYSTEM_VERSION\"/g" context/.context-config.json
   else
-    sed -i "s/\"3.0.0\"/\"$SYSTEM_VERSION\"/g" context/.context-config.json
+    sed -i "s/\"[0-9]*\.[0-9]*\.[0-9]*\"/\"$SYSTEM_VERSION\"/g" context/.context-config.json
   fi
 
   # Verify falls back to "unknown"
@@ -88,11 +89,11 @@ test_both_version_fields_updated() {
   SYSTEM_VERSION=$(cat VERSION 2>/dev/null || echo "unknown")
   cp config/.context-config.template.json context/.context-config.json
 
-  # Apply version substitution to ALL occurrences
+  # Apply version substitution to ALL version patterns
   if [[ "$OSTYPE" == "darwin"* ]]; then
-    sed -i '' "s/\"3.0.0\"/\"$SYSTEM_VERSION\"/g" context/.context-config.json
+    sed -i '' "s/\"[0-9]*\.[0-9]*\.[0-9]*\"/\"$SYSTEM_VERSION\"/g" context/.context-config.json
   else
-    sed -i "s/\"3.0.0\"/\"$SYSTEM_VERSION\"/g" context/.context-config.json
+    sed -i "s/\"[0-9]*\.[0-9]*\.[0-9]*\"/\"$SYSTEM_VERSION\"/g" context/.context-config.json
   fi
 
   # Verify main version field
@@ -124,10 +125,11 @@ test_different_version() {
   SYSTEM_VERSION=$(cat VERSION 2>/dev/null || echo "unknown")
   cp config/.context-config.template.json context/.context-config.json
 
+  # Apply version substitution - replace any X.Y.Z version pattern
   if [[ "$OSTYPE" == "darwin"* ]]; then
-    sed -i '' "s/\"3.0.0\"/\"$SYSTEM_VERSION\"/g" context/.context-config.json
+    sed -i '' "s/\"[0-9]*\.[0-9]*\.[0-9]*\"/\"$SYSTEM_VERSION\"/g" context/.context-config.json
   else
-    sed -i "s/\"3.0.0\"/\"$SYSTEM_VERSION\"/g" context/.context-config.json
+    sed -i "s/\"[0-9]*\.[0-9]*\.[0-9]*\"/\"$SYSTEM_VERSION\"/g" context/.context-config.json
   fi
 
   # Verify

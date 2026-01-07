@@ -1,5 +1,5 @@
 #!/bin/bash
-# Master Test Runner for AI Context System v3.5.0
+# Master Test Runner for AI Context System v4.1.0
 # Runs all module tests and reports comprehensive results
 
 set -e
@@ -16,7 +16,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 echo "╔════════════════════════════════════════════════════════════╗"
-echo "║  AI Context System v3.5.0 - Comprehensive Test Suite     ║"
+echo "║  AI Context System v4.1.0 - Comprehensive Test Suite     ║"
 echo "╚════════════════════════════════════════════════════════════╝"
 echo ""
 

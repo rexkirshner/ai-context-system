@@ -101,16 +101,18 @@ test_archive_file_naming() {
   # Run archiving
   bash "$PROJECT_ROOT/scripts/archive-sessions-helper.sh" --keep 10 --context context 2>/dev/null
 
-  # Check archive file exists with year
+  # Check archive file exists with current year prefix (format: SESSIONS-archive-YYYY-MM-DD-HHMMSS.md)
   YEAR=$(date +%Y)
-  ARCHIVE_FILE="context/SESSIONS-archive-${YEAR}.md"
 
-  if [ -f "$ARCHIVE_FILE" ]; then
-    echo -e "\033[0;32m✓\033[0m Archive file named correctly: $ARCHIVE_FILE"
+  # Find any archive file with the current year
+  ARCHIVE_FILE=$(ls context/SESSIONS-archive-${YEAR}*.md 2>/dev/null | head -1)
+
+  if [ -n "$ARCHIVE_FILE" ] && [ -f "$ARCHIVE_FILE" ]; then
+    echo -e "\033[0;32m✓\033[0m Archive file named correctly: $(basename "$ARCHIVE_FILE")"
     TESTS_RUN=$((TESTS_RUN + 1))
     TESTS_PASSED=$((TESTS_PASSED + 1))
   else
-    echo -e "\033[0;31m✗\033[0m Archive file not found: $ARCHIVE_FILE"
+    echo -e "\033[0;31m✗\033[0m Archive file not found matching SESSIONS-archive-${YEAR}*.md"
     echo "   Found files: $(ls context/ 2>/dev/null)"
     TESTS_RUN=$((TESTS_RUN + 1))
   fi
