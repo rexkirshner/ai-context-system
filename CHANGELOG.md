@@ -11,11 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **Context completeness detection** - New functions in common-functions.sh:
+- **Context completeness detection** - New function in common-functions.sh:
   - `count_unfilled_placeholders()` - Count `[FILL:...]` placeholders in files
-  - `is_template_only()` - Check if file is still mostly template
-  - `check_context_completeness()` - Check all core context files for completeness
-  - `format_context_completeness()` - Display completeness report
 
 - **Project auto-detection** - Automatically gather project info from codebase:
   - `detect_project_name()` - From package.json, Cargo.toml, pyproject.toml, or directory
