@@ -163,24 +163,58 @@ EOF
 )
 
 # =============================================================================
-# Update STATUS.md
+# Update STATUS.md (with defensive checks)
 # =============================================================================
 
-# Create a temporary file
-TEMP_FILE=$(mktemp)
+# Check if Quick Reference section exists
+if ! grep -q "^${QUICK_REF_START}" "$STATUS_FILE"; then
+  log_warn "Quick Reference section not found in STATUS.md" 2>/dev/null || echo "⚠️  Quick Reference section not found in STATUS.md" >&2
+  log_info "Run /init-context to create proper STATUS.md structure" 2>/dev/null || echo "   Run /init-context to create proper STATUS.md structure" >&2
+  exit ${EXIT_SUCCESS:-0}
+fi
 
-# Extract everything before Quick Reference
-sed -n "1,/^${QUICK_REF_START}/p" "$STATUS_FILE" | head -n -1 > "$TEMP_FILE"
+# Get line number of Quick Reference header
+QR_LINE=$(grep -n "^${QUICK_REF_START}" "$STATUS_FILE" | head -1 | cut -d: -f1)
+
+# Validate we got a number
+if [ -z "$QR_LINE" ] || ! [ "$QR_LINE" -gt 0 ] 2>/dev/null; then
+  log_warn "Could not locate Quick Reference section" 2>/dev/null || echo "⚠️  Could not locate Quick Reference section" >&2
+  exit ${EXIT_SUCCESS:-0}
+fi
+
+# Calculate lines before Quick Reference (must be >= 0)
+BEFORE_QR=$((QR_LINE - 1))
+[ "$BEFORE_QR" -lt 0 ] && BEFORE_QR=0
+
+# Create temporary file with cleanup trap
+TEMP_FILE=$(mktemp)
+trap 'rm -f "$TEMP_FILE"' EXIT
+
+# Extract content before Quick Reference (if any)
+if [ "$BEFORE_QR" -gt 0 ]; then
+  head -n "$BEFORE_QR" "$STATUS_FILE" > "$TEMP_FILE"
+fi
 
 # Add new Quick Reference
 echo "$NEW_QUICK_REF" >> "$TEMP_FILE"
 echo "" >> "$TEMP_FILE"
 
-# Add everything after Quick Reference (after the next ---)
-sed -n "/^${QUICK_REF_START}/,\$p" "$STATUS_FILE" | sed -n '/^---$/,$ {/^---$/!p}' | tail -n +2 >> "$TEMP_FILE"
+# Find the --- after Quick Reference and extract remaining content
+# Use awk for reliable cross-platform operation
+awk -v start="$QR_LINE" '
+  NR > start && found { print }
+  NR > start && /^---$/ { found=1 }
+' "$STATUS_FILE" >> "$TEMP_FILE"
+
+# Validate temp file has content
+if [ ! -s "$TEMP_FILE" ]; then
+  log_error "Failed to rebuild STATUS.md (empty result)" 2>/dev/null || echo "❌ Failed to rebuild STATUS.md (empty result)" >&2
+  exit ${EXIT_ERROR:-1}
+fi
 
 # Replace original file
 mv "$TEMP_FILE" "$STATUS_FILE"
+trap - EXIT  # Clear trap since file was moved successfully
 
 echo -e "${GREEN}✅ Quick Reference updated in STATUS.md${NC}"
 echo ""
