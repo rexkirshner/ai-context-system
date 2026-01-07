@@ -434,6 +434,6 @@ project-root/
 
 ---
 
-**Version:** 4.0.2
+**Version:** 4.1.0
 **Added:** Organization features for structural neatness (v2.2.1)
 **Updated:** v2.3.1 - Added feedback system

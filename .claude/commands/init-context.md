@@ -815,5 +815,5 @@ Understood?
 
 ---
 
-**Version:** 4.0.2
+**Version:** 4.1.0
 **Updated:** v3.6.1 - Fixed CLAUDE.md migration (now automatic, non-interactive)

@@ -5,6 +5,49 @@ All notable changes to the AI Context System will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.1.0] - 2026-01-06
+
+**MINOR RELEASE** - Documentation Health Checking & Shell Robustness
+
+### Added
+
+- **Documentation Health Check** - New `check_documentation_health()` function in common-functions.sh that:
+  - Detects missing CLAUDE.md or CONTEXT.md files
+  - Finds unfilled `[FILL:...]` template placeholders
+  - Identifies stale documentation (CLAUDE.md significantly older than CONTEXT.md)
+  - Detects tech stack drift between files
+  - Provides actionable recommendations
+- **Health check integration** - Added to `/review-context` (Step 1.7) and `/save-full` final report
+- **`get_repo_root()` function** - Reliable repository root detection for monorepo support
+- **Post-upgrade commit guidance** - Step 7 in `/update-context-system` suggests commit command
+- **Portable color output** - New `color_echo()` function using printf for cross-shell compatibility
+- **26 new tests** - Comprehensive test coverage for all new functionality:
+  - `test-repo-root.sh` (4 tests)
+  - `test-quick-reference-edge-cases.sh` (6 tests)
+  - `test-color-echo.sh` (6 tests)
+  - `test-doc-health-check.sh` (10 tests)
+
+### Fixed
+
+- **ANSI escape codes in installer** - Colors now render correctly on all shells
+- **GNU-specific commands** - Replaced `head -n -1` with awk for cross-platform compatibility
+- **Subdirectory path handling** - All `/code-review-*` commands now work from any subdirectory using `REPO_ROOT`
+- **Feedback archive naming** - Now uses pre-upgrade version instead of post-upgrade version
+- **Feedback detection** - Ignores template examples, only counts actual user entries
+
+### Changed
+
+- **What's New section** - Replaced hardcoded feature list with dynamic CHANGELOG link
+- **Old CLAUDE.md cleanup** - Auto-removes deprecated `context/claude.md` during upgrade
+- **Removed redundant Step 2.3** - Version sync now handled entirely by installer
+
+### Improved
+
+- **Defensive coding** - `update-quick-reference.sh` handles edge cases (empty files, missing sections)
+- **Cross-platform compatibility** - All scripts tested on macOS and Linux
+
+---
+
 ## [4.0.2] - 2026-01-06
 
 **PATCH RELEASE** - Graceful File Existence Detection
