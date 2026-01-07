@@ -184,6 +184,54 @@ assert_contains "$OUTPUT" "Some files were skipped" "Shows skip summary"
 echo ""
 
 # ============================================================
+# Test 5: /save - STATUS.md exists
+# ============================================================
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "Test 5: /save - STATUS.md exists"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+# Recreate STATUS.md
+touch "$CONTEXT_DIR/STATUS.md"
+
+OUTPUT=$(cat <<'SCRIPT' | CONTEXT_DIR="$CONTEXT_DIR" bash
+echo "📁 Checking context files..."
+if [ -f "$CONTEXT_DIR/STATUS.md" ]; then
+  echo "  ✅ STATUS.md found"
+else
+  echo "  ⚠️ STATUS.md not found"
+fi
+SCRIPT
+)
+
+assert_contains "$OUTPUT" "✅ STATUS.md found" "/save detects STATUS.md"
+echo ""
+
+# ============================================================
+# Test 6: /save - STATUS.md missing
+# ============================================================
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "Test 6: /save - STATUS.md missing"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+rm -f "$CONTEXT_DIR/STATUS.md"
+
+OUTPUT=$(cat <<'SCRIPT' | CONTEXT_DIR="$CONTEXT_DIR" bash
+echo "📁 Checking context files..."
+if [ -f "$CONTEXT_DIR/STATUS.md" ]; then
+  echo "  ✅ STATUS.md found"
+else
+  echo "  ⚠️ STATUS.md not found"
+  echo "  /save primarily updates STATUS.md."
+  echo "  💡 Run /init-context to create full context system"
+fi
+SCRIPT
+)
+
+assert_contains "$OUTPUT" "⚠️ STATUS.md not found" "/save detects missing STATUS.md"
+assert_contains "$OUTPUT" "/init-context" "/save suggests init-context"
+echo ""
+
+# ============================================================
 # Cleanup and Summary
 # ============================================================
 rm -rf "$TEST_DIR"

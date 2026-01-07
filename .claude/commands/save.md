@@ -46,6 +46,35 @@ echo "✅ Found context at: $CONTEXT_DIR"
 
 **Note:** This searches current directory, parent directory, and grandparent directory for context/ folder. Use `$CONTEXT_DIR` variable throughout this command instead of hardcoded `context/`.
 
+### Step 1.5: Detect Available Context Files
+
+**ACTION:** Check which context files exist:
+
+```bash
+echo "📁 Checking context files..."
+echo ""
+
+# Check STATUS.md (required for /save)
+if [ -f "$CONTEXT_DIR/STATUS.md" ]; then
+  echo "  ✅ STATUS.md found"
+else
+  echo "  ⚠️ STATUS.md not found"
+  echo ""
+  echo "  /save primarily updates STATUS.md."
+  echo "  Options:"
+  echo "    • Run /init-context to create full context system"
+  echo "    • Or create minimal STATUS.md:"
+  echo "      echo '# Project Status' > $CONTEXT_DIR/STATUS.md"
+  echo ""
+fi
+
+# Check config (optional but useful)
+test -f "$CONTEXT_DIR/.context-config.json" && echo "  ✅ .context-config.json found" || echo "  ℹ️ .context-config.json not found (Quick Reference will be limited)"
+echo ""
+```
+
+**AI Note:** If STATUS.md doesn't exist, skip Steps 3-5 and suggest /init-context.
+
 ### Step 2: Auto-Extract Git Data
 
 **ACTION:** Use Bash tool to extract git information with simple sequential commands:
@@ -72,7 +101,20 @@ git log --oneline -5
 
 ### Step 3: Update STATUS.md
 
-**ACTION:** Use Read tool to read current STATUS.md, then use Edit tool to update:
+**ACTION:** First check if STATUS.md exists:
+
+```bash
+if [ ! -f "$CONTEXT_DIR/STATUS.md" ]; then
+  echo "⚠️ STATUS.md not found - skipping update"
+  echo ""
+  echo "💡 Run /init-context to create STATUS.md and other context files"
+  echo ""
+else
+  echo "✅ STATUS.md found - proceeding with update"
+fi
+```
+
+**If STATUS.md exists**, use Read tool to read it, then use Edit tool to update:
 
 **Prompt user for quick updates:**
 ```
@@ -111,35 +153,46 @@ Next steps? (or press enter to keep existing):
 
 ### Step 4: Auto-Generate Quick Reference in STATUS.md
 
-**ACTION:** Run the update-quick-reference.sh script to auto-generate the Quick Reference section:
+**ACTION:** Run the update-quick-reference.sh script (if STATUS.md exists):
 
 ```bash
 echo "Step 4/6: Auto-generating Quick Reference section..."
 echo ""
 
-# Run the auto-generation script
-./scripts/update-quick-reference.sh
-
-echo ""
-echo "✅ Quick Reference auto-generated"
+# Check if STATUS.md exists first
+if [ ! -f "$CONTEXT_DIR/STATUS.md" ]; then
+  echo "⚠️ STATUS.md not found - skipping Quick Reference generation"
+  echo ""
+else
+  # Run the auto-generation script
+  ./scripts/update-quick-reference.sh
+  echo ""
+  echo "✅ Quick Reference auto-generated"
+fi
 echo ""
 ```
 
 ### Step 5: Auto-Update Timestamp (v3.7.0)
 
-**ACTION:** Automatically update the "Last Updated" date in STATUS.md:
+**ACTION:** Automatically update the "Last Updated" date in STATUS.md (if it exists):
 
 ```bash
 echo "Step 5/6: Updating timestamp..."
 echo ""
 
-# Source common functions and update timestamp
-source scripts/common-functions.sh 2>/dev/null || true
-if type update_last_modified &>/dev/null; then
-  update_last_modified "$CONTEXT_DIR/STATUS.md"
-  echo "✅ Timestamp updated to $(date +%Y-%m-%d)"
+# Check if STATUS.md exists first
+if [ ! -f "$CONTEXT_DIR/STATUS.md" ]; then
+  echo "⚠️ STATUS.md not found - skipping timestamp update"
+  echo ""
 else
-  echo "ℹ️  Auto-timestamp not available (upgrade to v3.7.0+)"
+  # Source common functions and update timestamp
+  source scripts/common-functions.sh 2>/dev/null || true
+  if type update_last_modified &>/dev/null; then
+    update_last_modified "$CONTEXT_DIR/STATUS.md"
+    echo "✅ Timestamp updated to $(date +%Y-%m-%d)"
+  else
+    echo "ℹ️  Auto-timestamp not available (upgrade to v3.7.0+)"
+  fi
 fi
 echo ""
 ```
@@ -151,30 +204,36 @@ echo ""
 
 ### Step 6: Report Updates
 
-**ACTION:** Output summary to user:
+**ACTION:** Output summary based on what was updated:
 
-```
-✅ Quick Save Complete
+```bash
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "✅ Quick Save Complete"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
 
-**Updated:**
-- STATUS.md - Work in progress, active tasks, Quick Reference (auto-generated), timestamp
+# Report based on STATUS.md existence
+if [ -f "$CONTEXT_DIR/STATUS.md" ]; then
+  echo "**Updated:**"
+  echo "- STATUS.md - Work in progress, active tasks, Quick Reference, timestamp"
+else
+  echo "**Skipped:**"
+  echo "- STATUS.md not found"
+  echo ""
+  echo "💡 Run /init-context to create STATUS.md and other context files"
+fi
 
-**Time:** ~2-3 minutes
-
-**Git Status:** 3 new, 5 modified, 2 staged files on branch main
-
-**Current Focus:** [Brief summary from STATUS.md]
-
-**Quick Reference:** Auto-updated in STATUS.md (project info, URLs, current phase)
-
-**Timestamp:** Auto-updated to today's date (v3.7.0+)
-
-**Next Session:**
-Run /save again for quick update, or /save-full before breaks/handoffs.
-
----
-
-💡 Tip: Run /save-full before taking breaks >1 week or handing off to another agent
+echo ""
+echo "**Time:** ~2-3 minutes"
+echo ""
+echo "**Next Session:**"
+echo "Run /save again for quick update, or /save-full before breaks/handoffs."
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+echo "💡 Tip: Run /save-full before taking breaks >1 week or handing off to another agent"
+echo ""
 ```
 
 ## Important Notes
