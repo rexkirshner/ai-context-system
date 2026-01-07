@@ -589,40 +589,91 @@ echo ""
 
 ---
 
-### Step 8: Check CONTEXT.md Currency
+### Step 8: Check CONTEXT.md Completeness and Currency (v4.1.1)
 
 ```bash
-echo "Step 8/10: Checking CONTEXT.md currency..."
+echo "Step 8/10: Checking CONTEXT.md completeness and currency..."
 echo "⏱️ Estimated time remaining: ~2 minutes"
 echo ""
 
+# Source common functions for auto-detection
+REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
+source "$REPO_ROOT/scripts/common-functions.sh" 2>/dev/null || true
+
 # Check if CONTEXT.md exists
 if [ ! -f "$CONTEXT_DIR/CONTEXT.md" ]; then
-  echo "ℹ️  CONTEXT.md not found - skipping currency check"
+  echo "⚠️  CONTEXT.md not found - run /init-context to create it"
   echo ""
 else
-  # Extract "Last Updated" date from CONTEXT.md (common pattern: "Last Updated: YYYY-MM-DD")
-  CONTEXT_LAST_UPDATED=$(grep -iE "Last Updated:.*[0-9]{4}-[0-9]{2}-[0-9]{2}" "$CONTEXT_DIR/CONTEXT.md" | \
-                          grep -oE "[0-9]{4}-[0-9]{2}-[0-9]{2}" | head -1)
+  # FIRST: Check for unfilled placeholders (more important than staleness)
+  if type count_unfilled_placeholders &>/dev/null; then
+    CONTEXT_PLACEHOLDERS=$(count_unfilled_placeholders "$CONTEXT_DIR/CONTEXT.md")
 
-  if [ -n "$CONTEXT_LAST_UPDATED" ]; then
-    # Calculate days since last update
-    CONTEXT_DAYS_OLD=$(days_since_date "$CONTEXT_LAST_UPDATED" 2>/dev/null || echo "-1")
+    if [ "$CONTEXT_PLACEHOLDERS" -gt 5 ]; then
+      echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+      echo "⚠️  CONTEXT.md IS STILL IN TEMPLATE STATE"
+      echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+      echo ""
+      echo "Found $CONTEXT_PLACEHOLDERS unfilled [FILL:...] placeholders."
+      echo "CONTEXT.md needs to be filled in with your project information."
+      echo ""
 
-    if [ "$CONTEXT_DAYS_OLD" = "-1" ]; then
-      echo "ℹ️  Could not parse CONTEXT.md date: $CONTEXT_LAST_UPDATED"
+      # Auto-detect project info to help
+      if type detect_project_name &>/dev/null; then
+        echo "━━━ Auto-detected Project Information ━━━"
+        DETECTED_NAME=$(detect_project_name)
+        DETECTED_DESC=$(detect_project_description)
+        DETECTED_STACK=$(detect_tech_stack)
+        DETECTED_TYPE=$(detect_project_type)
+        DETECTED_URL=$(detect_repo_url)
+
+        echo "  Name:        ${DETECTED_NAME:-[not detected]}"
+        echo "  Type:        ${DETECTED_TYPE:-unknown}"
+        echo "  Description: ${DETECTED_DESC:-[not detected]}"
+        echo "  Tech Stack:  ${DETECTED_STACK:-[not detected]}"
+        echo "  Repository:  ${DETECTED_URL:-[not detected]}"
+        echo ""
+        echo "Use this information to fill in CONTEXT.md placeholders."
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+      fi
+
       echo ""
-    elif [ "$CONTEXT_DAYS_OLD" -gt 7 ]; then
-      echo "⚠️  CONTEXT.md is $CONTEXT_DAYS_OLD days old (last updated: $CONTEXT_LAST_UPDATED)"
+      echo "**ACTION REQUIRED:** Please update context/CONTEXT.md now."
+      echo "Replace [FILL:...] placeholders with actual project information."
       echo ""
-      echo "   Consider updating:"
-      echo "   • Current Phase / Project Status"
-      echo "   • Recent accomplishments and goals"
-      echo "   • Last Updated date"
+      echo "Key sections to fill:"
+      echo "  • Project name and description"
+      echo "  • Goals and stakeholders"
+      echo "  • Tech stack (framework, language, database, hosting)"
+      echo "  • Architecture overview"
+      echo ""
+
+    elif [ "$CONTEXT_PLACEHOLDERS" -gt 0 ]; then
+      echo "ℹ️  CONTEXT.md has $CONTEXT_PLACEHOLDERS remaining placeholder(s)"
+      echo "   Consider filling these in for complete documentation."
       echo ""
     else
-      echo "✅ CONTEXT.md is current ($CONTEXT_DAYS_OLD days old)"
+      echo "✅ CONTEXT.md is fully filled in (no placeholders)"
       echo ""
+    fi
+  fi
+
+  # SECOND: Check staleness (only if not template-only)
+  if [ "${CONTEXT_PLACEHOLDERS:-0}" -le 5 ]; then
+    CONTEXT_LAST_UPDATED=$(grep -iE "Last Updated:.*[0-9]{4}-[0-9]{2}-[0-9]{2}" "$CONTEXT_DIR/CONTEXT.md" | \
+                            grep -oE "[0-9]{4}-[0-9]{2}-[0-9]{2}" | head -1)
+
+    if [ -n "$CONTEXT_LAST_UPDATED" ]; then
+      CONTEXT_DAYS_OLD=$(days_since_date "$CONTEXT_LAST_UPDATED" 2>/dev/null || echo "-1")
+
+      if [ "$CONTEXT_DAYS_OLD" != "-1" ] && [ "$CONTEXT_DAYS_OLD" -gt 7 ]; then
+        echo "⚠️  CONTEXT.md is $CONTEXT_DAYS_OLD days old (last updated: $CONTEXT_LAST_UPDATED)"
+        echo "   Consider updating: Current Phase, Recent accomplishments"
+        echo ""
+      elif [ "$CONTEXT_DAYS_OLD" != "-1" ]; then
+        echo "✅ CONTEXT.md is current ($CONTEXT_DAYS_OLD days old)"
+        echo ""
+      fi
     fi
 
     # Show current phase for verification
@@ -634,19 +685,15 @@ else
       echo "   (Could not detect - verify manually)"
     fi
     echo ""
-  else
-    echo "ℹ️  No 'Last Updated' date found in CONTEXT.md"
-    echo "   Add a 'Last Updated: YYYY-MM-DD' line to enable staleness tracking"
-    echo ""
   fi
 fi
 ```
 
-**Why this matters:** CONTEXT.md is the main project overview file. Stale CONTEXT.md can mislead AI agents about project phase, goals, and current state.
+**Why this matters:** CONTEXT.md left as templates defeats the purpose of the context system. AI agents and future sessions need actual project information, not placeholder text. This check ensures CONTEXT.md gets filled in.
 
-**Threshold:** 7 days - Projects evolve quickly, main context should stay current.
+**v4.1.1:** Now checks for [FILL:...] placeholders first, then staleness. Auto-detects project info from package.json, README, git to help fill in templates.
 
-**Non-blocking:** This is a warning only - won't prevent save from completing.
+**If template-only detected:** The command will show auto-detected project info and prompt you to fill in the placeholders. This is the key intervention to prevent CONTEXT.md from remaining empty indefinitely.
 
 **v3.7.0+:** If you update CONTEXT.md, the timestamp will be auto-updated:
 ```bash

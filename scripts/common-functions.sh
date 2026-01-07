@@ -1392,6 +1392,368 @@ format_documentation_health() {
 }
 
 # =============================================================================
+# Context Completeness Detection (v4.1.1)
+# =============================================================================
+
+# Count unfilled [FILL:...] placeholders in a file
+# Usage: count=$(count_unfilled_placeholders "context/CONTEXT.md")
+# Returns: Number of unfilled placeholders (0 if file doesn't exist)
+count_unfilled_placeholders() {
+  local file="$1"
+
+  if [ ! -f "$file" ]; then
+    echo "0"
+    return 0
+  fi
+
+  local count
+  count=$(grep -c '\[FILL:' "$file" 2>/dev/null | tr -d '\n' || echo "0")
+  count=${count:-0}
+  echo "$count"
+}
+
+# Check if a context file is still mostly template
+# Usage: if is_template_only "context/CONTEXT.md"; then echo "needs filling"; fi
+# Returns: 0 (true) if file has 3+ unfilled placeholders, 1 (false) otherwise
+is_template_only() {
+  local file="$1"
+  local threshold="${2:-3}"  # Default: 3+ placeholders = template only
+
+  local count
+  count=$(count_unfilled_placeholders "$file")
+
+  [ "$count" -ge "$threshold" ]
+}
+
+# Get list of unfilled placeholder descriptions from a file
+# Usage: get_unfilled_placeholders "context/CONTEXT.md"
+# Returns: List of placeholder descriptions, one per line
+get_unfilled_placeholders() {
+  local file="$1"
+
+  if [ ! -f "$file" ]; then
+    return 0
+  fi
+
+  grep -oE '\[FILL: [^]]+\]' "$file" 2>/dev/null | sed 's/\[FILL: //g' | sed 's/\]//g' | sort -u
+}
+
+# =============================================================================
+# Project Auto-Detection (v4.1.1)
+# =============================================================================
+
+# Detect project name from various sources
+# Priority: package.json > Cargo.toml > pyproject.toml > directory name
+# Usage: name=$(detect_project_name)
+detect_project_name() {
+  local name=""
+
+  # Try package.json
+  if [ -f "package.json" ]; then
+    name=$(grep -m1 '"name"' package.json 2>/dev/null | sed 's/.*"name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/')
+  fi
+
+  # Try Cargo.toml
+  if [ -z "$name" ] && [ -f "Cargo.toml" ]; then
+    name=$(grep -m1 '^name' Cargo.toml 2>/dev/null | sed 's/name[[:space:]]*=[[:space:]]*"\([^"]*\)".*/\1/')
+  fi
+
+  # Try pyproject.toml
+  if [ -z "$name" ] && [ -f "pyproject.toml" ]; then
+    name=$(grep -m1 'name' pyproject.toml 2>/dev/null | sed 's/name[[:space:]]*=[[:space:]]*"\([^"]*\)".*/\1/')
+  fi
+
+  # Fallback to directory name
+  if [ -z "$name" ]; then
+    name=$(basename "$(pwd)")
+  fi
+
+  echo "$name"
+}
+
+# Detect project description
+# Priority: package.json > README first line
+# Usage: desc=$(detect_project_description)
+detect_project_description() {
+  local desc=""
+
+  # Try package.json
+  if [ -f "package.json" ]; then
+    desc=$(grep -m1 '"description"' package.json 2>/dev/null | sed 's/.*"description"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/')
+  fi
+
+  # Try README first meaningful line
+  if [ -z "$desc" ]; then
+    for readme in README.md README.rst README.txt README; do
+      if [ -f "$readme" ]; then
+        # Get first non-empty, non-header line
+        desc=$(grep -v '^#\|^$\|^==\|^--' "$readme" 2>/dev/null | head -1 | cut -c1-200)
+        [ -n "$desc" ] && break
+      fi
+    done
+  fi
+
+  echo "$desc"
+}
+
+# Detect repository URL from git remote
+# Usage: url=$(detect_repo_url)
+detect_repo_url() {
+  if ! git rev-parse --git-dir >/dev/null 2>&1; then
+    echo ""
+    return 0
+  fi
+
+  local url
+  url=$(git remote get-url origin 2>/dev/null || echo "")
+
+  # Convert SSH URL to HTTPS for display
+  if [[ "$url" == git@* ]]; then
+    url=$(echo "$url" | sed 's/git@\([^:]*\):/https:\/\/\1\//' | sed 's/\.git$//')
+  fi
+
+  echo "$url"
+}
+
+# Detect tech stack from project files
+# Returns: Comma-separated list of detected technologies
+# Usage: stack=$(detect_tech_stack)
+detect_tech_stack() {
+  local stack=()
+
+  # Check for JavaScript/TypeScript ecosystem
+  if [ -f "package.json" ]; then
+    # Check for specific frameworks
+    if grep -q '"next"' package.json 2>/dev/null; then
+      stack+=("Next.js")
+    elif grep -q '"@remix-run' package.json 2>/dev/null; then
+      stack+=("Remix")
+    elif grep -q '"astro"' package.json 2>/dev/null; then
+      stack+=("Astro")
+    elif grep -q '"nuxt"' package.json 2>/dev/null; then
+      stack+=("Nuxt")
+    elif grep -q '"@sveltejs/kit"' package.json 2>/dev/null; then
+      stack+=("SvelteKit")
+    elif grep -q '"react"' package.json 2>/dev/null; then
+      stack+=("React")
+    elif grep -q '"vue"' package.json 2>/dev/null; then
+      stack+=("Vue")
+    elif grep -q '"express"' package.json 2>/dev/null; then
+      stack+=("Express")
+    fi
+
+    # Check for TypeScript
+    if grep -q '"typescript"' package.json 2>/dev/null || [ -f "tsconfig.json" ]; then
+      stack+=("TypeScript")
+    else
+      stack+=("JavaScript")
+    fi
+
+    # Check for database/ORM
+    if grep -q '"prisma"' package.json 2>/dev/null || [ -d "prisma" ]; then
+      stack+=("Prisma")
+    elif grep -q '"drizzle-orm"' package.json 2>/dev/null; then
+      stack+=("Drizzle")
+    fi
+
+    # Check for database
+    if grep -q '"pg"\|"postgres"' package.json 2>/dev/null; then
+      stack+=("PostgreSQL")
+    elif grep -q '"mysql' package.json 2>/dev/null; then
+      stack+=("MySQL")
+    elif grep -q '"mongodb"' package.json 2>/dev/null; then
+      stack+=("MongoDB")
+    fi
+  fi
+
+  # Check for Python
+  if [ -f "requirements.txt" ] || [ -f "pyproject.toml" ] || [ -f "setup.py" ]; then
+    stack+=("Python")
+    if grep -q 'django' requirements.txt pyproject.toml 2>/dev/null; then
+      stack+=("Django")
+    elif grep -q 'flask' requirements.txt pyproject.toml 2>/dev/null; then
+      stack+=("Flask")
+    elif grep -q 'fastapi' requirements.txt pyproject.toml 2>/dev/null; then
+      stack+=("FastAPI")
+    fi
+  fi
+
+  # Check for Rust
+  if [ -f "Cargo.toml" ]; then
+    stack+=("Rust")
+  fi
+
+  # Check for Go
+  if [ -f "go.mod" ]; then
+    stack+=("Go")
+  fi
+
+  # Check for hosting platforms
+  if [ -f "vercel.json" ] || [ -d ".vercel" ]; then
+    stack+=("Vercel")
+  elif [ -f "netlify.toml" ]; then
+    stack+=("Netlify")
+  elif [ -f "fly.toml" ]; then
+    stack+=("Fly.io")
+  elif [ -f "railway.json" ]; then
+    stack+=("Railway")
+  fi
+
+  # Return comma-separated list
+  local IFS=','
+  echo "${stack[*]}"
+}
+
+# Detect project type
+# Returns: web-app | api | cli | library | unknown
+# Usage: type=$(detect_project_type)
+detect_project_type() {
+  # Check for web app indicators
+  if [ -f "package.json" ]; then
+    if grep -qE '"next"|"remix"|"astro"|"nuxt"|"svelte"' package.json 2>/dev/null; then
+      echo "web-app"
+      return 0
+    fi
+
+    # Check for CLI
+    if grep -q '"bin"' package.json 2>/dev/null; then
+      echo "cli"
+      return 0
+    fi
+
+    # Check for library (no bin, has main/module)
+    if grep -qE '"main"|"module"|"exports"' package.json 2>/dev/null && \
+       ! grep -q '"bin"' package.json 2>/dev/null; then
+      echo "library"
+      return 0
+    fi
+
+    # Express/Fastify = API
+    if grep -qE '"express"|"fastify"|"hapi"|"koa"' package.json 2>/dev/null; then
+      echo "api"
+      return 0
+    fi
+  fi
+
+  # Python web frameworks
+  if grep -qE 'django|flask|fastapi' requirements.txt pyproject.toml 2>/dev/null; then
+    echo "web-app"
+    return 0
+  fi
+
+  # CLI indicators
+  if [ -f "setup.py" ] && grep -q 'entry_points\|console_scripts' setup.py 2>/dev/null; then
+    echo "cli"
+    return 0
+  fi
+
+  echo "unknown"
+}
+
+# Generate a summary of auto-detected project info
+# Usage: summary=$(generate_project_info_summary)
+# Returns: Multi-line summary of detected project information
+generate_project_info_summary() {
+  echo "Auto-detected Project Information:"
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+  local name=$(detect_project_name)
+  local desc=$(detect_project_description)
+  local url=$(detect_repo_url)
+  local stack=$(detect_tech_stack)
+  local type=$(detect_project_type)
+
+  echo "  Name:        ${name:-[not detected]}"
+  echo "  Type:        ${type:-unknown}"
+  echo "  Description: ${desc:-[not detected]}"
+  echo "  Tech Stack:  ${stack:-[not detected]}"
+  echo "  Repository:  ${url:-[not detected]}"
+  echo ""
+}
+
+# Check completeness of all core context files
+# Usage: check_context_completeness [context_dir]
+# Sets global variables:
+#   CONTEXT_COMPLETENESS_STATUS - "complete" | "incomplete" | "template-only"
+#   CONTEXT_COMPLETENESS_DETAILS - Array of issues found
+#   CONTEXT_TOTAL_PLACEHOLDERS - Total unfilled placeholders across all files
+check_context_completeness() {
+  local context_dir="${1:-context}"
+
+  CONTEXT_COMPLETENESS_STATUS="complete"
+  CONTEXT_COMPLETENESS_DETAILS=()
+  CONTEXT_TOTAL_PLACEHOLDERS=0
+
+  local files=(
+    "$context_dir/CONTEXT.md"
+    "$context_dir/STATUS.md"
+    "$context_dir/DECISIONS.md"
+  )
+
+  for file in "${files[@]}"; do
+    if [ -f "$file" ]; then
+      local count
+      count=$(count_unfilled_placeholders "$file")
+      CONTEXT_TOTAL_PLACEHOLDERS=$((CONTEXT_TOTAL_PLACEHOLDERS + count))
+
+      if [ "$count" -gt 0 ]; then
+        local filename=$(basename "$file")
+        CONTEXT_COMPLETENESS_DETAILS+=("$filename has $count unfilled [FILL:...] placeholders")
+
+        if [ "$count" -ge 5 ]; then
+          CONTEXT_COMPLETENESS_STATUS="template-only"
+        elif [ "$CONTEXT_COMPLETENESS_STATUS" = "complete" ]; then
+          CONTEXT_COMPLETENESS_STATUS="incomplete"
+        fi
+      fi
+    else
+      local filename=$(basename "$file")
+      CONTEXT_COMPLETENESS_DETAILS+=("$filename not found")
+      CONTEXT_COMPLETENESS_STATUS="incomplete"
+    fi
+  done
+}
+
+# Format context completeness results for display
+# Usage: format_context_completeness
+format_context_completeness() {
+  echo ""
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo "Context Documentation Completeness"
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo ""
+
+  if [ "$CONTEXT_TOTAL_PLACEHOLDERS" -eq 0 ] && [ ${#CONTEXT_COMPLETENESS_DETAILS[@]} -eq 0 ]; then
+    echo "  ✅ All context files are complete"
+  else
+    case "$CONTEXT_COMPLETENESS_STATUS" in
+      "template-only")
+        echo "  ⚠️  STATUS: Template-only (needs initial setup)"
+        ;;
+      "incomplete")
+        echo "  ⚠️  STATUS: Incomplete (some placeholders remain)"
+        ;;
+    esac
+    echo ""
+    echo "  Issues found:"
+    for detail in "${CONTEXT_COMPLETENESS_DETAILS[@]}"; do
+      echo "    • $detail"
+    done
+    echo ""
+    echo "  Total unfilled placeholders: $CONTEXT_TOTAL_PLACEHOLDERS"
+    echo ""
+    echo "  Recommendation:"
+    if [ "$CONTEXT_COMPLETENESS_STATUS" = "template-only" ]; then
+      echo "    Fill in the [FILL:...] placeholders with your project information."
+      echo "    Use project auto-detection to help: run generate_project_info_summary"
+    else
+      echo "    Review and fill remaining [FILL:...] placeholders."
+    fi
+  fi
+  echo ""
+}
+
+# =============================================================================
 
 # Run auto-update check in background (non-blocking)
 # Only if not already running and not in quiet mode

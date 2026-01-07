@@ -259,6 +259,40 @@ mkdir -p artifacts/bundle-analysis
 mkdir -p artifacts/coverage
 ```
 
+### Step 3.5: Auto-detect Project Information (v4.1.1)
+
+Before creating files, gather project information automatically:
+
+```bash
+log_info "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+log_info "🔍 Auto-detecting Project Information"
+log_info "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+log_info ""
+
+# Detect project info using common-functions
+if type detect_project_name &>/dev/null; then
+  DETECTED_NAME=$(detect_project_name)
+  DETECTED_DESC=$(detect_project_description)
+  DETECTED_STACK=$(detect_tech_stack)
+  DETECTED_TYPE=$(detect_project_type)
+  DETECTED_URL=$(detect_repo_url)
+
+  log_info "  Name:        ${DETECTED_NAME:-[not detected]}"
+  log_info "  Type:        ${DETECTED_TYPE:-unknown}"
+  log_info "  Description: ${DETECTED_DESC:-[not detected]}"
+  log_info "  Tech Stack:  ${DETECTED_STACK:-[not detected]}"
+  log_info "  Repository:  ${DETECTED_URL:-[not detected]}"
+  log_info ""
+  log_info "This information will help you fill in the template files."
+  log_info ""
+else
+  log_warn "⚠️  Auto-detection not available (common-functions.sh not fully loaded)"
+  log_info ""
+fi
+```
+
+**Why this matters:** Gathering project info upfront makes it easier to fill in the template placeholders. The AI can use this detected info when customizing the context files.
+
 ### Step 4: Generate Core Documentation Files
 
 Create the **4 core files + 1 AI header** from templates:
@@ -709,6 +743,72 @@ if [ -f "../ai-context-system.zip" ]; then
   echo "✅ Removed installation zip"
 fi
 ```
+
+### Step 8: Fill in Template Placeholders (v4.1.1 - CRITICAL)
+
+**CRITICAL:** This step ensures CONTEXT.md and other files get filled in properly. Without this step, context files remain as templates indefinitely.
+
+**ACTION:** Check for unfilled placeholders and fill them in:
+
+```bash
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "📝 CONTEXT.md Template Completion Check"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+
+# Check for placeholders in CONTEXT.md
+if [ -f "context/CONTEXT.md" ]; then
+  CONTEXT_PLACEHOLDERS=$(grep -c '\[FILL:' context/CONTEXT.md 2>/dev/null || echo "0")
+
+  if [ "$CONTEXT_PLACEHOLDERS" -gt 0 ]; then
+    echo "⚠️  CONTEXT.md has $CONTEXT_PLACEHOLDERS unfilled [FILL:...] placeholders"
+    echo ""
+    echo "IMPORTANT: The AI assistant should now fill in these placeholders using:"
+    echo "  1. The auto-detected project info (shown in Step 3.5)"
+    echo "  2. Analysis of package.json, README.md, and codebase structure"
+    echo "  3. Any additional context from the conversation"
+    echo ""
+    echo "Key placeholders to fill:"
+    grep -oE '\[FILL: [^]]+\]' context/CONTEXT.md 2>/dev/null | head -10 | sort -u | while read placeholder; do
+      echo "  • $placeholder"
+    done
+    echo ""
+  else
+    echo "✅ CONTEXT.md has no unfilled placeholders"
+  fi
+else
+  echo "⚠️  CONTEXT.md not found"
+fi
+```
+
+**Why this matters:** Context files left as templates defeat the purpose of the system. AI agents and future sessions need actual project information, not placeholder text like `[FILL: Project Name]`.
+
+**AI ASSISTANT ACTION REQUIRED:**
+
+After running the bash check above, you MUST:
+
+1. **Read context/CONTEXT.md** to see all `[FILL:...]` placeholders
+2. **Use detected info** from Step 3.5 (project name, type, tech stack, etc.)
+3. **Analyze the codebase** to fill in remaining placeholders:
+   - Read package.json for dependencies and description
+   - Read README.md for project overview
+   - Check directory structure for architecture info
+4. **Edit context/CONTEXT.md** to replace ALL `[FILL:...]` placeholders with actual content
+
+**Do NOT skip this step.** The user cannot use /save or /save-full effectively until CONTEXT.md has actual project information.
+
+**Verification:** After filling in, run:
+```bash
+REMAINING=$(grep -c '\[FILL:' context/CONTEXT.md 2>/dev/null || echo "0")
+if [ "$REMAINING" -eq 0 ]; then
+  echo "✅ CONTEXT.md is now complete!"
+else
+  echo "⚠️  Still $REMAINING placeholders remaining - please fill them in"
+fi
+```
+
+---
 
 ## Template Content Guidelines
 

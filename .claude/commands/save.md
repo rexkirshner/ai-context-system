@@ -236,6 +236,43 @@ echo "💡 Tip: Run /save-full before taking breaks >1 week or handing off to an
 echo ""
 ```
 
+### Step 7: Context Completeness Check (v4.1.1)
+
+**ACTION:** Quick check for unfilled template placeholders:
+
+```bash
+# Source common functions for completeness check
+REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
+source "$REPO_ROOT/scripts/common-functions.sh" 2>/dev/null || true
+
+# Quick check for CONTEXT.md placeholders (non-blocking warning)
+if type count_unfilled_placeholders &>/dev/null; then
+  CONTEXT_PLACEHOLDERS=$(count_unfilled_placeholders "$CONTEXT_DIR/CONTEXT.md")
+
+  if [ "$CONTEXT_PLACEHOLDERS" -gt 5 ]; then
+    echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "⚠️  CONTEXT.md Needs Attention"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+    echo "CONTEXT.md has $CONTEXT_PLACEHOLDERS unfilled [FILL:...] placeholders."
+    echo "This file appears to still be in template state."
+    echo ""
+    echo "Recommendation: Run /save-full which will guide you through filling"
+    echo "in your project information, or manually edit context/CONTEXT.md"
+    echo ""
+  elif [ "$CONTEXT_PLACEHOLDERS" -gt 0 ]; then
+    echo ""
+    echo "ℹ️  Note: CONTEXT.md has $CONTEXT_PLACEHOLDERS remaining placeholder(s)"
+    echo ""
+  fi
+fi
+```
+
+**Why this matters:** Context files left as templates defeat the purpose of the context system. AI agents and future sessions need actual project information, not placeholder text.
+
+**Non-blocking:** This is a warning only - won't prevent save from completing. For comprehensive updates, use /save-full.
+
 ## Important Notes
 
 ### This is the Default Command
