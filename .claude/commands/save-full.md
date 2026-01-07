@@ -102,6 +102,59 @@ test -d "context" && echo "context" || test -d "../context" && echo "../context"
 
 ---
 
+### Step 1.5: Detect Available Context Files
+
+**ACTION:** Check which context files exist in this project:
+
+```bash
+echo "📁 Detecting available context files..."
+echo ""
+
+# Check each core context file
+echo "Core files:"
+test -f "$CONTEXT_DIR/CONTEXT.md" && echo "  ✅ CONTEXT.md" || echo "  ⚠️ CONTEXT.md not found"
+test -f "$CONTEXT_DIR/STATUS.md" && echo "  ✅ STATUS.md" || echo "  ⚠️ STATUS.md not found"
+test -f "$CONTEXT_DIR/DECISIONS.md" && echo "  ✅ DECISIONS.md" || echo "  ⚠️ DECISIONS.md not found"
+test -f "$CONTEXT_DIR/SESSIONS.md" && echo "  ✅ SESSIONS.md" || echo "  ⚠️ SESSIONS.md not found"
+echo ""
+
+# Check config file
+echo "Configuration:"
+test -f "$CONTEXT_DIR/.context-config.json" && echo "  ✅ .context-config.json" || echo "  ⚠️ .context-config.json not found"
+echo ""
+
+# Summarize what will be skipped
+echo "Steps affected by missing files:"
+test -f "$CONTEXT_DIR/STATUS.md" || echo "  • Step 4 (STATUS.md update) - will skip"
+test -f "$CONTEXT_DIR/STATUS.md" || echo "  • Step 6 (Quick Reference) - will skip"
+test -f "$CONTEXT_DIR/SESSIONS.md" || echo "  • Step 3 (SESSIONS.md entry) - will skip"
+test -f "$CONTEXT_DIR/DECISIONS.md" || echo "  • Step 5 (DECISIONS.md) - will skip"
+echo ""
+
+# Suggest init if multiple files missing
+MISSING_COUNT=0
+test -f "$CONTEXT_DIR/CONTEXT.md" || MISSING_COUNT=$((MISSING_COUNT + 1))
+test -f "$CONTEXT_DIR/STATUS.md" || MISSING_COUNT=$((MISSING_COUNT + 1))
+test -f "$CONTEXT_DIR/SESSIONS.md" || MISSING_COUNT=$((MISSING_COUNT + 1))
+
+if [ "$MISSING_COUNT" -gt 1 ]; then
+  echo "💡 Multiple core files missing. Consider running /init-context to set up the full context system."
+  echo ""
+fi
+
+echo "✅ File detection complete - proceeding with available files"
+echo ""
+```
+
+**Why this matters:**
+- Projects may have incomplete context setups (old installations, manual setup, minimal configuration)
+- Detecting files early prevents confusing instructions to update non-existent files
+- Suggests /init-context for projects that would benefit from full setup
+
+**AI Note:** Remember which files are missing and skip those steps accordingly.
+
+---
+
 ### Step 2: Analyze What Changed
 
 **Try helper script first (optional):**
@@ -157,24 +210,41 @@ echo "Step 3/10: Creating SESSIONS.md entry..."
 echo "⏱️ Estimated time remaining: ~8-10 minutes"
 echo ""
 
-# Detect next session number by finding highest existing number
-# This handles gaps from archiving (e.g., sessions 1,2,3,8,9,10 -> next is 11)
-echo "Detecting next session number..."
-echo "Highest session found:"
-grep -oE "^## Session [0-9]+" "$CONTEXT_DIR/SESSIONS.md" 2>/dev/null | grep -oE "[0-9]+" | sort -n | tail -1 | awk '{print} END {if (NR==0) print "0"}'
-echo ""
+# Check if SESSIONS.md exists
+if [ ! -f "$CONTEXT_DIR/SESSIONS.md" ]; then
+  echo "⚠️ SESSIONS.md not found"
+  echo ""
+  echo "SESSIONS.md is the core session history file."
+  echo "Options:"
+  echo "  1. Run /init-context to create full context system"
+  echo "  2. Create minimal SESSIONS.md manually:"
+  echo ""
+  echo "     echo '# Session History' > $CONTEXT_DIR/SESSIONS.md"
+  echo ""
+  echo "💡 After creating SESSIONS.md, re-run /save-full"
+  echo ""
+  echo "Skipping session entry creation..."
+  echo ""
+else
+  # Detect next session number by finding highest existing number
+  # This handles gaps from archiving (e.g., sessions 1,2,3,8,9,10 -> next is 11)
+  echo "Detecting next session number..."
+  echo "Highest session found:"
+  grep -oE "^## Session [0-9]+" "$CONTEXT_DIR/SESSIONS.md" 2>/dev/null | grep -oE "[0-9]+" | sort -n | tail -1 | awk '{print} END {if (NR==0) print "0"}'
+  echo ""
 
-# AI reads the highest number above and adds 1 for the next session
-# Example: if highest is "10", next session is 11
+  # AI reads the highest number above and adds 1 for the next session
+  # Example: if highest is "10", next session is 11
 
-echo "Please provide the following information for the session entry:"
-echo ""
-echo "1. Session number (highest above + 1):"
-echo "2. Today's date (YYYY-MM-DD):"
-echo "3. Current phase/focus:"
-echo "4. Session duration (hours):"
-echo "5. Brief session focus (1-2 sentences):"
-echo ""
+  echo "Please provide the following information for the session entry:"
+  echo ""
+  echo "1. Session number (highest above + 1):"
+  echo "2. Today's date (YYYY-MM-DD):"
+  echo "3. Current phase/focus:"
+  echo "4. Session duration (hours):"
+  echo "5. Brief session focus (1-2 sentences):"
+  echo ""
+fi
 ```
 
 **Create the session entry** using the Write tool on a draft file, then append:
@@ -336,29 +406,44 @@ echo "Step 4/10: Updating STATUS.md..."
 echo "⏱️ Estimated time remaining: ~6-8 minutes"
 echo ""
 
-echo "Update the following sections in STATUS.md:"
-echo ""
-echo "1. Current Phase/Focus - Where are you now?"
-echo "2. Active Tasks - From TodoWrite state"
-echo "3. Work In Progress - Detailed WIP from session"
-echo "4. Recent Accomplishments - What you completed"
-echo "5. Next Session Priorities - What to do next"
-echo "6. Blockers - Any issues preventing progress"
-echo ""
+# Check if STATUS.md exists
+if [ ! -f "$CONTEXT_DIR/STATUS.md" ]; then
+  echo "⚠️ STATUS.md not found - skipping this step"
+  echo ""
+  echo "STATUS.md provides:"
+  echo "  • Current phase/focus tracking"
+  echo "  • Active tasks dashboard"
+  echo "  • Quick Reference section"
+  echo ""
+  echo "💡 Run /init-context to create STATUS.md and other core files"
+  echo ""
+  echo "Continuing to next step..."
+  echo ""
+else
+  echo "Update the following sections in STATUS.md:"
+  echo ""
+  echo "1. Current Phase/Focus - Where are you now?"
+  echo "2. Active Tasks - From TodoWrite state"
+  echo "3. Work In Progress - Detailed WIP from session"
+  echo "4. Recent Accomplishments - What you completed"
+  echo "5. Next Session Priorities - What to do next"
+  echo "6. Blockers - Any issues preventing progress"
+  echo ""
 
-echo "STATUS.md is the single source of truth for 'what's happening now'"
-echo ""
-echo "✅ Use Edit tool to update each section"
-echo ""
+  echo "STATUS.md is the single source of truth for 'what's happening now'"
+  echo ""
+  echo "✅ Use Edit tool to update each section"
+  echo ""
 
-# Auto-update timestamp (v3.7.0+)
-echo "Auto-updating timestamp..."
-source scripts/common-functions.sh 2>/dev/null || true
-if type update_last_modified &>/dev/null; then
-  update_last_modified "$CONTEXT_DIR/STATUS.md"
-  echo "✅ STATUS.md timestamp updated to $(date +%Y-%m-%d)"
+  # Auto-update timestamp (v3.7.0+)
+  echo "Auto-updating timestamp..."
+  source scripts/common-functions.sh 2>/dev/null || true
+  if type update_last_modified &>/dev/null; then
+    update_last_modified "$CONTEXT_DIR/STATUS.md"
+    echo "✅ STATUS.md timestamp updated to $(date +%Y-%m-%d)"
+  fi
+  echo ""
 fi
-echo ""
 ```
 
 ---
@@ -370,30 +455,43 @@ echo "Step 5/10: Checking for new decisions..."
 echo "⏱️ Estimated time remaining: ~5-7 minutes"
 echo ""
 
-echo "Did you make any significant technical decisions this session?"
-echo ""
-echo "Examples of decisions that should be documented:"
-echo "  • Choice of library/framework"
-echo "  • Architectural pattern decision"
-echo "  • Data model design"
-echo "  • API design approach"
-echo "  • Security implementation choice"
-echo ""
+# Check if DECISIONS.md exists
+if [ ! -f "$CONTEXT_DIR/DECISIONS.md" ]; then
+  echo "ℹ️ DECISIONS.md not found"
+  echo ""
+  echo "DECISIONS.md tracks technical decisions with rationale."
+  echo "If you made significant decisions this session, consider:"
+  echo "  • Running /init-context to create the full context system"
+  echo "  • Or documenting decisions in SESSIONS.md for now"
+  echo ""
+  echo "Continuing to next step..."
+  echo ""
+else
+  echo "Did you make any significant technical decisions this session?"
+  echo ""
+  echo "Examples of decisions that should be documented:"
+  echo "  • Choice of library/framework"
+  echo "  • Architectural pattern decision"
+  echo "  • Data model design"
+  echo "  • API design approach"
+  echo "  • Security implementation choice"
+  echo ""
 
-# If yes, AI creates decision entry
-# If no, skip this step
+  # If yes, AI creates decision entry
+  # If no, skip this step
 
-echo "If yes, add entry to DECISIONS.md with:"
-echo "  • Context (problem, constraints)"
-echo "  • Decision (what you chose)"
-echo "  • Rationale (WHY this approach)"
-echo "  • Alternatives considered"
-echo "  • Tradeoffs accepted"
-echo "  • When to reconsider"
-echo ""
+  echo "If yes, add entry to DECISIONS.md with:"
+  echo "  • Context (problem, constraints)"
+  echo "  • Decision (what you chose)"
+  echo "  • Rationale (WHY this approach)"
+  echo "  • Alternatives considered"
+  echo "  • Tradeoffs accepted"
+  echo "  • When to reconsider"
+  echo ""
 
-echo "Then link from SESSIONS.md entry: 'See DECISIONS.md D[ID]'"
-echo ""
+  echo "Then link from SESSIONS.md entry: 'See DECISIONS.md D[ID]'"
+  echo ""
+fi
 ```
 
 ---
@@ -405,30 +503,43 @@ echo "Step 6/10: Updating Quick Reference section..."
 echo "⏱️ Estimated time remaining: ~3-5 minutes"
 echo ""
 
-echo "The Quick Reference section provides a dashboard view at the top of STATUS.md"
-echo ""
+# Check if STATUS.md exists
+if [ ! -f "$CONTEXT_DIR/STATUS.md" ]; then
+  echo "⚠️ STATUS.md not found - skipping Quick Reference update"
+  echo ""
+  echo "Quick Reference provides a dashboard view with:"
+  echo "  • Project name and phase"
+  echo "  • Active task counts"
+  echo "  • Key metrics at a glance"
+  echo ""
+  echo "Continuing to next step..."
+  echo ""
+else
+  echo "The Quick Reference section provides a dashboard view at the top of STATUS.md"
+  echo ""
 
-# Read current values (no command substitution needed)
-echo "Gathering current values..."
-echo ""
+  # Read current values (no command substitution needed)
+  echo "Gathering current values..."
+  echo ""
 
-echo "Project name from config:"
-cat "$CONTEXT_DIR/.context-config.json" | grep '"name"' | head -1
-echo ""
+  echo "Project name from config:"
+  cat "$CONTEXT_DIR/.context-config.json" 2>/dev/null | grep '"name"' | head -1 || echo "  (config not found)"
+  echo ""
 
-echo "Current phase from STATUS.md:"
-grep -A 2 "## Current Phase" "$CONTEXT_DIR/STATUS.md" | grep "Phase:"
-echo ""
+  echo "Current phase from STATUS.md:"
+  grep -A 2 "## Current Phase" "$CONTEXT_DIR/STATUS.md" | grep "Phase:" || echo "  (phase not found)"
+  echo ""
 
-echo "Active tasks count:"
-grep -c "^- \[ \]" "$CONTEXT_DIR/STATUS.md" || echo "0"
-echo ""
+  echo "Active tasks count:"
+  grep -c "^- \[ \]" "$CONTEXT_DIR/STATUS.md" || echo "0"
+  echo ""
 
-echo "Use these values to update the Quick Reference section"
-echo "Located between ## 📊 Quick Reference and the next ---"
-echo ""
-echo "✅ Use Edit tool to update Quick Reference"
-echo ""
+  echo "Use these values to update the Quick Reference section"
+  echo "Located between ## 📊 Quick Reference and the next ---"
+  echo ""
+  echo "✅ Use Edit tool to update Quick Reference"
+  echo ""
+fi
 ```
 
 ---
@@ -668,18 +779,47 @@ if [ "$LOOSE_COUNT" -gt 2 ]; then
   echo ""
 fi
 
-# Final report
+# Final report - dynamic based on available files
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "✅ COMPREHENSIVE SAVE COMPLETE"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 echo "Core Updates:"
-echo "  ✅ SESSIONS.md - Comprehensive session entry (mental models, WIP)"
-echo "  ✅ STATUS.md - Updated tasks, blockers, priorities, Quick Reference, timestamp"
-echo "  ✅ DECISIONS.md - [Updated / No new decisions]"
+
+# Show status for each file based on existence
+if [ -f "$CONTEXT_DIR/SESSIONS.md" ]; then
+  echo "  ✅ SESSIONS.md - Comprehensive session entry (mental models, WIP)"
+else
+  echo "  ⚠️ SESSIONS.md - Skipped (file not found)"
+fi
+
+if [ -f "$CONTEXT_DIR/STATUS.md" ]; then
+  echo "  ✅ STATUS.md - Updated tasks, blockers, priorities, Quick Reference, timestamp"
+else
+  echo "  ⚠️ STATUS.md - Skipped (file not found)"
+fi
+
+if [ -f "$CONTEXT_DIR/DECISIONS.md" ]; then
+  echo "  ✅ DECISIONS.md - [Updated / No new decisions]"
+else
+  echo "  ⚠️ DECISIONS.md - Skipped (file not found)"
+fi
+
 echo "  ✅ Timestamps - Auto-updated (v3.7.0+)"
 echo ""
+
+# Suggest init if files were missing
+SKIPPED_COUNT=0
+test -f "$CONTEXT_DIR/SESSIONS.md" || SKIPPED_COUNT=$((SKIPPED_COUNT + 1))
+test -f "$CONTEXT_DIR/STATUS.md" || SKIPPED_COUNT=$((SKIPPED_COUNT + 1))
+test -f "$CONTEXT_DIR/DECISIONS.md" || SKIPPED_COUNT=$((SKIPPED_COUNT + 1))
+
+if [ "$SKIPPED_COUNT" -gt 0 ]; then
+  echo "💡 Some files were skipped. Run /init-context to create missing files."
+  echo ""
+fi
+
 echo "Optional Updates:"
 echo "  • ARCHITECTURE.md - [Updated / Skipped]"
 echo "  • PRD.md - [Updated / Skipped]"
