@@ -1,5 +1,5 @@
 #!/bin/bash
-# Master Test Runner for AI Context System v4.1.1
+# Master Test Runner for AI Context System
 # Runs all module tests and reports comprehensive results
 
 set -e
@@ -7,6 +7,9 @@ set -e
 # Get the directory of this script
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+
+# Get version from VERSION file
+VERSION=$(cat "$PROJECT_ROOT/VERSION" 2>/dev/null || echo "unknown")
 
 # Colors for output
 GREEN='\033[0;32m'
@@ -16,7 +19,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 echo "╔════════════════════════════════════════════════════════════╗"
-echo "║  AI Context System v4.1.1 - Comprehensive Test Suite     ║"
+echo "║  AI Context System v${VERSION} - Comprehensive Test Suite     ║"
 echo "╚════════════════════════════════════════════════════════════╝"
 echo ""
 
