@@ -1,6 +1,6 @@
 # AI Context System
 
-**Version 4.1.1** • [What's New](#-v411-context-completeness-detection)
+**Version 4.2.0** • [What's New](#-v420-user-feedback-fixes)
 
 > **Externalize AI context. Enable human-AI collaboration. Perfect session continuity.**
 >
@@ -26,20 +26,23 @@ Facilitate peer review, project handoffs, and collaborative development between 
 
 ---
 
-## 🎉 v4.1.1 Context Completeness Detection
+## 🎉 v4.2.0 User Feedback Fixes
 
-**Ensures context documentation actually gets filled in**
+**Bug fixes and UX improvements based on real user feedback**
 
-**New Features:**
-- ✅ **Context completeness detection** - Detects unfilled `[FILL:...]` placeholders in CONTEXT.md
-- ✅ **Project auto-detection** - Automatically detects project name, tech stack, type from codebase
-- ✅ **Smart warnings** - `/save` warns when CONTEXT.md has 5+ unfilled placeholders
-- ✅ **Template guidance** - `/save-full` and `/init-context` actively guide filling in templates
+**Fixes:**
+- ✅ **Bash operator precedence** - Fixed context directory detection in `/save-full`
+- ✅ **Session regex** - Fixed session number extraction to ignore template text
+- ✅ **Date warning** - Changed misleading date mismatch warning to informational note
+
+**Improvements:**
+- ✅ **Already-initialized detection** - `/init-context` and `/migrate-context` warn if ACS already installed
+- ✅ **CLAUDE.md detection** - Shows integration guidance when existing CLAUDE.md found
 
 **Recent Major Releases:**
+- **v4.1.1** - Context completeness detection, project auto-detection
 - **v4.1.0** - Documentation health checking, shell robustness, color output
-- **v4.0.0** - Modular code review system with specialized audits (security, performance, etc.)
-- **v3.7.0** - Auto-timestamps, audit index management
+- **v4.0.0** - Modular code review system with specialized audits
 
 **Full details:** [CHANGELOG.md](./CHANGELOG.md) • **Upgrade:** `/update-context-system`
 
