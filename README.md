@@ -423,15 +423,15 @@ See [SETUP_GUIDE.md](./SETUP_GUIDE.md) for detailed troubleshooting.
 
 ## Version
 
-**Current Version:** 3.6.0
+**Current Version:** See [VERSION](./VERSION) file
 **Status:** Production Ready
-**Last Updated:** 2025-12-16
 
-**What's New in v3.6.0:**
-- CLAUDE.md now at project root (auto-loaded by Claude Code)
-- Enhanced CLAUDE.md template with project identity, critical rules, working style
-- Other AI headers (cursor.md, aider.md) remain in context/
-- Consistent version numbering across all files
+**Recent Highlights (v4.x):**
+- Modular code review system with 8 specialized audits
+- Auto-detection for database, hosting, and framework platforms
+- Context completeness detection and auto-population hints
+- CLAUDE.md at project root (auto-loaded by Claude Code)
+- Robust update notifications with suppression during updates
 
 **See:** [CHANGELOG.md](./CHANGELOG.md) for complete version history
 
