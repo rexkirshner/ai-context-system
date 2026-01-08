@@ -1,6 +1,6 @@
 # AI Context System - Feedback Log
 
-**Version**: [Your CCS version]
+**Version**: [Your ACS version]
 **Project**: [Your project name]
 
 ---
@@ -11,7 +11,7 @@ This file helps improve the AI Context System for everyone. Your feedback matter
 
 **Please document:**
 - 🐛 **Bugs** - Errors, unexpected behavior, crashes
-- 💡 **Improvements** - Ideas to make CCS better
+- 💡 **Improvements** - Ideas to make ACS better
 - ❓ **Questions** - Confusion, unclear documentation
 - ✨ **Feature Requests** - New capabilities you'd like
 - 👍 **Praise** - What's working well (we need this too!)
@@ -66,7 +66,7 @@ Copy this template for each feedback entry:
 **Environment**:
 - OS: [macOS 14.x / Ubuntu 22.04 / Windows 11]
 - Claude Code: [version]
-- CCS: [version from context/.context-config.json]
+- ACS: [version from context/.context-config.json]
 ```
 
 ---
@@ -101,7 +101,7 @@ Copy this template for each feedback entry:
 **Environment**:
 - OS: macOS 14.5
 - Claude Code: 1.2.0
-- CCS: 2.3.0
+- ACS: 2.3.0
 
 ---
 
@@ -128,7 +128,7 @@ Copy this template for each feedback entry:
 **Environment**:
 - OS: Ubuntu 22.04
 - Claude Code: 1.1.5
-- CCS: 2.3.0
+- ACS: 2.3.0
 
 ---
 
