@@ -528,8 +528,8 @@ echo "  STATUS.md:   ${STATUS_DATE:-not found}"
 
 if [ -n "$CONTEXT_DATE" ] && [ -n "$STATUS_DATE" ] && [ "$CONTEXT_DATE" != "$STATUS_DATE" ]; then
   echo ""
-  echo "  ⚠️  Date mismatch: CONTEXT.md ($CONTEXT_DATE) vs STATUS.md ($STATUS_DATE)"
-  echo "     STATUS.md is typically more current. Run /save to sync."
+  echo "  ℹ️  Layer dates: CONTEXT.md ($CONTEXT_DATE) | STATUS.md ($STATUS_DATE)"
+  echo "      Note: Different dates are normal. CONTEXT.md is static, STATUS.md is dynamic."
 fi
 echo ""
 
