@@ -7,7 +7,7 @@
 #   source "$(dirname "${BASH_SOURCE[0]}")/../scripts/find-context-folder.sh" || exit 1
 #   CONTEXT_DIR=$(find_context_folder) || exit 1
 #
-# Version: 4.1.0
+# Version: 4.2.0
 
 find_context_folder() {
   local current_dir="$PWD"

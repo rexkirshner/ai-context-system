@@ -1,6 +1,6 @@
 #!/bin/bash
 # Archive old sessions from SESSIONS.md
-# Version: 4.1.0
+# Version: 4.2.0
 #
 # Usage:
 #   ./archive-sessions-helper.sh [--keep N] [--context DIR]

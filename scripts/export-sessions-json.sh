@@ -2,7 +2,7 @@
 
 # export-sessions-json.sh
 # Exports SESSIONS.md to machine-readable JSON format
-# Version: 4.1.0
+# Version: 4.2.0
 
 set -e
 
