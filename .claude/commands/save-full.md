@@ -238,9 +238,11 @@ if [ ! -f "$CONTEXT_DIR/SESSIONS.md" ]; then
 else
   # Detect next session number by finding highest existing number
   # This handles gaps from archiving (e.g., sessions 1,2,3,8,9,10 -> next is 11)
+  # Note: Pattern requires " |" to match actual session entries (format: "## Session N | DATE | TITLE")
+  # This excludes "## Session Index" headings and template placeholders like "## Session [N]"
   echo "Detecting next session number..."
   echo "Highest session found:"
-  grep -oE "^## Session [0-9]+" "$CONTEXT_DIR/SESSIONS.md" 2>/dev/null | grep -oE "[0-9]+" | sort -n | tail -1 | awk '{print} END {if (NR==0) print "0"}'
+  grep -E "^## Session [0-9]+ \|" "$CONTEXT_DIR/SESSIONS.md" 2>/dev/null | grep -oE "Session [0-9]+" | grep -oE "[0-9]+" | sort -n | tail -1 | awk '{print} END {if (NR==0) print "0"}'
   echo ""
 
   # AI reads the highest number above and adds 1 for the next session
