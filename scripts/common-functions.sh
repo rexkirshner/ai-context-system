@@ -476,12 +476,17 @@ get_system_version() {
 
 # Check for available updates (non-blocking)
 # Improvement #5 (auto-update notifications)
+# v4.2.1: Added ACS_UPDATING check to suppress notice during update
 check_for_updates() {
   local check_file=".claude/.last-update-check"
   local check_interval=86400  # 24 hours
 
   # Skip if verbosity is quiet
   [ "$VERBOSITY" = "quiet" ] && return 0
+
+  # Skip if we're already running /update-context-system (v4.2.1)
+  # Prevents confusing "Run /update-context-system" message during update
+  [ "$ACS_UPDATING" = "true" ] && return 0
 
   # Check once per day
   if [ -f "$check_file" ]; then
