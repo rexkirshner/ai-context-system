@@ -90,7 +90,17 @@ echo "✅ Found context at: $CONTEXT_DIR"
 
 **Alternative if script not available:**
 ```bash
-test -d "context" && echo "context" || test -d "../context" && echo "../context" || test -d "../../context" && echo "../../context" || echo "ERROR: context/ not found"
+if [ -d "context" ]; then
+  echo "context"
+elif [ -d "../context" ]; then
+  echo "../context"
+elif [ -d "../../context" ]; then
+  echo "../../context"
+else
+  echo "ERROR: context/ not found"
+  echo ""
+  echo "Run this command from your project root or a subdirectory (up to 2 levels deep)."
+fi
 ```
 
 **Why this works:**
