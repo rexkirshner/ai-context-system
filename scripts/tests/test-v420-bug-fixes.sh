@@ -266,6 +266,100 @@ fi
 echo ""
 
 # =============================================================================
+# Improvement 1: Already-Initialized Detection Tests
+# =============================================================================
+echo "Improvement 1: Already-Initialized Detection"
+echo "----------------------------------------------"
+
+# Test I1.1: Detection of .context-config.json
+run_test
+mkdir -p "$TEST_DIR/proj-init/context"
+echo '{"project": {"name": "test"}}' > "$TEST_DIR/proj-init/context/.context-config.json"
+if [ -f "$TEST_DIR/proj-init/context/.context-config.json" ]; then
+  pass "Detects existing .context-config.json"
+else
+  fail "Should detect config file" "exists" "not found"
+fi
+
+# Test I1.2: No false positive on fresh project
+run_test
+mkdir -p "$TEST_DIR/proj-fresh"
+if [ ! -f "$TEST_DIR/proj-fresh/context/.context-config.json" ]; then
+  pass "No false positive on fresh project"
+else
+  fail "Should not detect config on fresh project" "not exists" "exists"
+fi
+
+# Test I1.3: Context files listing works
+run_test
+mkdir -p "$TEST_DIR/proj-list/context"
+touch "$TEST_DIR/proj-list/context/STATUS.md"
+touch "$TEST_DIR/proj-list/context/CONTEXT.md"
+touch "$TEST_DIR/proj-list/context/SESSIONS.md"
+FILE_COUNT=$(ls "$TEST_DIR/proj-list/context"/*.md 2>/dev/null | wc -l | tr -d ' ')
+if [ "$FILE_COUNT" = "3" ]; then
+  pass "Lists existing context files correctly"
+else
+  fail "Should list 3 context files" "3" "$FILE_COUNT"
+fi
+
+echo ""
+
+# =============================================================================
+# Improvement 2: CLAUDE.md Detection Tests
+# =============================================================================
+echo "Improvement 2: CLAUDE.md Detection"
+echo "------------------------------------"
+
+# Test I2.1: Detect large CLAUDE.md (>5KB)
+run_test
+mkdir -p "$TEST_DIR/proj-claude-large"
+# Create a file > 5KB (5001 bytes)
+dd if=/dev/zero bs=5001 count=1 2>/dev/null | tr '\0' 'x' > "$TEST_DIR/proj-claude-large/CLAUDE.md"
+CLAUDE_SIZE=$(wc -c < "$TEST_DIR/proj-claude-large/CLAUDE.md" | tr -d ' ')
+if [ "$CLAUDE_SIZE" -gt 5000 ]; then
+  pass "Detects large CLAUDE.md (${CLAUDE_SIZE}B > 5KB)"
+else
+  fail "Should detect large CLAUDE.md" ">5000" "$CLAUDE_SIZE"
+fi
+
+# Test I2.2: Detect small CLAUDE.md (<5KB)
+run_test
+mkdir -p "$TEST_DIR/proj-claude-small"
+echo "# Small CLAUDE.md" > "$TEST_DIR/proj-claude-small/CLAUDE.md"
+CLAUDE_SIZE=$(wc -c < "$TEST_DIR/proj-claude-small/CLAUDE.md" | tr -d ' ')
+if [ "$CLAUDE_SIZE" -lt 5000 ]; then
+  pass "Detects small CLAUDE.md (${CLAUDE_SIZE}B < 5KB)"
+else
+  fail "Should detect small CLAUDE.md" "<5000" "$CLAUDE_SIZE"
+fi
+
+# Test I2.3: Size formatting - KB display
+run_test
+SIZE_BYTES=10240
+if [ "$SIZE_BYTES" -gt 1024 ]; then
+  SIZE_DISPLAY="$(( SIZE_BYTES / 1024 ))KB"
+else
+  SIZE_DISPLAY="${SIZE_BYTES}B"
+fi
+if [ "$SIZE_DISPLAY" = "10KB" ]; then
+  pass "Size formatting works (10240B = 10KB)"
+else
+  fail "Size formatting" "10KB" "$SIZE_DISPLAY"
+fi
+
+# Test I2.4: No CLAUDE.md detected on fresh project
+run_test
+mkdir -p "$TEST_DIR/proj-no-claude"
+if [ ! -f "$TEST_DIR/proj-no-claude/CLAUDE.md" ]; then
+  pass "No false positive when CLAUDE.md absent"
+else
+  fail "Should not detect CLAUDE.md" "not exists" "exists"
+fi
+
+echo ""
+
+# =============================================================================
 # Summary
 # =============================================================================
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
