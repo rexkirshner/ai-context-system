@@ -89,11 +89,13 @@ if [ ! -f "context/.context-config.json" ]; then
   echo ""
 
   # Try to detect if we're in a parent folder
-  if [ -d "inevitable-eth/context" ] || [ -d "*/context" ]; then
-    echo "💡 Detected project in subdirectory!"
+  # Look for any subdirectory that has context/.context-config.json
+  SUBPROJECT=$(find . -maxdepth 2 -name ".context-config.json" -path "*/context/*" 2>/dev/null | head -1 | sed 's|/context/.*||' | sed 's|^\./||')
+  if [ -n "$SUBPROJECT" ]; then
+    echo "💡 Detected project in subdirectory: $SUBPROJECT"
     echo ""
     echo "Try:"
-    echo "  cd inevitable-eth  (or whatever your project folder is)"
+    echo "  cd $SUBPROJECT"
     echo "  /update-context-system"
   fi
 
