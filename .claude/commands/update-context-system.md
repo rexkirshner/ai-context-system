@@ -57,9 +57,13 @@ if [ -f "scripts/common-functions.sh" ]; then
 else
   echo "⚠️  Warning: common-functions.sh not found (using legacy mode)"
 fi
+
+# v4.2.1: Suppress "Run /update-context-system" notice during update
+# This prevents confusing output when user is already running the update
+export ACS_UPDATING=true
 ```
 
-**Why this matters:** Provides access to `download_with_retry()` for robust network operations and `get_system_version()` for version checking.
+**Why this matters:** Provides access to `download_with_retry()` for robust network operations and `get_system_version()` for version checking. The `ACS_UPDATING` export prevents confusing update notices during the update process itself.
 
 ---
 
