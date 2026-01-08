@@ -25,13 +25,6 @@ Core principles that guide all commands:
 - Session continuity
 - No broken promises
 
-### save-context-guide.md
-Comprehensive guide for `/save-context`:
-- When to save
-- What gets captured
-- Update philosophy
-- WIP capture strategies
-
 ### review-context-guide.md
 Deep dive into `/review-context`:
 - Confidence scoring explained
@@ -66,6 +59,12 @@ Step-by-step migration guide for v3.6.0:
 - CLAUDE.md location change
 - File migration options
 - Verification steps
+
+### VERSION_MANAGEMENT.md
+Version control and configuration:
+- VERSION file (single source of truth)
+- Config file versioning
+- Upgrade path handling
 
 ## Modular Audit Commands (v4.0.0)
 

@@ -1,7 +1,7 @@
 # AI Context System Troubleshooting Guide
 
-**Version:** 3.6.0
 **Purpose:** Quick solutions to common issues
+**See also:** [CHANGELOG.md](../../CHANGELOG.md) for version history
 
 ---
 
