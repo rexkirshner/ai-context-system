@@ -1,6 +1,6 @@
 #!/bin/bash
 # Common functions used across AI Context System commands
-# Version: 4.1.1
+# Version: 4.2.0
 #
 # This file extracts duplicate code from multiple commands into shared utilities.
 # Source this file at the beginning of any command that needs these functions.

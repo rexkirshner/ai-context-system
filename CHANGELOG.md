@@ -5,6 +5,55 @@ All notable changes to the AI Context System will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.2.0] - 2026-01-07
+
+**MINOR RELEASE** - User Feedback Fixes & UX Improvements
+
+This release addresses bugs and improvements identified through real-world usage of v4.0.2. All issues were reported by actual users in their context-feedback.md files.
+
+### Fixed
+
+- **save-full.md**: Fixed bash operator precedence in context directory detection
+  - Changed `test -d X && echo X || test -d Y && echo Y` chain to explicit if-elif-else
+  - Prevents multiple branches from executing in edge cases
+  - Added helpful error message when context/ not found
+
+- **save-full.md**: Fixed session number regex to exclude template text
+  - Changed `^## Session [0-9]+` to `^## Session [0-9]+ \|`
+  - Now correctly ignores "## Session Index" headings
+  - Ignores template placeholders like "## Session [N]"
+  - Only matches actual session entries with pipe separator
+
+- **review-context.md**: Changed misleading date warning to informational note
+  - Different dates between CONTEXT.md and STATUS.md are BY DESIGN
+  - Changed from `⚠️ Date mismatch` warning to `ℹ️ Layer dates` info
+  - Removed incorrect "Run /save to sync" suggestion
+  - Added explanation: "CONTEXT.md is static, STATUS.md is dynamic"
+
+### Added
+
+- **init-context.md, migrate-context.md**: Added "already initialized" detection (Step 0.7)
+  - Checks for existing `context/.context-config.json`
+  - Lists existing context files if found
+  - Presents options: continue, reset, or cancel
+  - Prevents confusion from running init on initialized project
+
+- **init-context.md, migrate-context.md**: Added CLAUDE.md detection (Step 0.8)
+  - Detects existing CLAUDE.md at project root
+  - For large files (>5KB): Shows full integration strategy
+  - For small files (<5KB): Shows brief info message
+  - Explains how ACS complements existing documentation
+  - Uses cross-platform size formatting (works on macOS and Linux)
+
+### Testing
+
+- Added 20 new tests in `scripts/tests/test-v420-bug-fixes.sh`
+  - 13 tests for bug fixes
+  - 7 tests for improvements
+- All 78+ existing tests continue to pass
+
+---
+
 ## [4.1.1] - 2026-01-07
 
 **PATCH RELEASE** - Context Completeness Detection & Auto-Population

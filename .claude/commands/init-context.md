@@ -998,5 +998,5 @@ Understood?
 
 ---
 
-**Version:** 4.1.1
+**Version:** 4.2.0
 **Updated:** v4.1.1 - Added auto-detection and template placeholder filling
