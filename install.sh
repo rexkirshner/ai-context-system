@@ -445,19 +445,25 @@ echo ""
 color_echo "${BLUE}⬇️  Downloading templates...${NC}"
 
 TEMPLATES=(
+  # AI tool headers
   "CLAUDE.md.template"
   "cursor.md.template"
   "aider.md.template"
   "codex.md.template"
   "generic-ai-header.template.md"
+  # Core context files
   "CONTEXT.template.md"
   "STATUS.template.md"
   "DECISIONS.template.md"
   "SESSIONS.template.md"
+  "context-feedback.template.md"
+  # Optional documentation
   "CODE_MAP.template.md"
+  "CODE_STYLE.template.md"
+  "KNOWN_ISSUES.template.md"
   "PRD.template.md"
   "ARCHITECTURE.template.md"
-  "context-feedback.template.md"
+  # Audit system
   "audits-index.template.md"
 )
 
