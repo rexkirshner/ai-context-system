@@ -152,4 +152,4 @@ Copy this template for each feedback entry:
 
 **Thank you for helping make the AI Context System better!** 🙏
 
-*Your feedback will be reviewed when you run `/update-context-system` or manually share it with the maintainers.*
+*To share feedback with maintainers, open an issue at: https://github.com/rexkirshner/ai-context-system/issues*
