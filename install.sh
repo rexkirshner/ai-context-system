@@ -2,7 +2,7 @@
 
 # install.sh
 # Bootstrap installer for AI Context System
-# v4.2.0 - User Feedback Fixes & UX Improvements
+# v4.2.1 - UX Polish for Update Process
 #
 # Usage:
 #   curl -sL https://raw.githubusercontent.com/rexkirshner/ai-context-system/main/install.sh | bash
@@ -34,13 +34,13 @@ OPTIONAL_FILES=(
 )
 
 # Get version from GitHub VERSION file (with validation)
-VERSION=$(curl -sL "${RAW_URL}/VERSION" 2>/dev/null || echo "3.0.0")
+VERSION=$(curl -sL "${RAW_URL}/VERSION" 2>/dev/null || echo "4.0.0")
 
 # Validate VERSION format (must be X.Y.Z)
 if ! echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
   color_echo "${YELLOW}⚠️  Warning: Could not fetch version from GitHub${NC}"
-  echo "   Using fallback version: 3.0.0"
-  VERSION="3.0.0"
+  echo "   Using fallback version: 4.0.0"
+  VERSION="4.0.0"
 fi
 
 color_echo "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
@@ -467,8 +467,6 @@ TEMPLATES=(
   "audits-index.template.md"
 )
 
-echo "   ℹ️  Note: QUICK_REF.template.md removed in v2.1 (Quick Reference now in STATUS.md)"
-
 for tmpl in "${TEMPLATES[@]}"; do
   echo -n "   Downloading $tmpl... "
   if ! download_file "${RAW_URL}/templates/${tmpl}" "templates/${tmpl}" 100; then
@@ -492,6 +490,7 @@ SCRIPTS=(
   "update-quick-reference.sh"
   "code-review-helpers.sh"
   "archive-sessions-helper.sh"
+  "export-sessions-json.sh"
 )
 
 for script in "${SCRIPTS[@]}"; do
@@ -635,11 +634,10 @@ if [ $FAILED_DOWNLOADS -eq 0 ] && [ $VERIFICATION_FAILED -eq 0 ]; then
   echo "   - Command philosophy: .claude/docs/command-philosophy.md"
   echo "   - GitHub: ${REPO_URL}"
   echo ""
-  color_echo "${BLUE}v4.0.0 Features (Modular Code Review System):${NC}"
-  echo "   - 8 specialized audit commands: security, performance,"
-  echo "     accessibility, SEO, database, infrastructure,"
-  echo "     TypeScript, and testing"
-  echo "   - /code-review now interactive orchestrator"
+  color_echo "${BLUE}Key Features:${NC}"
+  echo "   - 8 specialized audit commands: /code-review-security,"
+  echo "     /code-review-performance, /code-review-accessibility, etc."
+  echo "   - /code-review is an interactive orchestrator"
   echo "   - Reports saved to docs/audits/{type}-audit-NN.md"
   echo "   - Auto-detect platform (Prisma, Vercel, Next.js, etc.)"
   echo "   - Pre-launch presets: --prelaunch, --backend, --frontend"
@@ -649,7 +647,7 @@ if [ $FAILED_DOWNLOADS -eq 0 ] && [ $VERIFICATION_FAILED -eq 0 ]; then
   echo "   /save                  - Quick save (2-3 min)"
   echo "   /save-full             - Comprehensive save (10-15 min)"
   echo "   /validate-context      - Check documentation + organization"
-  echo "   /organize-docs         - Interactive cleanup wizard (v2.2.1)"
+  echo "   /organize-docs         - Interactive documentation cleanup"
   echo "   /update-context-system - Update to latest version"
   echo "   /update-templates      - Compare and update templates"
   echo ""
