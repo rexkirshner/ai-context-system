@@ -5,6 +5,35 @@ All notable changes to the AI Context System will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.2.1] - 2026-01-08
+
+**PATCH RELEASE** - UX Polish for Update Process
+
+This release addresses UX issues identified during real v4.0.2 to v4.2.0 upgrade experiences. All fixes improve user confidence during the update process.
+
+### Fixed
+
+- **Update notice during update** - Suppressed confusing "Run /update-context-system to upgrade" message when already running the update
+  - Added `ACS_UPDATING` environment variable check in `common-functions.sh`
+  - Export `ACS_UPDATING=true` in `/update-context-system` before sourcing common functions
+  - Update notice now correctly skipped when update is in progress
+
+### Removed
+
+- **Outdated update-guide.md** - Removed 803-line file documenting v3.3.0 systems
+  - File showed "What's New in v3.3.0" which confused users at v4.2.x
+  - Documented section-based template updates that no longer exist in v4
+  - Referenced `--accept-all` flag that doesn't exist in current implementation
+  - Removed reference from `install.sh` DOCS array
+
+### Testing
+
+- Added 8 new tests in `scripts/tests/test-v421-ux-polish.sh`
+  - 4 tests for ACS_UPDATING suppression
+  - 4 tests for update-guide.md removal
+
+---
+
 ## [4.2.0] - 2026-01-07
 
 **MINOR RELEASE** - User Feedback Fixes & UX Improvements
