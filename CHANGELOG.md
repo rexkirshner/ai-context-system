@@ -5,6 +5,90 @@ All notable changes to the AI Context System will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.0.0] - 2026-01-13
+
+**MAJOR RELEASE** - First Principles Redesign
+
+This release represents a fundamental reimagining of the AI Context System. Rather than patching v4.x, we redesigned from first principles with three core insights:
+
+1. **Claude Code has evolved** - Skills, agents, hooks, and MCP servers enable capabilities that didn't exist when ACS was designed
+2. **AI-to-AI handoffs are the primary use case** - The system is now optimized for AI agents, not human developers
+3. **Less is more** - Simplified from 22 commands and 8 scripts to 8 skills and 9 agents
+
+### Added
+
+- **Skills Architecture** - 8 skills replace 22 commands:
+  - `/init` - Initialize context (replaces /init-context)
+  - `/review` - Health check with resume point (replaces /review-context)
+  - `/save` - Quick status update (new)
+  - `/save-full` - Comprehensive session save (replaces /save-session-full)
+  - `/validate` - Cross-reference validation (replaces /validate-context)
+  - `/export` - Handoff package creation (replaces /export-context)
+  - `/update` - Safe updates with rollback (replaces /update-context-system)
+
+- **Agent-Based Code Review** - 9 specialized agents:
+  - `codebase-scanner` - Builds shared context cache
+  - `security-reviewer` - Security vulnerability detection
+  - `performance-reviewer` - Performance issue identification
+  - `accessibility-reviewer` - WCAG compliance checking
+  - `type-safety-reviewer` - TypeScript strictness analysis
+  - `test-coverage-reviewer` - Test coverage gap detection
+  - `code-reviewer` - Orchestrates all specialists
+  - `synthesis-agent` - Deduplicates and grades findings
+  - `audit-compare` - Trend tracking across audits
+
+- **Hooks System** - Safe-fail automation:
+  - `session-start.sh` - Health summary on session start
+  - 2-second timeout with graceful failure
+  - Profile-based enabling (minimal disables all)
+
+- **JSON Schemas** - 5 validation schemas:
+  - `context-health.json` - /review output
+  - `audit-finding.json` - Code review finding
+  - `audit-report.json` - Complete audit report
+  - `session-entry.json` - Session log entry
+  - `handoff-package.json` - /export output
+
+- **Settings Configuration** - 3 profiles:
+  - `minimal` - No hooks, quiet output
+  - `standard` - Default balanced settings
+  - `comprehensive` - All features enabled
+
+- **Verified Findings** - Every code review finding includes:
+  - Pattern searched for vulnerability
+  - Pattern searched for mitigation
+  - Confirmation mitigation not found
+
+### Changed
+
+- **Commands → Skills** - All 22 commands replaced with 8 skills
+- **Scripts → Agents** - 8 bash scripts replaced with 9 agent definitions
+- **Config → Profiles** - 40+ options simplified to 3 profiles
+- **Sequential → Parallel** - Specialist agents run concurrently
+
+### Removed
+
+- `.claude/commands/` directory (replaced by skills)
+- 8 bash scripts in `scripts/` (kept rollback.sh only)
+- `templates/` complex templates (inlined into skills)
+- `context-feedback.md` (archived to SESSIONS.md on migration)
+
+### Migration
+
+- **Automatic migration** from v4.x (v4.0.x, v4.1.x, v4.2.x)
+- **Backup creation** before any changes
+- **Rollback support** via `./scripts/rollback.sh`
+- **User content preserved** - CONTEXT, STATUS, DECISIONS, SESSIONS unchanged
+
+### Testing
+
+- Phase-gated verification: `./scripts/verify-phase.sh <0-8>`
+- 8 e2e test suites with 150+ checks
+- 3 fixture repositories (nextjs-app, python-cli, monorepo)
+- Golden file comparison tests
+
+---
+
 ## [4.2.1] - 2026-01-08
 
 **PATCH RELEASE** - UX Polish for Update Process
