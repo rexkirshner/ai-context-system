@@ -162,6 +162,8 @@ verify_phase_1() {
 verify_phase_2() {
     section "Phase 2: Additional Skills"
 
+    echo "Checking additional skills..."
+
     local skills=("save" "validate" "export" "update")
     local skill_dir="$REPO_ROOT/.claude/skills"
 
@@ -172,6 +174,21 @@ verify_phase_2() {
             fail "Skill missing: $skill"
         fi
     done
+
+    # Run Phase 2 e2e tests
+    echo ""
+    echo "Running Phase 2 skill tests..."
+
+    local e2e_test="$REPO_ROOT/test/e2e/test-phase2-skills.sh"
+    if [ -f "$e2e_test" ] && [ -x "$e2e_test" ]; then
+        if "$e2e_test" > /dev/null 2>&1; then
+            pass "Phase 2 skill tests pass"
+        else
+            fail "Phase 2 skill tests fail (run test/e2e/test-phase2-skills.sh for details)"
+        fi
+    else
+        warn "Phase 2 e2e test script not found or not executable"
+    fi
 }
 
 verify_phase_3() {
