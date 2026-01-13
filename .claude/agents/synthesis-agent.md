@@ -1,6 +1,6 @@
 # Synthesis Agent
 
-Merges findings from multiple specialist agents into a unified report.
+Merges findings from specialist agents into unified report.
 
 ## Purpose
 
@@ -12,7 +12,7 @@ Merges findings from multiple specialist agents into a unified report.
 
 ## Input
 
-Findings from specialist agents:
+Findings from all specialist agents:
 
 ```json
 {
@@ -30,7 +30,7 @@ Complete `AuditReport`:
 
 ```json
 {
-  "metadata": { ... },
+  "metadata": { "timestamp": "...", "projectName": "...", "agentsRun": [...] },
   "summary": {
     "grade": "B+",
     "criticalCount": 0,
@@ -39,262 +39,81 @@ Complete `AuditReport`:
     "lowCount": 5
   },
   "findings": [/* deduplicated, merged */],
-  "positives": [/* good patterns found */]
+  "positives": ["TypeScript strict mode", "Good test coverage"]
 }
 ```
 
-## Execution Steps
+## Execution
 
-### Step 1: Collect All Findings
+### 1. Flatten All Findings
 
-```javascript
-// Flatten all findings into single array
-const allFindings = [
-  ...input.security,
-  ...input.performance,
-  ...input.accessibility,
-  ...input.typescript,
-  ...input.testing
-];
+Combine findings from all specialists into single array.
+
+### 2. Deduplicate
+
+**Duplicate:** Same file AND same line number.
+
+For duplicates, merge:
+- Keep highest severity
+- Combine verification notes
+- Combine remediations if different
+
+```
+SEC-001 (high) + PERF-001 (medium) at api.ts:15
+→ SEC-001 (high) with combined notes
 ```
 
-### Step 2: Deduplicate Findings
+### 3. Calculate Grade
 
-Per V5_PLANNING.md Appendix B.3:
+| Condition | Grade |
+|-----------|-------|
+| Any critical | F |
+| >3 high | D |
+| >1 high | C |
+| 1 high | C+ |
+| >5 medium | B- |
+| >2 medium | B |
+| >0 medium | B+ |
+| >5 low | A- |
+| >0 low | A |
+| 0 issues | A+ |
 
-**Duplicates:** Same file AND same line number.
+### 4. Identify Positives
 
-```javascript
-function isDuplicate(a, b) {
-  return a.location.file === b.location.file &&
-         a.location.line === b.location.line;
-}
+Check codebase context for:
+- TypeScript with strict mode → "Consistent use of TypeScript"
+- Test suite present → "Test suite configured"
+- CI/CD present → "CI/CD pipeline configured"
+- Lock file present → "Dependencies locked"
+- Security headers → "Security headers configured"
 
-// Group duplicates
-const groups = groupBy(allFindings, f => `${f.location.file}:${f.location.line}`);
-```
+### 5. Assign Final IDs
 
-### Step 3: Merge Duplicates
+Ensure unique IDs: `SEC-001`, `SEC-002`, `PERF-001`, etc.
 
-For each group of duplicates, keep one finding with:
+### 6. Sort Findings
 
-**Tie-break rules (keep the one with):**
-1. Highest severity
-2. Most specific description
-3. Most actionable remediation
-
-**Merge:**
-- Combine evidence from all findings
-- Keep all unique remediation suggestions
-- Preserve verification from most authoritative source
-
-```javascript
-function mergeDuplicates(findings) {
-  // Sort by severity (critical > high > medium > low > info)
-  const severityOrder = { critical: 0, high: 1, medium: 2, low: 3, info: 4 };
-  findings.sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity]);
-
-  const primary = findings[0];
-
-  // Merge verification notes
-  const allNotes = findings
-    .map(f => f.verified.verificationNotes)
-    .filter(Boolean)
-    .join('; ');
-
-  primary.verified.verificationNotes = allNotes;
-
-  // Combine remediations if different
-  const remediations = [...new Set(findings.map(f => f.remediation))];
-  if (remediations.length > 1) {
-    primary.remediation = remediations.join('\n\nAlternatively: ');
-  }
-
-  return primary;
-}
-```
-
-### Step 4: Calculate Grade
-
-Based on severity counts:
-
-```javascript
-function calculateGrade(findings) {
-  const counts = {
-    critical: findings.filter(f => f.severity === 'critical').length,
-    high: findings.filter(f => f.severity === 'high').length,
-    medium: findings.filter(f => f.severity === 'medium').length,
-    low: findings.filter(f => f.severity === 'low').length
-  };
-
-  // Grading rubric
-  if (counts.critical > 0) return 'F';
-  if (counts.high > 3) return 'D';
-  if (counts.high > 1) return 'C';
-  if (counts.high > 0) return 'C+';
-  if (counts.medium > 5) return 'B-';
-  if (counts.medium > 2) return 'B';
-  if (counts.medium > 0) return 'B+';
-  if (counts.low > 5) return 'A-';
-  if (counts.low > 0) return 'A';
-  return 'A+';
-}
-```
-
-**Grade scale:**
-| Grade | Meaning |
-|-------|---------|
-| A+ | Excellent, no issues |
-| A | Very good, minor issues only |
-| A- | Good, few low-severity issues |
-| B+ | Above average, some medium issues |
-| B | Average, medium issues present |
-| B- | Below average, multiple medium issues |
-| C+ | Needs work, one high severity |
-| C | Significant issues, multiple high |
-| D | Poor, many high severity issues |
-| F | Critical issues present |
-
-### Step 5: Identify Positives
-
-Look for good patterns in the codebase:
-
-```javascript
-const positives = [];
-
-// Check for TypeScript usage
-if (codebaseContext.structure.primaryLanguage === 'typescript') {
-  positives.push('Consistent use of TypeScript with strict mode');
-}
-
-// Check for test presence
-if (codebaseContext.structure.hasTests) {
-  positives.push('Test suite present');
-}
-
-// Check for CI/CD
-if (codebaseContext.structure.hasCi) {
-  positives.push('CI/CD pipeline configured');
-}
-
-// Check for security headers (if web app)
-if (hasSecurityHeaders) {
-  positives.push('Security headers properly configured');
-}
-
-// Check for dependency management
-if (hasLockFile) {
-  positives.push('Dependency versions locked');
-}
-```
-
-### Step 6: Build Summary
-
-```javascript
-const summary = {
-  grade: calculateGrade(mergedFindings),
-  criticalCount: mergedFindings.filter(f => f.severity === 'critical').length,
-  highCount: mergedFindings.filter(f => f.severity === 'high').length,
-  mediumCount: mergedFindings.filter(f => f.severity === 'medium').length,
-  lowCount: mergedFindings.filter(f => f.severity === 'low').length
-};
-```
-
-### Step 7: Assign Final IDs
-
-Ensure unique IDs across all findings:
-
-```javascript
-let idCounter = { SEC: 0, PERF: 0, A11Y: 0, TS: 0, TEST: 0 };
-
-mergedFindings.forEach(finding => {
-  const prefix = categoryToPrefix[finding.category];
-  idCounter[prefix]++;
-  finding.id = `${prefix}-${String(idCounter[prefix]).padStart(3, '0')}`;
-});
-```
-
-### Step 8: Sort Findings
-
-Order by severity, then by file:
-
-```javascript
-mergedFindings.sort((a, b) => {
-  const severityOrder = { critical: 0, high: 1, medium: 2, low: 3, info: 4 };
-  if (severityOrder[a.severity] !== severityOrder[b.severity]) {
-    return severityOrder[a.severity] - severityOrder[b.severity];
-  }
-  return a.location.file.localeCompare(b.location.file);
-});
-```
-
-### Step 9: Output Final Report
-
-```json
-{
-  "metadata": {
-    "timestamp": "2026-01-13T10:30:00Z",
-    "acsVersion": "5.0.0",
-    "projectName": "my-app",
-    "agentsRun": ["security-reviewer", "performance-reviewer"],
-    "filesScanned": 42,
-    "cacheHit": true
-  },
-  "summary": {
-    "grade": "B+",
-    "criticalCount": 0,
-    "highCount": 1,
-    "mediumCount": 3,
-    "lowCount": 5
-  },
-  "findings": [/* sorted, deduplicated, merged */],
-  "positives": [
-    "Consistent use of TypeScript",
-    "Good test coverage",
-    "Security headers configured"
-  ]
-}
-```
-
-## Verification Criteria
-
-| Check | Requirement |
-|-------|-------------|
-| No duplicates | No two findings share same file:line |
-| Severity preserved | Highest severity from duplicates kept |
-| Grade calculated | Based on severity counts |
-| Schema valid | Output validates against AuditReport schema |
+Order by: severity (critical first), then file path.
 
 ## Deduplication Example
 
 **Input:**
-```json
-[
-  { "id": "SEC-001", "file": "api.ts", "line": 15, "severity": "high", "title": "SQL injection" },
-  { "id": "PERF-001", "file": "api.ts", "line": 15, "severity": "medium", "title": "Slow query" }
-]
+```
+SEC-001: api.ts:15 - SQL injection (high)
+PERF-001: api.ts:15 - Slow query (medium)
 ```
 
 **Output:**
-```json
-[
-  {
-    "id": "SEC-001",
-    "file": "api.ts",
-    "line": 15,
-    "severity": "high",  // highest kept
-    "title": "SQL injection",
-    "verified": {
-      "verificationNotes": "SQL injection risk; Also flagged as slow query"
-    },
-    "remediation": "Use parameterized queries\n\nAlternatively: Add query caching"
-  }
-]
+```
+SEC-001: api.ts:15 - SQL injection (high)
+  notes: "SQL injection risk; Also flagged as slow query"
+  remediation: "Use parameterized queries. Also: Add query caching"
 ```
 
-## Notes
+## Guardrails
 
-- This agent runs AFTER all specialists complete
-- Single point of deduplication ensures clean output
-- Grade provides quick summary of codebase health
-- Positives balance the report (not just negatives)
+- **DO** keep highest severity when deduplicating
+- **DO** merge verification notes from all sources
+- **DO** include positives (balance the report)
+- **DO NOT** lose information when merging
+- **DO NOT** produce duplicate file:line entries
