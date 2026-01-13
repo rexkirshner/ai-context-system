@@ -342,6 +342,8 @@ verify_phase_6() {
 verify_phase_7() {
     section "Phase 7: Documentation"
 
+    echo "Checking documentation..."
+
     # Check docs exist
     if [ -d "$REPO_ROOT/docs" ]; then
         pass "Docs directory exists"
@@ -349,15 +351,44 @@ verify_phase_7() {
         fail "Docs directory missing"
     fi
 
+    # Check skill docs
+    if [ -d "$REPO_ROOT/docs/skills" ]; then
+        pass "Skill docs directory exists"
+    else
+        fail "Skill docs directory missing"
+    fi
+
+    # Check migration guide
+    if [ -f "$REPO_ROOT/docs/migration/guide.md" ]; then
+        pass "Migration guide exists"
+    else
+        fail "Migration guide missing"
+    fi
+
     # Check CHANGELOG
     if [ -f "$REPO_ROOT/CHANGELOG.md" ]; then
-        if grep -q "5.0" "$REPO_ROOT/CHANGELOG.md"; then
-            pass "CHANGELOG has v5.0 entry"
+        if grep -q "\[5.0.0\]" "$REPO_ROOT/CHANGELOG.md"; then
+            pass "CHANGELOG has v5.0.0 entry"
         else
-            fail "CHANGELOG missing v5.0 entry"
+            fail "CHANGELOG missing v5.0.0 entry"
         fi
     else
         fail "CHANGELOG.md missing"
+    fi
+
+    # Run Phase 7 e2e tests
+    echo ""
+    echo "Running Phase 7 documentation tests..."
+
+    local e2e_test="$REPO_ROOT/test/e2e/test-phase7-docs.sh"
+    if [ -f "$e2e_test" ] && [ -x "$e2e_test" ]; then
+        if "$e2e_test" > /dev/null 2>&1; then
+            pass "Phase 7 documentation tests pass"
+        else
+            fail "Phase 7 documentation tests fail (run test/e2e/test-phase7-docs.sh for details)"
+        fi
+    else
+        warn "Phase 7 e2e test script not found or not executable"
     fi
 }
 
