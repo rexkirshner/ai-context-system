@@ -1,0 +1,937 @@
+# AI Context System v5.0 - First Principles Redesign
+
+**Document Version:** 1.0
+**Created:** 2026-01-12
+**Status:** Planning
+
+---
+
+## Executive Summary
+
+Version 5.0 represents a fundamental reimagining of the AI Context System. Rather than patching v4.x, we're redesigning from first principles with three core insights:
+
+1. **Claude Code has evolved** - Skills, agents, hooks, and MCP servers enable capabilities that didn't exist when ACS was designed
+2. **AI-to-AI handoffs are the primary use case** - The system should be optimized for AI agents, not human developers
+3. **Less is more** - v4.x has accumulated tech debt (22 commands, 8 scripts, 12 templates) that creates friction
+
+**Vision:** A lean, agent-native context system that leverages Claude Code's built-in architecture rather than fighting it.
+
+---
+
+## Part 1: What Works (Keep)
+
+### Core Philosophy (Excellent - Keep Exactly)
+
+| Concept | Why It Works | Keep As-Is |
+|---------|--------------|------------|
+| **Session Continuity** | Primary design goal - zero context loss | ✅ |
+| **Externalized AI Context** | Makes reasoning visible and reviewable | ✅ |
+| **Minimal Overhead** | Core system = 5 files, complexity-driven expansion | ✅ |
+| **User Control** | Explicit approval for destructive actions | ✅ |
+| **DECISIONS.md** | WHY choices were made (critical for AI) | ✅ |
+| **TL;DR Requirement** | Mandatory 2-3 sentence summaries | ✅ |
+| **Append-Only SESSIONS.md** | Simple, reliable, no data loss | ✅ |
+
+### Core Files (Keep, Minor Refinement)
+
+```
+context/
+├── CONTEXT.md      # Project orientation (rarely changes)
+├── STATUS.md       # Current state + Quick Reference (updated frequently)
+├── DECISIONS.md    # Decision log with rationale
+├── SESSIONS.md     # Session history with mental models
+└── .context-config.json  # Configuration
+```
+
+**Changes:**
+- Rename `context-feedback.md` → remove or fold into SESSIONS.md
+- Move CLAUDE.md to project root (already correct in v4.2.1)
+- Simplify templates (fewer placeholders, more auto-detection)
+
+### Quick Reference Dashboard (Keep, Enhance)
+
+The auto-generated Quick Reference at top of STATUS.md is valuable. Keep but enhance with:
+- Last session summary (auto-populated)
+- Confidence score (from /review-context)
+- Next action suggestion
+
+---
+
+## Part 2: What's Overkill (Remove or Consolidate)
+
+### Too Many Commands (22 → 8)
+
+**Current:** 22 slash commands create decision fatigue and maintenance burden.
+
+**Proposed Core Commands (8):**
+
+| Command | Purpose | Replaces |
+|---------|---------|----------|
+| `/init` | Initialize or migrate project | `/init-context`, `/migrate-context` |
+| `/save` | Quick session update | `/save` (unchanged) |
+| `/save-full` | Comprehensive session entry | `/save-full` (unchanged) |
+| `/review` | Start-of-session verification | `/review-context` |
+| `/validate` | Health check and staleness | `/validate-context` |
+| `/code-review` | Run code analysis (via agents) | All 9 code-review commands |
+| `/export` | Export for handoff | `/export-context` |
+| `/update` | Update ACS version | `/update-context-system` |
+
+**Removed Commands:**
+- `/organize-docs` → Rare usage, can be manual
+- `/session-summary` → Fold into `/review`
+- `/update-templates` → Fold into `/update`
+- `/add-ai-header` → Fold into `/init`
+- `/build-check` → Project-specific, not ACS core
+
+### Too Many Scripts (8 → 2-3)
+
+**Current:** 8 separate bash scripts (4,433 lines) with complex interdependencies.
+
+**Proposed:**
+- **Keep:** `common-functions.sh` (refactored, ~500 lines)
+- **Keep:** `install.sh` (simplified)
+- **Remove:** All others - replace with Claude Code features
+
+**Rationale:**
+- `save-full-helper.sh` → Skill that knows session template format
+- `export-sessions-json.sh` → Agent task with JSON output
+- `update-quick-reference.sh` → Hook that runs after `/save`
+- `validate-context.sh` → Skill with validation logic
+- `code-review-helpers.sh` → Code Review agents
+- `archive-sessions-helper.sh` → Agent task when SESSIONS.md too large
+- Legacy migration scripts → Remove (clean break for v5)
+
+### Too Many Templates (12 → 5)
+
+**Current:** 12 template files, many rarely used.
+
+**Proposed Core Templates (5):**
+
+| Template | Purpose | Changes |
+|----------|---------|---------|
+| `CONTEXT.template.md` | Orientation | Simplified, more auto-detection |
+| `STATUS.template.md` | Current state | Enhanced Quick Reference |
+| `DECISIONS.template.md` | Decision log | Unchanged |
+| `SESSIONS.template.md` | Session history | Add agent handoff section |
+| `CLAUDE.md.template` | Entry point | Simplified |
+
+**Removed/On-Demand:**
+- `CODE_MAP.template.md` → Generate on-demand via agent
+- `PRD.template.md` → User brings their own
+- `ARCHITECTURE.template.md` → Generate on-demand via agent
+- `KNOWN_ISSUES.template.md` → Use GitHub issues instead
+- `CODE_STYLE.template.md` → User brings their own
+- `context-feedback.template.md` → Fold into SESSIONS.md
+- `audits-index.template.md` → Auto-generated by code review agent
+- Multi-AI headers → Generate on-demand
+
+### Overly Complex Configuration
+
+**Current:** 200+ line JSON schema with 40+ configurable options.
+
+**Proposed:** Three profiles + minimal customization
+
+```json
+{
+  "version": "5.0.0",
+  "profile": "standard",  // "minimal" | "standard" | "team"
+  "project": {
+    "name": "auto-detected",
+    "type": "auto-detected"
+  }
+}
+```
+
+**Profiles:**
+- **minimal:** Just core files, no automation
+- **standard:** Core files + Quick Reference + validation
+- **team:** Full features + multi-AI headers + agent orchestration
+
+---
+
+## Part 3: What's Noise (Eliminate)
+
+### Legacy Migration Support
+
+Remove all v3.x migration code:
+- `v3-rename-workflow.sh`
+- `migrate-to-1-9-0.sh`
+- `MIGRATION_v3.5_to_v3.6.md`
+- All "v3" references in code
+
+**Rationale:** Clean break. v4.x users can upgrade to v5 directly. v3.x users should upgrade to v4 first (existing path).
+
+### Redundant Documentation
+
+Current `.claude/docs/` has 8 files with overlapping content:
+- `command-philosophy.md`
+- `review-context-guide.md`
+- `code-review-guide.md`
+- etc.
+
+**Proposed:** Single `GUIDE.md` with sections, or move to acs-docs website.
+
+### Overcomplicated Error Messages
+
+Many scripts have elaborate error messages with ASCII art and suggestions. Simplify to:
+- One-line error
+- One-line suggested fix
+- Link to documentation
+
+### Feature Flags Nobody Uses
+
+Configuration options that are likely unused:
+- `autoSaveInterval` (who uses auto-save?)
+- `captureCommandHistory` (what does this even do?)
+- `trackFileChanges` (vague)
+- `detailedSessionLogs` (redundant with SESSIONS.md)
+
+Remove or make these agent-internal rather than user-configurable.
+
+---
+
+## Part 4: What Could Be Better (Modernize)
+
+### 4.1 Code Reviews → Agent-Native Architecture
+
+**Current Problem:** 9 separate slash command files, manual execution, no parallelization.
+
+**v5.0 Solution:** Code Review Agent System
+
+```
+.claude/agents/
+├── code-reviewer.md           # Master orchestrator
+├── codebase-scanner.md        # Pre-compute shared context (runs first)
+├── security-reviewer.md       # Security specialist (OWASP, auth)
+├── performance-reviewer.md    # Performance specialist (CWV, bundle)
+├── accessibility-reviewer.md  # A11y specialist (WCAG 2.1 AA)
+├── type-safety-reviewer.md    # TypeScript specialist
+├── test-coverage-reviewer.md  # Testing specialist
+├── runtime-tester.md          # Browser-based user flow testing [NEW]
+├── user-journey-auditor.md    # Role-based feature verification [NEW]
+├── fix-generator.md           # Auto-generate fixes for findings [NEW]
+└── audit-compare.md           # Baseline comparison & trends [NEW]
+```
+
+**Benefits:**
+- **Parallel execution:** Multiple reviewers run simultaneously
+- **Specialized models:** Use Haiku for quick scans, Sonnet for deep analysis
+- **Tool restrictions:** Reviewers are read-only by design
+- **Isolated context:** Review output doesn't pollute main conversation
+- **Discoverable:** Add custom reviewers by adding agent files
+
+**Master Orchestrator (`code-reviewer.md`):**
+
+```yaml
+---
+name: code-reviewer
+description: Comprehensive code review orchestrator. Use when user asks for code review, audit, or quality check.
+tools: Read, Grep, Glob, Task
+model: sonnet
+---
+
+You are a code review orchestrator.
+
+When invoked:
+1. Analyze the codebase to determine which reviewers are relevant
+2. Launch relevant reviewer agents IN PARALLEL using Task tool
+3. Collect and synthesize findings
+4. Present unified report organized by priority
+
+Available reviewers:
+- security-reviewer: OWASP Top 10, auth, injection
+- performance-reviewer: Core Web Vitals, bundle, runtime
+- accessibility-reviewer: WCAG 2.1 AA
+- type-safety-reviewer: TypeScript strictness
+- test-coverage-reviewer: Test quality
+
+Launch 3-5 reviewers in parallel based on project type.
+```
+
+### 4.2 Save Workflow → Skill-Based Architecture
+
+**Current Problem:** `/save` and `/save-full` rely on bash scripts and manual execution.
+
+**v5.0 Solution:** Save Skills
+
+```
+.claude/skills/
+├── save/
+│   ├── SKILL.md              # Quick save skill
+│   └── status-template.md    # STATUS.md update format
+└── save-full/
+    ├── SKILL.md              # Comprehensive save skill
+    └── session-template.md   # SESSIONS.md entry format
+```
+
+**Quick Save Skill (`save/SKILL.md`):**
+
+```yaml
+---
+name: save
+description: Quick session save. Updates STATUS.md with current work state. Use every 30-60 minutes during work sessions.
+allowed-tools: Read, Edit, Bash
+---
+
+# Quick Save Skill
+
+Updates STATUS.md Work In Progress section with current state.
+
+## Steps
+1. Get git status and recent changes
+2. Read current STATUS.md
+3. Update Quick Reference (auto-generated section)
+4. Update Work In Progress section
+5. Confirm save complete
+
+## Quick Reference Format
+See [status-template.md](status-template.md) for format.
+```
+
+### 4.3 Session Continuity → Hook-Based Automation
+
+**Current Problem:** Manual staleness detection, no automatic validation.
+
+**v5.0 Solution:** Hooks for Automation
+
+```json
+// .claude/settings.json
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [{
+          "type": "command",
+          "command": ".claude/hooks/session-start.sh"
+        }]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [{
+          "type": "command",
+          "command": ".claude/hooks/context-modified.sh"
+        }]
+      }
+    ]
+  }
+}
+```
+
+**Session Start Hook:**
+- Check context file staleness
+- Show Quick Reference summary
+- Suggest resume point
+- Warn if uncommitted changes
+
+**Context Modified Hook:**
+- Track which context files changed
+- Queue for Quick Reference regeneration
+- Log modification timestamp
+
+### 4.4 Initialization → Intelligent Auto-Detection
+
+**Current Problem:** Many `[FILL: ...]` placeholders require manual work.
+
+**v5.0 Solution:** AI-powered initialization
+
+```yaml
+---
+name: init
+description: Initialize AI Context System for new project. Automatically detects project info and creates context files.
+allowed-tools: Read, Glob, Grep, Bash, Write
+---
+
+# ACS Initialization Skill
+
+## Auto-Detection (run before creating any files)
+
+1. **Project Identity**
+   - Name: package.json name, Cargo.toml name, directory name
+   - Description: package.json description, README first paragraph
+   - Repository: git remote -v
+
+2. **Tech Stack**
+   - Framework: package.json deps, import statements
+   - Language: file extensions, config files
+   - Database: .env vars, connection strings
+   - Hosting: vercel.json, netlify.toml, Dockerfile
+
+3. **Project Type**
+   - web-app: Has frontend + backend
+   - api: Backend only
+   - library: npm/crate publish config
+   - cli: bin field in package.json
+   - monorepo: workspaces, lerna, turborepo
+
+4. **Existing Documentation**
+   - README.md: Preserve, reference from CONTEXT.md
+   - ARCHITECTURE.md: Migrate relevant sections
+   - CONTRIBUTING.md: Reference for team workflow
+
+## File Creation
+Create context files with auto-detected values.
+Only use [FILL: ...] for things that cannot be detected.
+```
+
+### 4.5 Export → Agent-Orchestrated Handoff
+
+**Current Problem:** Export is a simple file concatenation.
+
+**v5.0 Solution:** Intelligent Handoff Agent
+
+```yaml
+---
+name: export-context
+description: Create comprehensive handoff package for AI-to-AI or developer handoff.
+allowed-tools: Read, Glob, Write, Bash
+context: fork
+---
+
+# Handoff Export Agent
+
+Creates optimized handoff package with:
+
+1. **Executive Summary** (AI-generated)
+   - Project state in 3 sentences
+   - Critical decisions made
+   - Immediate next actions
+
+2. **Context Package**
+   - CONTEXT.md (full)
+   - STATUS.md (full)
+   - DECISIONS.md (last 10 decisions)
+   - SESSIONS.md (last 5 sessions with full detail)
+
+3. **Codebase Snapshot**
+   - File tree (depth 3)
+   - Key file locations
+   - Architecture diagram (if exists)
+
+4. **Handoff Instructions**
+   - How to resume work
+   - Active blockers
+   - Pending decisions
+
+Output: artifacts/exports/handoff-YYYY-MM-DD.md
+```
+
+---
+
+## Part 5: New Architecture
+
+### 5.1 Directory Structure
+
+```
+project/
+├── CLAUDE.md                     # Entry point (auto-loaded)
+│
+├── context/                      # Core context (required)
+│   ├── CONTEXT.md               # Orientation (stable)
+│   ├── STATUS.md                # Current state (dynamic)
+│   ├── DECISIONS.md             # Decision log
+│   ├── SESSIONS.md              # Session history
+│   └── .context-config.json     # Simple config
+│
+├── .claude/                      # Claude Code integration
+│   ├── skills/                  # ACS skills
+│   │   ├── save/
+│   │   ├── save-full/
+│   │   ├── review/
+│   │   └── init/
+│   ├── agents/                  # Code review agents
+│   │   ├── code-reviewer.md
+│   │   └── [specialist agents]
+│   ├── hooks/                   # Automation scripts
+│   │   ├── session-start.sh
+│   │   └── context-modified.sh
+│   └── settings.json            # Hook configuration
+│
+├── docs/                         # Project documentation
+│   └── audits/                  # Code review reports
+│       └── INDEX.md             # Auto-generated index
+│
+└── artifacts/                    # Analysis outputs
+    └── exports/                 # Handoff packages
+```
+
+### 5.2 Component Map
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     AI CONTEXT SYSTEM v5.0                      │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  SKILLS (Model-Invoked, Declarative)                           │
+│  ├── /save         Quick session update                        │
+│  ├── /save-full    Comprehensive save with mental models       │
+│  ├── /review       Start-of-session verification               │
+│  ├── /validate     Health check                                │
+│  ├── /init         Project initialization                      │
+│  └── /export       Handoff package creation                    │
+│                                                                 │
+│  AGENTS (Task-Delegated, Parallel)                             │
+│  ├── code-reviewer         Orchestrates all reviews            │
+│  ├── security-reviewer     OWASP, auth, injection              │
+│  ├── performance-reviewer  CWV, bundle, runtime                │
+│  ├── accessibility-reviewer WCAG 2.1 AA                        │
+│  ├── type-safety-reviewer  TypeScript strictness               │
+│  └── test-coverage-reviewer Test quality                       │
+│                                                                 │
+│  HOOKS (Event-Driven, Automatic)                               │
+│  ├── SessionStart   Auto-review context, show status           │
+│  ├── PostToolUse    Track context modifications                │
+│  └── Stop           Queue Quick Reference regeneration          │
+│                                                                 │
+│  CONTEXT FILES (Externalized AI Memory)                        │
+│  ├── CONTEXT.md     Orientation (stable, rarely changes)       │
+│  ├── STATUS.md      Current state (dynamic, updated often)     │
+│  ├── DECISIONS.md   Decision log (append-only)                 │
+│  └── SESSIONS.md    Session history (append-only)              │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### 5.3 Execution Model
+
+**Before (v4.x):**
+```
+User → Slash Command → Markdown Instructions → Claude reads and executes
+                                            → Bash scripts called manually
+                                            → Output shown in conversation
+```
+
+**After (v5.0):**
+```
+User → Skill auto-discovered → Claude follows skill instructions
+                            → Agents delegated for complex work
+                            → Hooks fire for automation
+                            → Output clean and focused
+```
+
+---
+
+## Part 6: Migration Path
+
+### 6.1 v4.x → v5.0 Upgrade
+
+```bash
+# Upgrade command (run from project root)
+/update
+
+# What happens:
+1. Backup existing .claude/ and context/
+2. Download v5.0 skills and agents
+3. Migrate configuration (simplify to profile)
+4. Update context files (add new sections)
+5. Install hooks
+6. Show migration summary
+```
+
+### 6.2 Breaking Changes
+
+| Change | Impact | Migration |
+|--------|--------|-----------|
+| 22 commands → 8 | Old command names won't work | Aliases provided for 6 months |
+| Bash scripts removed | Can't call scripts directly | Use skills/agents instead |
+| Config simplified | Old config options ignored | Auto-migrate to profile |
+| context-feedback.md removed | Feedback in SESSIONS.md | Auto-migrate content |
+| v3.x support removed | v3 projects can't upgrade directly | Must upgrade to v4 first |
+
+### 6.3 Compatibility Period
+
+- **6 months:** Aliases for old command names
+- **12 months:** Warning when using deprecated features
+- **18 months:** Full v5-only mode
+
+---
+
+## Part 7: Implementation Roadmap
+
+### Phase 1: Core Skills (Week 1-2)
+
+- [ ] Create `save/SKILL.md` with Quick Reference generation
+- [ ] Create `save-full/SKILL.md` with session template
+- [ ] Create `review/SKILL.md` with confidence scoring
+- [ ] Create `validate/SKILL.md` with health checking
+- [ ] Create `init/SKILL.md` with auto-detection
+- [ ] Test skills with real projects
+
+### Phase 2: Agent Architecture (Week 3-4)
+
+- [ ] Create `code-reviewer.md` orchestrator
+- [ ] Create 5 specialist reviewer agents
+- [ ] Implement parallel execution
+- [ ] Test with real-world project (validation)
+- [ ] Document agent creation for custom reviewers
+
+### Phase 3: Hook System (Week 5)
+
+- [ ] Create `session-start.sh` hook
+- [ ] Create `context-modified.sh` hook
+- [ ] Configure hook registration in settings.json
+- [ ] Test hook firing and behavior
+
+### Phase 4: Migration & Polish (Week 6)
+
+- [ ] Build migration script from v4.x
+- [ ] Create backward-compatible aliases
+- [ ] Update all documentation
+- [ ] Update acs-docs website
+- [ ] Beta testing with select users
+
+### Phase 5: Release (Week 7)
+
+- [ ] Final testing
+- [ ] CHANGELOG.md update
+- [ ] Release v5.0.0
+- [ ] Announce deprecation timeline
+
+---
+
+## Part 8: Success Metrics
+
+### Quantitative
+
+| Metric | v4.x Baseline | v5.0 Target |
+|--------|---------------|-------------|
+| Commands | 22 | 8 |
+| Bash scripts | 8 (~4,400 lines) | 2 (~600 lines) |
+| Templates | 12 | 5 |
+| Config options | 40+ | ~10 |
+| Code review time | Sequential | 3-5x faster (parallel) |
+| False positive rate | 35% | <15% |
+
+### Qualitative
+
+- **Simpler onboarding:** New users productive in <5 minutes
+- **Less friction:** Daily workflow uses 3 commands max
+- **Better code reviews:** Parallel execution, specialized agents
+- **Cleaner architecture:** Skills/agents vs bash scripts
+- **Forward compatible:** Ready for future Claude Code features
+
+---
+
+## Part 9: Open Questions
+
+### For User Clarification
+
+1. **Multi-AI support priority?**
+   - Keep cursor.md, aider.md headers?
+   - Or focus purely on Claude Code?
+
+2. **Backward compatibility duration?**
+   - How long to support v4.x command aliases?
+   - 6 months? 12 months? Immediate break?
+
+3. **MCP server integration?**
+   - Should v5.0 include MCP server definitions?
+   - GitHub integration for issue-driven context?
+
+4. **Team features?**
+   - Enterprise/team profile with Slack integration?
+   - Shared agent configurations?
+
+5. **Testing approach?**
+   - Keep 42 bash tests or rewrite for new architecture?
+   - Add integration tests for skills/agents?
+
+---
+
+## Part 10: Real-World Feedback Integration
+
+This section captures critical insights from actual production project usage that informed v5.0 design.
+
+### 10.1 Code Review Improvements (From Production Feedback)
+
+**Critical Finding:** 35% false positive rate, 40% efficiency. A 30-minute QA sweep found 3 bugs that 8 comprehensive audits missed.
+
+**New Agents Required:**
+
+| Agent | Purpose | Why Needed |
+|-------|---------|------------|
+| `runtime-tester.md` | Browser-based testing of user flows | Static analysis misses runtime bugs |
+| `user-journey-auditor.md` | Role-based feature verification | Admin/member path differences missed |
+| `fix-generator.md` | Auto-generate fixes for findings | Reduce manual remediation time |
+
+**Verification Step (All Audits):**
+```markdown
+### Before Creating a Finding
+
+1. Search for the vulnerability pattern
+2. Search for the mitigation pattern
+3. If both present → verify mitigation covers the vulnerability
+4. Only create finding if mitigation is missing or incomplete
+5. Skip test/mock files unless explicitly reviewing tests
+```
+
+**Quick Check Mode:**
+```bash
+/code-review --quick
+# Runs in 2-3 minutes instead of 15-20
+# Only checks: Critical security, build failures, TypeScript errors
+# Suitable for pre-commit checks
+```
+
+**Baseline Comparison Agent:**
+```yaml
+---
+name: audit-compare
+description: Compare audit results over time to track trend
+---
+Output trend report showing:
+- Resolved issues since last audit
+- New issues introduced
+- Regression patterns
+- Grade trajectory (C → B+ → A-)
+```
+
+**Incremental Mode:**
+```bash
+/code-review --incremental
+# Only scan files changed since last audit
+# Use git log --since=$(last_audit_date)
+# 80% faster for frequent audits
+```
+
+### 10.2 Session Management Improvements (From Production Feedback)
+
+**Session Number Validation:**
+```markdown
+# In /save-full skill
+
+Before creating session entry:
+1. Parse existing SESSIONS.md for highest session number
+2. Cross-reference with STATUS.md "Last Session"
+3. Alert if discrepancy > 1 (indicates missed sessions)
+4. Use conversation context if available for verification
+```
+
+**Archive Automation:**
+```markdown
+# When SESSIONS.md exceeds 2500 lines
+
+Automatic trigger:
+1. Detect file size in /save-full skill
+2. Offer: "SESSIONS.md is large (2500+ lines). Archive older sessions?"
+3. If yes, move sessions 1-N to context/archive/SESSIONS-2026-Q1.md
+4. Keep last 20 sessions in active file
+5. Update INDEX.md with archive reference
+```
+
+**Git State Auto-Detection:**
+```markdown
+# In Quick Reference generation
+
+Auto-detect from git (don't rely on manual updates):
+- Commits ahead: `git rev-list --count origin/main..HEAD`
+- Uncommitted changes: `git status --porcelain | wc -l`
+- Current branch: `git branch --show-current`
+- Last commit: `git log -1 --format="%h %s"`
+```
+
+### 10.3 Context Health Score (From Production Feedback)
+
+**Quantified Health Check:**
+```markdown
+## Context Health: 85/100
+
+Breakdown:
+- STATUS.md: Current (0 days) ✓ (+20)
+- SESSIONS.md: Large (2452 lines) (-10)
+- DECISIONS.md: Current ✓ (+20)
+- CONTEXT.md: Slightly stale (3 days) (-5)
+- Quick Reference: In sync ✓ (+20)
+- Git state: 14 commits ahead, unpushed (-5)
+- Cross-references: All valid ✓ (+20)
+- TodoWrite state: Not persisted (-10)
+
+Recommendations:
+1. Push commits to remote
+2. Consider archiving old sessions
+3. Update CONTEXT.md if project scope changed
+```
+
+### 10.4 Cross-Reference Validation (From Production Feedback)
+
+**Validation Checks:**
+```markdown
+# Run during /review and /validate
+
+1. Files mentioned in session entries exist
+2. Decision IDs (D001, D002) referenced exist in DECISIONS.md
+3. Links in STATUS.md are valid (internal and external)
+4. Session numbers are sequential (no gaps)
+5. Dates are chronological
+6. TodoWrite items referenced are tracked
+```
+
+### 10.5 TodoWrite State Persistence (From Production Feedback)
+
+**Persist Between Sessions:**
+```json
+// context/.todo-state.json
+{
+  "lastUpdated": "2026-01-12T14:30:00Z",
+  "sessionId": 42,
+  "todos": [
+    {
+      "content": "Fix authentication bug",
+      "status": "in_progress",
+      "createdAt": "2026-01-12T10:00:00Z"
+    }
+  ]
+}
+```
+
+**Session Start Hook:**
+```bash
+# .claude/hooks/session-start.sh
+
+# Check for persisted TodoWrite state
+if [ -f "context/.todo-state.json" ]; then
+  echo "📋 Previous session had active todos:"
+  jq -r '.todos[] | select(.status != "completed") | "- \(.content)"' context/.todo-state.json
+fi
+```
+
+### 10.6 Shared Codebase Context (From Production Feedback)
+
+**Codebase Scanner Agent:**
+```yaml
+---
+name: codebase-scanner
+description: Pre-compute shared context for all audits. Run before parallel audit execution.
+tools: Glob, Grep, Read, Bash
+model: haiku
+---
+
+Output: .claude/cache/codebase-context.json
+
+Contents:
+- file_inventory: All files with paths, sizes, types
+- api_routes: All API endpoints with methods, auth status
+- components: React/Vue/Svelte components with hierarchy
+- database_models: Schema models and relationships
+- dependencies: Package tree with versions
+- test_files: Test file locations mapped to source
+
+TTL: Until any git change (cache invalidation on git status change)
+```
+
+**Benefits:**
+- Single scan vs 8 redundant scans
+- Faster individual audits (context pre-loaded)
+- Consistent data across all audits
+- Cache invalidation on code changes
+
+### 10.7 Progressive Disclosure in Reports (From Production Feedback)
+
+**Report Verbosity Levels:**
+
+| Level | Contents | Use Case |
+|-------|----------|----------|
+| `summary` | Grade, critical count, top 3 issues | Quick status check |
+| `standard` | All findings, remediation steps | Normal review |
+| `detailed` | Deep dive, benchmarks, dependency audit | Comprehensive analysis |
+
+```bash
+/code-review --detail=summary    # Executive summary only
+/code-review --detail=standard   # Default - full findings
+/code-review --detail=detailed   # Everything including benchmarks
+```
+
+### 10.8 What Real-World Usage Confirmed Works Well
+
+From feedback, these v4.x features work excellently and are kept in v5.0:
+
+1. **STATUS.md as single source of truth** - Clear structure, easy to scan
+2. **Append-only SESSIONS.md strategy** - Reliable regardless of file size
+3. **TL;DR requirement** - Valuable for quick scanning and AI handoffs
+4. **Mental Models section** - Captures reasoning, not just actions
+5. **Weighted grading system** - Security 1.5x, A11y 1.2x correctly prioritizes
+6. **Preset system** - `--all`, `--prelaunch`, `--backend` map to workflows
+7. **Extensibility via discovery** - Custom `code-review-*.md` files work great
+8. **Confidence scoring** - 92/100 with breakdown is actionable
+9. **Color-coded staleness** - 🟢🟡🔴 indicators are helpful
+10. **Git push protection** - Critical protocol reminder at session start
+
+---
+
+## Appendix A: Feature Comparison
+
+| Feature | v4.2.1 | v5.0 |
+|---------|--------|------|
+| **Core Files** | 5 | 4 (remove feedback.md) |
+| **Commands** | 22 slash commands | 8 skills |
+| **Code Review** | 9 manual commands | 1 orchestrator + 5 agents |
+| **Scripts** | 8 bash files | 2 bash + hooks |
+| **Templates** | 12 files | 5 files |
+| **Configuration** | 40+ options | 3 profiles |
+| **Execution** | Sequential | Parallel (agents) |
+| **Automation** | Manual | Hooks |
+| **Installation** | Multi-file download | Single script or npm |
+
+---
+
+## Appendix B: Removed Features
+
+Features explicitly removed in v5.0:
+
+1. `/organize-docs` - Rare usage
+2. `/session-summary` - Fold into /review
+3. `/update-templates` - Fold into /update
+4. `/add-ai-header` - Fold into /init
+5. `/build-check` - Project-specific
+6. `context-feedback.md` - Fold into SESSIONS.md
+7. v3.x migration scripts - Clean break
+8. Complex configuration options - Use profiles
+9. 8 separate code review commands - Use agents
+10. Redundant documentation files - Consolidate
+
+---
+
+## Appendix C: New Features
+
+Features added in v5.0:
+
+**Architecture:**
+1. **Skill-based architecture** - Model-invoked, declarative
+2. **Agent-based code review** - Parallel, specialized (11 agents)
+3. **Hook automation** - SessionStart, PostToolUse, Stop
+4. **Configuration profiles** - minimal, standard, team
+
+**Initialization & Handoff:**
+5. **AI-powered initialization** - Auto-detection of project info
+6. **Intelligent handoff** - Agent-generated executive summaries
+7. **Session start auto-review** - Hook-triggered context check
+
+**Code Review (From Real-World Feedback):**
+8. **Parallel code review** - 3-5x faster execution
+9. **Shared codebase context** - Single scan, shared across audits
+10. **Runtime testing agent** - Browser-based user flow verification
+11. **User journey auditor** - Role-based feature verification
+12. **Fix generator agent** - Auto-generate fixes for findings
+13. **Baseline comparison** - Trend tracking across audits
+14. **Incremental mode** - Audit only changed files (80% faster)
+15. **Quick check mode** - 2-3 minute critical-only scan
+16. **Verification step** - Check for mitigations before flagging issues
+17. **Progressive disclosure** - summary/standard/detailed report levels
+
+**Session Management (From Real-World Feedback):**
+18. **Context health score** - Quantified 0-100 score with breakdown
+19. **Git state auto-detection** - Commits ahead, branch, last commit
+20. **Session number validation** - Cross-reference with STATUS.md
+21. **Archive automation** - Auto-offer when SESSIONS.md exceeds 2500 lines
+22. **TodoWrite persistence** - Save/restore todos between sessions
+23. **Cross-reference validation** - Verify decision IDs, file references, links
+
+**Infrastructure:**
+24. **Custom agent support** - Drop-in agent files
+25. **Context modification tracking** - Hook-triggered timestamps
+
+---
+
+*End of v5.0 Planning Document*
