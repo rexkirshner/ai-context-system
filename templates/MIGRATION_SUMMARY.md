@@ -21,7 +21,7 @@ If you need to restore the previous version:
 ## What Changed
 
 ### New Structure
-- `.claude/skills/` - 8 skill definitions
+- `.claude/skills/` - 7 skill definitions
 - `.claude/agents/` - 9 agent definitions
 - `.claude/hooks/` - Session automation
 - `.claude/schemas/` - JSON validation schemas
@@ -49,7 +49,7 @@ cat VERSION
 
 # Check skills installed
 ls .claude/skills/*/SKILL.md | wc -l
-# Expected: 8
+# Expected: 7
 
 # Check agents installed
 ls .claude/agents/*.md | wc -l
