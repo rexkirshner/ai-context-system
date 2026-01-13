@@ -1,0 +1,14 @@
+{
+  "name": "@monorepo/utils",
+  "version": "0.1.0",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest"
+  },
+  "devDependencies": {
+    "@monorepo/config": "*",
+    "typescript": "^5"
+  }
+}

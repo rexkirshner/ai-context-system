@@ -1,0 +1,12 @@
+{
+  "name": "@monorepo/config",
+  "version": "0.1.0",
+  "main": "./index.js",
+  "scripts": {
+    "lint": "eslint ."
+  },
+  "devDependencies": {
+    "eslint": "^8.0.0",
+    "typescript": "^5"
+  }
+}

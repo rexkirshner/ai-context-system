@@ -1,0 +1,64 @@
+{
+  "metadata": {
+    "timestamp": "2026-01-13T10:30:00Z",
+    "acsVersion": "5.0.0",
+    "projectName": "my-app",
+    "agentsRun": ["security-reviewer", "performance-reviewer"],
+    "filesScanned": 42,
+    "cacheHit": false
+  },
+  "summary": {
+    "grade": "B+",
+    "criticalCount": 0,
+    "highCount": 1,
+    "mediumCount": 3,
+    "lowCount": 5
+  },
+  "findings": [
+    {
+      "id": "SEC-001",
+      "severity": "high",
+      "category": "security",
+      "title": "Hardcoded API key in configuration",
+      "description": "An API key is hardcoded in the config file. This should be moved to environment variables.",
+      "location": {
+        "file": "src/config/api.ts",
+        "line": 15,
+        "snippet": "const API_KEY = \"sk-abc123...\";"
+      },
+      "verified": {
+        "vulnPatternSearched": "API_KEY|SECRET|PASSWORD.*=.*[\"'][^\"']+[\"']",
+        "mitigationPatternSearched": "process\\.env\\.|env\\(",
+        "mitigationFound": false,
+        "verificationNotes": "No environment variable usage found for this key"
+      },
+      "remediation": "Move the API key to an environment variable and access via process.env.API_KEY",
+      "effort": "trivial"
+    },
+    {
+      "id": "PERF-001",
+      "severity": "medium",
+      "category": "performance",
+      "title": "N+1 query pattern in user listing",
+      "description": "The getUsersWithPosts function makes a separate database query for each user's posts.",
+      "location": {
+        "file": "src/services/user.ts",
+        "line": 45,
+        "snippet": "users.map(u => db.posts.findByUserId(u.id))"
+      },
+      "verified": {
+        "vulnPatternSearched": "\\.(map|forEach).*\\bfind|query|select\\b",
+        "mitigationPatternSearched": "include:|with:|join|eager",
+        "mitigationFound": false,
+        "verificationNotes": "No eager loading or join found"
+      },
+      "remediation": "Use Prisma's include option to load posts in a single query",
+      "effort": "small"
+    }
+  ],
+  "positives": [
+    "Consistent use of TypeScript with strict mode enabled",
+    "Good test coverage (78%)",
+    "Security headers properly configured"
+  ]
+}
