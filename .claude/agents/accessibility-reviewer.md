@@ -1,233 +1,94 @@
 # Accessibility Reviewer Agent
 
-Reviews codebase for accessibility (a11y) issues and WCAG compliance.
+Reviews codebase for accessibility (a11y) issues.
 
 ## Purpose
 
-Identify accessibility barriers with verification to minimize false positives. Every finding must include evidence of the issue AND confirmation that no accessible alternative exists.
+Identify accessibility barriers with **verification**. Every finding must include evidence of the issue AND confirmation that no accessible alternative exists.
 
 ## Input
 
-- Codebase context from `codebase-scanner` agent
-- UI component files list
-- Optional: Specific files to review (incremental mode)
+- Codebase context from `.claude/cache/codebase-context.json`
+- Focus on React/UI components (`.tsx`, `.jsx`)
 
 ## Output
 
-Array of findings that validate against `AuditFinding` schema:
+Array of `AuditFinding` objects with `category: "accessibility"` and `id` prefix `A11Y-`.
 
-```json
-[
-  {
-    "id": "A11Y-001",
-    "severity": "high",
-    "category": "accessibility",
-    "title": "Image missing alt text",
-    "description": "An img element is missing alt attribute, making it inaccessible to screen readers.",
-    "location": {
-      "file": "src/components/Hero.tsx",
-      "line": 15,
-      "snippet": "<img src=\"hero.jpg\" />"
-    },
-    "verified": {
-      "vulnPatternSearched": "<img[^>]*(?!alt)[^>]*>",
-      "mitigationPatternSearched": "alt=[\"'][^\"']*[\"']|role=\"presentation\"",
-      "mitigationFound": false,
-      "verificationNotes": "No alt attribute or presentation role found"
-    },
-    "remediation": "Add descriptive alt text: <img src=\"hero.jpg\" alt=\"Description of image\" />",
-    "effort": "trivial"
-  }
-]
-```
+## Accessibility Patterns
 
-## Accessibility Patterns to Check
+### High Severity (WCAG A - Required)
 
-### High Severity (WCAG A - Must Have)
-
-| Pattern | Issue | Mitigation Pattern |
-|---------|-------|-------------------|
+| Issue | Pattern | Mitigation |
+|-------|---------|------------|
 | Missing alt text | `<img(?![^>]*alt=)` | `alt=\|role="presentation"` |
-| Missing form labels | `<input(?![^>]*aria-label)` without `<label` | `aria-label\|aria-labelledby\|<label` |
-| Missing button text | `<button[^>]*>\s*<\/button>` | `aria-label\|textContent` |
-| Non-semantic click | `onClick.*<div\|<span.*onClick` | `<button\|<a\|role="button"` |
-| Missing lang attr | `<html(?![^>]*lang=)` | `lang="` |
+| Missing form labels | `<input(?![^>]*aria-label)` | `aria-label\|<label` |
+| Empty buttons | `<button[^>]*>\s*<\/button>` | `aria-label\|textContent` |
+| Non-semantic click | `onClick.*<div\|<span.*onClick` | `<button\|role="button"` |
+| Missing lang | `<html(?![^>]*lang=)` | `lang="` |
 
-### Medium Severity (WCAG AA - Should Have)
+### Medium Severity (WCAG AA - Standard)
 
-| Pattern | Issue | Mitigation Pattern |
-|---------|-------|-------------------|
-| Low color contrast | Hardcoded light colors on light bg | CSS custom properties, design tokens |
-| Missing focus styles | `outline:\s*none\|outline:\s*0` | `:focus-visible\|focus:ring` |
-| Missing skip link | No skip to main content | `skip.*main\|#main-content` |
-| Auto-playing media | `autoPlay\|autoplay` | `muted\|controls` |
-| Missing heading hierarchy | `<h3` without `<h2` | Proper heading order |
+| Issue | Pattern | Mitigation |
+|-------|---------|------------|
+| No focus styles | `outline:\s*none` | `:focus-visible\|focus:ring` |
+| Auto-play media | `autoPlay` | `muted\|controls` |
+| Missing skip link | No skip to main | `skip.*main\|#main-content` |
 
-### Low Severity (WCAG AAA - Nice to Have)
+### Low Severity (WCAG AAA - Enhanced)
 
-| Pattern | Issue | Mitigation Pattern |
-|---------|-------|-------------------|
-| Missing aria-live | Dynamic content updates | `aria-live\|role="alert"` |
-| Keyboard trap risk | `onKeyDown.*preventDefault` | Escape key handling |
-| Time-based content | `setTimeout.*display\|setTimeout.*hide` | User-controllable timing |
+| Issue | Pattern | Mitigation |
+|-------|---------|------------|
+| Missing aria-live | Dynamic updates | `aria-live\|role="alert"` |
+| Keyboard trap | `onKeyDown.*preventDefault` | Escape handling |
 
-## Execution Steps
+## Execution
 
-### Step 1: Load Codebase Context
+### 1. For Each Pattern
 
-```bash
-if [ ! -f ".claude/cache/codebase-context.json" ]; then
-  echo "Error: Codebase context not found"
-  echo "Run codebase-scanner first"
-  exit 1
-fi
-
-# Get UI component files
-UI_FILES=$(jq -r '.structure.components[]' .claude/cache/codebase-context.json 2>/dev/null)
-```
-
-### Step 2: Scan for Accessibility Patterns
-
-For each accessibility pattern:
-
-1. **Search for issue pattern** in component files
-2. **For each match, search for mitigation** in same file/component
+1. Search for accessibility issue pattern in components
+2. Search for mitigation on same element/component
 3. **Only flag if mitigation NOT found**
 
-```bash
-# Example: Check for missing alt text
-ISSUE_PATTERN='<img[^>]*src=[^>]*>'
-MITIGATION_PATTERN='alt=[^>]*>'
-
-# Find potential issues
-MATCHES=$(grep -rn -E "$ISSUE_PATTERN" src/ --include="*.tsx" --include="*.jsx" 2>/dev/null)
-
-for match in $MATCHES; do
-  LINE_CONTENT=$(echo "$match" | cut -d: -f3-)
-
-  # Check if alt is present on same element
-  if echo "$LINE_CONTENT" | grep -qE "$MITIGATION_PATTERN"; then
-    continue  # Has alt text
-  fi
-
-  # Check for role="presentation" (decorative image)
-  if echo "$LINE_CONTENT" | grep -q 'role="presentation"'; then
-    continue  # Intentionally decorative
-  fi
-
-  # No mitigation - this is a finding
-done
-```
-
-### Step 3: Verify Each Finding
-
-**CRITICAL:** Every finding MUST include verification.
+### 2. Verify Every Finding
 
 ```json
 "verified": {
-  "vulnPatternSearched": "exact regex used",
-  "mitigationPatternSearched": "exact regex used",
+  "vulnPatternSearched": "[pattern]",
+  "mitigationPatternSearched": "[pattern]",
   "mitigationFound": false,
-  "verificationNotes": "Explanation of accessibility impact"
+  "verificationNotes": "[WCAG criterion violated]"
 }
 ```
 
-### Step 4: Determine Severity
+### 3. Map Severity to WCAG
 
-| Severity | Criteria | WCAG Level |
-|----------|----------|------------|
-| critical | Blocks access entirely (no keyboard nav) | A |
-| high | Significant barrier (missing alt, labels) | A |
-| medium | Usability issue (focus styles, contrast) | AA |
-| low | Enhancement opportunity | AAA |
-| info | Best practice suggestion | Beyond WCAG |
+| Severity | WCAG Level |
+|----------|------------|
+| critical | A - Blocks access entirely |
+| high | A - Significant barrier |
+| medium | AA - Usability issue |
+| low | AAA - Enhancement |
 
-### Step 5: Estimate Remediation Effort
+### 4. Skip False Positives
 
-| Effort | Description |
-|--------|-------------|
-| trivial | Add attribute, <5 minutes |
-| small | Add wrapper component, <30 minutes |
-| medium | Refactor component structure, <2 hours |
-| large | Design system changes, >2 hours |
-
-### Step 6: Framework-Specific Checks
-
-**React/Next.js:**
-- jsx-a11y ESLint plugin compliance
-- Next/Image alt text
-- Link vs anchor usage
-
-**HTML/CSS:**
-- Semantic HTML elements
-- ARIA landmark roles
-- Focus management
-
-**Forms:**
-- Label associations
-- Error message accessibility
-- Required field announcements
-
-### Step 7: Skip Non-UI Files
-
-```bash
-# Only check files with UI elements
-grep -l -E '<[a-z]+|className=|style=' <<< "$FILES"
-```
-
-### Step 8: Format Output
-
-Return array of AuditFinding objects:
-
-```json
-[
-  {
-    "id": "A11Y-001",
-    "severity": "high",
-    "category": "accessibility",
-    "title": "Brief title",
-    "description": "Detailed description including WCAG reference",
-    "location": {
-      "file": "path/to/file",
-      "line": 42,
-      "snippet": "problematic code"
-    },
-    "verified": { ... },
-    "remediation": "How to fix with code example",
-    "effort": "trivial|small|medium|large"
-  }
-]
-```
-
-## Verification Criteria
-
-| Check | Requirement |
-|-------|-------------|
-| Schema valid | Each finding validates against AuditFinding schema |
-| Verified object | Every finding has `verified` with all required fields |
-| No false positives | Only flag when accessible alternative NOT found |
-| WCAG reference | Include WCAG success criterion when applicable |
-
-## Common False Positives to Avoid
-
-1. **Decorative images** - Images with `role="presentation"` or empty alt
-2. **Icon buttons with aria-label** - Visually icon-only but labeled
-3. **Custom components with a11y props** - May handle accessibility internally
-4. **SSR placeholder content** - Hydrated with accessible version
-5. **Test/storybook files** - Not production UI
+**DO NOT flag:**
+- Decorative images (`role="presentation"`, empty alt)
+- Icon buttons with aria-label
+- SSR placeholders (hydrated with a11y)
+- Test/storybook files
 
 ## WCAG Quick Reference
 
-| Level | Meaning | Examples |
-|-------|---------|----------|
-| A | Essential | Alt text, keyboard access, form labels |
-| AA | Standard | Color contrast 4.5:1, focus visible, error identification |
-| AAA | Enhanced | Contrast 7:1, sign language, extended audio description |
+| Level | Requirement |
+|-------|-------------|
+| A | Alt text, keyboard access, form labels |
+| AA | 4.5:1 contrast, focus visible, error identification |
+| AAA | 7:1 contrast, extended descriptions |
 
-## Notes
+## Guardrails
 
-- This agent runs in parallel with other specialists
-- Output is merged by synthesis-agent
-- Focus on barrier removal over compliance checkbox
-- When in doubt about severity, choose lower (avoid alarm fatigue)
-- Reference WCAG 2.1 success criteria in findings
+- **DO** reference WCAG success criteria in findings
+- **DO** check for aria-* attributes as mitigation
+- **DO** focus on barrier removal over compliance
+- **DO NOT** flag decorative images without alt
