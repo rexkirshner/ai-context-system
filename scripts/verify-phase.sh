@@ -194,6 +194,8 @@ verify_phase_2() {
 verify_phase_3() {
     section "Phase 3: Code Review Agents"
 
+    echo "Checking code review agents..."
+
     local agents=("codebase-scanner" "security-reviewer" "code-reviewer" "synthesis-agent")
     local agent_dir="$REPO_ROOT/.claude/agents"
 
@@ -204,6 +206,21 @@ verify_phase_3() {
             fail "Agent missing: $agent"
         fi
     done
+
+    # Run Phase 3 e2e tests
+    echo ""
+    echo "Running Phase 3 agent tests..."
+
+    local e2e_test="$REPO_ROOT/test/e2e/test-phase3-agents.sh"
+    if [ -f "$e2e_test" ] && [ -x "$e2e_test" ]; then
+        if "$e2e_test" > /dev/null 2>&1; then
+            pass "Phase 3 agent tests pass"
+        else
+            fail "Phase 3 agent tests fail (run test/e2e/test-phase3-agents.sh for details)"
+        fi
+    else
+        warn "Phase 3 e2e test script not found or not executable"
+    fi
 }
 
 verify_phase_4() {
