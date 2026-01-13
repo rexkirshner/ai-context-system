@@ -1,0 +1,27 @@
+{
+  "$schema": "https://acs.rexkirshner.com/schemas/settings.json",
+  "schemaVersion": "1.0.0",
+  "profile": "standard",
+  "hooks": {
+    "enabled": true,
+    "timeout": 2000,
+    "onFailure": "warn"
+  },
+  "profiles": {
+    "standard": {
+      "hooks": ["session-start"],
+      "autoSave": false,
+      "verbosity": "normal"
+    },
+    "minimal": {
+      "hooks": [],
+      "autoSave": false,
+      "verbosity": "quiet"
+    },
+    "comprehensive": {
+      "hooks": ["session-start"],
+      "autoSave": true,
+      "verbosity": "verbose"
+    }
+  }
+}
