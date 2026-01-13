@@ -258,6 +258,8 @@ verify_phase_4() {
 verify_phase_5() {
     section "Phase 5: Hooks"
 
+    echo "Checking hooks..."
+
     local hook_dir="$REPO_ROOT/.claude/hooks"
 
     if [ -f "$hook_dir/session-start.sh" ]; then
@@ -271,6 +273,28 @@ verify_phase_5() {
         fi
     else
         fail "Hook missing: session-start.sh"
+    fi
+
+    # Check settings.json
+    if [ -f "$REPO_ROOT/.claude/settings.json" ]; then
+        pass "Settings file exists: settings.json"
+    else
+        fail "Settings file missing: settings.json"
+    fi
+
+    # Run Phase 5 e2e tests
+    echo ""
+    echo "Running Phase 5 hook tests..."
+
+    local e2e_test="$REPO_ROOT/test/e2e/test-phase5-hooks.sh"
+    if [ -f "$e2e_test" ] && [ -x "$e2e_test" ]; then
+        if "$e2e_test" > /dev/null 2>&1; then
+            pass "Phase 5 hook tests pass"
+        else
+            fail "Phase 5 hook tests fail (run test/e2e/test-phase5-hooks.sh for details)"
+        fi
+    else
+        warn "Phase 5 e2e test script not found or not executable"
     fi
 }
 
