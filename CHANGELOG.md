@@ -13,11 +13,11 @@ This release represents a fundamental reimagining of the AI Context System. Rath
 
 1. **Claude Code has evolved** - Skills, agents, hooks, and MCP servers enable capabilities that didn't exist when ACS was designed
 2. **AI-to-AI handoffs are the primary use case** - The system is now optimized for AI agents, not human developers
-3. **Less is more** - Simplified from 22 commands and 8 scripts to 8 skills and 9 agents
+3. **Less is more** - Simplified from 22 commands and 8 scripts to 7 skills and 9 agents
 
 ### Added
 
-- **Skills Architecture** - 8 skills replace 22 commands:
+- **Skills Architecture** - 7 skills replace 22 commands:
   - `/init` - Initialize context (replaces /init-context)
   - `/review` - Health check with resume point (replaces /review-context)
   - `/save` - Quick status update (new)
@@ -61,7 +61,7 @@ This release represents a fundamental reimagining of the AI Context System. Rath
 
 ### Changed
 
-- **Commands → Skills** - All 22 commands replaced with 8 skills
+- **Commands → Skills** - All 22 commands replaced with 7 skills
 - **Scripts → Agents** - 8 bash scripts replaced with 9 agent definitions
 - **Config → Profiles** - 40+ options simplified to 3 profiles
 - **Sequential → Parallel** - Specialist agents run concurrently

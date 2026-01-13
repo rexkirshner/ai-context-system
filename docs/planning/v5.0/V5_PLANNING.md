@@ -160,7 +160,7 @@ Derived content within canonical files uses HTML comment markers to prevent acci
 
 | Area | v4.2.1 | v5.0 | Reduction |
 |------|--------|------|-----------|
-| Commands | 22 | 8 skills | 64% fewer |
+| Commands | 22 | 7 skills | 68% fewer |
 | Scripts | 8 (~4,400 lines) | 2 (~600 lines) | 86% less code |
 | Templates | 12 | 5 | 58% fewer |
 | Config options | 40+ | 3 profiles | 92% simpler |
@@ -188,15 +188,16 @@ Derived content within canonical files uses HTML comment markers to prevent acci
 ┌─────────────────────────────────────────────────────────────────┐
 │                     AI CONTEXT SYSTEM v5.0                      │
 ├─────────────────────────────────────────────────────────────────┤
-│  SKILLS (8)           │  AGENTS (8)          │  HOOKS (2)       │
+│  SKILLS (7)           │  AGENTS (9)          │  HOOKS (2)       │
 │  ├── /init            │  ├── code-reviewer   │  ├── SessionStart│
 │  ├── /save            │  ├── codebase-scanner│  └── PostToolUse │
 │  ├── /save-full       │  ├── security-reviewer                  │
 │  ├── /review          │  ├── performance-reviewer               │
 │  ├── /validate        │  ├── accessibility-reviewer             │
 │  ├── /export          │  ├── type-safety-reviewer               │
-│  ├── /update          │  ├── test-coverage-reviewer             │
-│  └── /code-review     │  └── synthesis-agent                    │
+│  └── /update          │  ├── test-coverage-reviewer             │
+│                       │  ├── synthesis-agent                    │
+│                       │  └── audit-compare                      │
 ├─────────────────────────────────────────────────────────────────┤
 │  CONTEXT FILES (4)                                              │
 │  ├── CONTEXT.md (stable)    ├── DECISIONS.md (append-only)     │
@@ -214,8 +215,8 @@ project/
 │   ├── .context-config.json
 │   └── .todo-state.json          # Persisted TodoWrite state
 ├── .claude/
-│   ├── skills/{name}/SKILL.md    # 8 skills
-│   ├── agents/{name}.md          # 8 agents
+│   ├── skills/{name}/SKILL.md    # 7 skills
+│   ├── agents/{name}.md          # 9 agents
 │   ├── hooks/session-start.sh    # Safe-fail hooks
 │   ├── schemas/*.json            # 5 JSON schemas
 │   └── settings.json             # Hook configuration
@@ -965,7 +966,7 @@ Every audit finding MUST include:
 | Feature | v4.2.1 | v5.0 |
 |---------|--------|------|
 | Core Files | 5 | 4 |
-| Commands | 22 | 8 skills |
+| Commands | 22 | 7 skills |
 | Code Review | 9 commands | 1 + 7 agents |
 | Scripts | 8 files | 2 files |
 | Templates | 12 | 5 |

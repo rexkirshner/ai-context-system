@@ -38,7 +38,7 @@ The migration creates a backup at:
 cat VERSION  # Should show 5.0.0
 
 # Check skills installed
-ls .claude/skills/*/SKILL.md | wc -l  # Should show 8
+ls .claude/skills/*/SKILL.md | wc -l  # Should show 7
 
 # Run health check
 /review
