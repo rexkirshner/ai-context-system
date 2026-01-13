@@ -1,8 +1,8 @@
 # AI Context System v5.0 - First Principles Redesign
 
-**Document Version:** 2.0
+**Document Version:** 3.0
 **Created:** 2026-01-12
-**Last Updated:** 2026-01-12
+**Last Updated:** 2026-01-13
 **Status:** Planning
 
 ---
@@ -23,11 +23,11 @@ Before building the full system, we must prove the redesign works with three ski
 
 | Skill | Input | Output | Verification |
 |-------|-------|--------|--------------|
-| `/init` | Empty or existing project | context/ with auto-detected values | Config created, <3 placeholders remaining |
-| `/review` | Existing context/ | Health score + resume point | Score is 0-100, resume point is actionable |
-| `/save-full` | Work session | Session entry in SESSIONS.md | Entry follows schema, Quick Reference updated |
+| `/init` | Empty or existing project | context/ with auto-detected values | Config created, `grep -cE '\[FILL:[^\]]+\]'` returns <3 |
+| `/review` | Existing context/ | Health score + resume point | Score 0-100 per algorithm in §4.6, resume point matches §4.8 format |
+| `/save-full` | Work session | Session entry in SESSIONS.md | Entry validates against SessionEntry schema |
 
-**Gate:** Phase 2+ cannot begin until MVP loop passes all verification criteria.
+**Gate:** Phase 2+ cannot begin until MVP loop passes all verification criteria on all 3 fixture repos.
 
 ---
 
@@ -43,7 +43,7 @@ These principles govern all v5.0 development decisions. When in doubt, refer her
 
 ### 1.2 Maintainability First
 
-- **Single source of truth.** Every piece of data lives in exactly one place.
+- **Single source of truth.** Every piece of data lives in exactly one place (see §2.3 Canonical vs Derived).
 - **Explicit over implicit.** If behavior isn't obvious from reading the code, add comments or restructure.
 - **Small, focused components.** Each skill/agent/hook does one thing well.
 
@@ -64,6 +64,12 @@ These principles govern all v5.0 development decisions. When in doubt, refer her
 - **JSON schemas for all interfaces.** Skills, agents, and hooks communicate via defined structures.
 - **Version your schemas.** Breaking changes require schema version bump.
 - **Validate at boundaries.** Check inputs match schema before processing.
+
+### 1.6 Lean Implementation
+
+- **No speculative features.** Build what's needed now, not what might be needed later.
+- **Prefer deletion over addition.** If in doubt, leave it out.
+- **Implementation details in code, not planning docs.** This document specifies WHAT, not HOW.
 
 ---
 
@@ -97,7 +103,23 @@ context/
 - Simplify templates (more auto-detection, fewer placeholders)
 - CLAUDE.md stays at project root (auto-loaded by Claude Code)
 
-### 2.3 Reduction Summary
+### 2.3 Canonical vs Derived Sources
+
+| File/Section | Type | Regenerable From | Update Frequency |
+|--------------|------|------------------|------------------|
+| CONTEXT.md | **Canonical** | - | Rarely (project changes) |
+| DECISIONS.md | **Canonical** | - | On each decision |
+| SESSIONS.md | **Canonical** | - | End of each session |
+| .context-config.json | **Canonical** | - | On config changes |
+| STATUS.md (body) | **Canonical** | - | During work |
+| STATUS.md Quick Reference | **Derived** | CONTEXT.md + STATUS.md + SESSIONS.md + git | On /save, /review |
+| Health reports | **Derived** | All canonical sources | On /review |
+| Export packages | **Derived** | All canonical sources | On /export |
+| Audit reports | **Derived** | Codebase scan | On /code-review |
+
+**Rule:** Derived views MUST be fully regenerable from canonical sources. Golden file tests verify this.
+
+### 2.4 Reduction Summary
 
 | Area | v4.2.1 | v5.0 | Reduction |
 |------|--------|------|-----------|
@@ -106,7 +128,7 @@ context/
 | Templates | 12 | 5 | 58% fewer |
 | Config options | 40+ | 3 profiles | 92% simpler |
 
-### 2.4 What's Explicitly Removed
+### 2.5 What's Explicitly Removed
 
 | Removed | Reason | Alternative |
 |---------|--------|-------------|
@@ -129,37 +151,19 @@ context/
 ┌─────────────────────────────────────────────────────────────────┐
 │                     AI CONTEXT SYSTEM v5.0                      │
 ├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  SKILLS (Model-Invoked, Declarative)                           │
-│  ├── /init         Initialize project with auto-detection      │
-│  ├── /save         Quick session update (STATUS.md)            │
-│  ├── /save-full    Comprehensive save (SESSIONS.md entry)      │
-│  ├── /review       Start-of-session health check               │
-│  ├── /validate     Deep validation and staleness check         │
-│  ├── /export       Create handoff package                      │
-│  ├── /update       Update ACS version                          │
-│  └── /code-review  Launch code review agents                   │
-│                                                                 │
-│  AGENTS (Task-Delegated, Parallel, Isolated Context)           │
-│  ├── code-reviewer         Orchestrator (launches others)      │
-│  ├── codebase-scanner      Pre-compute shared context          │
-│  ├── security-reviewer     OWASP, auth, injection              │
-│  ├── performance-reviewer  CWV, bundle, runtime                │
-│  ├── accessibility-reviewer WCAG 2.1 AA                        │
-│  ├── type-safety-reviewer  TypeScript strictness               │
-│  ├── test-coverage-reviewer Test quality                       │
-│  └── synthesis-agent       Deduplicate and merge findings      │
-│                                                                 │
-│  HOOKS (Event-Driven, Safe-Fail, Debounced)                    │
-│  ├── SessionStart   Show health summary (best-effort)          │
-│  └── PostToolUse    Track modifications (debounced 5s)         │
-│                                                                 │
-│  CONTEXT FILES (Externalized AI Memory)                        │
-│  ├── CONTEXT.md     Orientation (stable)                       │
-│  ├── STATUS.md      Current state (dynamic)                    │
-│  ├── DECISIONS.md   Decision log (append-only)                 │
-│  └── SESSIONS.md    Session history (append-only)              │
-│                                                                 │
+│  SKILLS (8)           │  AGENTS (8)          │  HOOKS (2)       │
+│  ├── /init            │  ├── code-reviewer   │  ├── SessionStart│
+│  ├── /save            │  ├── codebase-scanner│  └── PostToolUse │
+│  ├── /save-full       │  ├── security-reviewer                  │
+│  ├── /review          │  ├── performance-reviewer               │
+│  ├── /validate        │  ├── accessibility-reviewer             │
+│  ├── /export          │  ├── type-safety-reviewer               │
+│  ├── /update          │  ├── test-coverage-reviewer             │
+│  └── /code-review     │  └── synthesis-agent                    │
+├─────────────────────────────────────────────────────────────────┤
+│  CONTEXT FILES (4)                                              │
+│  ├── CONTEXT.md (stable)    ├── DECISIONS.md (append-only)     │
+│  ├── STATUS.md (dynamic)    └── SESSIONS.md (append-only)      │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -167,108 +171,58 @@ context/
 
 ```
 project/
-├── CLAUDE.md                     # Entry point (auto-loaded by Claude Code)
-│
+├── CLAUDE.md                     # Entry point (auto-loaded)
 ├── context/                      # Core context files
-│   ├── CONTEXT.md
-│   ├── STATUS.md
-│   ├── DECISIONS.md
-│   ├── SESSIONS.md
+│   ├── CONTEXT.md, STATUS.md, DECISIONS.md, SESSIONS.md
 │   ├── .context-config.json
 │   └── .todo-state.json          # Persisted TodoWrite state
-│
 ├── .claude/
-│   ├── skills/                   # ACS skills
-│   │   ├── init/
-│   │   │   └── SKILL.md
-│   │   ├── save/
-│   │   │   └── SKILL.md
-│   │   ├── save-full/
-│   │   │   └── SKILL.md
-│   │   ├── review/
-│   │   │   └── SKILL.md
-│   │   └── [others]/
-│   │
-│   ├── agents/                   # Code review agents
-│   │   ├── code-reviewer.md
-│   │   ├── codebase-scanner.md
-│   │   ├── security-reviewer.md
-│   │   └── [specialist agents]/
-│   │
-│   ├── hooks/                    # Automation (safe-fail)
-│   │   └── session-start.sh
-│   │
+│   ├── skills/{name}/SKILL.md    # 8 skills
+│   ├── agents/{name}.md          # 8 agents
+│   ├── hooks/session-start.sh    # Safe-fail hooks
+│   ├── schemas/*.json            # 5 JSON schemas
 │   └── settings.json             # Hook configuration
-│
-├── docs/
-│   └── audits/                   # Code review reports
-│       └── INDEX.md
-│
-└── artifacts/
-    └── exports/                  # Handoff packages
+├── docs/audits/                  # Code review reports
+└── artifacts/exports/            # Handoff packages
 ```
 
 ### 3.3 Execution Flow
 
-**v4.x (Sequential, Manual):**
-```
-User → Slash Command → Claude reads markdown → Calls bash scripts → Output in conversation
-```
-
-**v5.0 (Parallel, Automated):**
-```
-User → Skill auto-invoked → Claude follows instructions
-                         → Delegates to agents (parallel)
-                         → Hooks fire automatically
-                         → Structured output (JSON schemas)
-```
+**v4.x:** User → Command → Claude reads markdown → Calls bash scripts → Output
+**v5.0:** User → Skill → Claude follows instructions → Delegates to agents (parallel) → Structured output (JSON)
 
 ---
 
 ## Part 4: Contracts & Schemas
 
-All component interfaces are defined by JSON schemas. This enables reliable AI-to-AI handoffs and automated validation.
+All component interfaces are defined by JSON schemas. Every schema includes `$id` and `schemaVersion` for forward compatibility.
 
 ### 4.1 Context Health Schema
 
 ```json
 {
+  "$id": "https://acs.rexkirshner.com/schemas/context-health.json",
+  "schemaVersion": "1.0.0",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "ContextHealth",
-  "description": "Health check output from /review skill",
   "type": "object",
-  "required": ["score", "breakdown", "nextAction"],
+  "required": ["score", "breakdown", "nextAction", "resumePoint"],
   "properties": {
-    "score": {
-      "type": "integer",
-      "minimum": 0,
-      "maximum": 100,
-      "description": "Overall health score"
-    },
+    "score": { "type": "integer", "minimum": 0, "maximum": 100 },
     "breakdown": {
       "type": "object",
       "properties": {
-        "statusFreshness": { "type": "integer", "minimum": -20, "maximum": 20 },
-        "sessionsFreshness": { "type": "integer", "minimum": -20, "maximum": 20 },
-        "decisionsFreshness": { "type": "integer", "minimum": -20, "maximum": 20 },
-        "contextFreshness": { "type": "integer", "minimum": -20, "maximum": 20 },
-        "quickReferenceSync": { "type": "integer", "minimum": -20, "maximum": 20 },
-        "gitState": { "type": "integer", "minimum": -20, "maximum": 20 },
-        "crossReferences": { "type": "integer", "minimum": -20, "maximum": 20 }
+        "statusFreshness": { "type": "integer", "minimum": 0, "maximum": 20 },
+        "sessionsFreshness": { "type": "integer", "minimum": 0, "maximum": 20 },
+        "decisionsCoverage": { "type": "integer", "minimum": 0, "maximum": 15 },
+        "contextCompleteness": { "type": "integer", "minimum": 0, "maximum": 15 },
+        "quickReferenceSync": { "type": "integer", "minimum": 0, "maximum": 15 },
+        "crossReferences": { "type": "integer", "minimum": 0, "maximum": 15 }
       }
     },
-    "warnings": {
-      "type": "array",
-      "items": { "type": "string" }
-    },
-    "nextAction": {
-      "type": "string",
-      "description": "Single most important next action"
-    },
-    "resumePoint": {
-      "type": "string",
-      "description": "Where to continue work"
-    }
+    "warnings": { "type": "array", "items": { "type": "string" } },
+    "nextAction": { "type": "string" },
+    "resumePoint": { "type": "string", "pattern": "^[A-Z][a-z]+ .+ (in|at) .+$" }
   }
 }
 ```
@@ -277,60 +231,39 @@ All component interfaces are defined by JSON schemas. This enables reliable AI-t
 
 ```json
 {
+  "$id": "https://acs.rexkirshner.com/schemas/audit-finding.json",
+  "schemaVersion": "1.0.0",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "AuditFinding",
-  "description": "Single finding from a code review agent",
   "type": "object",
   "required": ["id", "severity", "category", "title", "location", "verified"],
   "properties": {
-    "id": {
-      "type": "string",
-      "pattern": "^[A-Z]+-[0-9]+$",
-      "description": "Unique ID like SEC-001, PERF-003"
-    },
-    "severity": {
-      "type": "string",
-      "enum": ["critical", "high", "medium", "low", "info"]
-    },
-    "category": {
-      "type": "string",
-      "enum": ["security", "performance", "accessibility", "typescript", "testing", "other"]
-    },
-    "title": {
-      "type": "string",
-      "maxLength": 100
-    },
-    "description": {
-      "type": "string"
-    },
+    "id": { "type": "string", "pattern": "^[A-Z]+-[0-9]+$" },
+    "severity": { "type": "string", "enum": ["critical", "high", "medium", "low", "info"] },
+    "category": { "type": "string", "enum": ["security", "performance", "accessibility", "typescript", "testing", "other"] },
+    "title": { "type": "string", "maxLength": 100 },
+    "description": { "type": "string" },
     "location": {
       "type": "object",
+      "required": ["file"],
       "properties": {
         "file": { "type": "string" },
         "line": { "type": "integer" },
         "snippet": { "type": "string" }
-      },
-      "required": ["file"]
+      }
     },
     "verified": {
       "type": "object",
-      "description": "Verification step results",
+      "required": ["vulnPatternSearched", "mitigationPatternSearched", "mitigationFound"],
       "properties": {
         "vulnPatternSearched": { "type": "string" },
         "mitigationPatternSearched": { "type": "string" },
         "mitigationFound": { "type": "boolean" },
         "verificationNotes": { "type": "string" }
-      },
-      "required": ["vulnPatternSearched", "mitigationPatternSearched", "mitigationFound"]
+      }
     },
-    "remediation": {
-      "type": "string",
-      "description": "How to fix"
-    },
-    "effort": {
-      "type": "string",
-      "enum": ["trivial", "small", "medium", "large"]
-    }
+    "remediation": { "type": "string" },
+    "effort": { "type": "string", "enum": ["trivial", "small", "medium", "large"] }
   }
 }
 ```
@@ -339,9 +272,10 @@ All component interfaces are defined by JSON schemas. This enables reliable AI-t
 
 ```json
 {
+  "$id": "https://acs.rexkirshner.com/schemas/audit-report.json",
+  "schemaVersion": "1.0.0",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "AuditReport",
-  "description": "Complete audit report from code-reviewer orchestrator",
   "type": "object",
   "required": ["metadata", "summary", "findings"],
   "properties": {
@@ -353,7 +287,7 @@ All component interfaces are defined by JSON schemas. This enables reliable AI-t
         "projectName": { "type": "string" },
         "agentsRun": { "type": "array", "items": { "type": "string" } },
         "filesScanned": { "type": "integer" },
-        "duration": { "type": "string" }
+        "cacheHit": { "type": "boolean" }
       }
     },
     "summary": {
@@ -363,23 +297,11 @@ All component interfaces are defined by JSON schemas. This enables reliable AI-t
         "criticalCount": { "type": "integer" },
         "highCount": { "type": "integer" },
         "mediumCount": { "type": "integer" },
-        "lowCount": { "type": "integer" },
-        "topIssues": {
-          "type": "array",
-          "maxItems": 3,
-          "items": { "type": "string" }
-        }
+        "lowCount": { "type": "integer" }
       }
     },
-    "findings": {
-      "type": "array",
-      "items": { "$ref": "#/definitions/AuditFinding" }
-    },
-    "positives": {
-      "type": "array",
-      "items": { "type": "string" },
-      "description": "Things done well"
-    }
+    "findings": { "type": "array", "items": { "$ref": "audit-finding.json" } },
+    "positives": { "type": "array", "items": { "type": "string" } }
   }
 }
 ```
@@ -388,55 +310,23 @@ All component interfaces are defined by JSON schemas. This enables reliable AI-t
 
 ```json
 {
+  "$id": "https://acs.rexkirshner.com/schemas/session-entry.json",
+  "schemaVersion": "1.0.0",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "SessionEntry",
-  "description": "Single session entry for SESSIONS.md",
   "type": "object",
   "required": ["number", "date", "tldr", "focus"],
   "properties": {
     "number": { "type": "integer", "minimum": 1 },
     "date": { "type": "string", "format": "date" },
     "focus": { "type": "string", "maxLength": 100 },
-    "tldr": {
-      "type": "string",
-      "minLength": 50,
-      "maxLength": 300,
-      "description": "2-3 sentence summary (mandatory)"
-    },
-    "accomplishments": {
-      "type": "array",
-      "items": { "type": "string" }
-    },
-    "decisions": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "string" },
-          "summary": { "type": "string" }
-        }
-      }
-    },
-    "filesChanged": {
-      "type": "array",
-      "items": { "type": "string" }
-    },
-    "mentalModels": {
-      "type": "string",
-      "description": "Current understanding and insights"
-    },
-    "nextSteps": {
-      "type": "array",
-      "items": { "type": "string" }
-    },
-    "gitOperations": {
-      "type": "object",
-      "properties": {
-        "commits": { "type": "integer" },
-        "pushed": { "type": "boolean" },
-        "branch": { "type": "string" }
-      }
-    }
+    "tldr": { "type": "string", "minLength": 50, "maxLength": 300 },
+    "accomplishments": { "type": "array", "items": { "type": "string" } },
+    "decisions": { "type": "array", "items": { "type": "object", "properties": { "id": { "type": "string" }, "summary": { "type": "string" } } } },
+    "filesChanged": { "type": "array", "items": { "type": "string" } },
+    "mentalModels": { "type": "string" },
+    "nextSteps": { "type": "array", "items": { "type": "string" } },
+    "gitOperations": { "type": "object", "properties": { "commits": { "type": "integer" }, "pushed": { "type": "boolean" }, "branch": { "type": "string" } } }
   }
 }
 ```
@@ -445,164 +335,150 @@ All component interfaces are defined by JSON schemas. This enables reliable AI-t
 
 ```json
 {
+  "$id": "https://acs.rexkirshner.com/schemas/handoff-package.json",
+  "schemaVersion": "1.0.0",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "HandoffPackage",
-  "description": "Export for AI-to-AI or developer handoff",
   "type": "object",
   "required": ["metadata", "summary", "contextFiles", "nextSteps"],
   "properties": {
-    "metadata": {
-      "type": "object",
-      "properties": {
-        "exportedAt": { "type": "string", "format": "date-time" },
-        "acsVersion": { "type": "string" },
-        "projectName": { "type": "string" },
-        "exportedBy": { "type": "string" }
-      }
-    },
-    "summary": {
-      "type": "object",
-      "properties": {
-        "projectState": { "type": "string", "maxLength": 500 },
-        "criticalDecisions": { "type": "array", "items": { "type": "string" } },
-        "activeBlockers": { "type": "array", "items": { "type": "string" } }
-      }
-    },
-    "contextFiles": {
-      "type": "object",
-      "properties": {
-        "context": { "type": "string" },
-        "status": { "type": "string" },
-        "decisions": { "type": "string" },
-        "recentSessions": { "type": "array", "items": { "type": "string" } }
-      }
-    },
-    "nextSteps": {
-      "type": "array",
-      "items": { "type": "string" },
-      "description": "Prioritized list of what to do next"
-    }
+    "metadata": { "type": "object", "properties": { "exportedAt": { "type": "string", "format": "date-time" }, "acsVersion": { "type": "string" }, "projectName": { "type": "string" } } },
+    "summary": { "type": "object", "properties": { "projectState": { "type": "string", "maxLength": 500 }, "criticalDecisions": { "type": "array", "items": { "type": "string" } }, "activeBlockers": { "type": "array", "items": { "type": "string" } } } },
+    "contextFiles": { "type": "object", "properties": { "context": { "type": "string" }, "status": { "type": "string" }, "decisions": { "type": "string" }, "recentSessions": { "type": "array", "items": { "type": "string" } } } },
+    "nextSteps": { "type": "array", "items": { "type": "string" } }
   }
 }
 ```
+
+### 4.6 Health Score Algorithm
+
+The health score is computed deterministically from context file state:
+
+| Component | Max Points | Calculation |
+|-----------|------------|-------------|
+| **statusFreshness** | 20 | `20 - min(20, daysSinceStatusUpdate * 2)` |
+| **sessionsFreshness** | 20 | `20 - min(20, daysSinceLastSession * 2)` |
+| **decisionsCoverage** | 15 | `15` if recent session refs decision, else `10` if any decisions exist, else `0` |
+| **contextCompleteness** | 15 | `15 - (placeholderCount * 3)`, min 0 |
+| **quickReferenceSync** | 15 | `15` if QR matches STATUS.md state, else `0` |
+| **crossReferences** | 15 | `15 - (brokenRefs * 5)`, min 0 |
+| **Total** | **100** | Sum of all components |
+
+**Thresholds:**
+- 80-100: Healthy (green)
+- 50-79: Needs attention (yellow)
+- 0-49: Critical (red)
+
+**Verification:** Golden file test with known inputs produces expected score.
+
+### 4.7 Placeholder Specification
+
+Placeholders are detected by the regex pattern: `\[FILL:[^\]]+\]`
+
+**Examples:**
+- `[FILL: Project name]` ← Counted
+- `[FILL:description]` ← Counted
+- `[TODO: something]` ← NOT counted (different prefix)
+- `[FILL]` ← NOT counted (no colon)
+
+**Verification:** `grep -cE '\[FILL:[^\]]+\]' context/CONTEXT.md` returns placeholder count.
+
+### 4.8 Resume Point Format
+
+Resume points MUST match this pattern: `^[A-Z][a-z]+ .+ (in|at) .+$`
+
+**Valid examples:**
+- `Continue implementing auth middleware in src/middleware/auth.ts`
+- `Review the failing tests at tests/api/users.test.ts:45`
+- `Fix the validation error in components/Form.tsx`
+
+**Invalid examples:**
+- `auth middleware` ← No verb, no location
+- `Continue working` ← No specific location
+- `src/file.ts` ← No verb, no action
+
+**Verification:** Resume point matches regex pattern.
+
+### 4.9 Profile Configuration Schema
+
+```json
+{
+  "$id": "https://acs.rexkirshner.com/schemas/context-config.json",
+  "schemaVersion": "1.0.0",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ContextConfig",
+  "type": "object",
+  "required": ["version", "profile"],
+  "properties": {
+    "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+    "profile": { "type": "string", "enum": ["minimal", "standard", "full"] },
+    "project": { "type": "object", "properties": { "name": { "type": "string" }, "type": { "type": "string" } } },
+    "custom": { "type": "object", "additionalProperties": true }
+  }
+}
+```
+
+**Profile Toggle Matrix:**
+
+| Feature | minimal | standard | full |
+|---------|---------|----------|------|
+| SessionStart hook | ❌ | ✅ | ✅ |
+| PostToolUse hook | ❌ | ❌ | ✅ |
+| Auto Quick Reference | ❌ | ✅ | ✅ |
+| Verbose health output | ❌ | ❌ | ✅ |
+| Incremental code review | ❌ | ✅ | ✅ |
+| Parallel agents | ✅ | ✅ | ✅ |
+
+**Rule:** Profile changes MUST NOT break schema outputs. Only verbosity/automation differs.
 
 ---
 
 ## Part 5: Implementation Phases
 
-Each phase has explicit inputs, outputs, and a Definition of Done with objectively verifiable checkpoints.
+Each phase has explicit outputs and a Definition of Done with objectively verifiable checkpoints.
 
 ### Phase 0: Foundation
 
-**Purpose:** Set up infrastructure before building any features.
+**Purpose:** Test infrastructure before building features.
 
-**Inputs:** None (starting fresh)
+| Output | Verification |
+|--------|--------------|
+| 5 JSON schemas in `.claude/schemas/` | `npx ajv validate -s .claude/schemas/*.json` passes |
+| 3 fixture repos in `test/fixtures/` | `ls test/fixtures/{nextjs-app,python-cli,monorepo}` succeeds |
+| Golden files in `test/golden/` | Files exist for quick-reference, session-entry, audit-report |
+| `scripts/verify-phase.sh` | `./scripts/verify-phase.sh 0` exits 0 |
 
-**Outputs:**
-- [ ] JSON schemas in `.claude/schemas/`
-- [ ] Fixture repos for testing (3 types: Next.js app, Python CLI, monorepo)
-- [ ] Golden file tests for expected outputs
-- [ ] Quality gate script that runs all verifications
-
-**Definition of Done:**
-1. ✅ All 5 JSON schemas from Part 4 exist and are valid JSON Schema draft-07
-2. ✅ 3 fixture repos created in `test/fixtures/` with realistic project structures
-3. ✅ `test/golden/` contains expected outputs for Quick Reference, session entry, audit report
-4. ✅ `scripts/verify-phase.sh 0` passes with exit code 0
-
-**Verification Commands:**
-```bash
-# Schema validation
-npx ajv validate -s .claude/schemas/context-health.json -d /dev/null
-
-# Fixture repos exist
-ls test/fixtures/nextjs-app test/fixtures/python-cli test/fixtures/monorepo
-
-# Golden files exist
-ls test/golden/quick-reference.md test/golden/session-entry.md test/golden/audit-report.json
-
-# Phase gate passes
-./scripts/verify-phase.sh 0
-```
+**Gate:** All outputs verified before Phase 1.
 
 ---
 
 ### Phase 1: MVP Loop
 
-**Purpose:** Prove the redesign works with core workflow.
+**Purpose:** Prove the core workflow works.
 
-**Inputs:** Phase 0 complete
+| Output | Verification |
+|--------|--------------|
+| `/init` skill | On fixture repo: `grep -cE '\[FILL:[^\]]+\]'` returns <3 |
+| `/review` skill | Output validates against ContextHealth schema, score 0-100 |
+| `/save-full` skill | Session entry validates against SessionEntry schema |
+| End-to-end test | init → work → save-full → review shows score ≥80 |
 
-**Outputs:**
-- [ ] `/init` skill with auto-detection
-- [ ] `/review` skill with health score
-- [ ] `/save-full` skill with session entry
-
-**Definition of Done:**
-1. ✅ `/init` on fixture repo produces `context/` with <3 unfilled placeholders
-2. ✅ `/review` outputs valid `ContextHealth` JSON with score 0-100
-3. ✅ `/save-full` produces session entry matching `SessionEntry` schema
-4. ✅ Quick Reference in STATUS.md matches golden file format
-5. ✅ End-to-end test: init → work → save-full → review shows health score ≥80
-
-**Verification Commands:**
-```bash
-# Test /init auto-detection
-cd test/fixtures/nextjs-app
-claude --skill init
-grep -c "\[FILL:" context/CONTEXT.md  # Must be <3
-
-# Test /review health score
-claude --skill review --output-json | jq '.score'  # Must be 0-100
-
-# Test /save-full schema compliance
-claude --skill save-full --output-json > /tmp/session.json
-npx ajv validate -s .claude/schemas/session-entry.json -d /tmp/session.json
-
-# Phase gate
-./scripts/verify-phase.sh 1
-```
-
-**Gate:** Phase 2 cannot begin until all Phase 1 checkpoints pass.
+**Gate:** All verifications pass on ALL 3 fixture repos before Phase 2.
 
 ---
 
 ### Phase 2: Additional Skills
 
-**Purpose:** Complete the skill set with remaining core functionality.
+**Purpose:** Complete core skill set.
 
-**Inputs:** Phase 1 complete
+| Output | Verification |
+|--------|--------------|
+| `/save` | `git diff --name-only` shows only `context/STATUS.md` |
+| `/validate` | Detects injected broken reference `D999` |
+| `/export` | Output validates against HandoffPackage schema |
+| `/update` | Creates backup dir, produces MIGRATION_SUMMARY.md |
 
-**Outputs:**
-- [ ] `/save` skill (quick update, STATUS.md only)
-- [ ] `/validate` skill (deep health check)
-- [ ] `/export` skill (handoff package)
-- [ ] `/update` skill (ACS version update)
-
-**Definition of Done:**
-1. ✅ `/save` updates STATUS.md Quick Reference without touching SESSIONS.md
-2. ✅ `/validate` checks cross-references and reports broken links
-3. ✅ `/export` produces valid `HandoffPackage` JSON
-4. ✅ `/update` creates backup, downloads new version, produces MIGRATION_SUMMARY.md
-5. ✅ All skills have matching golden file tests
-
-**Verification Commands:**
-```bash
-# /save only touches STATUS.md
-claude --skill save
-git diff --name-only  # Should only show context/STATUS.md
-
-# /validate catches broken references
-echo "See D999" >> context/STATUS.md  # Invalid decision reference
-claude --skill validate | grep -q "D999 not found"
-
-# /export schema compliance
-claude --skill export --output-json > /tmp/handoff.json
-npx ajv validate -s .claude/schemas/handoff-package.json -d /tmp/handoff.json
-
-# Phase gate
-./scripts/verify-phase.sh 2
-```
+**Gate:** All skills have passing golden file tests.
 
 ---
 
@@ -610,42 +486,15 @@ npx ajv validate -s .claude/schemas/handoff-package.json -d /tmp/handoff.json
 
 **Purpose:** Build parallel code review system.
 
-**Inputs:** Phase 2 complete
+| Output | Verification |
+|--------|--------------|
+| `codebase-scanner` agent | Produces `.claude/cache/codebase-context.json` |
+| `security-reviewer` agent | Findings validate against AuditFinding schema |
+| `code-reviewer` orchestrator | Runs scanner first, then specialists in parallel |
+| `synthesis-agent` | Merges duplicates (same file:line = one finding) |
+| Final report | Validates against AuditReport schema |
 
-**Outputs:**
-- [ ] `codebase-scanner.md` agent (shared context)
-- [ ] `security-reviewer.md` agent (prototype specialist)
-- [ ] `code-reviewer.md` orchestrator
-- [ ] `synthesis-agent.md` (deduplication)
-- [ ] Verification step enforcement
-
-**Definition of Done:**
-1. ✅ `codebase-scanner` produces `.claude/cache/codebase-context.json`
-2. ✅ `security-reviewer` outputs findings matching `AuditFinding` schema
-3. ✅ Every finding includes `verified` object with pattern searches
-4. ✅ Orchestrator launches scanner first, then specialists in parallel
-5. ✅ Synthesis agent merges duplicate findings (same file:line = one finding)
-6. ✅ Final report matches `AuditReport` schema
-
-**Verification Commands:**
-```bash
-# Codebase scanner produces cache
-claude --agent codebase-scanner
-test -f .claude/cache/codebase-context.json
-
-# Security reviewer findings are verified
-claude --agent security-reviewer --output-json | jq '.findings[0].verified'
-# Must have vulnPatternSearched, mitigationPatternSearched, mitigationFound
-
-# Orchestrator runs parallel
-time claude --skill code-review  # Should be faster than sequential
-
-# No duplicate findings
-claude --skill code-review --output-json | jq '[.findings[].location | "\(.file):\(.line)"] | unique | length == length'
-
-# Phase gate
-./scripts/verify-phase.sh 3
-```
+**Gate:** Every finding includes `verified` object with pattern searches.
 
 ---
 
@@ -653,163 +502,60 @@ claude --skill code-review --output-json | jq '[.findings[].location | "\(.file)
 
 **Purpose:** Complete specialist agent set.
 
-**Inputs:** Phase 3 complete
+| Output | Verification |
+|--------|--------------|
+| 4 specialist agents | Each produces valid AuditFinding |
+| `audit-compare` | Reads previous report, shows trend |
+| `--quick` mode | Completes in <3 minutes |
+| `--incremental` mode | Only scans files in `git diff --name-only` |
 
-**Outputs:**
-- [ ] `performance-reviewer.md`
-- [ ] `accessibility-reviewer.md`
-- [ ] `type-safety-reviewer.md`
-- [ ] `test-coverage-reviewer.md`
-- [ ] `audit-compare.md` (baseline comparison)
-
-**Definition of Done:**
-1. ✅ Each specialist produces findings matching `AuditFinding` schema
-2. ✅ Each specialist includes verification step
-3. ✅ `audit-compare` reads previous report and shows trend
-4. ✅ `/code-review --quick` runs in <3 minutes (critical issues only)
-5. ✅ `/code-review --incremental` only scans changed files
-
-**Verification Commands:**
-```bash
-# All specialists produce valid findings
-for agent in performance accessibility type-safety test-coverage; do
-  claude --agent ${agent}-reviewer --output-json | \
-    npx ajv validate -s .claude/schemas/audit-finding.json -d -
-done
-
-# Quick mode is fast
-time timeout 180 claude --skill code-review --quick
-
-# Incremental only scans changed files
-git diff --name-only > /tmp/changed.txt
-claude --skill code-review --incremental --output-json | \
-  jq '.metadata.filesScanned' | \
-  xargs -I {} test {} -le $(wc -l < /tmp/changed.txt)
-
-# Phase gate
-./scripts/verify-phase.sh 4
-```
+**Gate:** All specialists include verification step.
 
 ---
 
 ### Phase 5: Hooks (Safe-Fail)
 
-**Purpose:** Add automation without introducing friction.
+**Purpose:** Add automation without friction.
 
-**Inputs:** Phase 4 complete
+| Output | Verification |
+|--------|--------------|
+| `session-start.sh` hook | Runs on session start, prints health summary |
+| Hook failure handling | Exit code 1 → warning printed, execution continues |
+| Hook timeout | >2s → killed with warning |
+| `minimal` profile | Disables all hooks |
 
-**Outputs:**
-- [ ] `session-start.sh` hook (health summary)
-- [ ] Hook configuration in `.claude/settings.json`
-- [ ] "minimal" profile that disables all hooks
-
-**Definition of Done:**
-1. ✅ SessionStart hook runs on session start and prints health summary
-2. ✅ Hook failure (exit code 1) prints warning but doesn't block
-3. ✅ Hook timeout (>2s) is killed and warns
-4. ✅ `profile: minimal` in config disables all hooks
-5. ✅ Hooks are idempotent (running twice produces same result)
-
-**Verification Commands:**
-```bash
-# Hook runs and produces output
-claude --test-hook session-start | grep -q "Health:"
-
-# Hook failure doesn't block
-echo "exit 1" > .claude/hooks/session-start.sh
-claude --test-hook session-start  # Should warn but not fail
-
-# Hook timeout is handled
-echo "sleep 10" > .claude/hooks/session-start.sh
-timeout 5 claude --test-hook session-start  # Should timeout gracefully
-
-# Minimal profile disables hooks
-echo '{"profile": "minimal"}' > context/.context-config.json
-claude --test-hook session-start  # Should skip
-
-# Phase gate
-./scripts/verify-phase.sh 5
-```
+**Gate:** Hooks are idempotent (running twice = same result).
 
 ---
 
-### Phase 6: Migration & Rollback
+### Phase 6: Migration & Update
 
-**Purpose:** Safe upgrade path from v4.x with rollback capability.
+**Purpose:** Safe upgrade path with rollback.
 
-**Inputs:** Phase 5 complete
+| Output | Verification |
+|--------|--------------|
+| Backup creation | Timestamped `.claude-backup-*` directory created |
+| MIGRATION_SUMMARY.md | Contains backup location + rollback command |
+| Rollback script | `./scripts/rollback.sh` restores v4.x structure |
+| Command aliases | Old names work with deprecation warning |
+| Checksum verification | Downloaded files match manifest SHA-256 |
 
-**Outputs:**
-- [ ] `/update` skill with full migration logic
-- [ ] `MIGRATION_SUMMARY.md` generation
-- [ ] One-command rollback
-- [ ] Backward-compatible aliases for old commands
-
-**Definition of Done:**
-1. ✅ `/update` creates timestamped backup before any changes
-2. ✅ `MIGRATION_SUMMARY.md` lists: what changed, backup location, rollback command
-3. ✅ `claude --rollback` restores from backup
-4. ✅ Old command names work as aliases (with deprecation warning)
-5. ✅ v4.x config auto-migrates to v5.0 profile
-
-**Verification Commands:**
-```bash
-# Backup created
-claude --skill update
-test -d .claude-backup-*
-
-# Migration summary exists and is complete
-grep -q "Backup location:" MIGRATION_SUMMARY.md
-grep -q "Rollback command:" MIGRATION_SUMMARY.md
-
-# Rollback works
-claude --rollback
-test -f .claude/commands/save.md  # Old v4 structure restored
-
-# Aliases work with warning
-claude --skill init-context 2>&1 | grep -q "deprecated"
-
-# Phase gate
-./scripts/verify-phase.sh 6
-```
+**Gate:** Full upgrade → rollback cycle on fixture repo preserves all user content.
 
 ---
 
-### Phase 7: Documentation & Polish
+### Phase 7: Documentation
 
-**Purpose:** Production-ready documentation and final polish.
+**Purpose:** Production-ready docs.
 
-**Inputs:** Phase 6 complete
+| Output | Verification |
+|--------|--------------|
+| acs-docs website | `npm run build` succeeds |
+| All skills documented | `test -f docs/skills/{name}.md` for each |
+| Migration guide | Complete with examples |
+| CHANGELOG.md | v5.0 entry present |
 
-**Outputs:**
-- [ ] Updated acs-docs website
-- [ ] CHANGELOG.md entry for v5.0
-- [ ] README.md updates
-- [ ] Troubleshooting guide
-
-**Definition of Done:**
-1. ✅ acs-docs builds without errors
-2. ✅ All commands documented with examples
-3. ✅ Migration guide complete
-4. ✅ CHANGELOG.md has comprehensive v5.0 entry
-5. ✅ No broken links in documentation
-
-**Verification Commands:**
-```bash
-# Docs build
-cd acs-docs && npm run build
-
-# All skills documented
-for skill in init save save-full review validate export update code-review; do
-  test -f docs/skills/${skill}.md
-done
-
-# No broken links
-npx linkinator docs/ --recurse
-
-# Phase gate
-./scripts/verify-phase.sh 7
-```
+**Gate:** `npx linkinator docs/ --recurse` finds no broken links.
 
 ---
 
@@ -817,34 +563,12 @@ npx linkinator docs/ --recurse
 
 **Purpose:** Ship v5.0.0.
 
-**Inputs:** Phase 7 complete, all gates passed
-
-**Outputs:**
-- [ ] Tagged release v5.0.0
-- [ ] GitHub release with notes
-- [ ] Updated install.sh
-
-**Definition of Done:**
-1. ✅ All phase gates (0-7) pass
-2. ✅ Version bumped to 5.0.0 in VERSION file
-3. ✅ Git tag v5.0.0 created and pushed
-4. ✅ GitHub release published
-5. ✅ `curl install.sh | bash` installs v5.0.0
-
-**Verification Commands:**
-```bash
-# All phases pass
-for i in $(seq 0 7); do
-  ./scripts/verify-phase.sh $i || exit 1
-done
-
-# Version correct
-grep -q "5.0.0" VERSION
-
-# Install works
-curl -sL https://raw.githubusercontent.com/.../install.sh | bash
-claude --version | grep -q "5.0.0"
-```
+| Output | Verification |
+|--------|--------------|
+| All phase gates pass | `for i in 0..7; ./scripts/verify-phase.sh $i` |
+| VERSION = 5.0.0 | `cat VERSION` |
+| Git tag v5.0.0 | `git tag -l v5.0.0` |
+| Install works | `curl install.sh \| bash` then `claude --version` shows 5.0.0 |
 
 ---
 
@@ -852,269 +576,243 @@ claude --version | grep -q "5.0.0"
 
 ### 6.1 Test Types
 
-| Test Type | Purpose | Location | When Run |
-|-----------|---------|----------|----------|
+| Type | Purpose | Location | When |
+|------|---------|----------|------|
 | Schema validation | Verify JSON outputs | `test/schemas/` | Every phase |
 | Golden file tests | Verify output format | `test/golden/` | Every phase |
-| Fixture repo tests | Integration testing | `test/fixtures/` | Phase 1+ |
-| Hook simulation | Test hook behavior | `test/hooks/` | Phase 5 |
-| Migration tests | Test upgrade path | `test/migration/` | Phase 6 |
+| Fixture repo tests | Integration | `test/fixtures/` | Phase 1+ |
+| Migration tests | Upgrade/rollback | `test/migration/` | Phase 6 |
 
 ### 6.2 Fixture Repositories
 
-Three realistic project structures for testing:
-
-**`test/fixtures/nextjs-app/`**
-- Next.js 14 with TypeScript
-- Prisma database
-- Auth.js authentication
-- Tailwind CSS
-- Tests: 10-15 files spanning multiple patterns
-
-**`test/fixtures/python-cli/`**
-- Python CLI tool
-- Click framework
-- pytest tests
-- pyproject.toml configuration
-
-**`test/fixtures/monorepo/`**
-- Turborepo structure
-- 2 apps, 3 packages
-- Shared configuration
-- Cross-package dependencies
+| Fixture | Stack | Files | Purpose |
+|---------|-------|-------|---------|
+| `nextjs-app` | Next.js 14, TS, Prisma, Auth.js | 10-15 | Web app patterns |
+| `python-cli` | Python, Click, pytest | 5-10 | CLI patterns |
+| `monorepo` | Turborepo, 2 apps, 3 packages | 20+ | Complex structure |
 
 ### 6.3 Golden Files
 
-Expected outputs for comparison:
-
 ```
 test/golden/
-├── quick-reference.md          # STATUS.md Quick Reference format
-├── session-entry.md            # SESSIONS.md entry format
-├── audit-report.json           # Full audit report
-├── audit-finding.json          # Single finding
-├── context-health.json         # Health check output
-└── handoff-package.json        # Export package
-```
-
-### 6.4 Phase Gate Script
-
-```bash
-#!/bin/bash
-# scripts/verify-phase.sh
-# Usage: ./scripts/verify-phase.sh <phase-number>
-
-PHASE=$1
-
-case $PHASE in
-  0) # Foundation
-    npx ajv validate -s .claude/schemas/*.json
-    test -d test/fixtures/nextjs-app
-    test -d test/fixtures/python-cli
-    test -d test/fixtures/monorepo
-    test -d test/golden
-    ;;
-  1) # MVP Loop
-    # Run init, check placeholders
-    # Run review, validate health schema
-    # Run save-full, validate session schema
-    ;;
-  # ... phases 2-7
-esac
-
-echo "Phase $PHASE: ✅ PASSED"
+├── quick-reference.md       # Expected STATUS.md Quick Reference
+├── session-entry.md         # Expected SESSIONS.md entry format
+├── audit-report.json        # Expected code review output
+├── context-health.json      # Expected /review output
+└── handoff-package.json     # Expected /export output
 ```
 
 ---
 
-## Part 7: Migration & Rollback
+## Part 7: Migration Strategy
 
-### 7.1 Upgrade Flow
+### 7.1 Supported Upgrade Paths
 
-```
-v4.x Project
-     │
-     ▼
-┌────────────────────────────────────┐
-│  1. Create timestamped backup      │
-│     .claude-backup-YYYYMMDD-HHMMSS │
-└────────────────────────────────────┘
-     │
-     ▼
-┌────────────────────────────────────┐
-│  2. Download v5.0 components       │
-│     - Skills                       │
-│     - Agents                       │
-│     - Hooks                        │
-│     - Schemas                      │
-└────────────────────────────────────┘
-     │
-     ▼
-┌────────────────────────────────────┐
-│  3. Migrate configuration          │
-│     - 40+ options → profile        │
-│     - Preserve custom settings     │
-└────────────────────────────────────┘
-     │
-     ▼
-┌────────────────────────────────────┐
-│  4. Generate MIGRATION_SUMMARY.md  │
-│     - What changed                 │
-│     - Backup location              │
-│     - Rollback command             │
-└────────────────────────────────────┘
-     │
-     ▼
-v5.0 Project
-```
+| From | To | Support | Action |
+|------|-----|---------|--------|
+| v4.2.x | v5.0 | ✅ Full | Automated migration |
+| v4.1.x | v5.0 | ✅ Full | Automated migration |
+| v4.0.x | v5.0 | ✅ Full | Automated migration |
+| v3.x | v5.0 | ❌ None | Must upgrade to v4.x first |
+| No ACS | v5.0 | N/A | Use `/init` |
 
-### 7.2 MIGRATION_SUMMARY.md Template
+### 7.2 Migration Phases
 
-```markdown
-# Migration Summary: v4.x → v5.0
+| Phase | Steps | Verification |
+|-------|-------|--------------|
+| **Pre-flight** | Detect version, validate v4.x, check uncommitted changes, validate files | VERSION matches `4.*`, all context files exist |
+| **Backup** | Create timestamped backup of .claude/, scripts/, templates/, VERSION | `diff -rq` shows no differences from originals |
+| **Content** | Preserve CONTEXT/DECISIONS/SESSIONS, archive context-feedback.md | Canonical files unchanged, feedback in SESSIONS.md |
+| **Config** | Read old config, map to profile, write new config | `jq .` parses successfully |
+| **Structure** | Remove commands/, create skills/, agents/, hooks/, schemas/ | File counts match expected |
+| **Cleanup** | Remove deprecated files, update .gitignore | No old files remain |
+| **Validate** | Verify files accessible, skills loadable, health check | /review produces valid output |
+| **Document** | Generate MIGRATION_SUMMARY.md, update VERSION, log to SESSIONS.md | Files exist with correct content |
 
-**Migrated:** 2026-01-15 14:30:00
-**Previous Version:** 4.2.1
-**New Version:** 5.0.0
+### 7.3 Migration Verification Checklist
 
-## What Changed
+| Check | Command | Expected |
+|-------|---------|----------|
+| Backup complete | `diff -rq .claude $BACKUP/.claude` | No output |
+| Skills installed | `ls .claude/skills/*/SKILL.md \| wc -l` | 8 |
+| Agents installed | `ls .claude/agents/*.md \| wc -l` | 8 |
+| Schemas installed | `ls .claude/schemas/*.json \| wc -l` | 5 |
+| Config valid | `jq . context/.context-config.json` | Valid JSON |
+| Old commands removed | `ls .claude/commands/ 2>&1` | "No such file" |
+| User content preserved | `wc -l context/SESSIONS.md` | Same as before |
+| VERSION updated | `cat VERSION` | 5.0.0 |
 
-### Removed
-- 14 slash commands (replaced by 8 skills)
-- 6 bash scripts (replaced by skills/agents)
-- context-feedback.md (content in SESSIONS.md)
+### 7.4 Rollback
 
-### Added
-- .claude/skills/ (8 skills)
-- .claude/agents/ (8 agents)
-- .claude/schemas/ (5 JSON schemas)
-- .claude/hooks/ (automation)
+**Trigger:** Any critical failure during migration or user request.
 
-### Modified
-- .context-config.json (simplified to profile)
-- STATUS.md (enhanced Quick Reference)
+**Command:** `./scripts/rollback.sh [backup-dir]`
 
-## Backup Location
+**Actions:**
+1. Remove v5.0 structure (.claude/skills, agents, hooks, schemas)
+2. Restore v4.x structure from backup
+3. Restore VERSION file
+4. Remove MIGRATION_SUMMARY.md
 
-All original files backed up to:
-```
-.claude-backup-20260115-143000/
-├── .claude/commands/     # All 22 commands
-├── scripts/              # All 8 scripts
-├── context/              # Config backup
-└── VERSION               # Previous version
-```
+**Guarantee:** User content (CONTEXT.md, DECISIONS.md, SESSIONS.md) is NEVER modified during migration or rollback.
 
-## Rollback Command
+### 7.5 Breaking Changes
 
-To revert to v4.x:
-```bash
-claude --rollback
-# Or manually:
-rm -rf .claude && mv .claude-backup-20260115-143000/.claude .
-```
-
-## Deprecated Aliases
-
-These old commands still work (with warning) for 6 months:
-- /init-context → /init
-- /save-context → /save
-- /review-context → /review
-- /validate-context → /validate
-- /export-context → /export
-- /update-context-system → /update
-```
-
-### 7.3 Breaking Changes
-
-| Change | Impact | Migration |
-|--------|--------|-----------|
-| Commands → Skills | Old names deprecated | Aliases for 6 months |
-| Scripts removed | Can't call directly | Use skills/agents |
-| Config simplified | Old options ignored | Auto-migrate to profile |
-| context-feedback.md removed | File deleted | Content preserved in SESSIONS.md |
-| v3.x support dropped | Can't upgrade from v3 | Must upgrade to v4 first |
+| Change | v4.x | v5.0 | Migration |
+|--------|------|------|-----------|
+| Commands → Skills | `.claude/commands/*.md` | `.claude/skills/*/SKILL.md` | Aliases for 6 months |
+| Scripts | 10 files | 2 files | Backup preserved |
+| Config | 40+ options | 3 profiles | Auto-mapped |
+| context-feedback.md | Separate file | Removed | Archived to SESSIONS.md |
+| v3.x support | Migration scripts | Not supported | Must upgrade to v4 first |
 
 ---
 
-## Part 8: Success Metrics
+## Part 8: Security & Integrity
 
-### 8.1 Quantitative
+### 8.1 Update Verification
+
+**Problem:** curl-from-GitHub is convenient but risky.
+
+**Solution:** Manifest with SHA-256 checksums.
+
+```json
+{
+  "version": "5.0.0",
+  "files": {
+    ".claude/skills/init/SKILL.md": "sha256:abc123...",
+    ".claude/skills/save/SKILL.md": "sha256:def456...",
+    ".claude/agents/code-reviewer.md": "sha256:ghi789...",
+    ...
+  }
+}
+```
+
+**Verification steps:**
+1. Download manifest from pinned tag + commit SHA
+2. Download each file
+3. Compute SHA-256 of downloaded content
+4. Compare to manifest
+5. Fail if ANY mismatch
+
+### 8.2 Staged Apply Pattern
+
+**Never modify project files directly during update.**
+
+1. Download all files to temp directory
+2. Verify all checksums
+3. Create backup of existing installation
+4. Atomically swap: `mv .claude .claude-old && mv temp/.claude .claude`
+5. On failure: `mv .claude-old .claude`
+
+### 8.3 Concurrency Protection
+
+**Problem:** Multiple agents or rapid skill invocations could corrupt append-only logs.
+
+**Solution:** File locking for SESSIONS.md and DECISIONS.md writes.
+
+```bash
+# Acquire lock
+exec 200>context/.sessions.lock
+flock -x 200
+
+# Write to file
+echo "$SESSION_ENTRY" >> context/SESSIONS.md
+
+# Lock released automatically on script exit
+```
+
+**Session number enforcement:**
+1. Read last session number: `grep -oE "^## Session [0-9]+" SESSIONS.md | tail -1 | grep -oE "[0-9]+"`
+2. New session = last + 1
+3. If mismatch detected, abort with error
+
+### 8.4 Partial Write Protection
+
+**Problem:** Process killed mid-write leaves corrupted file.
+
+**Solution:** Write to temp, then atomic rename.
+
+```bash
+# Write complete entry to temp file
+cat > context/.sessions.tmp << EOF
+$SESSION_ENTRY
+EOF
+
+# Atomic append
+cat context/.sessions.tmp >> context/SESSIONS.md
+rm context/.sessions.tmp
+```
+
+---
+
+## Part 9: Success Metrics
+
+### 9.1 Quantitative
 
 | Metric | v4.x Baseline | v5.0 Target | Verification |
 |--------|---------------|-------------|--------------|
-| Commands | 22 | 8 | `ls .claude/skills | wc -l` |
+| Skills | 22 commands | 8 | `ls .claude/skills \| wc -l` |
 | Script lines | ~4,400 | ~600 | `wc -l scripts/*.sh` |
-| Templates | 12 | 5 | `ls templates | wc -l` |
+| Templates | 12 | 5 | `ls templates \| wc -l` |
 | Config options | 40+ | 3 profiles | Schema check |
-| Code review time | Sequential | 3-5x faster | Timed test |
-| False positive rate | 35% | <15% | Manual audit of findings |
+| False positive rate | ~35% | <15% | Manual audit |
 
-### 8.2 Qualitative
+### 9.2 Qualitative
 
 | Goal | Verification |
 |------|--------------|
-| New users productive in <5 min | User testing with fresh project |
-| Daily workflow uses ≤3 commands | Usage telemetry (opt-in) |
-| Code reviews find real issues | Manual review of findings |
-| Architecture is maintainable | New contributor can add skill in <1 hour |
-| System is upgradable | Migration test passes |
+| New users productive in <5 min | User testing |
+| Daily workflow uses ≤3 skills | Usage telemetry (opt-in) |
+| Code reviews find real issues | Manual audit |
+| New contributor adds skill in <1 hour | Onboarding test |
+| Migration preserves all data | Automated test |
 
 ---
 
-## Part 9: Open Questions (Resolved)
+## Part 10: Open Questions (Resolved)
 
 | Question | Decision | Rationale |
 |----------|----------|-----------|
-| Multi-AI support? | Defer to v5.1 | Focus on Claude Code excellence first |
-| Backward compat duration? | 6 months | Balance support burden vs user needs |
-| MCP integration? | Defer to v5.1 | Not needed for core functionality |
-| Team features? | Defer to v5.1 | Complexity, needs enterprise validation |
-| Test approach? | Golden files + fixtures | Matches new architecture |
+| Multi-AI support? | Defer to v5.1 | Focus on Claude Code first |
+| Backward compat duration? | 6 months | Balance support vs burden |
+| MCP integration? | Defer to v5.1 | Not needed for core |
+| Team features? | Defer to v5.1 | Needs enterprise validation |
 
 ---
 
-## Appendix A: Hook Safety Requirements
+## Appendix A: Hook Safety & Constraints
 
 ### A.1 Safe-Fail Rules
 
-1. **Never block.** If hook exits non-zero, warn and continue.
-2. **Timeout after 2 seconds.** Kill and warn if exceeded.
+1. **Never block.** Exit non-zero → warn and continue.
+2. **Timeout 2 seconds.** Kill and warn if exceeded.
 3. **No side effects on failure.** Failed hook must not leave partial state.
-4. **Idempotent.** Running twice produces same result.
+4. **Idempotent.** Running twice = same result.
 5. **Respect profile.** `minimal` profile disables all hooks.
 
-### A.2 Debouncing
+### A.2 Hook Constraints
 
-PostToolUse hooks are debounced:
+| Allowed | Forbidden |
+|---------|-----------|
+| Read context files | Network requests |
+| Read git status | Heavy git operations (log, blame) |
+| Simple computation | File writes (except designated cache) |
+| Print to stdout | Interactive prompts |
+
+### A.3 Debouncing (PostToolUse only)
+
 - **Delay:** 5 seconds after last Edit/Write
 - **Batch:** Multiple edits = single hook invocation
 - **Skip:** Don't run if same file edited within window
 
-### A.3 Hook Template
-
-```bash
-#!/bin/bash
-# .claude/hooks/session-start.sh
-# Safe-fail hook for session start
-
-set -o pipefail
-
-# Timeout protection (2s max)
-timeout 2 bash -c '
-  # Your hook logic here
-  echo "Health: checking..."
-' || {
-  echo "⚠️ Hook timed out or failed (continuing anyway)"
-  exit 0  # Always exit 0 to not block
-}
-```
-
 ---
 
-## Appendix B: Verification Step Enforcement
+## Appendix B: Verification & Deduplication
 
-All code review findings MUST include verification:
+### B.1 Verification Step
+
+Every audit finding MUST include:
 
 ```json
 {
@@ -1122,29 +820,31 @@ All code review findings MUST include verification:
     "vulnPatternSearched": "dangerouslySetInnerHTML",
     "mitigationPatternSearched": "DOMPurify|sanitize|escape",
     "mitigationFound": false,
-    "verificationNotes": "No sanitization found in component"
+    "verificationNotes": "No sanitization in component"
   }
 }
 ```
 
-### Verification Process
+### B.2 Verification Process
 
-1. **Search for vulnerability pattern** in codebase
-2. **Search for mitigation pattern** in same file/module
-3. **If mitigation found:** Verify it covers the vulnerability
-4. **Only flag if:** Mitigation missing OR doesn't cover vulnerability
-5. **Skip test files:** Unless explicitly reviewing tests
+1. Search for vulnerability pattern in codebase
+2. Search for mitigation pattern in same file/module
+3. If mitigation found: verify it covers the vulnerability
+4. Only flag if: mitigation missing OR doesn't cover
+5. Skip test files unless explicitly reviewing tests
 
-### Deduplication Rules
+### B.3 Deduplication Rules
 
-Findings are considered duplicates if:
-- Same file AND same line number
-- Same vulnerability pattern AND same file
+**Duplicates:** Same file AND same line number.
 
-Synthesis agent merges duplicates, keeping:
-- Highest severity
-- Most detailed description
-- All unique remediation suggestions
+**Tie-break rules (keep the one with):**
+1. Highest severity
+2. Most specific description
+3. Most actionable remediation
+
+**Merge:**
+- Combine evidence from all duplicate findings
+- Keep all unique remediation suggestions
 
 ---
 
@@ -1152,16 +852,44 @@ Synthesis agent merges duplicates, keeping:
 
 | Feature | v4.2.1 | v5.0 |
 |---------|--------|------|
-| **Core Files** | 5 | 4 |
-| **Commands** | 22 slash commands | 8 skills |
-| **Code Review** | 9 manual commands | 1 orchestrator + 7 agents |
-| **Scripts** | 8 bash files | 2 bash + hooks |
-| **Templates** | 12 files | 5 files |
-| **Configuration** | 40+ options | 3 profiles |
-| **Execution** | Sequential | Parallel |
-| **Automation** | Manual | Hooks (safe-fail) |
-| **Interfaces** | Freeform markdown | JSON schemas |
-| **Testing** | 42 bash tests | Golden files + fixtures |
+| Core Files | 5 | 4 |
+| Commands | 22 | 8 skills |
+| Code Review | 9 commands | 1 + 7 agents |
+| Scripts | 8 files | 2 files |
+| Templates | 12 | 5 |
+| Config | 40+ options | 3 profiles |
+| Execution | Sequential | Parallel |
+| Automation | Manual | Hooks |
+| Interfaces | Markdown | JSON schemas |
+
+---
+
+## Appendix D: Cache Invalidation
+
+### D.1 Codebase Context Cache
+
+**File:** `.claude/cache/codebase-context.json`
+
+**Stale when:**
+- `git rev-parse HEAD` differs from cached commit
+- Any file in `git status --porcelain` output
+- Cache file older than 24 hours
+
+**Invalidation check:**
+```bash
+CACHED_COMMIT=$(jq -r '.commit' .claude/cache/codebase-context.json)
+CURRENT_COMMIT=$(git rev-parse HEAD)
+[ "$CACHED_COMMIT" != "$CURRENT_COMMIT" ] && echo "stale"
+```
+
+### D.2 Incremental Mode File Selection
+
+For `--incremental` code review:
+
+1. Get changed files: `git diff --name-only HEAD~1`
+2. Filter to scannable types: `*.ts, *.tsx, *.js, *.jsx, *.py, etc.`
+3. Scan only those files
+4. Merge with cached findings for unchanged files
 
 ---
 
