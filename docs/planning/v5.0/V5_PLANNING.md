@@ -1,6 +1,6 @@
 # AI Context System v5.0 - First Principles Redesign
 
-**Document Version:** 3.0
+**Document Version:** 3.1
 **Created:** 2026-01-12
 **Last Updated:** 2026-01-13
 **Status:** Planning
@@ -23,9 +23,9 @@ Before building the full system, we must prove the redesign works with three ski
 
 | Skill | Input | Output | Verification |
 |-------|-------|--------|--------------|
-| `/init` | Empty or existing project | context/ with auto-detected values | Config created, `grep -cE '\[FILL:[^\]]+\]'` returns <3 |
-| `/review` | Existing context/ | Health score + resume point | Score 0-100 per algorithm in §4.6, resume point matches §4.8 format |
-| `/save-full` | Work session | Session entry in SESSIONS.md | Entry validates against SessionEntry schema |
+| `/init` | Empty or existing project | context/ with auto-detected values | Config created, placeholders <3 per §4.7, required fields complete per §4.8 |
+| `/review` | Existing context/ | Health score + resume point | Score 0-100 per algorithm in §4.6, resume point matches §4.9 format |
+| `/save-full` | Work session | Session entry in SESSIONS.md | Entry validates against SessionEntry schema, has BEGIN/END markers |
 
 **Gate:** Phase 2+ cannot begin until MVP loop passes all verification criteria on all 3 fixture repos.
 
@@ -119,7 +119,26 @@ context/
 
 **Rule:** Derived views MUST be fully regenerable from canonical sources. Golden file tests verify this.
 
-### 2.4 Reduction Summary
+### 2.4 Derived Block Markers
+
+Derived content within canonical files uses HTML comment markers to prevent accidental drift:
+
+```markdown
+<!-- BEGIN AUTO:QUICK_REFERENCE -->
+**Project:** my-app | **Phase:** MVP | **Health:** 85/100
+**Focus:** Authentication implementation
+**Resume:** Continue JWT validation in src/auth/jwt.ts
+<!-- END AUTO:QUICK_REFERENCE -->
+```
+
+**Enforcement:**
+- Only `/save`, `/save-full`, and `/review` may write to AUTO blocks
+- `/validate` verifies: regenerated block hash matches current block hash
+- Manual edits inside AUTO blocks trigger warning on next `/review`
+
+**Verification:** `grep -A1 "BEGIN AUTO" STATUS.md | md5` matches regenerated output hash.
+
+### 2.5 Reduction Summary
 
 | Area | v4.2.1 | v5.0 | Reduction |
 |------|--------|------|-----------|
@@ -128,7 +147,7 @@ context/
 | Templates | 12 | 5 | 58% fewer |
 | Config options | 40+ | 3 profiles | 92% simpler |
 
-### 2.5 What's Explicitly Removed
+### 2.6 What's Explicitly Removed
 
 | Removed | Reason | Alternative |
 |---------|--------|-------------|
@@ -359,10 +378,22 @@ The health score is computed deterministically from context file state:
 | **statusFreshness** | 20 | `20 - min(20, daysSinceStatusUpdate * 2)` |
 | **sessionsFreshness** | 20 | `20 - min(20, daysSinceLastSession * 2)` |
 | **decisionsCoverage** | 15 | `15` if recent session refs decision, else `10` if any decisions exist, else `0` |
-| **contextCompleteness** | 15 | `15 - (placeholderCount * 3)`, min 0 |
-| **quickReferenceSync** | 15 | `15` if QR matches STATUS.md state, else `0` |
+| **contextCompleteness** | 15 | `15 - (placeholderCount * 3) - (missingRequiredFields * 5)`, min 0 |
+| **quickReferenceSync** | 15 | Field-based: 3 pts each for project, phase, focus, resume, health (see below) |
 | **crossReferences** | 15 | `15 - (brokenRefs * 5)`, min 0 |
 | **Total** | **100** | Sum of all components |
+
+**Quick Reference Sync (field-based partial credit):**
+
+| Field | Points | Match Criteria |
+|-------|--------|----------------|
+| Project name | 3 | Matches config `project.name` |
+| Phase | 3 | Matches STATUS.md "Current Phase" |
+| Focus | 3 | Matches STATUS.md "Current Focus" |
+| Resume point | 3 | Matches last session's next step |
+| Health score | 3 | Self-consistent (matches computed score) |
+
+This prevents a single formatting difference from tanking 15 points.
 
 **Thresholds:**
 - 80-100: Healthy (green)
@@ -383,23 +414,46 @@ Placeholders are detected by the regex pattern: `\[FILL:[^\]]+\]`
 
 **Verification:** `grep -cE '\[FILL:[^\]]+\]' context/CONTEXT.md` returns placeholder count.
 
-### 4.8 Resume Point Format
+### 4.8 Required Fields Specification
 
-Resume points MUST match this pattern: `^[A-Z][a-z]+ .+ (in|at) .+$`
+Beyond placeholder count, `/init` must populate these required fields for a context to be considered complete:
+
+| Field | Location | Detection | Required For |
+|-------|----------|-----------|--------------|
+| Project name | CONTEXT.md, config | Non-empty, non-placeholder | All projects |
+| Project type | config `project.type` | One of: app, library, cli, api, monorepo | All projects |
+| Primary language(s) | CONTEXT.md | At least one language listed | All projects |
+| Repository root | Auto-detected | `git rev-parse --show-toplevel` succeeds | Git projects |
+| How to run tests | CONTEXT.md or README | Contains "test" command or "no tests" note | Projects with test files |
+| How to start dev | CONTEXT.md or README | Contains "dev" or "start" command | Apps only |
+
+**Verification for /init:**
+- Count missing required fields (not just placeholders)
+- `/init` passes if: `placeholders < 3 AND missingRequiredFields == 0`
+- This prevents "0 placeholders but missing critical facts" failure mode
+
+### 4.9 Resume Point Format
+
+Resume points MUST start with an imperative verb and include a location reference.
+
+**Allowed verbs (whitelist):** Add, Build, Complete, Configure, Continue, Create, Debug, Delete, Deploy, Document, Enhance, Extend, Extract, Finish, Fix, Implement, Improve, Integrate, Investigate, Migrate, Move, Optimize, Refactor, Remove, Rename, Replace, Research, Resolve, Review, Rewrite, Set up, Simplify, Test, Update, Upgrade, Validate, Verify, Wire up, Write
+
+**Pattern:** `^(Add|Build|Complete|...|Write) .+ (in|at|for|to) .+`
 
 **Valid examples:**
 - `Continue implementing auth middleware in src/middleware/auth.ts`
+- `Fix CI pipeline failures in .github/workflows/test.yml`
+- `Add OAuth support to src/auth/providers.ts`
 - `Review the failing tests at tests/api/users.test.ts:45`
-- `Fix the validation error in components/Form.tsx`
 
 **Invalid examples:**
 - `auth middleware` ← No verb, no location
 - `Continue working` ← No specific location
 - `src/file.ts` ← No verb, no action
 
-**Verification:** Resume point matches regex pattern.
+**Verification:** Resume point starts with allowed verb and contains location preposition.
 
-### 4.9 Profile Configuration Schema
+### 4.10 Profile Configuration Schema
 
 ```json
 {
@@ -654,7 +708,12 @@ test/golden/
 3. Restore VERSION file
 4. Remove MIGRATION_SUMMARY.md
 
-**Guarantee:** User content (CONTEXT.md, DECISIONS.md, SESSIONS.md) is NEVER modified during migration or rollback.
+**Guarantee:** User content is preserved during migration and rollback:
+- CONTEXT.md: Never modified
+- DECISIONS.md: Never modified
+- SESSIONS.md: Append-only modifications allowed (migration note entry)
+
+**Clarification:** "Append-only" means existing content is never changed or deleted. Migration may add a single "System Migration" entry to SESSIONS.md documenting the upgrade, but all prior session entries remain intact.
 
 ### 7.5 Breaking Changes
 
@@ -695,6 +754,8 @@ test/golden/
 4. Compare to manifest
 5. Fail if ANY mismatch
 
+**Future enhancement (v5.1+):** Signed releases. Require GPG-signed tags or a signature file alongside the manifest. Verify signature before trusting manifest. This provides cryptographic assurance of authenticity, not just integrity.
+
 ### 8.2 Staged Apply Pattern
 
 **Never modify project files directly during update.**
@@ -712,15 +773,20 @@ test/golden/
 **Solution:** File locking for SESSIONS.md and DECISIONS.md writes.
 
 ```bash
-# Acquire lock
-exec 200>context/.sessions.lock
-flock -x 200
-
-# Write to file
-echo "$SESSION_ENTRY" >> context/SESSIONS.md
-
-# Lock released automatically on script exit
+# Acquire lock (with fallback for portability)
+if command -v flock >/dev/null 2>&1; then
+  exec 200>context/.sessions.lock
+  flock -x 200
+else
+  # Fallback: mkdir-based lock (atomic on all systems)
+  while ! mkdir context/.sessions.lock 2>/dev/null; do
+    sleep 0.1
+  done
+  trap "rmdir context/.sessions.lock" EXIT
+fi
 ```
+
+**Cross-platform note:** `flock` is Linux-native; macOS and busybox may not have it. The `mkdir` fallback is portable and atomic on all POSIX systems.
 
 **Session number enforcement:**
 1. Read last session number: `grep -oE "^## Session [0-9]+" SESSIONS.md | tail -1 | grep -oE "[0-9]+"`
@@ -731,18 +797,40 @@ echo "$SESSION_ENTRY" >> context/SESSIONS.md
 
 **Problem:** Process killed mid-write leaves corrupted file.
 
-**Solution:** Write to temp, then atomic rename.
+**Solution:** Session entry markers + temp file + atomic append.
 
+**Session Entry Markers:**
+```markdown
+<!-- BEGIN SESSION 15 -->
+## Session 15 | 2026-01-13 | Authentication
+
+### TL;DR
+Implemented JWT validation...
+
+### Accomplishments
+- Added token refresh logic
+...
+<!-- END SESSION 15 -->
+```
+
+**Write process:**
 ```bash
-# Write complete entry to temp file
+# Write complete entry to temp file (with markers)
 cat > context/.sessions.tmp << EOF
+<!-- BEGIN SESSION $SESSION_NUM -->
 $SESSION_ENTRY
+<!-- END SESSION $SESSION_NUM -->
 EOF
 
 # Atomic append
 cat context/.sessions.tmp >> context/SESSIONS.md
 rm context/.sessions.tmp
 ```
+
+**Corruption detection:**
+- `/validate` checks for incomplete trailing entries (BEGIN without END)
+- If found: warns user and suggests manual repair or rollback to last good state
+- Future: auto-repair by removing incomplete trailing entry
 
 ---
 
@@ -797,8 +885,14 @@ rm context/.sessions.tmp
 |---------|-----------|
 | Read context files | Network requests |
 | Read git status | Heavy git operations (log, blame) |
-| Simple computation | File writes (except designated cache) |
+| Simple computation | Writes to canonical content |
 | Print to stdout | Interactive prompts |
+| Write to derived blocks (AUTO markers) | Writes outside context/ |
+| Write to `.claude/cache/` | Long-running processes |
+
+**Derived block exception:** Hooks MAY write to `<!-- BEGIN AUTO:* -->` blocks in STATUS.md (e.g., refreshing Quick Reference). This is consistent with the canonical/derived distinction - hooks can update derived views but never canonical content.
+
+**Alternative pattern:** If hook complexity exceeds these constraints, the hook should instead print a suggestion (e.g., "Run /save to update Quick Reference") rather than perform the write directly.
 
 ### A.3 Debouncing (PostToolUse only)
 
