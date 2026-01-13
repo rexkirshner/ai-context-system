@@ -226,7 +226,9 @@ verify_phase_3() {
 verify_phase_4() {
     section "Phase 4: Remaining Agents"
 
-    local agents=("performance-reviewer" "accessibility-reviewer" "type-safety-reviewer" "test-coverage-reviewer")
+    echo "Checking remaining agents..."
+
+    local agents=("performance-reviewer" "accessibility-reviewer" "type-safety-reviewer" "test-coverage-reviewer" "audit-compare")
     local agent_dir="$REPO_ROOT/.claude/agents"
 
     for agent in "${agents[@]}"; do
@@ -236,6 +238,21 @@ verify_phase_4() {
             fail "Agent missing: $agent"
         fi
     done
+
+    # Run Phase 4 e2e tests
+    echo ""
+    echo "Running Phase 4 agent tests..."
+
+    local e2e_test="$REPO_ROOT/test/e2e/test-phase4-agents.sh"
+    if [ -f "$e2e_test" ] && [ -x "$e2e_test" ]; then
+        if "$e2e_test" > /dev/null 2>&1; then
+            pass "Phase 4 agent tests pass"
+        else
+            fail "Phase 4 agent tests fail (run test/e2e/test-phase4-agents.sh for details)"
+        fi
+    else
+        warn "Phase 4 e2e test script not found or not executable"
+    fi
 }
 
 verify_phase_5() {
