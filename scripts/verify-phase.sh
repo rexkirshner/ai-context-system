@@ -143,8 +143,20 @@ verify_phase_1() {
         fi
     done
 
-    # TODO: Add end-to-end tests on fixture repos
-    warn "End-to-end tests not yet implemented"
+    # Run end-to-end tests
+    echo ""
+    echo "Running MVP loop e2e tests..."
+
+    local e2e_test="$REPO_ROOT/test/e2e/test-mvp-loop.sh"
+    if [ -f "$e2e_test" ] && [ -x "$e2e_test" ]; then
+        if "$e2e_test" > /dev/null 2>&1; then
+            pass "MVP loop e2e tests pass"
+        else
+            fail "MVP loop e2e tests fail (run test/e2e/test-mvp-loop.sh for details)"
+        fi
+    else
+        warn "E2e test script not found or not executable"
+    fi
 }
 
 verify_phase_2() {
