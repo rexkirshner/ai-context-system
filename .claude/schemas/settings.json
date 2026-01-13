@@ -1,0 +1,75 @@
+{
+  "$id": "https://acs.rexkirshner.com/schemas/settings.json",
+  "schemaVersion": "1.0.0",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ACSSettings",
+  "description": "AI Context System settings configuration",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference URL"
+    },
+    "schemaVersion": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Schema version"
+    },
+    "profile": {
+      "type": "string",
+      "enum": ["minimal", "standard", "comprehensive"],
+      "default": "standard",
+      "description": "Active profile name"
+    },
+    "hooks": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether hooks are enabled"
+        },
+        "timeout": {
+          "type": "integer",
+          "minimum": 100,
+          "maximum": 10000,
+          "default": 2000,
+          "description": "Hook timeout in milliseconds"
+        },
+        "onFailure": {
+          "type": "string",
+          "enum": ["warn", "ignore", "fail"],
+          "default": "warn",
+          "description": "What to do when a hook fails"
+        }
+      },
+      "required": ["enabled", "timeout", "onFailure"]
+    },
+    "profiles": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "hooks": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "List of hooks to run for this profile"
+          },
+          "autoSave": {
+            "type": "boolean",
+            "default": false,
+            "description": "Whether to auto-save on session end"
+          },
+          "verbosity": {
+            "type": "string",
+            "enum": ["quiet", "normal", "verbose"],
+            "default": "normal",
+            "description": "Output verbosity level"
+          }
+        },
+        "required": ["hooks", "autoSave", "verbosity"]
+      }
+    }
+  },
+  "required": ["profile", "hooks", "profiles"]
+}
