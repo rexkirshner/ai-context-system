@@ -1,0 +1,91 @@
+{
+  "$id": "https://acs.rexkirshner.com/schemas/audit-finding.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "schemaVersion": "1.0.0",
+  "title": "AuditFinding",
+  "description": "A single finding from a code review audit",
+  "type": "object",
+  "required": ["id", "severity", "category", "title", "location", "verified"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Z]+-[0-9]+$",
+      "description": "Unique identifier (e.g., SEC-001, PERF-003)",
+      "examples": ["SEC-001", "PERF-003", "A11Y-012"]
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["critical", "high", "medium", "low", "info"],
+      "description": "Severity level of the finding"
+    },
+    "category": {
+      "type": "string",
+      "enum": ["security", "performance", "accessibility", "typescript", "testing", "other"],
+      "description": "Category of the finding"
+    },
+    "title": {
+      "type": "string",
+      "maxLength": 100,
+      "description": "Brief title describing the issue"
+    },
+    "description": {
+      "type": "string",
+      "description": "Detailed description of the finding"
+    },
+    "location": {
+      "type": "object",
+      "required": ["file"],
+      "properties": {
+        "file": {
+          "type": "string",
+          "description": "File path relative to project root"
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Line number where issue occurs"
+        },
+        "snippet": {
+          "type": "string",
+          "description": "Code snippet showing the issue"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Location of the finding in the codebase"
+    },
+    "verified": {
+      "type": "object",
+      "required": ["vulnPatternSearched", "mitigationPatternSearched", "mitigationFound"],
+      "properties": {
+        "vulnPatternSearched": {
+          "type": "string",
+          "description": "The vulnerability pattern that was searched for"
+        },
+        "mitigationPatternSearched": {
+          "type": "string",
+          "description": "The mitigation pattern that was searched for"
+        },
+        "mitigationFound": {
+          "type": "boolean",
+          "description": "Whether a mitigation was found"
+        },
+        "verificationNotes": {
+          "type": "string",
+          "description": "Notes about the verification process"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Verification that this is a real issue, not a false positive"
+    },
+    "remediation": {
+      "type": "string",
+      "description": "Suggested fix for the issue"
+    },
+    "effort": {
+      "type": "string",
+      "enum": ["trivial", "small", "medium", "large"],
+      "description": "Estimated effort to fix"
+    }
+  },
+  "additionalProperties": false
+}

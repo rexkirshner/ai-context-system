@@ -1,0 +1,96 @@
+{
+  "$id": "https://acs.rexkirshner.com/schemas/audit-report.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "schemaVersion": "1.0.0",
+  "title": "AuditReport",
+  "description": "Complete code review audit report",
+  "type": "object",
+  "required": ["metadata", "summary", "findings"],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the audit was performed"
+        },
+        "acsVersion": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "description": "Version of ACS used"
+        },
+        "projectName": {
+          "type": "string",
+          "description": "Name of the project being audited"
+        },
+        "agentsRun": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of review agents that were run"
+        },
+        "filesScanned": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of files scanned"
+        },
+        "cacheHit": {
+          "type": "boolean",
+          "description": "Whether codebase context cache was used"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Metadata about the audit run"
+    },
+    "summary": {
+      "type": "object",
+      "properties": {
+        "grade": {
+          "type": "string",
+          "pattern": "^[A-F][+-]?$",
+          "description": "Overall grade (A+ to F)",
+          "examples": ["A", "B+", "C-", "F"]
+        },
+        "criticalCount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of critical severity findings"
+        },
+        "highCount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of high severity findings"
+        },
+        "mediumCount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of medium severity findings"
+        },
+        "lowCount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of low severity findings"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Summary statistics of the audit"
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "$ref": "audit-finding.json"
+      },
+      "description": "List of all findings"
+    },
+    "positives": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Positive observations about the codebase"
+    }
+  },
+  "additionalProperties": false
+}
