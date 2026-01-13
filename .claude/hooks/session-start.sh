@@ -62,7 +62,7 @@ if [ "$STATUS_AGE_DAYS" -gt 7 ]; then
 fi
 
 # Check 2: Quick Reference presence
-if ! grep -q "BEGIN AUTO:QUICK-REFERENCE" "$STATUS_FILE" 2>/dev/null; then
+if ! grep -q "BEGIN AUTO:QUICK_REFERENCE" "$STATUS_FILE" 2>/dev/null; then
     WARNINGS+=("Quick Reference block missing")
 fi
 

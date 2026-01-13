@@ -8,12 +8,12 @@ Building the NextJS application feature set.
 
 ## Quick Reference
 
-<!-- BEGIN AUTO:QUICK-REFERENCE -->
+<!-- BEGIN AUTO:QUICK_REFERENCE -->
 ### Key Files
 - `src/app/page.tsx` - Main page component
 - `src/lib/db.ts` - Database utilities
 - `prisma/schema.prisma` - Database schema
-<!-- END AUTO:QUICK-REFERENCE -->
+<!-- END AUTO:QUICK_REFERENCE -->
 
 ## Recent Changes
 
