@@ -301,15 +301,42 @@ verify_phase_5() {
 verify_phase_6() {
     section "Phase 6: Migration & Update"
 
+    echo "Checking migration infrastructure..."
+
     # Check rollback script exists
     if [ -f "$REPO_ROOT/scripts/rollback.sh" ]; then
         pass "Rollback script exists"
+
+        if [ -x "$REPO_ROOT/scripts/rollback.sh" ]; then
+            pass "Rollback script is executable"
+        else
+            fail "Rollback script not executable"
+        fi
     else
         fail "Rollback script missing"
     fi
 
-    # TODO: Add migration tests
-    warn "Migration tests not yet implemented"
+    # Check migration summary template
+    if [ -f "$REPO_ROOT/templates/MIGRATION_SUMMARY.md" ]; then
+        pass "Migration summary template exists"
+    else
+        fail "Migration summary template missing"
+    fi
+
+    # Run Phase 6 e2e tests
+    echo ""
+    echo "Running Phase 6 migration tests..."
+
+    local e2e_test="$REPO_ROOT/test/e2e/test-phase6-migration.sh"
+    if [ -f "$e2e_test" ] && [ -x "$e2e_test" ]; then
+        if "$e2e_test" > /dev/null 2>&1; then
+            pass "Phase 6 migration tests pass"
+        else
+            fail "Phase 6 migration tests fail (run test/e2e/test-phase6-migration.sh for details)"
+        fi
+    else
+        warn "Phase 6 e2e test script not found or not executable"
+    fi
 }
 
 verify_phase_7() {
