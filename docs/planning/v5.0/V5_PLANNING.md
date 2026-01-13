@@ -188,9 +188,9 @@ Derived content within canonical files uses HTML comment markers to prevent acci
 ┌─────────────────────────────────────────────────────────────────┐
 │                     AI CONTEXT SYSTEM v5.0                      │
 ├─────────────────────────────────────────────────────────────────┤
-│  SKILLS (7)           │  AGENTS (9)          │  HOOKS (2)       │
-│  ├── /init            │  ├── code-reviewer   │  ├── SessionStart│
-│  ├── /save            │  ├── codebase-scanner│  └── PostToolUse │
+│  SKILLS (7)           │  AGENTS (9)          │  HOOKS (1)       │
+│  ├── /init            │  ├── code-reviewer   │  └── SessionStart│
+│  ├── /save            │  ├── codebase-scanner│                   │
 │  ├── /save-full       │  ├── security-reviewer                  │
 │  ├── /review          │  ├── performance-reviewer               │
 │  ├── /validate        │  ├── accessibility-reviewer             │
@@ -493,10 +493,9 @@ Resume points MUST start with an imperative verb and include a location referenc
 
 **Profile Toggle Matrix:**
 
-| Feature | minimal | standard | full |
-|---------|---------|----------|------|
+| Feature | minimal | standard | comprehensive |
+|---------|---------|----------|---------------|
 | SessionStart hook | ❌ | ✅ | ✅ |
-| PostToolUse hook | ❌ | ❌ | ✅ |
 | Auto Quick Reference | ❌ | ✅ | ✅ |
 | Verbose health output | ❌ | ❌ | ✅ |
 | Incremental code review | ❌ | ✅ | ✅ |
@@ -913,11 +912,14 @@ rm context/.sessions.tmp
 
 **Alternative pattern:** If hook complexity exceeds these constraints, the hook should instead print a suggestion (e.g., "Run /save to update Quick Reference") rather than perform the write directly.
 
-### A.3 Debouncing (PostToolUse only)
+### A.3 Future: PostToolUse Hook (Deferred to v5.1)
 
-- **Delay:** 5 seconds after last Edit/Write
-- **Batch:** Multiple edits = single hook invocation
-- **Skip:** Don't run if same file edited within window
+PostToolUse hook was considered for auto-updating Quick Reference after file edits but deferred due to complexity:
+- Requires debouncing (5-second delay after last Edit/Write)
+- Batch multiple edits into single hook invocation
+- Only valuable for comprehensive profile
+
+For v5.0, users run `/save` manually to update Quick Reference.
 
 ---
 
