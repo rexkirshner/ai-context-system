@@ -1,18 +1,12 @@
 # /validate Skill
 
-Validate context documentation structure and completeness.
+Validate context documentation structure and integrity.
 
 ## Purpose
 
-Check context files for:
-- Structural integrity (required sections present)
-- Cross-reference validity (decision IDs exist)
-- Quick Reference sync (derived matches canonical)
-- Format compliance (markers, session numbers, etc.)
+Check context files for structural issues, broken references, and format compliance. Read-only operation that reports problems without fixing them.
 
 ## Output
-
-Validation report with pass/fail for each check:
 
 ```
 ╔════════════════════════════════════════════╗
@@ -27,268 +21,88 @@ Structure Checks:
   ✓ .context-config.json is valid JSON
 
 Cross-Reference Checks:
-  ✓ All decision references (D###) exist in DECISIONS.md
-  ✗ D999 referenced in STATUS.md but not found in DECISIONS.md
+  ✓ All D### references exist in DECISIONS.md
+  ✗ D999 referenced but not found
 
 Quick Reference Sync:
   ✓ Project name matches config
-  ✓ Phase matches STATUS.md
-  ⚠ Focus field outdated (last updated 3 days ago)
+  ⚠ Resume point missing location reference
 
 Format Compliance:
   ✓ All sessions have BEGIN/END markers
   ✓ Session numbers are sequential
-  ✓ TL;DR present in all sessions
 
-Summary: 11/12 checks passed, 1 failed, 1 warning
+Summary: [N]/[M] passed, [X] failed, [Y] warnings
 ```
 
-## Execution Steps
+## Validation Checks
 
-### Step 1: Check File Existence
+### Structure (Required Files)
 
-```bash
-ERRORS=()
-WARNINGS=()
+| File | Check |
+|------|-------|
+| context/CONTEXT.md | Exists |
+| context/STATUS.md | Exists, has Quick Reference block |
+| context/DECISIONS.md | Exists |
+| context/SESSIONS.md | Exists |
+| context/.context-config.json | Exists, valid JSON, has version, project.name |
 
-# Required files
-REQUIRED_FILES=(
-  "context/CONTEXT.md"
-  "context/STATUS.md"
-  "context/DECISIONS.md"
-  "context/SESSIONS.md"
-  "context/.context-config.json"
-)
+### Cross-References
 
-for file in "${REQUIRED_FILES[@]}"; do
-  if [ -f "$file" ]; then
-    echo "✓ $file exists"
-  else
-    echo "✗ $file missing"
-    ERRORS+=("Missing file: $file")
-  fi
-done
-```
+- Find all `D###` patterns in STATUS.md and SESSIONS.md
+- Verify each exists in DECISIONS.md as heading or bold entry
+- Flag broken references as errors
+- Flag orphaned decisions (in DECISIONS.md but never referenced) as warnings
 
-### Step 2: Validate Config JSON
+### Quick Reference Sync
 
-```bash
-if [ -f "context/.context-config.json" ]; then
-  if jq . context/.context-config.json > /dev/null 2>&1; then
-    echo "✓ Config is valid JSON"
+| Field | Validation |
+|-------|------------|
+| Project name | Matches config project.name |
+| Resume point | Starts with action verb |
+| Resume point | Contains location (in/at/for/to + path) |
 
-    # Check required fields
-    if jq -e '.version' context/.context-config.json > /dev/null 2>&1; then
-      echo "✓ Config has version"
-    else
-      ERRORS+=("Config missing 'version' field")
-    fi
+### Format Compliance
 
-    if jq -e '.project.name' context/.context-config.json > /dev/null 2>&1; then
-      echo "✓ Config has project.name"
-    else
-      ERRORS+=("Config missing 'project.name' field")
-    fi
-  else
-    ERRORS+=("Config is not valid JSON")
-  fi
-fi
-```
+| Check | Pass Criteria |
+|-------|---------------|
+| Session markers | Equal count of `BEGIN SESSION` and `END SESSION` |
+| No incomplete sessions | Last marker is `END SESSION` |
+| Sequential numbers | No gaps in session numbering |
+| TL;DR present | Each session has `### TL;DR` section |
 
-### Step 3: Validate Cross-References
+### Placeholders
 
-Check that all decision references exist:
+- Count `[FILL:...]` patterns in CONTEXT.md
+- Warn if any unfilled placeholders exist
 
-```bash
-# Find all D### references in STATUS.md and SESSIONS.md
-REFS=$(grep -ohE 'D[0-9]{3}' context/STATUS.md context/SESSIONS.md 2>/dev/null | sort -u)
+## Execution
 
-for ref in $REFS; do
-  # Check if decision exists in DECISIONS.md
-  # Look for "## D###" or "**D###**" patterns
-  if grep -qE "^## $ref|^\*\*$ref\*\*|^### $ref" context/DECISIONS.md 2>/dev/null; then
-    echo "✓ $ref exists in DECISIONS.md"
-  else
-    echo "✗ $ref referenced but not found in DECISIONS.md"
-    ERRORS+=("Broken reference: $ref not found in DECISIONS.md")
-  fi
-done
+### 1. Run All Checks
 
-# Check for orphaned decisions (in DECISIONS.md but never referenced)
-DECISIONS=$(grep -oE '^## D[0-9]{3}|^\*\*D[0-9]{3}\*\*' context/DECISIONS.md 2>/dev/null | grep -oE 'D[0-9]{3}' | sort -u)
+Run every validation check, collecting errors and warnings. Don't stop at first failure.
 
-for decision in $DECISIONS; do
-  if ! grep -q "$decision" context/STATUS.md context/SESSIONS.md 2>/dev/null; then
-    echo "⚠ $decision in DECISIONS.md never referenced elsewhere"
-    WARNINGS+=("Orphaned decision: $decision")
-  fi
-done
-```
+### 2. Categorize Results
 
-### Step 4: Validate Quick Reference Sync
+- **Error (✗):** Must fix - broken functionality
+- **Warning (⚠):** Should fix - degraded quality
+- **Pass (✓):** OK
 
-```bash
-# Extract Quick Reference block
-QR_BLOCK=$(sed -n '/BEGIN AUTO:QUICK_REFERENCE/,/END AUTO:QUICK_REFERENCE/p' context/STATUS.md)
+### 3. Output Summary
 
-if [ -z "$QR_BLOCK" ]; then
-  ERRORS+=("Quick Reference block missing from STATUS.md")
-else
-  echo "✓ Quick Reference block present"
+Show pass/fail/warning counts and list all issues.
 
-  # Check project name matches config
-  CONFIG_NAME=$(jq -r '.project.name // ""' context/.context-config.json)
-  if echo "$QR_BLOCK" | grep -q "$CONFIG_NAME"; then
-    echo "✓ Project name matches config"
-  else
-    WARNINGS+=("Quick Reference project name doesn't match config")
-  fi
-
-  # Check Resume point format
-  RESUME=$(echo "$QR_BLOCK" | grep -oE 'Resume: .+' | cut -d: -f2- | xargs)
-  VALID_VERBS="Add|Build|Complete|Configure|Continue|Create|Debug|Delete|Deploy|Document|Enhance|Extend|Extract|Finish|Fix|Implement|Improve|Integrate|Investigate|Migrate|Move|Optimize|Refactor|Remove|Rename|Replace|Research|Resolve|Review|Rewrite|Set up|Simplify|Test|Update|Upgrade|Validate|Verify|Wire up|Write"
-
-  if echo "$RESUME" | grep -qE "^($VALID_VERBS)"; then
-    echo "✓ Resume point starts with valid verb"
-  else
-    WARNINGS+=("Resume point doesn't start with action verb")
-  fi
-
-  if echo "$RESUME" | grep -qE ' (in|at|for|to) '; then
-    echo "✓ Resume point includes location"
-  else
-    WARNINGS+=("Resume point missing location reference")
-  fi
-fi
-```
-
-### Step 5: Validate Session Entries
-
-```bash
-# Check for BEGIN/END markers
-SESSION_BEGINS=$(grep -c 'BEGIN SESSION' context/SESSIONS.md 2>/dev/null || echo "0")
-SESSION_ENDS=$(grep -c 'END SESSION' context/SESSIONS.md 2>/dev/null || echo "0")
-
-if [ "$SESSION_BEGINS" -eq "$SESSION_ENDS" ]; then
-  echo "✓ All sessions have matching BEGIN/END markers"
-else
-  ERRORS+=("Mismatched session markers: $SESSION_BEGINS BEGINs, $SESSION_ENDS ENDs")
-fi
-
-# Check for incomplete trailing entry
-LAST_LINE=$(tail -20 context/SESSIONS.md | grep -E 'BEGIN SESSION|END SESSION' | tail -1)
-if echo "$LAST_LINE" | grep -q 'BEGIN SESSION'; then
-  ERRORS+=("Incomplete session entry at end of SESSIONS.md (BEGIN without END)")
-fi
-
-# Check session number sequence
-SESSION_NUMS=$(grep -oE 'Session [0-9]+' context/SESSIONS.md | grep -oE '[0-9]+' | sort -n)
-PREV=0
-for num in $SESSION_NUMS; do
-  EXPECTED=$((PREV + 1))
-  if [ "$num" -ne "$EXPECTED" ] && [ "$PREV" -ne 0 ]; then
-    WARNINGS+=("Session number gap: expected $EXPECTED, found $num")
-  fi
-  PREV=$num
-done
-
-if [ ${#WARNINGS[@]} -eq 0 ] || ! echo "${WARNINGS[@]}" | grep -q "Session number"; then
-  echo "✓ Session numbers are sequential"
-fi
-
-# Check TL;DR presence
-SESSIONS_WITH_TLDR=$(grep -c '### TL;DR' context/SESSIONS.md 2>/dev/null || echo "0")
-if [ "$SESSION_BEGINS" -gt 0 ] && [ "$SESSIONS_WITH_TLDR" -eq "$SESSION_BEGINS" ]; then
-  echo "✓ All sessions have TL;DR"
-elif [ "$SESSION_BEGINS" -gt 0 ]; then
-  WARNINGS+=("Some sessions missing TL;DR section")
-fi
-```
-
-### Step 6: Check for Placeholders
-
-```bash
-# Count unfilled placeholders
-PLACEHOLDER_COUNT=$(grep -cE '\[FILL:[^\]]+\]' context/CONTEXT.md 2>/dev/null || echo "0")
-
-if [ "$PLACEHOLDER_COUNT" -eq 0 ]; then
-  echo "✓ No unfilled placeholders in CONTEXT.md"
-else
-  WARNINGS+=("$PLACEHOLDER_COUNT unfilled [FILL:...] placeholders in CONTEXT.md")
-fi
-```
-
-### Step 7: Output Summary
-
-```bash
-TOTAL_CHECKS=$((PASSED + ${#ERRORS[@]} + ${#WARNINGS[@]}))
-
-echo ""
-echo "━━━ Summary ━━━"
-echo "  Passed:   $PASSED"
-echo "  Failed:   ${#ERRORS[@]}"
-echo "  Warnings: ${#WARNINGS[@]}"
-
-if [ ${#ERRORS[@]} -gt 0 ]; then
-  echo ""
-  echo "Errors (must fix):"
-  for err in "${ERRORS[@]}"; do
-    echo "  ✗ $err"
-  done
-fi
-
-if [ ${#WARNINGS[@]} -gt 0 ]; then
-  echo ""
-  echo "Warnings (should fix):"
-  for warn in "${WARNINGS[@]}"; do
-    echo "  ⚠ $warn"
-  done
-fi
-
-if [ ${#ERRORS[@]} -eq 0 ]; then
-  echo ""
-  echo "✓ Context validation PASSED"
-  exit 0
-else
-  echo ""
-  echo "✗ Context validation FAILED"
-  exit 1
-fi
-```
-
-## Verification Criteria
+## Verification
 
 | Check | Requirement |
 |-------|-------------|
-| Broken refs detected | Injecting `D999` reference causes failure |
-| Markers validated | Incomplete session (BEGIN without END) detected |
-| Config validated | Invalid JSON causes failure |
+| All checks run | Complete even if errors found |
+| Broken refs detected | D999 injection causes failure |
+| Markers validated | Missing END marker causes failure |
 
-## Test Case: D999 Detection
+## Guardrails
 
-To verify this skill works:
-
-```bash
-# Inject broken reference
-echo "See decision D999 for details" >> context/STATUS.md
-
-# Run validate
-/validate  # Should report: "D999 referenced but not found"
-
-# Remove test reference
-git checkout context/STATUS.md
-```
-
-## Error Handling
-
-- Missing files: Report which files are missing
-- Invalid JSON: Show parse error location
-- Broken references: List all broken refs
-- Always complete full validation (don't stop at first error)
-
-## Notes
-
-- This skill replaces v4.x `/validate-context` command
-- Runs non-destructively (read-only)
-- Can be run at any time to check documentation health
-- Useful before commits or handoffs
+- **DO NOT** modify any files (read-only)
+- **DO NOT** stop at first error - run all checks
+- **DO** list all issues found, not just first
+- **DO** distinguish errors (must fix) from warnings (should fix)

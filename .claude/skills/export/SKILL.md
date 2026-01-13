@@ -1,18 +1,22 @@
 # /export Skill
 
-Export all context documentation to single handoff package.
+Export context documentation to handoff package.
 
 ## Purpose
 
-Create a comprehensive handoff package for:
-- AI-to-AI transfers (new Claude session)
-- Developer onboarding
-- External collaboration
-- Archival purposes
+Create comprehensive export for AI-to-AI transfers, developer onboarding, or archival. Packages all context files with summary and next steps.
 
 ## Output
 
-JSON file in `artifacts/exports/` that validates against HandoffPackage schema:
+Two files in `artifacts/exports/`:
+
+```
+artifacts/exports/
+├── handoff-YYYY-MM-DD-HHMMSS.json  # Machine-readable
+└── handoff-YYYY-MM-DD-HHMMSS.md    # Human-readable
+```
+
+### JSON Structure
 
 ```json
 {
@@ -22,156 +26,29 @@ JSON file in `artifacts/exports/` that validates against HandoffPackage schema:
     "projectName": "my-app"
   },
   "summary": {
-    "projectState": "MVP phase complete, working on authentication",
-    "criticalDecisions": [
-      "D001: Using JWT with RS256 for auth",
-      "D005: Prisma ORM for database"
-    ],
+    "projectState": "MVP complete, working on auth",
+    "criticalDecisions": ["D001: JWT with RS256", "D005: Prisma ORM"],
     "activeBlockers": []
   },
   "contextFiles": {
-    "context": "# Project Context\n...",
-    "status": "<!-- BEGIN AUTO:QUICK_REFERENCE -->\n...",
-    "decisions": "# Decisions Log\n...",
-    "recentSessions": [
-      "## Session 15 | 2026-01-13 | Auth\n..."
-    ]
+    "context": "[full CONTEXT.md content]",
+    "status": "[full STATUS.md content]",
+    "decisions": "[full DECISIONS.md content]",
+    "recentSessions": ["[last 3 session entries]"]
   },
-  "nextSteps": [
-    "Add rate limiting to auth endpoints",
-    "Implement logout functionality",
-    "Add multi-factor authentication"
-  ]
+  "nextSteps": ["Add rate limiting", "Implement logout"]
 }
 ```
 
-## Output Location
-
-```
-artifacts/exports/handoff-YYYY-MM-DD-HHMMSS.json
-```
-
-Also creates a markdown version:
-```
-artifacts/exports/handoff-YYYY-MM-DD-HHMMSS.md
-```
-
-## Execution Steps
-
-### Step 1: Verify Context Exists
-
-```bash
-if [ ! -d "context" ]; then
-  echo "Error: No context/ directory found"
-  echo "Run /init to initialize"
-  exit 1
-fi
-
-# Ensure exports directory exists
-mkdir -p artifacts/exports
-```
-
-### Step 2: Gather Metadata
-
-```bash
-TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-ACS_VERSION=$(cat VERSION 2>/dev/null || echo "5.0.0")
-PROJECT_NAME=$(jq -r '.project.name // "unknown"' context/.context-config.json 2>/dev/null)
-```
-
-### Step 3: Generate Summary
-
-Extract key information:
-
-```bash
-# Project state from STATUS.md
-PROJECT_STATE=$(grep -A3 '## Current Phase\|## Current State' context/STATUS.md | head -4 | tr '\n' ' ' | head -c 500)
-
-# Critical decisions (most recent 5)
-CRITICAL_DECISIONS=$(grep -E '^## D[0-9]{3}|^\*\*D[0-9]{3}' context/DECISIONS.md | tail -5)
-
-# Active blockers from STATUS.md
-BLOCKERS=$(grep -A5 '## Blockers\|### Blockers' context/STATUS.md | grep -E '^\s*-' | head -5)
-```
-
-### Step 4: Read Context Files
-
-```bash
-# Read full content of each file
-CONTEXT_CONTENT=$(cat context/CONTEXT.md)
-STATUS_CONTENT=$(cat context/STATUS.md)
-DECISIONS_CONTENT=$(cat context/DECISIONS.md)
-
-# Get recent sessions (last 3)
-RECENT_SESSIONS=$(sed -n '/<!-- BEGIN SESSION/,/<!-- END SESSION/p' context/SESSIONS.md | tail -150)
-```
-
-### Step 5: Extract Next Steps
-
-```bash
-# From STATUS.md
-STATUS_NEXT=$(grep -A10 '## Next Steps' context/STATUS.md | grep -E '^\s*-' | sed 's/^[- ]*//')
-
-# From most recent session
-SESSION_NEXT=$(echo "$RECENT_SESSIONS" | grep -A10 '### Next Steps' | grep -E '^\s*-' | sed 's/^[- ]*//')
-
-# Combine and dedupe
-NEXT_STEPS=$(echo -e "$STATUS_NEXT\n$SESSION_NEXT" | grep -v '^$' | head -10 | sort -u)
-```
-
-### Step 6: Build JSON Package
-
-```bash
-FILENAME="handoff-$(date +%Y-%m-%d-%H%M%S)"
-
-# Use jq to build valid JSON (escapes content properly)
-jq -n \
-  --arg timestamp "$TIMESTAMP" \
-  --arg version "$ACS_VERSION" \
-  --arg project "$PROJECT_NAME" \
-  --arg state "$PROJECT_STATE" \
-  --arg context "$CONTEXT_CONTENT" \
-  --arg status "$STATUS_CONTENT" \
-  --arg decisions "$DECISIONS_CONTENT" \
-  '{
-    metadata: {
-      exportedAt: $timestamp,
-      acsVersion: $version,
-      projectName: $project
-    },
-    summary: {
-      projectState: $state,
-      criticalDecisions: [],
-      activeBlockers: []
-    },
-    contextFiles: {
-      context: $context,
-      status: $status,
-      decisions: $decisions,
-      recentSessions: []
-    },
-    nextSteps: []
-  }' > "artifacts/exports/$FILENAME.json"
-```
-
-**Note:** The AI should populate the arrays (criticalDecisions, activeBlockers, recentSessions, nextSteps) by parsing the extracted content.
-
-### Step 7: Generate Markdown Version
-
-Create human-readable version:
+### Markdown Structure
 
 ```markdown
 # Handoff Package
 
-**Exported:** [timestamp]
-**Project:** [name]
-**ACS Version:** [version]
-
----
+**Exported:** [timestamp] | **Project:** [name] | **ACS:** [version]
 
 ## Summary
-
-[Project state summary]
+[Project state from STATUS.md]
 
 ### Critical Decisions
 - D001: [summary]
@@ -190,123 +67,75 @@ Create human-readable version:
 ### STATUS.md
 [Full content]
 
-### DECISIONS.md
-[Full content]
-
 ### Recent Sessions
 [Last 3 session entries]
 
 ---
 
 ## Next Steps
-
-1. [First priority]
-2. [Second priority]
-3. [Third priority]
-
----
-
-*Generated by AI Context System v[version]*
+1. [Priority item]
+2. [Second item]
 ```
 
-### Step 8: Validate Output
+## Execution
 
-```bash
-# Validate JSON against schema
-if python3 -m json.tool "artifacts/exports/$FILENAME.json" > /dev/null 2>&1; then
-  echo "✓ JSON is valid"
-else
-  echo "✗ JSON validation failed"
-  exit 1
-fi
+### 1. Create Export Directory
 
-# Check required fields
-if jq -e '.metadata.exportedAt' "artifacts/exports/$FILENAME.json" > /dev/null 2>&1 && \
-   jq -e '.summary.projectState' "artifacts/exports/$FILENAME.json" > /dev/null 2>&1 && \
-   jq -e '.contextFiles.context' "artifacts/exports/$FILENAME.json" > /dev/null 2>&1 && \
-   jq -e '.nextSteps' "artifacts/exports/$FILENAME.json" > /dev/null 2>&1; then
-  echo "✓ All required fields present"
-else
-  echo "✗ Missing required fields"
-  exit 1
-fi
+```
+mkdir -p artifacts/exports
 ```
 
-### Step 9: Output Summary
+### 2. Gather Data
+
+| Field | Source |
+|-------|--------|
+| Metadata | VERSION file, config, current timestamp |
+| Project state | STATUS.md Current Phase section |
+| Critical decisions | Last 5 decision IDs from DECISIONS.md |
+| Blockers | STATUS.md Blockers section |
+| Context files | Read full content of each |
+| Recent sessions | Last 3 session entries from SESSIONS.md |
+| Next steps | Combined from STATUS.md and last session |
+
+### 3. Build JSON
+
+Use proper JSON escaping for file contents. Validate with `jq .` before writing.
+
+### 4. Build Markdown
+
+Human-readable format with clear section headers.
+
+### 5. Write Files
+
+Generate timestamp-based filenames to avoid conflicts.
+
+### 6. Verify
+
+| Check | Requirement |
+|-------|-------------|
+| JSON valid | `jq .` succeeds |
+| Required fields | metadata, summary, contextFiles, nextSteps present |
+| Files created | Both .json and .md exist |
+
+## Output Summary
 
 ```
 ✓ Handoff Package Exported
 
-Files created:
+Files:
   artifacts/exports/handoff-2026-01-13-103000.json
   artifacts/exports/handoff-2026-01-13-103000.md
 
 Contents:
-  - Full CONTEXT.md
-  - Full STATUS.md
-  - Full DECISIONS.md
-  - Last 3 session entries
-  - [N] critical decisions highlighted
-  - [N] next steps prioritized
-
-Usage:
-  - Share JSON for AI-to-AI handoffs
-  - Share MD for human review
-  - Import with /import (future)
+  - Full context files
+  - Last 3 sessions
+  - [N] decisions highlighted
+  - [N] next steps
 ```
 
-## Verification Criteria
+## Guardrails
 
-| Check | Requirement |
-|-------|-------------|
-| Schema valid | Output validates against HandoffPackage schema |
-| Required fields | metadata, summary, contextFiles, nextSteps all present |
-| JSON valid | `jq .` parses successfully |
-| File created | Exists in artifacts/exports/ |
-
-## HandoffPackage Schema Reference
-
-```json
-{
-  "required": ["metadata", "summary", "contextFiles", "nextSteps"],
-  "properties": {
-    "metadata": {
-      "properties": {
-        "exportedAt": { "type": "string", "format": "date-time" },
-        "acsVersion": { "type": "string" },
-        "projectName": { "type": "string" }
-      }
-    },
-    "summary": {
-      "properties": {
-        "projectState": { "type": "string", "maxLength": 500 },
-        "criticalDecisions": { "type": "array" },
-        "activeBlockers": { "type": "array" }
-      }
-    },
-    "contextFiles": {
-      "properties": {
-        "context": { "type": "string" },
-        "status": { "type": "string" },
-        "decisions": { "type": "string" },
-        "recentSessions": { "type": "array" }
-      }
-    },
-    "nextSteps": { "type": "array" }
-  }
-}
-```
-
-## Error Handling
-
-- If context files missing, error with list of missing files
-- If JSON build fails, show what went wrong
-- If export directory not writable, suggest fix
-- Always validate output before reporting success
-
-## Notes
-
-- This skill replaces v4.x `/export-context` command
-- Creates both JSON and Markdown versions
-- JSON for programmatic use, MD for human review
-- Useful for onboarding, handoffs, or archival
+- **DO NOT** include sensitive data (.env contents, secrets)
+- **DO** validate JSON before writing
+- **DO** include both formats (JSON + Markdown)
+- **DO** use timestamp in filename to avoid overwrites
