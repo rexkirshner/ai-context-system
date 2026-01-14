@@ -7,6 +7,19 @@
 
 ---
 
+## Decision Index
+
+Quick reference to all decisions. **Keep this updated** - AI agents use this for navigation in large files.
+
+| ID | Date | Topic | Status |
+|----|------|-------|--------|
+| D001 | 2025-01-15 | PostgreSQL over MongoDB | ✅ Accepted |
+| D002 | [Date] | [Next decision] | 🔄 Pending |
+
+> **For large files:** When DECISIONS.md exceeds 2000 lines, AI agents load this index + recent decisions only. Keep index current!
+
+---
+
 ## Why This File Exists
 
 AI agents reviewing your code need to understand:
@@ -158,15 +171,6 @@ Use PostgreSQL with Prisma ORM instead of MongoDB.
 - See: `SESSIONS.md` Session 3
 
 **For AI agents:** This decision prioritizes consistency and relational integrity over scaling flexibility. The team values strong typing and schema enforcement. If reviewing for scale optimization, consider read replicas before suggesting NoSQL alternatives.
-
----
-
-## Active Decisions
-
-| ID | Title | Date | Status |
-|----|-------|------|--------|
-| D001 | PostgreSQL over MongoDB | 2025-01-15 | ✅ Accepted |
-| D002 | [Next decision] | [Date] | 🔄 Reconsidering |
 
 ---
 
