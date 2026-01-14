@@ -83,7 +83,7 @@ rm -rf "$TEST_DIR"
 
 # Test 5: Test validation happens before other errors
 TESTS_RUN=$((TESTS_RUN + 1))
-OUTPUT=$(bash "$ARCHIVE_SCRIPT" --context "/tmp/definitely-does-not-exist-$(date +%s%N)" --keep 5 --force 2>&1)
+OUTPUT=$(bash "$ARCHIVE_SCRIPT" --context "/tmp/definitely-does-not-exist-$(date +%s)-$$" --keep 5 --force 2>&1)
 
 if echo "$OUTPUT" | head -1 | grep -qi "directory"; then
   pass "Directory validation error shown first"

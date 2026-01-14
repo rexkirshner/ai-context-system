@@ -79,8 +79,10 @@ fi
 
 # Check 5: Unclosed session markers
 if [ -f "$SESSIONS_FILE" ]; then
-    BEGINS=$(grep -c "BEGIN SESSION" "$SESSIONS_FILE" 2>/dev/null || echo 0)
-    ENDS=$(grep -c "END SESSION" "$SESSIONS_FILE" 2>/dev/null || echo 0)
+    BEGINS=$(grep -c "BEGIN SESSION" "$SESSIONS_FILE" 2>/dev/null || true)
+    BEGINS="${BEGINS:-0}"
+    ENDS=$(grep -c "END SESSION" "$SESSIONS_FILE" 2>/dev/null || true)
+    ENDS="${ENDS:-0}"
     if [ "$BEGINS" -gt "$ENDS" ]; then
         WARNINGS+=("Unclosed session marker in SESSIONS.md")
     fi
