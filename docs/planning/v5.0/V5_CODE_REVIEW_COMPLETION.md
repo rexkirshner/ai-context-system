@@ -1,713 +1,700 @@
 # V5.0 Code Review System Completion Plan
 
-**Document Version:** 1.0
-**Created:** 2026-01-13
+**Version:** 2.0
+**Updated:** 2026-01-13
 **Status:** Active
 
 ---
 
 ## Executive Summary
 
-The v5.0 agent-based code review system is partially implemented. This document provides a detailed plan to complete it with objectively verifiable criteria for each task.
+Complete the agent-based code review system that is the core of v5.0. Currently, 5 specialist agents exist but the system lacks 3 specialists, conditional selection, and command integration.
 
-### Current State
-
-| Component | Planned | Implemented | Gap |
-|-----------|---------|-------------|-----|
-| Specialist agents | 8 | 5 | Missing SEO, Database, Infrastructure |
-| Conditional selection | Yes | No | codebase-scanner doesn't output recommendedReviewers |
-| Command integration | Yes | No | /code-review doesn't invoke agents |
-| Old commands | Deprecated | Active | 8 detailed commands still primary system |
-
-### Target State
-
-```
-/code-review (thin wrapper)
-    → code-reviewer (orchestrator)
-        → codebase-scanner (context + recommendedReviewers)
-        → 8 specialists (conditional, parallel)
-        → synthesis-agent (merge + grade)
-        → audit-compare (optional trends)
-    → Structured output (JSON + Markdown)
-```
+**Current → Target:**
+- Specialists: 5 → 8 (add SEO, Database, Infrastructure)
+- codebase-scanner: basic → outputs `recommendedReviewers`
+- code-reviewer: static → conditional selection based on project type
+- /code-review: 550-line monolith → thin wrapper invoking agents
 
 ---
 
-## Part 1: Gap Analysis
+## Principles
 
-### 1.1 What Exists (Working)
+These principles govern all implementation decisions:
 
-| Agent | File | Status |
-|-------|------|--------|
-| code-reviewer | `.claude/agents/code-reviewer.md` | Exists, needs update |
-| codebase-scanner | `.claude/agents/codebase-scanner.md` | Exists, needs enhancement |
-| security-reviewer | `.claude/agents/security-reviewer.md` | Complete |
-| performance-reviewer | `.claude/agents/performance-reviewer.md` | Complete |
-| accessibility-reviewer | `.claude/agents/accessibility-reviewer.md` | Complete |
-| type-safety-reviewer | `.claude/agents/type-safety-reviewer.md` | Complete |
-| test-coverage-reviewer | `.claude/agents/test-coverage-reviewer.md` | Complete |
-| synthesis-agent | `.claude/agents/synthesis-agent.md` | Complete |
-| audit-compare | `.claude/agents/audit-compare.md` | Complete |
-
-### 1.2 What's Missing
-
-| Component | Description | Priority |
-|-----------|-------------|----------|
-| seo-reviewer agent | Metadata, OG tags, structured data | High |
-| database-reviewer agent | N+1, injection, indexes, transactions | High |
-| infrastructure-reviewer agent | CI secrets, health checks, caching | Medium |
-| recommendedReviewers output | codebase-scanner enhancement | Critical |
-| Conditional selection logic | code-reviewer enhancement | Critical |
-| Command integration | /code-review uses agents | Critical |
-
-### 1.3 What Should Be Deprecated
-
-| File | Reason | Action |
-|------|--------|--------|
-| `.claude/commands/code-review-security.md` | Replaced by agent | Add deprecation notice |
-| `.claude/commands/code-review-performance.md` | Replaced by agent | Add deprecation notice |
-| `.claude/commands/code-review-accessibility.md` | Replaced by agent | Add deprecation notice |
-| `.claude/commands/code-review-seo.md` | Replaced by agent | Add deprecation notice |
-| `.claude/commands/code-review-database.md` | Replaced by agent | Add deprecation notice |
-| `.claude/commands/code-review-infrastructure.md` | Replaced by agent | Add deprecation notice |
-| `.claude/commands/code-review-typescript.md` | Replaced by agent | Add deprecation notice |
-| `.claude/commands/code-review-testing.md` | Replaced by agent | Add deprecation notice |
+1. **Contracts first.** Define interfaces before building. Components communicate via documented schemas.
+2. **Objective verification.** Every task has automated checks using `jq -e` for JSON, not brittle grep.
+3. **Golden snapshots.** Expected outputs checked into repo. Drift is detected automatically.
+4. **Safe fallback.** If scanner fails or confidence is low, default to security + testing (never no-op).
+5. **No bandaids.** Take time to do it right. No quick fixes that become permanent debt.
 
 ---
 
-## Part 2: Implementation Phases
+## Part 1: Component Contracts
 
-### Phase A: Foundation Enhancement
+Define all interfaces upfront. These contracts prevent architectural drift.
 
-**Purpose:** Enable conditional specialist selection by enhancing codebase-scanner output.
+### 1.1 codebase-scanner
 
-**Dependency:** None (can start immediately)
+**Input:** Project root directory
 
-#### Task A1: Add Project Characteristic Detection
+**Output:** `.claude/cache/codebase-context.json`
 
-**File:** `.claude/agents/codebase-scanner.md`
-
-**Input:** Current codebase-scanner agent
-
-**Output:** Enhanced detection for:
-- `hasDatabase` - Prisma, Drizzle, TypeORM, Mongoose, pg, mysql2 in deps
-- `hasUI` - .tsx/.jsx files OR react/vue/svelte in deps
-- `isServerless` - vercel.json, netlify.toml, or @vercel/* in deps
-- `isMonorepo` - workspaces in package.json OR packages/ dir
-
-**Verification Criteria:**
-```bash
-# Test on nextjs-app fixture (has Prisma, React, is webapp)
-grep -q '"hasDatabase": true' .claude/cache/codebase-context.json
-grep -q '"hasUI": true' .claude/cache/codebase-context.json
-
-# Test on python-cli fixture (no DB, no UI)
-grep -q '"hasDatabase": false' .claude/cache/codebase-context.json
-grep -q '"hasUI": false' .claude/cache/codebase-context.json
-```
-
-**Definition of Done:**
-- [ ] Detection logic documented in agent
-- [ ] All 4 new fields present in output schema
-- [ ] Correct detection on all 3 fixture repos
-
----
-
-#### Task A2: Add recommendedReviewers Output
-
-**File:** `.claude/agents/codebase-scanner.md`
-
-**Input:** Task A1 complete
-
-**Output:** New `recommendedReviewers` section in codebase-context.json:
 ```json
 {
+  "schemaVersion": "1.1.0",
+  "metadata": {
+    "scannedAt": "ISO-8601",
+    "commit": "git-sha"
+  },
+  "structure": {
+    "projectType": "webapp|api|cli|library|monorepo",
+    "primaryLanguage": "typescript|python|go|rust",
+    "frameworks": ["next.js", "prisma"],
+    "hasTests": true,
+    "hasCI": true,
+    "hasDatabase": true,
+    "hasUI": true,
+    "isServerless": true,
+    "isMonorepo": false
+  },
   "recommendedReviewers": {
     "always": ["security", "testing"],
     "conditional": [
-      { "reviewer": "typescript", "reason": "TypeScript project" },
-      { "reviewer": "accessibility", "reason": "Has UI components" },
-      { "reviewer": "performance", "reason": "Web application" },
-      { "reviewer": "seo", "reason": "Public webapp with UI" },
-      { "reviewer": "database", "reason": "Uses Prisma ORM" },
-      { "reviewer": "infrastructure", "reason": "Has CI workflows" }
+      { "reviewer": "typescript", "reason": "TypeScript project" }
     ]
-  }
+  },
+  "files": [],
+  "securityRelevant": [],
+  "databaseFiles": [],
+  "uiComponents": [],
+  "ciWorkflows": []
 }
 ```
 
-**Verification Criteria:**
-```bash
-# recommendedReviewers section exists
-jq '.recommendedReviewers' .claude/cache/codebase-context.json | grep -q 'always'
+**Exit codes:**
+- 0: Success
+- 1: Failure (missing project, git error)
 
-# nextjs-app should recommend all 8
-jq '.recommendedReviewers.conditional | length' .claude/cache/codebase-context.json
-# Expected: 6 (conditional) + 2 (always) = 8 total
-
-# python-cli should recommend only 2-3
-# Expected: security, testing, (maybe typescript if .py typed)
-```
-
-**Definition of Done:**
-- [ ] recommendedReviewers schema documented
-- [ ] Selection logic matches project type matrix
-- [ ] Correct recommendations on all 3 fixture repos
+**Invariants:**
+- `structure.*` fields are always present (use `false` not omission)
+- `recommendedReviewers.always` always contains `["security", "testing"]`
 
 ---
 
-#### Task A3: Add Specialized File Lists
+### 1.2 Specialist Agents (8 total)
+
+**Input:** Path to `codebase-context.json`
+
+**Output:** Array of `AuditFinding` objects (per `.claude/schemas/audit-finding.json`)
+
+**ID Prefixes:**
+
+| Agent | Prefix | Category |
+|-------|--------|----------|
+| security-reviewer | SEC | security |
+| performance-reviewer | PERF | performance |
+| accessibility-reviewer | A11Y | accessibility |
+| type-safety-reviewer | TS | typescript |
+| test-coverage-reviewer | TEST | testing |
+| seo-reviewer | SEO | seo |
+| database-reviewer | DB | database |
+| infrastructure-reviewer | INFRA | infrastructure |
+
+**Invariants:**
+- Every finding has `verified` object with pattern searches
+- Findings sorted by severity (critical first)
+
+---
+
+### 1.3 code-reviewer (Orchestrator)
+
+**Input:** Flags (`--all`, `--security`, `--prelaunch`, `--incremental`, etc.)
+
+**Output:**
+- `docs/audits/audit-YYYY-MM-DD.json` (AuditReport schema)
+- `docs/audits/audit-YYYY-MM-DD.md` (human-readable)
+
+**Selection Logic:**
+
+| Input | Specialists Run |
+|-------|-----------------|
+| `--all` | All 8 |
+| `--security` | Only security |
+| `--security --database` | security + database |
+| `--prelaunch` | security, performance, accessibility, seo |
+| `--backend` | security, database, testing, infrastructure |
+| `--frontend` | performance, accessibility, seo |
+| `--incremental` | Uses `git diff --name-only` to scope (existing V5_PLANNING.md §D.2) |
+| (no flags) | `recommendedReviewers.always` + `recommendedReviewers.conditional` |
+| (scanner failed) | **Fallback:** security + testing only |
+
+**Exit codes:**
+- 0: Completed (findings may exist)
+- 1: Tool/execution failure
+
+---
+
+### 1.4 /code-review Command
+
+**Purpose:** Thin wrapper. Parses flags, invokes code-reviewer agent, formats output.
+
+**Must NOT contain:**
+- Detailed bash scripts for scanning
+- Inline checklists or report templates
+- Direct grep/find commands for analysis
+
+**Verification:** Command delegates to agent, doesn't implement logic itself.
+
+---
+
+## Part 2: Golden Snapshots
+
+Expected `recommendedReviewers` output for each fixture repo. These are checked into `test/golden/` and compared on every change.
+
+### 2.1 nextjs-app Fixture
+
+**Project:** Next.js 14 + TypeScript + Prisma + Auth.js
+
+**Expected `recommendedReviewers`:**
+```json
+{
+  "always": ["security", "testing"],
+  "conditional": [
+    { "reviewer": "typescript", "reason": "TypeScript project" },
+    { "reviewer": "accessibility", "reason": "Has UI components" },
+    { "reviewer": "performance", "reason": "Web application" },
+    { "reviewer": "seo", "reason": "Public webapp with UI" },
+    { "reviewer": "database", "reason": "Uses Prisma ORM" },
+    { "reviewer": "infrastructure", "reason": "Has CI workflows" }
+  ]
+}
+```
+
+**Total reviewers:** 8 (all)
+
+---
+
+### 2.2 python-cli Fixture
+
+**Project:** Python CLI with Click + pytest
+
+**Expected `recommendedReviewers`:**
+```json
+{
+  "always": ["security", "testing"],
+  "conditional": []
+}
+```
+
+**Total reviewers:** 2
+
+---
+
+### 2.3 monorepo Fixture
+
+**Project:** Turborepo with 2 apps, 3 packages
+
+**Expected `recommendedReviewers`:**
+```json
+{
+  "always": ["security", "testing"],
+  "conditional": [
+    { "reviewer": "typescript", "reason": "TypeScript project" },
+    { "reviewer": "infrastructure", "reason": "Has CI workflows" }
+  ]
+}
+```
+
+**Total reviewers:** 4
+
+---
+
+## Part 3: Implementation Tasks
+
+Tasks are atomic and ordered by dependency. Each has objective verification using `jq -e`.
+
+### Phase 1: Scanner Enhancement
+
+#### Task 1.1: Add Project Characteristic Detection
 
 **File:** `.claude/agents/codebase-scanner.md`
 
-**Input:** Task A1 complete
+**Add detection for:**
 
-**Output:** New file list sections:
-```json
-{
-  "databaseFiles": ["lib/db.ts", "prisma/schema.prisma"],
-  "uiComponents": ["components/**/*.tsx"],
-  "ciWorkflows": [".github/workflows/*.yml"]
-}
-```
+| Field | Detection Method |
+|-------|------------------|
+| `structure.hasDatabase` | prisma/drizzle/typeorm/mongoose/pg/mysql2 in deps |
+| `structure.hasUI` | `.tsx`/`.jsx` files exist OR react/vue/svelte in deps |
+| `structure.hasCI` | `.github/workflows/` OR `.gitlab-ci.yml` exists |
+| `structure.isServerless` | vercel.json OR netlify.toml OR @vercel/* in deps |
+| `structure.isMonorepo` | `workspaces` in package.json OR `packages/` dir |
 
-**Verification Criteria:**
+**Verification:**
 ```bash
-# Database files detected on nextjs-app
-jq '.databaseFiles | length' .claude/cache/codebase-context.json
-# Expected: >= 1
+# On nextjs-app fixture
+jq -e '.structure.hasDatabase == true' .claude/cache/codebase-context.json
+jq -e '.structure.hasUI == true' .claude/cache/codebase-context.json
+jq -e '.structure.hasCI == true' .claude/cache/codebase-context.json
 
-# UI components detected
-jq '.uiComponents | length' .claude/cache/codebase-context.json
-# Expected: >= 1
+# On python-cli fixture
+jq -e '.structure.hasDatabase == false' .claude/cache/codebase-context.json
+jq -e '.structure.hasUI == false' .claude/cache/codebase-context.json
 ```
 
-**Definition of Done:**
-- [ ] File lists documented in schema
-- [ ] Specialists can use these lists to focus their search
-- [ ] Correct file lists on fixture repos
+**Done when:** All 5 fields present and correct on all 3 fixtures.
 
 ---
 
-### Phase B: New Specialist Agents
+#### Task 1.2: Add recommendedReviewers Output
 
-**Purpose:** Create the 3 missing specialist agents.
+**File:** `.claude/agents/codebase-scanner.md`
 
-**Dependency:** None (can run parallel with Phase A)
-
-#### Task B1: Create SEO Reviewer Agent
-
-**File:** `.claude/agents/seo-reviewer.md` (new)
-
-**Applicability:** `projectType === "webapp" AND hasUI === true`
-
-**Patterns to Detect:**
-
-| Severity | Issue | Vulnerability Pattern | Mitigation Pattern |
-|----------|-------|----------------------|-------------------|
-| high | Missing title | `<head>` without `<title>` | `<title>\|Head.*title` |
-| high | No meta description | Missing `meta.*description` | `meta.*name="description"` |
-| high | Missing Open Graph | No `og:title`, `og:image` | `property="og:` |
-| medium | No canonical | Missing `rel="canonical"` | `rel="canonical"` |
-| medium | Images without alt | `<img(?![^>]*alt=)` | `alt=` |
-| medium | No structured data | Missing JSON-LD | `application/ld\+json` |
-| low | No sitemap | Missing sitemap.xml | File exists |
-| low | No robots.txt | Missing robots.txt | File exists |
-
-**Verification Criteria:**
-```bash
-# Agent file exists
-test -f .claude/agents/seo-reviewer.md
-
-# Has required sections
-grep -q "## Applicability" .claude/agents/seo-reviewer.md
-grep -q "## Patterns" .claude/agents/seo-reviewer.md
-grep -q "## Guardrails" .claude/agents/seo-reviewer.md
-
-# ID prefix is SEO
-grep -q 'id.*prefix.*SEO' .claude/agents/seo-reviewer.md
-```
-
-**Definition of Done:**
-- [ ] Agent file created with standard structure
-- [ ] Applicability condition documented
-- [ ] All patterns have vulnerability + mitigation
-- [ ] Guardrails section present
-- [ ] Follows AuditFinding schema
-
----
-
-#### Task B2: Create Database Reviewer Agent
-
-**File:** `.claude/agents/database-reviewer.md` (new)
-
-**Applicability:** `hasDatabase === true`
-
-**Patterns to Detect:**
-
-| Severity | Issue | Vulnerability Pattern | Mitigation Pattern |
-|----------|-------|----------------------|-------------------|
-| critical | SQL injection | `\$queryRaw\`.*\$\{(?!Prisma)` | Parameterized queries |
-| critical | NoSQL injection | `find\(.*\$where` | Sanitize input |
-| high | N+1 queries | `for.*await.*find(One\|Unique)` | `include:\|populate` |
-| high | Unbounded fetch | `findMany\(\)` without `take:` | Add `take:` limit |
-| high | No transaction | Multiple writes without wrapper | `\$transaction` |
-| medium | SELECT * | `SELECT \*\|select: undefined` | Select specific fields |
-| medium | Missing index | Large table without index | `@@index\|createIndex` |
-| low | No soft delete | `delete\(` on user data | `deletedAt` pattern |
-
-**Verification Criteria:**
-```bash
-# Agent file exists
-test -f .claude/agents/database-reviewer.md
-
-# Has required sections
-grep -q "## Applicability" .claude/agents/database-reviewer.md
-grep -q "## Patterns" .claude/agents/database-reviewer.md
-
-# ID prefix is DB
-grep -q 'id.*prefix.*DB' .claude/agents/database-reviewer.md
-```
-
-**Definition of Done:**
-- [ ] Agent file created with standard structure
-- [ ] Covers Prisma, Drizzle, raw SQL patterns
-- [ ] Critical patterns for injection
-- [ ] Follows AuditFinding schema
-
----
-
-#### Task B3: Create Infrastructure Reviewer Agent
-
-**File:** `.claude/agents/infrastructure-reviewer.md` (new)
-
-**Applicability:** `hasCI === true OR isServerless === true`
-
-**Patterns to Detect:**
-
-| Severity | Issue | Vulnerability Pattern | Mitigation Pattern |
-|----------|-------|----------------------|-------------------|
-| high | Secrets in CI | `password:\|api_key:` in workflows | `\$\{\{ secrets\.` |
-| high | No health check | API without `/health` | Health endpoint exists |
-| high | No rate limiting | API routes without throttle | `rateLimit\|throttle` |
-| medium | No error tracking | Missing Sentry/DataDog | `@sentry\|datadog` |
-| medium | Cold start risk | Large imports in serverless | Dynamic imports |
-| medium | No caching headers | API without Cache-Control | Cache headers present |
-| low | No build cache | CI without cache step | `actions/cache` |
-| low | Large Docker image | No multi-stage build | Multi-stage Dockerfile |
-
-**Verification Criteria:**
-```bash
-# Agent file exists
-test -f .claude/agents/infrastructure-reviewer.md
-
-# Has required sections
-grep -q "## Applicability" .claude/agents/infrastructure-reviewer.md
-grep -q "## Patterns" .claude/agents/infrastructure-reviewer.md
-
-# ID prefix is INFRA
-grep -q 'id.*prefix.*INFRA' .claude/agents/infrastructure-reviewer.md
-```
-
-**Definition of Done:**
-- [ ] Agent file created with standard structure
-- [ ] Covers GitHub Actions, Vercel, Docker
-- [ ] Critical patterns for secrets exposure
-- [ ] Follows AuditFinding schema
-
----
-
-### Phase C: Orchestration Integration
-
-**Purpose:** Wire up the code-reviewer to use conditional selection.
-
-**Dependency:** Phase A complete
-
-#### Task C1: Add Selection Logic to Code Reviewer
-
-**File:** `.claude/agents/code-reviewer.md`
-
-**Input:** codebase-context.json with recommendedReviewers
+**Depends on:** Task 1.1
 
 **Logic:**
 ```
-IF --all flag:
-  Run ALL 8 specialists
+always = ["security", "testing"]
 
-ELSE IF specific flags (--security, --database):
-  Run ONLY specified specialists
-
-ELSE IF preset flag:
-  --prelaunch → security, performance, accessibility, seo
-  --backend → security, database, testing, infrastructure
-  --frontend → performance, accessibility, seo
-
-ELSE (no flags):
-  Run recommendedReviewers.always (security, testing)
-  Run each in recommendedReviewers.conditional
+conditional = []
+IF structure.primaryLanguage == "typescript": add typescript
+IF structure.hasUI: add accessibility, performance
+IF structure.hasUI AND structure.projectType == "webapp": add seo
+IF structure.hasDatabase: add database
+IF structure.hasCI OR structure.isServerless: add infrastructure
 ```
 
-**Verification Criteria:**
+**Verification:**
 ```bash
-# Selection logic documented
+# Structure exists
+jq -e '.recommendedReviewers.always | index("security")' .claude/cache/codebase-context.json
+jq -e '.recommendedReviewers.always | index("testing")' .claude/cache/codebase-context.json
+
+# Conditional is array
+jq -e '.recommendedReviewers.conditional | type == "array"' .claude/cache/codebase-context.json
+```
+
+**Done when:** Output matches golden snapshots (Part 2) for all 3 fixtures.
+
+---
+
+#### Task 1.3: Add Specialized File Lists
+
+**File:** `.claude/agents/codebase-scanner.md`
+
+**Depends on:** Task 1.1
+
+**Add fields:**
+- `databaseFiles`: Files matching `**/db.ts`, `**/database.ts`, `prisma/schema.prisma`, etc.
+- `uiComponents`: Files matching `**/*.tsx`, `**/*.jsx` in `src/`, `components/`, `app/`
+- `ciWorkflows`: Files matching `.github/workflows/*.yml`, `.gitlab-ci.yml`
+
+**Verification:**
+```bash
+# On nextjs-app
+jq -e '.databaseFiles | length > 0' .claude/cache/codebase-context.json
+jq -e '.uiComponents | length > 0' .claude/cache/codebase-context.json
+
+# On python-cli (should be empty arrays, not missing)
+jq -e '.databaseFiles | length == 0' .claude/cache/codebase-context.json
+jq -e '.uiComponents | length == 0' .claude/cache/codebase-context.json
+```
+
+**Done when:** All 3 lists present (even if empty) on all fixtures.
+
+---
+
+### Phase 2: New Specialist Agents
+
+These can run parallel to Phase 1.
+
+#### Task 2.1: Create seo-reviewer Agent
+
+**File:** `.claude/agents/seo-reviewer.md` (new)
+
+**Applicability:** `structure.projectType == "webapp" AND structure.hasUI == true`
+
+**Patterns:**
+
+| Severity | Issue | Vuln Pattern | Mitigation Pattern |
+|----------|-------|--------------|-------------------|
+| high | Missing title | `<head>` without `<title>` | `<title>\|Head.*title` |
+| high | No meta description | No `meta.*description` | `meta.*name="description"` |
+| high | Missing Open Graph | No `og:` tags | `property="og:` |
+| medium | No canonical | No `rel="canonical"` | `rel="canonical"` |
+| medium | No structured data | No JSON-LD | `application/ld\+json` |
+| low | No sitemap | Missing sitemap.xml | File exists |
+
+**Verification:**
+```bash
+test -f .claude/agents/seo-reviewer.md
+grep -q "## Applicability" .claude/agents/seo-reviewer.md
+grep -q "## Patterns" .claude/agents/seo-reviewer.md
+grep -q "## Guardrails" .claude/agents/seo-reviewer.md
+grep -q "SEO-" .claude/agents/seo-reviewer.md  # ID prefix
+```
+
+**Done when:** File exists with all required sections.
+
+---
+
+#### Task 2.2: Create database-reviewer Agent
+
+**File:** `.claude/agents/database-reviewer.md` (new)
+
+**Applicability:** `structure.hasDatabase == true`
+
+**Patterns:**
+
+| Severity | Issue | Vuln Pattern | Mitigation Pattern |
+|----------|-------|--------------|-------------------|
+| critical | SQL injection | `$queryRaw` with `${` interpolation | Parameterized queries |
+| high | N+1 queries | `for.*await.*find(One\|Unique)` | `include:\|populate` |
+| high | Unbounded fetch | `findMany()` without `take:` | `take:\|limit` |
+| high | No transaction | Multiple writes without wrapper | `$transaction` |
+| medium | SELECT * | `SELECT *` or no select clause | Specific field selection |
+| low | No soft delete | `delete()` on user data | `deletedAt` pattern |
+
+**Verification:**
+```bash
+test -f .claude/agents/database-reviewer.md
+grep -q "## Applicability" .claude/agents/database-reviewer.md
+grep -q "## Patterns" .claude/agents/database-reviewer.md
+grep -q "DB-" .claude/agents/database-reviewer.md  # ID prefix
+```
+
+**Done when:** File exists with all required sections.
+
+---
+
+#### Task 2.3: Create infrastructure-reviewer Agent
+
+**File:** `.claude/agents/infrastructure-reviewer.md` (new)
+
+**Applicability:** `structure.hasCI == true OR structure.isServerless == true`
+
+**Patterns:**
+
+| Severity | Issue | Vuln Pattern | Mitigation Pattern |
+|----------|-------|--------------|-------------------|
+| high | Secrets in CI | `password:\|api_key:` in workflows | `${{ secrets.` |
+| high | No health check | API without `/health` | Health endpoint |
+| high | No rate limiting | API without throttle | `rateLimit\|throttle` |
+| medium | No error tracking | No Sentry/DataDog | `@sentry\|datadog` |
+| medium | No caching | API without Cache-Control | Cache headers |
+| low | No build cache | CI without cache step | `actions/cache` |
+
+**Verification:**
+```bash
+test -f .claude/agents/infrastructure-reviewer.md
+grep -q "## Applicability" .claude/agents/infrastructure-reviewer.md
+grep -q "## Patterns" .claude/agents/infrastructure-reviewer.md
+grep -q "INFRA-" .claude/agents/infrastructure-reviewer.md  # ID prefix
+```
+
+**Done when:** File exists with all required sections.
+
+---
+
+### Phase 3: Orchestration
+
+**Depends on:** Phase 1 and Phase 2 complete
+
+#### Task 3.1: Add Selection Logic to code-reviewer
+
+**File:** `.claude/agents/code-reviewer.md`
+
+**Add:**
+1. Selection logic table (from Part 1.3)
+2. Fallback behavior: If `recommendedReviewers` missing/empty, run security + testing
+3. Reference to `--incremental` mode (existing in V5_PLANNING.md Appendix D.2)
+
+**Verification:**
+```bash
 grep -q "recommendedReviewers" .claude/agents/code-reviewer.md
+grep -q "fallback" .claude/agents/code-reviewer.md
 grep -q "\-\-all" .claude/agents/code-reviewer.md
 grep -q "\-\-prelaunch" .claude/agents/code-reviewer.md
 grep -q "\-\-backend" .claude/agents/code-reviewer.md
 grep -q "\-\-frontend" .claude/agents/code-reviewer.md
+grep -q "\-\-incremental" .claude/agents/code-reviewer.md
 ```
 
-**Definition of Done:**
-- [ ] Selection logic documented in agent
-- [ ] All presets defined
-- [ ] Reads from recommendedReviewers
-- [ ] Fallback behavior specified
+**Done when:** All flags and fallback documented.
 
 ---
 
-#### Task C2: Update Specialist Count and Workflow
+#### Task 3.2: Update Specialist Table
 
 **File:** `.claude/agents/code-reviewer.md`
 
-**Changes:**
-- Update workflow diagram to show 8 specialists
-- Add SEO, Database, Infrastructure to specialist table
-- Document parallel execution of all selected specialists
-- Add `agentsSkipped` to report metadata (with reasons)
+**Update:**
+- Workflow diagram to show 8 specialists
+- Specialist table with all 8 (add SEO, DB, INFRA rows)
+- Add `agentsSkipped` to output metadata
 
-**Verification Criteria:**
+**Verification:**
 ```bash
-# Shows 8 specialists
 grep -q "seo-reviewer" .claude/agents/code-reviewer.md
 grep -q "database-reviewer" .claude/agents/code-reviewer.md
 grep -q "infrastructure-reviewer" .claude/agents/code-reviewer.md
-
-# Has ID prefix table with all 8
-grep -c "SEO\|DB\|INFRA\|SEC\|PERF\|A11Y\|TS\|TEST" .claude/agents/code-reviewer.md
-# Expected: >= 8
+grep -q "agentsSkipped" .claude/agents/code-reviewer.md
 ```
 
-**Definition of Done:**
-- [ ] Workflow diagram updated
-- [ ] Specialist table complete (8 rows)
-- [ ] agentsSkipped documented
-- [ ] Parallel execution specified
+**Done when:** All 8 specialists listed.
 
 ---
 
-### Phase D: Command Integration
+### Phase 4: Command Integration
 
-**Purpose:** Make /code-review invoke the agent-based system.
+**Depends on:** Phase 3 complete
 
-**Dependency:** Phase C complete
-
-#### Task D1: Slim Down /code-review Command
+#### Task 4.1: Slim /code-review Command
 
 **File:** `.claude/commands/code-review.md`
 
-**Current:** ~550 lines with detailed bash scripts, checklists, report templates
+**Current:** ~550 lines with inline bash, checklists, templates
 
-**Target:** ~80 lines - thin wrapper that:
-1. Parses flags (--all, --security, --prelaunch, etc.)
-2. Invokes code-reviewer agent with parsed flags
-3. Displays formatted results
+**Target:** Thin wrapper that:
+1. Documents available flags
+2. Instructs to invoke code-reviewer agent
+3. Formats output
 
-**Verification Criteria:**
+**Verification:**
 ```bash
-# File is significantly smaller
-wc -l .claude/commands/code-review.md
-# Expected: < 150 lines
-
-# Contains agent invocation instruction
+# Delegates to agent
 grep -q "code-reviewer agent" .claude/commands/code-review.md
 
-# Does NOT contain detailed bash scripts
-grep -c "grep -rn" .claude/commands/code-review.md
-# Expected: 0 or very few
+# Does NOT contain inline analysis logic
+! grep -q "grep -rn" .claude/commands/code-review.md
+! grep -q "find app -name" .claude/commands/code-review.md
+
+# No embedded OWASP checklists
+! grep -q "A01: Broken Access" .claude/commands/code-review.md
 ```
 
-**Definition of Done:**
-- [ ] Command reduced to thin wrapper
-- [ ] Flag parsing documented
-- [ ] Agent invocation specified
-- [ ] Old bash scripts removed
+**Done when:** Command delegates to agent without implementing analysis logic.
 
 ---
 
-#### Task D2: Add Deprecation Notices to Old Commands
+#### Task 4.2: Add Deprecation Notices
 
 **Files:** 8 files in `.claude/commands/code-review-*.md`
 
-**Change:** Add deprecation notice to each:
+**Add to each:**
 ```markdown
 > **DEPRECATED:** This command is superseded by the agent-based system.
-> Use `/code-review --security` instead.
+> Use `/code-review --{type}` instead.
 > This file will be removed in v6.0.
 ```
 
-**Verification Criteria:**
+**Verification:**
 ```bash
-# All 8 files have deprecation notice
-for f in .claude/commands/code-review-*.md; do
-  grep -q "DEPRECATED" "$f" || echo "Missing: $f"
-done
-# Expected: no output (all have notice)
+# Count files with deprecation notice
+DEPRECATED=$(grep -l "DEPRECATED" .claude/commands/code-review-*.md 2>/dev/null | wc -l)
+[ "$DEPRECATED" -eq 8 ]
 ```
 
-**Definition of Done:**
-- [ ] All 8 individual commands have deprecation notice
-- [ ] Notice includes replacement command
-- [ ] Notice includes removal timeline (v6.0)
+**Done when:** All 8 individual commands have deprecation notice.
 
 ---
 
-### Phase E: Schema Updates
+### Phase 5: Schema Updates
 
-**Purpose:** Update schemas to reflect complete system.
+**Depends on:** Phase 2 complete (need to know all categories)
 
-**Dependency:** Phase B complete
-
-#### Task E1: Update AuditFinding Category Enum
+#### Task 5.1: Update AuditFinding Schema
 
 **File:** `.claude/schemas/audit-finding.json`
 
-**Change:** Add new categories:
+**Change:** Update category enum to include all 8:
 ```json
 "category": {
-  "type": "string",
   "enum": ["security", "performance", "accessibility", "typescript", "testing", "seo", "database", "infrastructure"]
 }
 ```
 
-**Verification Criteria:**
+**Verification:**
 ```bash
-# Schema has all 8 categories
-jq '.properties.category.enum | length' .claude/schemas/audit-finding.json
-# Expected: 8
+jq -e '.properties.category.enum | length == 8' .claude/schemas/audit-finding.json
+jq -e '.properties.category.enum | index("seo")' .claude/schemas/audit-finding.json
+jq -e '.properties.category.enum | index("database")' .claude/schemas/audit-finding.json
+jq -e '.properties.category.enum | index("infrastructure")' .claude/schemas/audit-finding.json
 ```
 
-**Definition of Done:**
-- [ ] All 8 categories in enum
-- [ ] Schema validates
+**Done when:** Schema has all 8 categories.
 
 ---
 
-#### Task E2: Update AuditReport Schema
+#### Task 5.2: Update AuditReport Schema
 
 **File:** `.claude/schemas/audit-report.json`
 
-**Changes:**
-- Add `projectType` to metadata
-- Add `agentsSkipped` array with reasons
-- Add `byCategory` breakdown to summary
+**Add fields:**
+- `metadata.projectType`: string
+- `metadata.agentsSkipped`: array of `{ agent: string, reason: string }`
 
-**Verification Criteria:**
+**Verification:**
 ```bash
-# New fields present
-jq '.properties.metadata.properties | keys' .claude/schemas/audit-report.json | grep -q "projectType"
-jq '.properties.metadata.properties | keys' .claude/schemas/audit-report.json | grep -q "agentsSkipped"
+jq -e '.properties.metadata.properties.projectType' .claude/schemas/audit-report.json
+jq -e '.properties.metadata.properties.agentsSkipped' .claude/schemas/audit-report.json
 ```
 
-**Definition of Done:**
-- [ ] projectType field added
-- [ ] agentsSkipped field added
-- [ ] byCategory field added
-- [ ] Schema validates
+**Done when:** New fields present in schema.
 
 ---
 
-### Phase F: Documentation Updates
+### Phase 6: Documentation
 
-**Purpose:** Update V5_PLANNING.md and related docs to reflect reality.
+**Depends on:** All other phases complete
 
-**Dependency:** All other phases complete
-
-#### Task F1: Update V5_PLANNING.md Architecture Diagram
+#### Task 6.1: Update V5_PLANNING.md
 
 **File:** `docs/planning/v5.0/V5_PLANNING.md`
 
 **Changes:**
-- Update AGENTS count from 9 to 12 (8 specialists + 4 support)
-- Add SEO, Database, Infrastructure to agent list
+- Update AGENTS count: 9 → 12 (8 specialists + 4 support)
+- Add seo-reviewer, database-reviewer, infrastructure-reviewer to list
 - Update Appendix C feature comparison
 
-**Verification Criteria:**
+**Verification:**
 ```bash
-# Shows 12 agents
 grep -q "AGENTS (12)" docs/planning/v5.0/V5_PLANNING.md
-
-# Lists all specialists
 grep -q "seo-reviewer" docs/planning/v5.0/V5_PLANNING.md
 grep -q "database-reviewer" docs/planning/v5.0/V5_PLANNING.md
 grep -q "infrastructure-reviewer" docs/planning/v5.0/V5_PLANNING.md
 ```
 
-**Definition of Done:**
-- [ ] Architecture diagram accurate
-- [ ] All agents listed
-- [ ] Appendix C updated
+**Done when:** Document reflects actual agent count.
 
 ---
 
-#### Task F2: Update Agent Documentation Index
+#### Task 6.2: Create Golden Snapshot Files
 
-**File:** `.claude/docs/code-review-guide.md` (if exists) or create
+**Files:**
+- `test/golden/recommended-reviewers-nextjs-app.json`
+- `test/golden/recommended-reviewers-python-cli.json`
+- `test/golden/recommended-reviewers-monorepo.json`
 
-**Content:**
-- List all 12 agents with purpose
-- Document conditional selection
-- Document presets
-- Provide usage examples
+**Content:** As specified in Part 2.
 
-**Verification Criteria:**
+**Verification:**
 ```bash
-# All agents documented
-grep -c "reviewer" .claude/docs/code-review-guide.md
-# Expected: >= 8
+test -f test/golden/recommended-reviewers-nextjs-app.json
+test -f test/golden/recommended-reviewers-python-cli.json
+test -f test/golden/recommended-reviewers-monorepo.json
+
+# Valid JSON
+jq -e '.' test/golden/recommended-reviewers-nextjs-app.json > /dev/null
 ```
 
-**Definition of Done:**
-- [ ] All 12 agents documented
-- [ ] Selection logic explained
-- [ ] Examples provided
+**Done when:** All 3 golden files exist and contain valid JSON.
 
 ---
 
-## Part 3: Verification Checklist
+## Part 4: Verification Script
 
-### Final System Verification
-
-Run these checks to verify the complete system:
+Save as `scripts/tests/test-code-review-completion.sh`:
 
 ```bash
 #!/bin/bash
-# v5.0 Code Review Completion Verification
+set -e
 
-echo "=== Agent Files ==="
-AGENTS=(
-  "code-reviewer"
-  "codebase-scanner"
-  "security-reviewer"
-  "performance-reviewer"
-  "accessibility-reviewer"
-  "type-safety-reviewer"
-  "test-coverage-reviewer"
-  "seo-reviewer"
-  "database-reviewer"
-  "infrastructure-reviewer"
-  "synthesis-agent"
-  "audit-compare"
-)
+echo "=== V5.0 Code Review Completion Verification ==="
+echo ""
 
-for agent in "${AGENTS[@]}"; do
-  if [ -f ".claude/agents/${agent}.md" ]; then
-    echo "✓ ${agent}"
+PASS=0
+FAIL=0
+
+check() {
+  if eval "$1" > /dev/null 2>&1; then
+    echo "✓ $2"
+    ((PASS++))
   else
-    echo "✗ ${agent} MISSING"
+    echo "✗ $2"
+    ((FAIL++))
   fi
+}
+
+echo "--- Agent Files (12 expected) ---"
+AGENTS="code-reviewer codebase-scanner security-reviewer performance-reviewer accessibility-reviewer type-safety-reviewer test-coverage-reviewer seo-reviewer database-reviewer infrastructure-reviewer synthesis-agent audit-compare"
+for agent in $AGENTS; do
+  check "test -f .claude/agents/${agent}.md" "$agent exists"
 done
 
 echo ""
-echo "=== Codebase Scanner Output ==="
-if [ -f ".claude/cache/codebase-context.json" ]; then
-  jq -e '.recommendedReviewers' .claude/cache/codebase-context.json > /dev/null && \
-    echo "✓ recommendedReviewers present" || \
-    echo "✗ recommendedReviewers MISSING"
-
-  jq -e '.structure.hasDatabase' .claude/cache/codebase-context.json > /dev/null && \
-    echo "✓ hasDatabase present" || \
-    echo "✗ hasDatabase MISSING"
-else
-  echo "✗ codebase-context.json not found (run codebase-scanner first)"
-fi
+echo "--- Schema Updates ---"
+check "jq -e '.properties.category.enum | length == 8' .claude/schemas/audit-finding.json" "AuditFinding has 8 categories"
+check "jq -e '.properties.metadata.properties.agentsSkipped' .claude/schemas/audit-report.json" "AuditReport has agentsSkipped"
 
 echo ""
-echo "=== Schema Validation ==="
-jq -e '.properties.category.enum | length == 8' .claude/schemas/audit-finding.json > /dev/null && \
-  echo "✓ AuditFinding has 8 categories" || \
-  echo "✗ AuditFinding categories incomplete"
+echo "--- Golden Snapshots ---"
+check "test -f test/golden/recommended-reviewers-nextjs-app.json" "nextjs-app snapshot exists"
+check "test -f test/golden/recommended-reviewers-python-cli.json" "python-cli snapshot exists"
+check "test -f test/golden/recommended-reviewers-monorepo.json" "monorepo snapshot exists"
 
 echo ""
-echo "=== Command Integration ==="
-LINES=$(wc -l < .claude/commands/code-review.md)
-if [ "$LINES" -lt 150 ]; then
-  echo "✓ /code-review is thin wrapper ($LINES lines)"
-else
-  echo "⚠ /code-review may still have old content ($LINES lines)"
-fi
+echo "--- Command Integration ---"
+check "grep -q 'code-reviewer agent' .claude/commands/code-review.md" "/code-review delegates to agent"
+check "! grep -q 'A01: Broken Access' .claude/commands/code-review.md" "/code-review has no inline checklists"
 
 echo ""
-echo "=== Deprecation Notices ==="
-DEPRECATED=0
-for f in .claude/commands/code-review-*.md; do
-  grep -q "DEPRECATED" "$f" && ((DEPRECATED++))
-done
-echo "✓ $DEPRECATED/8 commands have deprecation notice"
+echo "--- Deprecation Notices ---"
+DEPRECATED=$(grep -l "DEPRECATED" .claude/commands/code-review-*.md 2>/dev/null | wc -l | tr -d ' ')
+check "[ '$DEPRECATED' -eq 8 ]" "All 8 old commands deprecated ($DEPRECATED/8)"
+
+echo ""
+echo "=== Summary ==="
+echo "Passed: $PASS"
+echo "Failed: $FAIL"
+
+[ "$FAIL" -eq 0 ] && echo "✅ ALL CHECKS PASSED" || echo "❌ SOME CHECKS FAILED"
+exit $FAIL
 ```
 
 ---
 
-## Part 4: Dependency Graph
+## Part 5: Task Dependency Graph
 
 ```
-Phase A: Foundation Enhancement
-├── A1: Project Characteristic Detection
-├── A2: recommendedReviewers Output (depends on A1)
-└── A3: Specialized File Lists (depends on A1)
+Phase 1: Scanner Enhancement
+  1.1 Project Characteristics ─┬─→ 1.2 recommendedReviewers ─→ Phase 3
+                               └─→ 1.3 File Lists
 
-Phase B: New Specialist Agents (parallel with A)
-├── B1: SEO Reviewer
-├── B2: Database Reviewer
-└── B3: Infrastructure Reviewer
+Phase 2: New Specialists (parallel with Phase 1)
+  2.1 seo-reviewer ────┐
+  2.2 database-reviewer ├─→ Phase 3, Phase 5
+  2.3 infrastructure-reviewer ─┘
 
-Phase C: Orchestration Integration (depends on A)
-├── C1: Selection Logic (depends on A2)
-└── C2: Update Workflow (depends on B1, B2, B3)
+Phase 3: Orchestration (depends on 1.2, 2.*)
+  3.1 Selection Logic ─┬─→ Phase 4
+  3.2 Specialist Table ┘
 
-Phase D: Command Integration (depends on C)
-├── D1: Slim Down /code-review (depends on C1, C2)
-└── D2: Deprecation Notices (independent)
+Phase 4: Command Integration (depends on 3.*)
+  4.1 Slim /code-review
+  4.2 Deprecation Notices (independent)
 
-Phase E: Schema Updates (depends on B)
-├── E1: AuditFinding Categories
-└── E2: AuditReport Schema
+Phase 5: Schema Updates (depends on 2.*)
+  5.1 AuditFinding Categories
+  5.2 AuditReport Schema
 
-Phase F: Documentation (depends on all)
-├── F1: Update V5_PLANNING.md
-└── F2: Agent Documentation Index
+Phase 6: Documentation (depends on all)
+  6.1 Update V5_PLANNING.md
+  6.2 Create Golden Snapshots
 
-Critical Path: A1 → A2 → C1 → C2 → D1
+Critical Path: 1.1 → 1.2 → 3.1 → 4.1
 ```
-
----
-
-## Part 5: Risk Mitigation
-
-| Risk | Likelihood | Impact | Mitigation |
-|------|------------|--------|------------|
-| Old commands still used | High | Medium | Deprecation notices + documentation |
-| Conditional selection wrong | Medium | High | Test on all 3 fixture repos |
-| New agents have gaps | Medium | Medium | Use command patterns as reference |
-| Breaking existing audits | Low | High | Keep old commands functional |
 
 ---
 
 ## Part 6: Success Criteria
 
-### Minimum Viable Completion
+**Complete when ALL of the following are true:**
 
-- [ ] 12 agent files exist and have standard structure
-- [ ] codebase-scanner outputs recommendedReviewers
-- [ ] code-reviewer uses conditional selection
-- [ ] /code-review invokes agents
-- [ ] All 8 old commands have deprecation notice
-
-### Full Completion
-
-- [ ] All verification scripts pass
-- [ ] Tested on all 3 fixture repos
-- [ ] V5_PLANNING.md updated
-- [ ] Documentation complete
+1. `scripts/tests/test-code-review-completion.sh` passes (0 failures)
+2. Golden snapshots match actual scanner output on all 3 fixtures
+3. `/code-review` invokes agents, not inline logic
+4. All 8 old commands have deprecation notices
 
 ---
 
