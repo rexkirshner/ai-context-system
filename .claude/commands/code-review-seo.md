@@ -3,6 +3,10 @@ name: code-review-seo
 description: Technical SEO audit - metadata, structured data, crawlability, Core Web Vitals
 ---
 
+> **DEPRECATED:** This command is superseded by the agent-based system.
+> Use `/code-review --seo` instead.
+> This file will be removed in v6.0.
+
 # /code-review-seo Command
 
 Conduct a thorough technical SEO audit. This command **NEVER makes changes** - it only identifies issues and suggests improvements. Fixes happen in a separate session after review.

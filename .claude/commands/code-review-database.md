@@ -3,6 +3,10 @@ name: code-review-database
 description: Deep database efficiency audit - query optimization, N+1 detection, indexes, caching
 ---
 
+> **DEPRECATED:** This command is superseded by the agent-based system.
+> Use `/code-review --database` instead.
+> This file will be removed in v6.0.
+
 # /code-review-database Command
 
 Conduct a thorough database and ORM efficiency audit. This command **NEVER makes changes** - it only identifies issues and suggests improvements. Fixes happen in a separate session after review.

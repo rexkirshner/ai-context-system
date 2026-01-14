@@ -3,6 +3,10 @@ name: code-review-security
 description: Deep OWASP-style security audit - authentication, injection, XSS, secrets, dependencies
 ---
 
+> **DEPRECATED:** This command is superseded by the agent-based system.
+> Use `/code-review --security` instead.
+> This file will be removed in v6.0.
+
 # /code-review-security Command
 
 Conduct a thorough OWASP-style security audit. This command **NEVER makes changes** - it only identifies vulnerabilities and suggests fixes. Fixes happen in a separate session after review.

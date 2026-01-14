@@ -3,6 +3,10 @@ name: code-review-testing
 description: Test coverage and quality audit - coverage gaps, test patterns, mocking strategy, CI integration
 ---
 
+> **DEPRECATED:** This command is superseded by the agent-based system.
+> Use `/code-review --testing` instead.
+> This file will be removed in v6.0.
+
 # /code-review-testing Command
 
 Conduct a thorough test coverage and quality audit. This command **NEVER makes changes** - it only identifies testing gaps and suggests improvements. Fixes happen in a separate session after review.

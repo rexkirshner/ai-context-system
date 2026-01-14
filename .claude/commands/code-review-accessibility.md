@@ -3,6 +3,10 @@ name: code-review-accessibility
 description: WCAG 2.1 accessibility audit - semantic HTML, ARIA, keyboard navigation, color contrast, screen readers
 ---
 
+> **DEPRECATED:** This command is superseded by the agent-based system.
+> Use `/code-review --accessibility` instead.
+> This file will be removed in v6.0.
+
 # /code-review-accessibility Command
 
 Conduct a thorough WCAG 2.1 accessibility audit. This command **NEVER makes changes** - it only identifies accessibility barriers and suggests fixes. Fixes happen in a separate session after review.

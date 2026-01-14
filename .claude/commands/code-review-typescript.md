@@ -3,6 +3,10 @@ name: code-review-typescript
 description: TypeScript type safety audit - strict mode, any usage, type coverage, inference quality
 ---
 
+> **DEPRECATED:** This command is superseded by the agent-based system.
+> Use `/code-review --typescript` instead.
+> This file will be removed in v6.0.
+
 # /code-review-typescript Command
 
 Conduct a thorough TypeScript type safety audit. This command **NEVER makes changes** - it only identifies type system weaknesses and suggests improvements. Fixes happen in a separate session after review.

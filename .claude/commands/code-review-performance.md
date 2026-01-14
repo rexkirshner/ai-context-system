@@ -3,6 +3,10 @@ name: code-review-performance
 description: Deep performance audit - Core Web Vitals, bundle analysis, runtime optimization
 ---
 
+> **DEPRECATED:** This command is superseded by the agent-based system.
+> Use `/code-review --performance` instead.
+> This file will be removed in v6.0.
+
 # /code-review-performance Command
 
 Conduct a thorough performance audit focused on Core Web Vitals, bundle size, and runtime efficiency. This command **NEVER makes changes** - it only identifies issues and suggests optimizations. Fixes happen in a separate session after review.

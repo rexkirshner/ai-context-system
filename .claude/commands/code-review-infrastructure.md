@@ -3,6 +3,10 @@ name: code-review-infrastructure
 description: Serverless/hosting cost optimization audit - runtime, invocations, bandwidth, caching
 ---
 
+> **DEPRECATED:** This command is superseded by the agent-based system.
+> Use `/code-review --infrastructure` instead.
+> This file will be removed in v6.0.
+
 # /code-review-infrastructure Command
 
 Conduct a thorough infrastructure and serverless cost optimization audit. This command **NEVER makes changes** - it only identifies cost drivers and suggests optimizations. Fixes happen in a separate session after review.
