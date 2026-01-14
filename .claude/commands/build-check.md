@@ -410,4 +410,4 @@ Suggests fixes for common issues.
 
 ---
 
-**Version:** 4.2.0
+**Version:** 5.0.0
