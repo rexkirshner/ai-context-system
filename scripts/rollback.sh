@@ -177,6 +177,6 @@ echo ""
 echo "Next steps:"
 echo "  1. Verify your context files are intact"
 echo "  2. Run your usual commands to confirm functionality"
-echo "  3. Report any issues at https://github.com/anthropics/claude-code/issues"
+echo "  3. Report any issues at https://github.com/rexkirshner/ai-context-system/issues"
 echo ""
 exit 0
