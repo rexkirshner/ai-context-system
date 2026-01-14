@@ -2,6 +2,28 @@
 
 Reviews TypeScript codebase for type safety issues.
 
+## Agent Contract
+
+```json
+{
+  "id": "typescript",
+  "prefix": "TS",
+  "category": "typescript",
+  "applicability": {
+    "always": false,
+    "requires": {
+      "structure.primaryLanguage": "typescript"
+    },
+    "presets": []
+  }
+}
+```
+
+## File Scope
+
+This agent reads from `files` filtered by `.ts` and `.tsx` extensions.
+Also reads `tsconfig.json` for strictness settings.
+
 ## Purpose
 
 Identify type safety weaknesses with **verification**. Every finding must include evidence of the type issue AND confirmation that no proper typing exists.

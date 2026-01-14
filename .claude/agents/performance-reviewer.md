@@ -2,6 +2,28 @@
 
 Reviews codebase for performance issues.
 
+## Agent Contract
+
+```json
+{
+  "id": "performance",
+  "prefix": "PERF",
+  "category": "performance",
+  "applicability": {
+    "always": false,
+    "requires": {
+      "structure.hasUI": true
+    },
+    "presets": ["prelaunch", "frontend"]
+  }
+}
+```
+
+## File Scope
+
+This agent reads from `uiComponents` file list in scanner output for UI performance.
+Also checks `files` for data layer and API routes.
+
 ## Purpose
 
 Identify performance bottlenecks with **verification**. Every finding must include evidence of the issue AND confirmation that no optimization exists.

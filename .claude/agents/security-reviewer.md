@@ -2,6 +2,26 @@
 
 Reviews codebase for security vulnerabilities.
 
+## Agent Contract
+
+```json
+{
+  "id": "security",
+  "prefix": "SEC",
+  "category": "security",
+  "applicability": {
+    "always": true,
+    "requires": {},
+    "presets": ["prelaunch", "frontend", "backend", "quick"]
+  }
+}
+```
+
+## File Scope
+
+This agent reads from `securityRelevant` file list in scanner output.
+Falls back to repo-wide scan only if list is empty.
+
 ## Purpose
 
 Identify security issues with **verification**. Every finding must include evidence of the vulnerability AND confirmation that no mitigation exists. This minimizes false positives.

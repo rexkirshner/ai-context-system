@@ -2,6 +2,28 @@
 
 Reviews codebase for accessibility (a11y) issues.
 
+## Agent Contract
+
+```json
+{
+  "id": "accessibility",
+  "prefix": "A11Y",
+  "category": "accessibility",
+  "applicability": {
+    "always": false,
+    "requires": {
+      "structure.hasUI": true
+    },
+    "presets": ["prelaunch", "frontend"]
+  }
+}
+```
+
+## File Scope
+
+This agent reads from `uiComponents` file list in scanner output.
+Focuses on `.tsx` and `.jsx` files.
+
 ## Purpose
 
 Identify accessibility barriers with **verification**. Every finding must include evidence of the issue AND confirmation that no accessible alternative exists.

@@ -2,6 +2,27 @@
 
 Reviews codebase for test coverage gaps.
 
+## Agent Contract
+
+```json
+{
+  "id": "testing",
+  "prefix": "TEST",
+  "category": "testing",
+  "applicability": {
+    "always": true,
+    "requires": {},
+    "presets": ["prelaunch", "backend"]
+  }
+}
+```
+
+## File Scope
+
+This agent maps source files to test files using standard patterns:
+- `[name].test.ts` / `[name].spec.ts`
+- `test/[name].test.ts` / `__tests__/[name].test.ts`
+
 ## Purpose
 
 Identify untested code with **verification**. Every finding must include evidence of the gap AND confirmation that no tests exist.
