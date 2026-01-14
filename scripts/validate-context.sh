@@ -407,6 +407,52 @@ done
 echo ""
 
 # =============================================================================
+# Check 11: Large File Optimization (v5.0.1)
+# =============================================================================
+echo "📄 Checking large file optimization..."
+
+# Check DECISIONS.md for Decision Index if file is large
+if [ -f "$CONTEXT_DIR/DECISIONS.md" ]; then
+  DECISIONS_LINES=$(wc -l < "$CONTEXT_DIR/DECISIONS.md" 2>/dev/null | tr -d ' ')
+
+  if [ "$DECISIONS_LINES" -gt 1500 ]; then
+    # Large file - check for Decision Index
+    if grep -q "^## Decision Index\|^## Active Decisions" "$CONTEXT_DIR/DECISIONS.md"; then
+      echo "  ✅ DECISIONS.md ($DECISIONS_LINES lines) has Decision Index"
+    else
+      echo -e "  ${YELLOW}⚠️  DECISIONS.md ($DECISIONS_LINES lines) missing Decision Index${NC}"
+      echo "     Large files need an index for AI agent navigation"
+      echo "     Add '## Decision Index' section at top of file"
+      echo "     See: templates/DECISIONS.template.md for format"
+      ((WARNINGS++))
+    fi
+  else
+    echo "  ✅ DECISIONS.md ($DECISIONS_LINES lines) - size OK"
+  fi
+else
+  echo "  ℹ️  DECISIONS.md not found (optional)"
+fi
+
+# Check SESSIONS.md for Session Index if file is large
+if [ -f "$CONTEXT_DIR/SESSIONS.md" ]; then
+  SESSIONS_LINES=$(wc -l < "$CONTEXT_DIR/SESSIONS.md" 2>/dev/null | tr -d ' ')
+
+  if [ "$SESSIONS_LINES" -gt 1000 ]; then
+    if grep -q "^## Session Index" "$CONTEXT_DIR/SESSIONS.md"; then
+      echo "  ✅ SESSIONS.md ($SESSIONS_LINES lines) has Session Index"
+    else
+      echo -e "  ${YELLOW}⚠️  SESSIONS.md ($SESSIONS_LINES lines) missing Session Index${NC}"
+      echo "     Large files need an index for AI agent navigation"
+      echo "     See: templates/SESSIONS.template.md for format"
+      ((WARNINGS++))
+    fi
+  else
+    echo "  ✅ SESSIONS.md ($SESSIONS_LINES lines) - size OK"
+  fi
+fi
+echo ""
+
+# =============================================================================
 # Summary
 # =============================================================================
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

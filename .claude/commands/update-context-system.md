@@ -381,6 +381,29 @@ fi
 if [ -f "context/DECISIONS.md" ] && [ -f "templates/DECISIONS.template.md" ]; then
   echo "ℹ️  DECISIONS.md template available in templates/"
   echo "   Review templates/DECISIONS.template.md for new guidelines"
+
+  # v5.0.1: Check if large DECISIONS.md needs Decision Index
+  DECISIONS_LINES=$(wc -l < "context/DECISIONS.md" 2>/dev/null | tr -d ' ')
+  if [ "$DECISIONS_LINES" -gt 1500 ]; then
+    if ! grep -q "^## Decision Index\|^## Active Decisions" "context/DECISIONS.md"; then
+      echo ""
+      echo -e "${YELLOW}⚠️  ACTION RECOMMENDED: Add Decision Index${NC}"
+      echo "   Your DECISIONS.md is $DECISIONS_LINES lines."
+      echo "   v5.0.1 uses smart loading for large files - needs an index."
+      echo ""
+      echo "   Add this section near the top of your DECISIONS.md:"
+      echo "   ┌──────────────────────────────────────────────────┐"
+      echo "   │ ## Decision Index                                 │"
+      echo "   │                                                   │"
+      echo "   │ | ID | Date | Topic | Status |                   │"
+      echo "   │ |----|------|-------|--------|                   │"
+      echo "   │ | D001 | 2025-01-15 | Topic | ✅ Accepted |      │"
+      echo "   │ | D002 | ... | ... | ... |                       │"
+      echo "   └──────────────────────────────────────────────────┘"
+      echo ""
+      echo "   This helps AI agents navigate your decisions efficiently."
+    fi
+  fi
 fi
 
 echo ""
