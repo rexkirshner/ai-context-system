@@ -2,7 +2,7 @@
 
 # install.sh
 # Bootstrap installer for AI Context System
-# v4.2.1 - UX Polish for Update Process
+# v5.0.0 - Agent-Based Code Review System
 #
 # Usage:
 #   curl -sL https://raw.githubusercontent.com/rexkirshner/ai-context-system/main/install.sh | bash
