@@ -257,6 +257,35 @@ cp .env.example .env.local
 
 ---
 
+## Invariants & Non-goals
+
+> **Why this section exists:** Prevents AI agents from "helpfully" undoing intentional architectural choices or adding features that conflict with project direction.
+
+**Invariants (Do Not Change Without Discussion):**
+
+These are intentional constraints. Do not refactor away or work around:
+
+- [FILL: e.g., "No Redux - using React Context + Zustand by design"]
+- [FILL: e.g., "All auth via httpOnly cookies, not localStorage"]
+- [FILL: e.g., "No ORM - raw SQL with prepared statements"]
+- [FILL: e.g., "Monorepo structure - do not split into separate repos"]
+
+**Non-goals (Not Now):**
+
+These are explicitly out of scope for the current phase. Do not implement:
+
+- [FILL: e.g., "Mobile app (web-first until v2)"]
+- [FILL: e.g., "Multi-region deployment (single region for now)"]
+- [FILL: e.g., "Bundle size optimization (functionality first)"]
+- [FILL: e.g., "Internationalization (English-only MVP)"]
+
+**When to Update:**
+- Add new invariants when making architectural decisions
+- Move non-goals to active development when scope changes
+- Document in DECISIONS.md when an invariant is lifted
+
+---
+
 ## Project-Specific Notes
 
 [Use this section for any project-specific context that doesn't fit above]
