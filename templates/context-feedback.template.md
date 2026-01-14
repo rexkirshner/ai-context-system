@@ -73,9 +73,18 @@ Copy this template for each feedback entry:
 
 ## Feedback Entries
 
-<!-- Add your feedback below this line -->
+<!--
+  ADD YOUR FEEDBACK BELOW THIS LINE
 
----
+  Only entries in this section (before "## Examples") will be archived
+  during upgrades. Delete the examples section after you've read them.
+-->
+
+
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- EXAMPLES BELOW - DELETE THIS ENTIRE SECTION AFTER READING          -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
 
 ## Examples (Delete after reading)
 

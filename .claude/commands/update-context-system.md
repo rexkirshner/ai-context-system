@@ -209,9 +209,13 @@ fi
 
 # Check if feedback file exists and has actual content (not just template)
 if [ -f "context/context-feedback.md" ]; then
-  # Count only real user entries (## YYYY-MM-DD format headers)
-  # This ignores template examples which use different formats
-  USER_ENTRIES=$(grep -c "^## [0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\}" context/context-feedback.md 2>/dev/null || echo "0")
+  # Count only REAL user entries in the Feedback section
+  # Uses sed to extract content between "## Feedback Entries" and "## Examples"
+  # This excludes the 3 template examples which should be deleted by users
+  # Note: grep -c outputs "0" when no matches and exits with code 1, so use || true
+  USER_ENTRIES=$(sed -n '/^## Feedback Entries/,/^## Examples/p' context/context-feedback.md 2>/dev/null | \
+    grep -c "^## [0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\}" 2>/dev/null || true)
+  USER_ENTRIES="${USER_ENTRIES:-0}"
 
   if [ "$USER_ENTRIES" -gt 0 ]; then  # Has actual user feedback entries
     # Use PRE_UPGRADE_VERSION captured in Step 1 for archive filename
