@@ -80,6 +80,16 @@
 - [Completed todo 2]
 - [ ] [Incomplete todo - in WIP]
 
+### Open Loops
+
+**Unresolved questions and uncertainties that need attention:**
+
+- [Question/uncertainty 1 - e.g., "Why does auth middleware sometimes return 401 on valid tokens?"]
+- [Question/uncertainty 2 - e.g., "Should we consolidate the two user tables?"]
+- [Risk/concern - e.g., "Performance degrades with >1000 items - haven't profiled yet"]
+
+> **Why this section matters:** Open loops are often what kills continuity. Forgetting *what you were uncertain about* is as damaging as forgetting what you did.
+
 ### Next Session
 
 **Priority:** [Most important next action]
@@ -170,6 +180,10 @@ Initialized AI Context System with CLAUDE.md at project root + 5 core files in c
 **Approach:** [How you're solving it]
 **Next:** [Exact action to resume]
 
+### Open Loops
+- [Unresolved question/uncertainty]
+- [Risk or concern to investigate]
+
 ### Next Session
 **Priority:** [Most important next]
 **Blockers:** [None / List]
@@ -219,4 +233,5 @@ Quick navigation to specific work.
 2. **Mental Models** - Your understanding of the system
 3. **Decisions** - Link to DECISIONS.md for full rationale
 4. **Work In Progress** - Detailed enough for takeover
-5. **TodoWrite State** - What was accomplished vs. pending
+5. **Open Loops** - Unresolved questions, uncertainties, risks
+6. **TodoWrite State** - What was accomplished vs. pending
