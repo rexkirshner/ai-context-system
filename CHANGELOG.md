@@ -31,6 +31,10 @@ This release addresses critical bugs identified during initial v5.0.0 deployment
 
 - **v5.0.0 component verification** - `validate-context.sh` now checks for agents (12), schemas (7), skills (7), and hooks (1)
 
+- **DECISIONS.md smart loading** - `/review-context` now handles large DECISIONS.md files (>2000 lines) by loading header, index, and recent decisions only, preventing truncation of newest decisions
+
+- **Decision Index in template** - `DECISIONS.template.md` now has Decision Index at top for AI agent navigation
+
 - **Test suites** for all new helpers (54 new tests)
 
 ### Changed
