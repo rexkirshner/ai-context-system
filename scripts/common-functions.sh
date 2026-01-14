@@ -484,6 +484,59 @@ json_validate() {
   fi
 }
 
+# Count files matching a pattern in a directory (deterministic)
+#
+# File counting with `ls | wc -l` is fragile:
+#   - Varies by platform (may include . and ..)
+#   - Affected by aliases and shell options
+#   - Counts directories too
+#
+# This helper uses `find` for deterministic, portable counting.
+#
+# Usage:
+#   count=$(count_files /path/to/dir "*.md")
+#   count=$(count_files /path/to/dir "*.json")
+#
+# Args:
+#   $1 - directory to search
+#   $2 - filename pattern (glob, optional - defaults to *)
+#
+# Returns:
+#   Prints count to stdout (integer >= 0)
+#   Returns 0 even if directory doesn't exist (count will be 0)
+#
+# Example:
+#   agent_count=$(count_files .claude/agents "*.md")
+#   if [ "$agent_count" -lt 12 ]; then
+#     echo "Missing agent files (found $agent_count, expected 12)"
+#   fi
+#
+count_files() {
+  local dir="$1"
+  local pattern="${2:-*}"
+
+  # Validate directory argument
+  if [ -z "$dir" ]; then
+    log_error "count_files: requires directory argument"
+    echo "0"
+    return 1
+  fi
+
+  # If directory doesn't exist, count is 0 (not an error)
+  if [ ! -d "$dir" ]; then
+    echo "0"
+    return 0
+  fi
+
+  # Use find for deterministic, portable counting
+  # -maxdepth 1: don't recurse into subdirectories
+  # -type f: only count files (not directories)
+  # -name: match the pattern
+  # wc -l: count lines
+  # tr -d ' ': remove whitespace (macOS wc adds leading spaces)
+  find "$dir" -maxdepth 1 -type f -name "$pattern" 2>/dev/null | wc -l | tr -d ' '
+}
+
 # =============================================================================
 # File Safety Operations
 # =============================================================================
