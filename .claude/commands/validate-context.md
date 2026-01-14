@@ -591,6 +591,3 @@ Validation succeeds when:
 - Suggestions for improvement?
 
 ---
-
-**Version:** 5.0.0
-**Updated:** v2.3.1 - Added feedback system

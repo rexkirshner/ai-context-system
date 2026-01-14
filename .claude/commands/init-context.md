@@ -997,6 +997,3 @@ Understood?
 - Suggestions for improvement?
 
 ---
-
-**Version:** 5.0.0
-**Updated:** v4.1.1 - Added auto-detection and template placeholder filling

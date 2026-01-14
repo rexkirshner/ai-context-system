@@ -427,5 +427,3 @@ Export succeeds when:
 - Self-contained reference
 
 ---
-
-**Version:** 5.0.0

@@ -840,5 +840,3 @@ No changes were made during this audit.
 - [WebAIM](https://webaim.org/)
 
 ---
-
-**Version:** 4.2.0

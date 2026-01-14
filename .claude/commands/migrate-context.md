@@ -950,5 +950,3 @@ fi
 **Result:** Clean project without installation artifacts.
 
 ---
-
-**Version:** 5.0.0

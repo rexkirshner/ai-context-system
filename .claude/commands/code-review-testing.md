@@ -803,5 +803,3 @@ describe('LoginForm', () => {
 - [Playwright](https://playwright.dev/)
 
 ---
-
-**Version:** 4.2.0

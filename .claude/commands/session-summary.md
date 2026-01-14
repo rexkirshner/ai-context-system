@@ -240,5 +240,3 @@ Command succeeds when:
 - Links to full documentation for details
 
 ---
-
-**Version:** 5.0.0

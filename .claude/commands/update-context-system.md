@@ -684,5 +684,3 @@ Understood?
 **User action:** Copy the prompt above and paste it into your session to set ground rules with the AI.
 
 ---
-
-**Version:** 5.0.0

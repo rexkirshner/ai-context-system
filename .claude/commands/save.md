@@ -356,5 +356,3 @@ Save succeeds when:
 - Comprehensive docs when actually needed (use /save-full)
 
 ---
-
-**Version:** 5.0.0

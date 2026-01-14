@@ -663,5 +663,3 @@ export async function GET({ params }) {
 - [NIST Cybersecurity Framework](https://www.nist.gov/cyberframework)
 
 ---
-
-**Version:** 4.2.0

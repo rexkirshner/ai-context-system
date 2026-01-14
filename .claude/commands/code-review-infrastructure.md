@@ -667,5 +667,3 @@ export async function fetch(request) {
 - [Cloudflare Workers Limits](https://developers.cloudflare.com/workers/platform/limits/)
 
 ---
-
-**Version:** 4.2.0

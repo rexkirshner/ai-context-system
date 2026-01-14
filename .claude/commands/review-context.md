@@ -968,6 +968,3 @@ Understood?
 **User action:** Copy the prompt above and paste it into your session to set ground rules with the AI.
 
 ---
-
-**Version:** 5.0.0
-**Updated:** v3.0.4 - Added git workflow reminder for session start

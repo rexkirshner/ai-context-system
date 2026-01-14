@@ -115,5 +115,3 @@ The number NN increments automatically (01, 02, ...).
 3. **Report what you find** - Don't skip or minimize issues
 
 ---
-
-**Version:** 5.0.0

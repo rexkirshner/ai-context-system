@@ -328,6 +328,3 @@ Command succeeds when:
 - Multi-AI pattern is preserved
 
 ---
-
-**Version:** 5.0.0
-**Updated:** v3.0.0 - Multi-AI support and real-world feedback improvements (git push protection, smart loading, context detection)

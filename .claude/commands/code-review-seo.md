@@ -710,5 +710,3 @@ export function ArticleJsonLd({ article }) {
 - [Web.dev SEO](https://web.dev/learn/seo/)
 
 ---
-
-**Version:** 4.2.0

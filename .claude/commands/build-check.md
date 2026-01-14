@@ -409,5 +409,3 @@ Suggests fixes for common issues.
 ```
 
 ---
-
-**Version:** 5.0.0

@@ -774,5 +774,3 @@ const user = UserSchema.safeParse(data);  // Returns { success, data/error }
 - [Total TypeScript Tips](https://www.totaltypescript.com/tips)
 
 ---
-
-**Version:** 4.2.0

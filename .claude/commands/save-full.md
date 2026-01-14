@@ -1028,5 +1028,3 @@ echo ""
 **Worth every second** - enables perfect session continuity AND AI agent review/takeover.
 
 ---
-
-**Version:** 5.0.0

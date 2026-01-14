@@ -384,5 +384,3 @@ Command succeeds when:
 ```
 
 ---
-
-**Version:** 5.0.0

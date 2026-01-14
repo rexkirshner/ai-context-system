@@ -606,5 +606,3 @@ const result = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
 - [Vercel Postgres Connection Pooling](https://vercel.com/docs/storage/vercel-postgres/using-an-orm#prisma)
 
 ---
-
-**Version:** 4.2.0

@@ -709,5 +709,3 @@ const MemoizedComponent = React.memo(ExpensiveComponent);
 - [Chrome DevTools Performance](https://developer.chrome.com/docs/devtools/performance/)
 
 ---
-
-**Version:** 4.2.0
