@@ -35,6 +35,10 @@ This release addresses critical bugs identified during initial v5.0.0 deployment
 
 - **Decision Index in template** - `DECISIONS.template.md` now has Decision Index at top for AI agent navigation
 
+- **Large file validation** - `validate-context.sh` warns if DECISIONS.md (>1500 lines) or SESSIONS.md (>1000 lines) missing index sections
+
+- **Upgrade guidance** - `/update-context-system` detects large DECISIONS.md files and provides actionable guidance for adding Decision Index
+
 - **Test suites** for all new helpers (54 new tests)
 
 ### Changed
