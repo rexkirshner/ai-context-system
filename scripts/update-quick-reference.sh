@@ -123,7 +123,8 @@ fi
 # Generate Quick Reference section
 # =============================================================================
 
-QUICK_REF_START="## 📊 Quick Reference"
+# Match Quick Reference with or without emoji (for backward compatibility)
+QUICK_REF_PATTERN="^## (📊 )?Quick Reference"
 QUICK_REF_END="---"
 
 # Build the new Quick Reference content
@@ -166,15 +167,15 @@ EOF
 # Update STATUS.md (with defensive checks)
 # =============================================================================
 
-# Check if Quick Reference section exists
-if ! grep -q "^${QUICK_REF_START}" "$STATUS_FILE"; then
+# Check if Quick Reference section exists (accepts with or without emoji)
+if ! grep -qE "$QUICK_REF_PATTERN" "$STATUS_FILE"; then
   log_warn "Quick Reference section not found in STATUS.md" 2>/dev/null || echo "⚠️  Quick Reference section not found in STATUS.md" >&2
   log_info "Run /init-context to create proper STATUS.md structure" 2>/dev/null || echo "   Run /init-context to create proper STATUS.md structure" >&2
   exit ${EXIT_SUCCESS:-0}
 fi
 
-# Get line number of Quick Reference header
-QR_LINE=$(grep -n "^${QUICK_REF_START}" "$STATUS_FILE" | head -1 | cut -d: -f1)
+# Get line number of Quick Reference header (works with or without emoji)
+QR_LINE=$(grep -nE "$QUICK_REF_PATTERN" "$STATUS_FILE" | head -1 | cut -d: -f1)
 
 # Validate we got a number
 if [ -z "$QR_LINE" ] || ! [ "$QR_LINE" -gt 0 ] 2>/dev/null; then

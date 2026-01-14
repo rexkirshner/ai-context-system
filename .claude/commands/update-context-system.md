@@ -208,36 +208,50 @@ if [ -f "context/claude-context-feedback.md" ] && [ ! -f "context/context-feedba
 fi
 
 # Check if feedback file exists and has actual content (not just template)
+# v5.0.1: Uses hash comparison instead of entry counting for more reliable detection
 if [ -f "context/context-feedback.md" ]; then
-  # Count only REAL user entries in the Feedback section
-  # Uses sed to extract content between "## Feedback Entries" and "## Examples"
-  # This excludes the 3 template examples which should be deleted by users
-  # Note: grep -c outputs "0" when no matches and exits with code 1, so use || true
-  USER_ENTRIES=$(sed -n '/^## Feedback Entries/,/^## Examples/p' context/context-feedback.md 2>/dev/null | \
-    grep -c "^## [0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\}" 2>/dev/null || true)
-  USER_ENTRIES="${USER_ENTRIES:-0}"
+  # Check if template exists for comparison
+  if [ -f "templates/context-feedback.template.md" ]; then
+    # Use files_identical helper (hash comparison) to detect modifications
+    if ! files_identical "context/context-feedback.md" "templates/context-feedback.template.md"; then
+      # File has been modified - archive it
+      ARCHIVE_DATE=$(date +%Y-%m-%d)
 
-  if [ "$USER_ENTRIES" -gt 0 ]; then  # Has actual user feedback entries
-    # Use PRE_UPGRADE_VERSION captured in Step 1 for archive filename
-    ARCHIVE_DATE=$(date +%Y-%m-%d)
+      # Create archive directory if needed
+      mkdir -p artifacts/feedback
 
-    # Create archive directory if needed
-    mkdir -p artifacts/feedback
+      # Archive with version and date (avoid overwriting existing archive)
+      ARCHIVE_FILE="artifacts/feedback/feedback-v${PRE_UPGRADE_VERSION}-${ARCHIVE_DATE}.md"
+      if [ -f "$ARCHIVE_FILE" ]; then
+        ARCHIVE_FILE="artifacts/feedback/feedback-v${PRE_UPGRADE_VERSION}-${ARCHIVE_DATE}-$(date +%H%M%S).md"
+      fi
 
-    # Archive with version and date
-    ARCHIVE_FILE="artifacts/feedback/feedback-v${PRE_UPGRADE_VERSION}-${ARCHIVE_DATE}.md"
-    mv context/context-feedback.md "$ARCHIVE_FILE"
+      mv context/context-feedback.md "$ARCHIVE_FILE"
 
-    log_success "✅ Archived feedback to $ARCHIVE_FILE"
-    log_info "   (Feedback from v${PRE_UPGRADE_VERSION} preserved)"
-  else
-    log_verbose "Feedback file exists but appears to be just template (no entries)"
-    # Deletion protection for potentially sensitive files
-    if confirm_deletion "context/context-feedback.md"; then
-      rm -f context/context-feedback.md
-      log_verbose "Removed empty feedback file"
+      log_success "✅ Archived feedback to $ARCHIVE_FILE"
+      log_info "   (Feedback from v${PRE_UPGRADE_VERSION} preserved)"
     else
-      log_warn "⚠️  Kept context/context-feedback.md (deletion cancelled)"
+      log_verbose "Feedback file exists but is identical to template (no modifications)"
+      # Deletion protection for potentially sensitive files
+      if confirm_deletion "context/context-feedback.md"; then
+        rm -f context/context-feedback.md
+        log_verbose "Removed unmodified feedback file"
+      else
+        log_warn "⚠️  Kept context/context-feedback.md (deletion cancelled)"
+      fi
+    fi
+  else
+    # No template to compare - fall back to entry counting
+    USER_ENTRIES=$(sed -n '/^## Feedback Entries/,/^## Examples/p' context/context-feedback.md 2>/dev/null | \
+      grep -c "^## [0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\}" 2>/dev/null || true)
+    USER_ENTRIES="${USER_ENTRIES:-0}"
+
+    if [ "$USER_ENTRIES" -gt 0 ]; then
+      ARCHIVE_DATE=$(date +%Y-%m-%d)
+      mkdir -p artifacts/feedback
+      ARCHIVE_FILE="artifacts/feedback/feedback-v${PRE_UPGRADE_VERSION}-${ARCHIVE_DATE}.md"
+      mv context/context-feedback.md "$ARCHIVE_FILE"
+      log_success "✅ Archived feedback to $ARCHIVE_FILE"
     fi
   fi
 fi

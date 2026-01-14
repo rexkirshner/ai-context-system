@@ -1206,14 +1206,9 @@ update_last_modified() {
 
   # Check if file has "Last Updated" pattern
   if grep -q '\*\*Last Updated:\*\*' "$file"; then
-    # Platform-independent sed
-    if sed --version 2>&1 | grep -q GNU; then
-      # GNU sed (Linux)
-      sed -i "s/\*\*Last Updated:\*\* .*/\*\*Last Updated:\*\* $today/" "$file"
-    else
-      # BSD sed (macOS)
-      sed -i '' "s/\*\*Last Updated:\*\* .*/\*\*Last Updated:\*\* $today/" "$file"
-    fi
+    # Only replace the date portion (YYYY-MM-DD), preserve any suffix like "(Session N)"
+    # Uses inplace_sed helper for cross-platform compatibility
+    inplace_sed "s/\\(\\*\\*Last Updated:\\*\\* \\)[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}/\\1$today/" "$file"
     log_debug "update_last_modified: Updated timestamp in $file to $today"
     return 0
   fi
