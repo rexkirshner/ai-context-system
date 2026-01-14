@@ -2,7 +2,7 @@
 
 # save-full-helper.sh
 # Pre-populates session data for /save-full command
-# Version: 4.2.0
+# Version: See VERSION file at repository root
 
 set -e
 
@@ -15,7 +15,9 @@ else
   exit 1
 fi
 
-echo -e "${BLUE}📝 Save Context Helper (v3.6.0)${NC}"
+# Get version dynamically
+SYSTEM_VERSION=$(get_system_version 2>/dev/null || echo "unknown")
+echo -e "${BLUE}📝 Save Context Helper (v${SYSTEM_VERSION})${NC}"
 echo ""
 
 # =============================================================================

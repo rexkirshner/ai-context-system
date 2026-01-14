@@ -2,7 +2,7 @@
 
 # update-quick-reference.sh
 # Auto-generates Quick Reference section in STATUS.md
-# Version: 4.2.0
+# Version: See VERSION file at repository root
 
 set -e
 

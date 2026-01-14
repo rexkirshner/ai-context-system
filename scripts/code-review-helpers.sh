@@ -1,6 +1,6 @@
 #!/bin/bash
 # Code Review Helper Functions
-# Version: 4.2.0
+# Version: See VERSION file at repository root
 #
 # Modular helper functions for /code-review command enhancements:
 # - Smart issue grouping
@@ -584,4 +584,4 @@ extract_session_number() {
 # Initialization
 # =============================================================================
 
-log_debug "Loaded code-review-helpers.sh v3.4.0"
+log_debug "Loaded code-review-helpers.sh"

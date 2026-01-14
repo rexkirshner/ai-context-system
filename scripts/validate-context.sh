@@ -2,7 +2,7 @@
 
 # validate-context.sh
 # Validates AI Context System documentation and configuration files
-# Version: 4.2.0
+# Version: See VERSION file at repository root
 # Exit codes: 0 = pass, 1 = warnings, 2 = errors
 
 set -e
