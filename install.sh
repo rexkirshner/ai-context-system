@@ -53,8 +53,34 @@ echo ""
 # =============================================================================
 
 NON_INTERACTIVE=false
-if [[ "$1" == "--yes" ]] || [[ "$1" == "-y" ]] || [[ "$1" == "--force" ]]; then
-  NON_INTERACTIVE=true
+INSTALL_VERSION=""
+
+# Parse all arguments
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --yes|-y|--force)
+      NON_INTERACTIVE=true
+      shift
+      ;;
+    --version)
+      INSTALL_VERSION="$2"
+      shift 2
+      ;;
+    --version=*)
+      INSTALL_VERSION="${1#*=}"
+      shift
+      ;;
+    *)
+      shift
+      ;;
+  esac
+done
+
+# If specific version requested, use tag URL for reproducible installs
+if [ -n "$INSTALL_VERSION" ]; then
+  RAW_URL="https://raw.githubusercontent.com/rexkirshner/ai-context-system/refs/tags/v${INSTALL_VERSION}"
+  color_echo "${BLUE}Installing specific version: v${INSTALL_VERSION}${NC}"
+  VERSION="$INSTALL_VERSION"
 fi
 
 # =============================================================================
@@ -353,6 +379,10 @@ color_echo "${BLUE}📂 Creating directory structure...${NC}"
 
 mkdir -p .claude/commands
 mkdir -p .claude/docs
+mkdir -p .claude/agents       # v5.0.0 agent-based review
+mkdir -p .claude/schemas      # v5.0.0 JSON schemas
+mkdir -p .claude/skills       # v5.0.0 modular skills
+mkdir -p .claude/hooks        # v5.0.0 session automation
 mkdir -p scripts
 mkdir -p templates
 mkdir -p config
@@ -550,6 +580,102 @@ done
 echo ""
 
 # =============================================================================
+# Step 9.5: Download agents (v5.0.0 - Agent-Based Code Review)
+# =============================================================================
+
+color_echo "${BLUE}⬇️  Downloading agents...${NC}"
+
+AGENTS=(
+  "code-reviewer.md"
+  "codebase-scanner.md"
+  "synthesis-agent.md"
+  "audit-compare.md"
+  "security-reviewer.md"
+  "performance-reviewer.md"
+  "accessibility-reviewer.md"
+  "seo-reviewer.md"
+  "database-reviewer.md"
+  "infrastructure-reviewer.md"
+  "test-coverage-reviewer.md"
+  "type-safety-reviewer.md"
+)
+
+for agent in "${AGENTS[@]}"; do
+  echo -n "   Downloading $agent... "
+  if ! download_file "${RAW_URL}/.claude/agents/${agent}" ".claude/agents/${agent}" 100; then
+    ((FAILED_DOWNLOADS++))
+  fi
+done
+
+echo ""
+
+# =============================================================================
+# Step 9.6: Download schemas (v5.0.0 - JSON Schema Validation)
+# =============================================================================
+
+color_echo "${BLUE}⬇️  Downloading schemas...${NC}"
+
+SCHEMAS=(
+  "agent-contract.json"
+  "audit-finding.json"
+  "audit-report.json"
+  "context-health.json"
+  "handoff-package.json"
+  "session-entry.json"
+  "settings.json"
+)
+
+for schema in "${SCHEMAS[@]}"; do
+  echo -n "   Downloading $schema... "
+  if ! download_file "${RAW_URL}/.claude/schemas/${schema}" ".claude/schemas/${schema}" 50; then
+    ((FAILED_DOWNLOADS++))
+  fi
+done
+
+echo ""
+
+# =============================================================================
+# Step 9.7: Download skills (v5.0.0 - Modular Skill System)
+# =============================================================================
+
+color_echo "${BLUE}⬇️  Downloading skills...${NC}"
+
+SKILLS=(
+  "export"
+  "init"
+  "review"
+  "save"
+  "save-full"
+  "update"
+  "validate"
+)
+
+for skill in "${SKILLS[@]}"; do
+  mkdir -p ".claude/skills/${skill}"
+  echo -n "   Downloading skills/${skill}/SKILL.md... "
+  if ! download_file "${RAW_URL}/.claude/skills/${skill}/SKILL.md" ".claude/skills/${skill}/SKILL.md" 100; then
+    ((FAILED_DOWNLOADS++))
+  fi
+done
+
+echo ""
+
+# =============================================================================
+# Step 9.8: Download hooks (v5.0.0 - Session Automation)
+# =============================================================================
+
+color_echo "${BLUE}⬇️  Downloading hooks...${NC}"
+
+echo -n "   Downloading session-start.sh... "
+if download_file "${RAW_URL}/.claude/hooks/session-start.sh" ".claude/hooks/session-start.sh" 50; then
+  chmod +x ".claude/hooks/session-start.sh"
+else
+  ((FAILED_DOWNLOADS++))
+fi
+
+echo ""
+
+# =============================================================================
 # Step 10: Download reference files
 # =============================================================================
 
@@ -576,7 +702,7 @@ color_echo "${BLUE}🔍 Verifying installation...${NC}"
 
 VERIFICATION_FAILED=0
 
-# Check critical files (v3.3.1)
+# Check critical files (v5.0.1)
 CRITICAL_FILES=(
   "VERSION"
   "scripts/common-functions.sh"
@@ -592,6 +718,14 @@ CRITICAL_FILES=(
   "scripts/find-context-folder.sh"
   "scripts/update-quick-reference.sh"
   "scripts/code-review-helpers.sh"
+  # v5.0.0 additions
+  ".claude/agents/code-reviewer.md"
+  ".claude/agents/security-reviewer.md"
+  ".claude/schemas/agent-contract.json"
+  ".claude/schemas/audit-finding.json"
+  ".claude/skills/save/SKILL.md"
+  ".claude/skills/review/SKILL.md"
+  ".claude/hooks/session-start.sh"
 )
 
 for file in "${CRITICAL_FILES[@]}"; do
