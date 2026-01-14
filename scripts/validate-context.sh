@@ -31,7 +31,10 @@ CONTEXT_DIR="${BASE_DIR}/context"
 CONFIG_DIR="${BASE_DIR}/config"
 TEMPLATES_DIR="${BASE_DIR}/templates"
 
-echo "🔍 Validating AI Context System (v3.6.0)..."
+# Read version from VERSION file
+SCRIPT_VERSION=$(cat "$BASE_DIR/VERSION" 2>/dev/null || echo "unknown")
+
+echo "🔍 Validating AI Context System (v${SCRIPT_VERSION})..."
 echo "Base directory: $BASE_DIR"
 echo ""
 
@@ -297,7 +300,8 @@ echo "⚡ Checking slash commands..."
 COMMANDS=(
   ".claude/commands/init-context.md"
   ".claude/commands/migrate-context.md"
-  ".claude/commands/save-context.md"
+  ".claude/commands/save.md"
+  ".claude/commands/save-full.md"
   ".claude/commands/review-context.md"
   ".claude/commands/code-review.md"
   ".claude/commands/validate-context.md"
@@ -367,10 +371,46 @@ fi
 echo ""
 
 # =============================================================================
+# Check 10: v5.0.0 Component Verification
+# =============================================================================
+echo "🏗️  Checking v5.0.0 components..."
+
+# Check for v5.0.0 directories (if they should exist based on version)
+V5_COMPONENTS=(
+  ".claude/agents:12:agent files"
+  ".claude/schemas:7:schema files"
+  ".claude/skills:7:skill directories"
+  ".claude/hooks:1:hook files"
+)
+
+for component in "${V5_COMPONENTS[@]}"; do
+  IFS=':' read -r dir expected desc <<< "$component"
+
+  if [ ! -d "$BASE_DIR/$dir" ]; then
+    echo -e "  ${YELLOW}⚠️  $dir missing (run /update-context-system)${NC}"
+    ((WARNINGS++))
+  else
+    if [ "$dir" = ".claude/skills" ]; then
+      actual=$(find "$BASE_DIR/$dir" -name 'SKILL.md' -type f 2>/dev/null | wc -l | tr -d ' ')
+    else
+      actual=$(find "$BASE_DIR/$dir" -maxdepth 1 -type f 2>/dev/null | wc -l | tr -d ' ')
+    fi
+
+    if [ "$actual" -ge "$expected" ]; then
+      echo "  ✅ $dir ($actual $desc)"
+    else
+      echo -e "  ${YELLOW}⚠️  $dir ($actual/$expected $desc)${NC}"
+      ((WARNINGS++))
+    fi
+  fi
+done
+echo ""
+
+# =============================================================================
 # Summary
 # =============================================================================
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "📊 Validation Summary (v3.6.0)"
+echo "📊 Validation Summary (v${SCRIPT_VERSION})"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 # Exit codes are part of script's documented API - do not change
@@ -378,7 +418,7 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 if [ $ERRORS -eq 0 ] && [ $WARNINGS -eq 0 ]; then
   echo -e "${GREEN}✅ All checks passed!${NC}"
   echo ""
-  echo "Your context system is fully aligned with v3.6.0."
+  echo "Your context system is fully aligned with v${SCRIPT_VERSION}."
   exit 0  # All passed
 elif [ $ERRORS -eq 0 ]; then
   echo -e "${YELLOW}⚠️  $WARNINGS warning(s) found${NC}"
