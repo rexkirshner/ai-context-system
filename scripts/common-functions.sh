@@ -266,6 +266,65 @@ clear_cache() {
 }
 
 # =============================================================================
+# Platform-Portable Helpers (v5.0.1)
+# =============================================================================
+# These helpers provide consistent behavior across macOS (BSD) and Linux (GNU).
+# Use these instead of platform-specific commands to ensure portability.
+
+# In-place sed that works on both macOS (BSD) and Linux (GNU)
+#
+# The `sed -i` command requires different syntax on different platforms:
+#   - Linux (GNU sed):  sed -i 's/a/b/' file
+#   - macOS (BSD sed):  sed -i '' 's/a/b/' file
+#
+# This helper detects the platform and uses the correct syntax automatically.
+#
+# Usage:
+#   inplace_sed 's/old/new/' file.txt
+#   inplace_sed 's/old/new/g' file.txt
+#
+# Args:
+#   $1 - sed expression (e.g., 's/foo/bar/g')
+#   $2 - file to modify
+#
+# Returns:
+#   0 on success, 1 on failure
+#
+# Example:
+#   inplace_sed 's/TODO/DONE/' tasks.md
+#   inplace_sed 's|/old/path|/new/path|g' config.txt
+#
+inplace_sed() {
+  local expression="$1"
+  local file="$2"
+
+  # Validate arguments
+  if [ -z "$expression" ]; then
+    log_error "inplace_sed: requires expression argument"
+    return 1
+  fi
+
+  if [ -z "$file" ]; then
+    log_error "inplace_sed: requires file argument"
+    return 1
+  fi
+
+  if [ ! -f "$file" ]; then
+    log_error "inplace_sed: file not found: $file"
+    return 1
+  fi
+
+  # Detect sed variant and use appropriate syntax
+  if sed --version 2>&1 | grep -q GNU; then
+    # GNU sed (Linux)
+    sed -i "$expression" "$file"
+  else
+    # BSD sed (macOS)
+    sed -i '' "$expression" "$file"
+  fi
+}
+
+# =============================================================================
 # File Safety Operations
 # =============================================================================
 
