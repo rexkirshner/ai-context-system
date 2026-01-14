@@ -418,6 +418,72 @@ files_identical() {
   [ "$hash1" = "$hash2" ]
 }
 
+# Validate JSON file syntax (portable across systems)
+#
+# JSON validation tools differ by availability:
+#   - jq (fastest, most reliable)
+#   - python3 (common on macOS/Linux)
+#   - python (fallback for older systems)
+#
+# This helper tries available validators in order of preference.
+#
+# Usage:
+#   if json_validate config.json; then
+#     echo "Valid JSON"
+#   fi
+#
+# Args:
+#   $1 - JSON file to validate
+#
+# Returns:
+#   0 if valid JSON
+#   1 if invalid JSON or file not found
+#
+# Note: If no validator available, returns 0 with a warning.
+#       This allows scripts to continue on minimal systems.
+#
+# Example:
+#   if json_validate ".claude/schemas/agent-contract.json"; then
+#     echo "Schema file is valid JSON"
+#   else
+#     echo "Schema file has JSON syntax errors"
+#   fi
+#
+json_validate() {
+  local file="$1"
+
+  # Validate argument
+  if [ -z "$file" ]; then
+    log_error "json_validate: requires file argument"
+    return 1
+  fi
+
+  if [ ! -f "$file" ]; then
+    log_error "json_validate: file not found: $file"
+    return 1
+  fi
+
+  # Try validators in order of preference
+  if command -v jq &>/dev/null; then
+    # jq is the gold standard for JSON validation
+    jq empty "$file" 2>/dev/null
+    return $?
+  elif command -v python3 &>/dev/null; then
+    # python3 json module
+    python3 -c "import json; json.load(open('$file'))" 2>/dev/null
+    return $?
+  elif command -v python &>/dev/null; then
+    # python 2.x fallback (rare but possible)
+    python -c "import json; json.load(open('$file'))" 2>/dev/null
+    return $?
+  else
+    # No validator available - warn and assume valid
+    # This allows scripts to run on minimal systems
+    log_warn "json_validate: no JSON validator available (install jq for best results)"
+    return 0
+  fi
+}
+
 # =============================================================================
 # File Safety Operations
 # =============================================================================
