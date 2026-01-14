@@ -324,6 +324,100 @@ inplace_sed() {
   fi
 }
 
+# Compute SHA-256 hash of a file (portable across macOS/Linux)
+#
+# Hash commands differ by platform:
+#   - Linux: sha256sum file
+#   - macOS: shasum -a 256 file
+#   - Fallback: openssl dgst -sha256 file
+#
+# This helper tries available commands in order of preference.
+#
+# Usage:
+#   hash=$(hash_file /path/to/file)
+#
+# Args:
+#   $1 - file to hash
+#
+# Returns:
+#   Prints SHA-256 hash (64 hex characters) to stdout
+#   Returns 1 if file not found or no hash command available
+#
+# Example:
+#   old_hash=$(hash_file config.json)
+#   # ... modify file ...
+#   new_hash=$(hash_file config.json)
+#   [ "$old_hash" != "$new_hash" ] && echo "File changed"
+#
+hash_file() {
+  local file="$1"
+
+  # Validate argument
+  if [ -z "$file" ]; then
+    log_error "hash_file: requires file argument"
+    return 1
+  fi
+
+  if [ ! -f "$file" ]; then
+    log_error "hash_file: file not found: $file"
+    return 1
+  fi
+
+  # Try hash commands in order of preference
+  if command -v sha256sum &>/dev/null; then
+    # Linux (GNU coreutils)
+    sha256sum "$file" | cut -d' ' -f1
+  elif command -v shasum &>/dev/null; then
+    # macOS / BSD
+    shasum -a 256 "$file" | cut -d' ' -f1
+  elif command -v openssl &>/dev/null; then
+    # Fallback: openssl (available on most systems)
+    openssl dgst -sha256 "$file" | sed 's/.*= //'
+  else
+    log_error "hash_file: no hash command available (need sha256sum, shasum, or openssl)"
+    return 1
+  fi
+}
+
+# Compare two files by hash (returns 0 if identical, 1 if different)
+#
+# More reliable than comparing file contents directly, especially for
+# binary files or files with different line endings.
+#
+# Usage:
+#   if files_identical file1.txt file2.txt; then
+#     echo "Same content"
+#   fi
+#
+# Args:
+#   $1 - first file
+#   $2 - second file
+#
+# Returns:
+#   0 if files have identical content
+#   1 if files differ or either doesn't exist
+#
+# Example:
+#   if files_identical "context/feedback.md" "templates/feedback.template.md"; then
+#     echo "Feedback file unmodified from template"
+#   fi
+#
+files_identical() {
+  local file1="$1"
+  local file2="$2"
+
+  # Both files must exist
+  if [ ! -f "$file1" ] || [ ! -f "$file2" ]; then
+    return 1
+  fi
+
+  local hash1 hash2
+  hash1=$(hash_file "$file1") || return 1
+  hash2=$(hash_file "$file2") || return 1
+
+  [ "$hash1" = "$hash2" ]
+}
+
 # =============================================================================
 # File Safety Operations
 # =============================================================================
