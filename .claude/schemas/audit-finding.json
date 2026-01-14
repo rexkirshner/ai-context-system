@@ -20,8 +20,7 @@
     },
     "category": {
       "type": "string",
-      "enum": ["security", "performance", "accessibility", "typescript", "testing", "other"],
-      "description": "Category of the finding"
+      "description": "Category matching the agent ID that produced this finding (e.g., security, seo, database)"
     },
     "title": {
       "type": "string",
