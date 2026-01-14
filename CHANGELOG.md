@@ -5,6 +5,49 @@ All notable changes to the AI Context System will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.0.1] - 2026-01-14
+
+**PATCH RELEASE** - Bug Fixes and Cross-Platform Compatibility
+
+This release addresses critical bugs identified during initial v5.0.0 deployments across multiple production projects.
+
+### Fixed
+
+- **Installer missing v5.0.0 directories** - Installer now downloads agents, schemas, skills, and hooks directories (BUG-000)
+- **Session numbering duplicates** - `get_next_session_number()` now uses MAX instead of COUNT, preventing duplicate session numbers after archiving (BUG-006)
+- **macOS awk compatibility** - `export-sessions-json.sh` now uses POSIX-compatible awk syntax instead of GNU-specific array capture (BUG-010)
+- **Validation command names** - `validate-context.sh` now checks for `save.md` and `save-full.md` instead of old `save-context.md` (BUG-004)
+- **Quick Reference header detection** - Now accepts headers with or without emoji prefix (BUG-008)
+- **Timestamp preservation** - `update_last_modified()` preserves "(Session N)" suffix when updating dates (BUG-009)
+- **Feedback archiving** - Uses hash comparison instead of entry counting for more reliable detection (UX-001)
+
+### Added
+
+- **Portable helper functions** in `scripts/common-functions.sh`:
+  - `inplace_sed()` - Cross-platform sed -i (macOS BSD and Linux GNU)
+  - `hash_file()` / `files_identical()` - SHA-256 hashing with fallbacks
+  - `json_validate()` - JSON validation (jq, python3, or python fallback)
+  - `count_files()` - Deterministic file counting using find
+
+- **v5.0.0 component verification** - `validate-context.sh` now checks for agents (12), schemas (7), skills (7), and hooks (1)
+
+- **Test suites** for all new helpers (54 new tests)
+
+### Changed
+
+- **Version references standardized** - All scripts now reference VERSION file instead of hardcoding versions
+- **Version footers removed** - Removed from 22 command files (VERSION file is single source of truth)
+- **AUTO markers added** - `STATUS.template.md` now has AUTO markers for Quick Reference section
+- **Installer fallback version** - Updated from 4.0.0 to 5.0.0
+
+### Testing
+
+- All 78 existing module tests passing
+- 54 new helper function tests passing
+- 250 cross-platform compatibility checks passing
+
+---
+
 ## [5.0.0] - 2026-01-13
 
 **MAJOR RELEASE** - First Principles Redesign
