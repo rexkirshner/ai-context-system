@@ -52,9 +52,9 @@ The review system uses **self-declaring agents**. Each specialist declares when 
 
 ```json
 {
-  "id": "seo",
-  "prefix": "SEO",
-  "category": "seo",
+  "id": "performance",
+  "prefix": "PERF",
+  "category": "performance",
   "applicability": {
     "always": false,
     "requires": { "structure.hasUI": true },
