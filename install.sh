@@ -2,7 +2,7 @@
 
 # install.sh
 # Bootstrap installer for AI Context System
-# v5.0.0 - Agent-Based Code Review System
+# Version: See VERSION file at repository root
 #
 # Usage:
 #   curl -sL https://raw.githubusercontent.com/rexkirshner/ai-context-system/main/install.sh | bash
@@ -34,13 +34,13 @@ OPTIONAL_FILES=(
 )
 
 # Get version from GitHub VERSION file (with validation)
-VERSION=$(curl -sL "${RAW_URL}/VERSION" 2>/dev/null || echo "4.0.0")
+VERSION=$(curl -sL "${RAW_URL}/VERSION" 2>/dev/null || echo "5.0.0")
 
 # Validate VERSION format (must be X.Y.Z)
 if ! echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
   color_echo "${YELLOW}⚠️  Warning: Could not fetch version from GitHub${NC}"
-  echo "   Using fallback version: 4.0.0"
-  VERSION="4.0.0"
+  echo "   Using fallback version: 5.0.0"
+  VERSION="5.0.0"
 fi
 
 color_echo "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
