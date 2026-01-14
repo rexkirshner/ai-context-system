@@ -188,7 +188,7 @@ Derived content within canonical files uses HTML comment markers to prevent acci
 ┌─────────────────────────────────────────────────────────────────┐
 │                     AI CONTEXT SYSTEM v5.0                      │
 ├─────────────────────────────────────────────────────────────────┤
-│  SKILLS (7)           │  AGENTS (9)          │  HOOKS (1)       │
+│  SKILLS (7)           │  AGENTS (12)         │  HOOKS (1)       │
 │  ├── /init            │  ├── code-reviewer   │  └── SessionStart│
 │  ├── /save            │  ├── codebase-scanner│                   │
 │  ├── /save-full       │  ├── security-reviewer                  │
@@ -196,6 +196,9 @@ Derived content within canonical files uses HTML comment markers to prevent acci
 │  ├── /validate        │  ├── accessibility-reviewer             │
 │  ├── /export          │  ├── type-safety-reviewer               │
 │  └── /update          │  ├── test-coverage-reviewer             │
+│                       │  ├── seo-reviewer                       │
+│                       │  ├── database-reviewer                  │
+│                       │  ├── infrastructure-reviewer            │
 │                       │  ├── synthesis-agent                    │
 │                       │  └── audit-compare                      │
 ├─────────────────────────────────────────────────────────────────┤
@@ -216,9 +219,9 @@ project/
 │   └── .todo-state.json          # Persisted TodoWrite state
 ├── .claude/
 │   ├── skills/{name}/SKILL.md    # 7 skills
-│   ├── agents/{name}.md          # 9 agents
+│   ├── agents/{name}.md          # 12 agents (8 specialist reviewers + 4 orchestrators)
 │   ├── hooks/session-start.sh    # Safe-fail hooks
-│   ├── schemas/*.json            # 5 JSON schemas
+│   ├── schemas/*.json            # 6 JSON schemas (incl. agent-contract.json)
 │   └── settings.json             # Hook configuration
 ├── docs/audits/                  # Code review reports
 └── artifacts/exports/            # Handoff packages
