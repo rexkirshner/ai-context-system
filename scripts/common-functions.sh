@@ -1091,44 +1091,90 @@ git_current_branch() {
 # Session Management Functions
 # =============================================================================
 
-# Get the next session number from SESSIONS.md
-# This is the single source of truth for session numbering across all commands.
-# Usage: get_next_session_number [context_dir]
-# Returns: The next session number to use (e.g., if 13 sessions exist, returns 14)
+# Get the next session number (MAX + 1, not COUNT + 1)
+#
+# IMPORTANT: This finds the MAXIMUM existing session number, not the count.
+# This correctly handles gaps from archiving sessions.
+#
+# Example: If sessions 1-30 were archived and sessions 40, 41, 44 remain,
+# this returns 45 (max+1), NOT 4 (count+1).
+#
+# Supports both session header formats:
+#   - Pipe format: "## Session N | DATE | TITLE"
+#   - Dash format: "## Session N - DATE"
+#
+# Usage:
+#   next=$(get_next_session_number)
+#   next=$(get_next_session_number "context")
+#
+# Args:
+#   $1 - context directory (optional, default: "context")
+#
+# Returns:
+#   Prints next session number to stdout (MAX existing + 1)
+#
 get_next_session_number() {
   local context_dir="${1:-context}"
   local sessions_file="$context_dir/SESSIONS.md"
 
-  # Check if SESSIONS.md exists
+  # No file = start at 1
   if [ ! -f "$sessions_file" ]; then
     echo "1"
     return 0
   fi
 
-  # Count only actual session entries (not templates or examples)
-  # Strategy: Look for "## Session N" where N is a number, but exclude sections after "## Example"
-  local count=$(sed -n '1,/^## Example/p' "$sessions_file" | \
-                grep "^## Session [0-9]" | \
-                grep -v "Template" | \
-                wc -l | \
-                tr -d ' ' || echo "0")
+  # Find the MAXIMUM session number (not COUNT)
+  # 1. Stop before "## Example" sections (template content)
+  # 2. Match "## Session N" where N is a number
+  # 3. Exclude template references
+  # 4. Extract just the number
+  # 5. Sort numerically and take the largest
+  local max_session
+  max_session=$(
+    sed -n '1,/^## Example/p' "$sessions_file" 2>/dev/null | \
+    grep -E "^## Session [0-9]+" | \
+    grep -v -i "Template" | \
+    sed -E 's/^## Session ([0-9]+).*/\1/' | \
+    sort -n | \
+    tail -1
+  )
 
-  # Handle edge case where count is empty
-  if [ -z "$count" ] || [ "$count" = "" ]; then
-    count=0
+  # Default to 0 if no sessions found or invalid result
+  if [ -z "$max_session" ] || ! [[ "$max_session" =~ ^[0-9]+$ ]]; then
+    max_session=0
   fi
 
-  # Return next session number
-  echo $((count + 1))
+  echo $((max_session + 1))
 }
 
-# Get the current session count from SESSIONS.md
-# Usage: get_current_session_count [context_dir]
-# Returns: The number of existing sessions (e.g., if 13 sessions exist, returns 13)
-get_current_session_count() {
+# Get the highest existing session number
+#
+# Returns the maximum session number, not a count. After archiving sessions
+# 1-30, if sessions 40, 41, 44 remain, returns 44 (not 3).
+#
+# Usage:
+#   max=$(get_max_session_number)
+#   max=$(get_max_session_number "context")
+#
+# Returns:
+#   The highest session number that exists (0 if none)
+#
+get_max_session_number() {
   local context_dir="${1:-context}"
   local next=$(get_next_session_number "$context_dir")
   echo $((next - 1))
+}
+
+# DEPRECATED: Use get_max_session_number() instead
+#
+# This function name is misleading - it returns the max session number,
+# not a count of sessions. Kept for backward compatibility.
+# Will be removed in v6.0.0.
+#
+get_current_session_count() {
+  local context_dir="${1:-context}"
+  log_warn "get_current_session_count() is deprecated, use get_max_session_number()"
+  get_max_session_number "$context_dir"
 }
 
 # =============================================================================
