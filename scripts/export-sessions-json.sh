@@ -2,7 +2,7 @@
 
 # export-sessions-json.sh
 # Exports SESSIONS.md to machine-readable JSON format
-# Version: 4.2.0
+# Version: See VERSION file at repository root
 
 set -e
 
@@ -82,7 +82,8 @@ echo -e "${BLUE}📝 Parsing sessions...${NC}"
 
 SESSION_COUNT=0
 
-# Extract sessions using awk
+# Extract sessions using awk (POSIX-compatible)
+# Note: Uses match() + RSTART/RLENGTH instead of GNU array capture
 awk '
   BEGIN {
     session_count = 0
@@ -92,31 +93,41 @@ awk '
   # Match session header: ## Session N | YYYY-MM-DD | Phase
   /^## Session [0-9]+ \| [0-9]{4}-[0-9]{2}-[0-9]{2}/ {
     # Close previous session JSON if exists
-    if (in_session == 1 && session_count > 0) {
+    if (in_session == 1) {
       print "    }"
-      if (session_count > 1) {
-        print "    ,"
-      }
+    }
+
+    # Print comma between sessions (not before first)
+    if (session_count > 0) {
+      print "    ,"
     }
 
     session_count++
     in_session = 1
 
-    # Parse header
-    match($0, /Session ([0-9]+)/, session_num)
-    match($0, /([0-9]{4}-[0-9]{2}-[0-9]{2})/, session_date)
+    # Parse header using POSIX match() + substr()
+    # Extract session number
+    session_num = ""
+    if (match($0, /Session [0-9]+/)) {
+      temp = substr($0, RSTART, RLENGTH)
+      gsub(/Session /, "", temp)
+      session_num = temp
+    }
+
+    # Extract date
+    session_date = ""
+    if (match($0, /[0-9]{4}-[0-9]{2}-[0-9]{2}/)) {
+      session_date = substr($0, RSTART, RLENGTH)
+    }
 
     # Extract phase (everything after second |)
     phase = $0
     sub(/^## Session [0-9]+ \| [0-9]{4}-[0-9]{2}-[0-9]{2} \| /, "", phase)
 
-    # Start session JSON
-    if (session_count > 1) {
-      print ","
-    }
+    # Start session JSON object
     print "    {"
-    print "      \"sessionNumber\": " session_num[1] ","
-    print "      \"date\": \"" session_date[1] "\","
+    print "      \"sessionNumber\": " session_num ","
+    print "      \"date\": \"" session_date "\","
     print "      \"phase\": \"" phase "\","
 
     next
@@ -125,18 +136,35 @@ awk '
   # Match duration/focus/status line
   /^\*\*Duration:\*\*/ {
     if (in_session == 1) {
-      # Extract duration, focus, status
-      match($0, /Duration:\*\* ([^ ]+)/, duration)
-      match($0, /Focus:\*\* ([^|]+)/, focus)
-      match($0, /Status:\*\* (.+)$/, status)
+      # Extract duration using POSIX match()
+      duration = ""
+      if (match($0, /Duration:\*\* [^ ]+/)) {
+        temp = substr($0, RSTART, RLENGTH)
+        sub(/Duration:\*\* /, "", temp)
+        duration = temp
+      }
 
-      # Clean up extracted values
-      gsub(/^[ \t]+|[ \t]+$/, "", focus[1])
-      gsub(/^[ \t]+|[ \t]+$/, "", status[1])
+      # Extract focus (between Focus:** and |)
+      focus = ""
+      if (match($0, /Focus:\*\* [^|]+/)) {
+        temp = substr($0, RSTART, RLENGTH)
+        sub(/Focus:\*\* /, "", temp)
+        gsub(/^[ \t]+|[ \t]+$/, "", temp)
+        focus = temp
+      }
 
-      print "      \"duration\": \"" duration[1] "\","
-      print "      \"focus\": \"" focus[1] "\","
-      print "      \"status\": \"" status[1] "\""
+      # Extract status (after Status:**)
+      status = ""
+      if (match($0, /Status:\*\* .+$/)) {
+        temp = substr($0, RSTART, RLENGTH)
+        sub(/Status:\*\* /, "", temp)
+        gsub(/^[ \t]+|[ \t]+$/, "", temp)
+        status = temp
+      }
+
+      print "      \"duration\": \"" duration "\","
+      print "      \"focus\": \"" focus "\","
+      print "      \"status\": \"" status "\""
     }
     next
   }
