@@ -798,7 +798,7 @@ if [ $FAILED_DOWNLOADS -eq 0 ] && [ $VERIFICATION_FAILED -eq 0 ]; then
     color_echo "${BLUE}✅ Update complete!${NC}"
     echo ""
     echo "What's new in v${VERSION}:"
-    echo "   Run 'cat .claude/docs/CHANGELOG.md | head -50' to see recent changes"
+    echo "   Run 'cat CHANGELOG.md | head -50' to see recent changes"
     echo ""
     color_echo "${BLUE}Next steps:${NC}"
     echo "   1. Run /validate-context to verify the update"
