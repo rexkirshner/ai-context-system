@@ -142,7 +142,7 @@ choco install jq
 
 3. **Reset to template:**
    ```bash
-   cp templates/.context-config.template.json context/.context-config.json
+   cp config/.context-config.template.json context/.context-config.json
    ```
 
 ---
@@ -364,5 +364,5 @@ If the above doesn't help:
 
 ---
 
-**Version:** 3.6.0
-**Last Updated:** 2024-12-16
+**Version:** 5.0.2
+**Last Updated:** 2026-01-15

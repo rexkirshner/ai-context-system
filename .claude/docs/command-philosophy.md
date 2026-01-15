@@ -282,12 +282,12 @@ Quality commands need time to be thorough.
 
 ### 11. Fast Paths for Common Cases
 
-**/quick-save-context for active work.**
+**/save for active work.**
 
-- 5-second checkpoint
-- Updates SESSIONS.md and tasks/ only
-- Run every 15-30 minutes
-- Lightweight alternative to full save
+- 2-3 minute quick update
+- Updates STATUS.md Quick Reference
+- Run every 30-60 minutes
+- Lightweight alternative to /save-full
 
 Frequent saves shouldn't be painful.
 
@@ -431,8 +431,9 @@ Don't let perfect be the enemy of good:
 This system evolves based on real usage:
 
 **v1.0.0** - Initial release with 4 commands
-**v1.3.0** - General-purpose template sync
-**v1.4.0** - Removed JSON artifacts (honesty > promises)
-**v1.5.0** - Extracted docs from commands (simplicity)
+**v3.0.0** - Context folder detection from subdirectories
+**v4.0.0** - Modular audit commands
+**v5.0.0** - First principles redesign (skills, agents, hooks)
+**v5.0.2** - Shell compatibility and robust parsing
 
 **Lesson:** Ship, learn, refine. Don't over-engineer upfront.
