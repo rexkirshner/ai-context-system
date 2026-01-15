@@ -19,9 +19,23 @@ Reviews codebase for infrastructure, CI/CD, and deployment issues.
 }
 ```
 
+## Scope Boundaries
+
+**This agent owns (do not duplicate in other agents):**
+- CI/CD workflow secrets and configuration
+- Deployment configs (Docker, K8s, Terraform)
+- Health checks and readiness probes
+- Rate limiting and API protection
+- Observability setup (error tracking, monitoring)
+
+**Other agents own:**
+- Hardcoded secrets in application code → security-reviewer
+- Console.log in production → performance-reviewer
+- Database connection pooling → database-reviewer
+
 ## File Scope
 
-This agent reads from `ciWorkflows` file list in scanner output.
+Reads from `ciWorkflows` file list in scanner output.
 Also checks for deployment configs, Dockerfiles, and infrastructure-as-code.
 
 ## Purpose
@@ -46,16 +60,16 @@ Array of `AuditFinding` objects with `category: "infrastructure"` and `id` prefi
 | Issue | Vuln Pattern | Mitigation Pattern |
 |-------|--------------|-------------------|
 | Secrets in CI | `password:\|api_key:\|secret:` in workflow files | `${{ secrets.\|env:\|vault` |
-| Secrets in code | Hardcoded credentials in configs | `.env\|secrets\|vault\|ssm` |
 | No health check | API without `/health` or `/healthz` | `health\|healthz\|ready\|live` |
 | No rate limiting | API routes without throttle | `rateLimit\|throttle\|limiter` |
+| Missing env separation | Same config for dev/prod | `NODE_ENV\|environment:` |
 
 ### Medium Severity
 
 | Issue | Vuln Pattern | Mitigation Pattern |
 |-------|--------------|-------------------|
 | No error tracking | Missing APM/error service | `@sentry\|datadog\|newrelic\|bugsnag` |
-| No structured logging | `console.log` in production | `winston\|pino\|bunyan\|logger` |
+| No structured logging | Missing logger setup | `winston\|pino\|bunyan\|logger` |
 | Missing CORS config | API without CORS headers | `cors\|Access-Control` |
 | No cache headers | Responses without caching | `Cache-Control\|ETag\|max-age` |
 
