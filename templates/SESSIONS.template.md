@@ -9,6 +9,9 @@
 
 ## Session [N] | [YYYY-MM-DD] | [Phase Name]
 
+> **📋 Header Format (v5.0.1):** The **pipe-delimited format** above is canonical.
+> Scripts recognize both `## Session N | YYYY-MM-DD | Phase` (preferred) and legacy `## Session N - YYYY-MM-DD` formats, but new sessions should use pipe format for consistency.
+
 **Duration:** [X]h | **Focus:** [Brief description] | **Status:** ✅ Complete / ⏳ In Progress
 
 ### TL;DR
