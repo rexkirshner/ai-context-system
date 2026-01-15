@@ -137,7 +137,7 @@ cp -r ai-context-system/templates /path/to/your/project/
 rm -rf ai-context-system
 ```
 
-**Try it now!** See [SETUP_GUIDE.md](./SETUP_GUIDE.md) for complete instructions.
+**Try it now!** The Quick Start section above has everything you need.
 
 ---
 
@@ -421,7 +421,7 @@ Customize per project or use defaults. Full schema: `config/context-config-schem
 - Check STATUS.md → Work In Progress section
 - Check SESSIONS.md last entry for mental model
 
-See [SETUP_GUIDE.md](./SETUP_GUIDE.md) for detailed troubleshooting.
+See [.claude/docs/TROUBLESHOOTING.md](./.claude/docs/TROUBLESHOOTING.md) for detailed troubleshooting.
 
 ---
 
@@ -472,8 +472,8 @@ Then:
 ```
 
 **See also:**
-- [SETUP_GUIDE.md](./SETUP_GUIDE.md) - Complete installation and usage
 - [CHANGELOG.md](./CHANGELOG.md) - Version history
+- [.claude/docs/](./.claude/docs/) - Detailed documentation
 - **Upgrading?** Run `/update-context-system` for automatic migration from v4.x
 
 ---
