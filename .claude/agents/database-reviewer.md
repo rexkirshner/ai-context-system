@@ -19,9 +19,24 @@ Reviews codebase for database and data access issues.
 }
 ```
 
+## Scope Boundaries
+
+**This agent owns (do not duplicate in other agents):**
+- N+1 query patterns (loops with awaits)
+- Unbounded fetches (missing limits)
+- SQL injection in ORM contexts (Prisma, TypeORM, etc.)
+- Missing transactions for multi-write operations
+- Connection pooling and database performance
+- Index optimization
+
+**Other agents own:**
+- Generic injection patterns (non-DB) → security-reviewer
+- API response caching → infrastructure-reviewer
+- Connection string secrets → security-reviewer
+
 ## File Scope
 
-This agent reads from `databaseFiles` file list in scanner output.
+Reads from `databaseFiles` file list in scanner output.
 Focuses on ORM schemas, migrations, queries, and data access layers.
 
 ## Purpose
