@@ -564,6 +564,49 @@ fi
 echo ""
 ```
 
+**KNOWN_ISSUES.md Staleness Check (v5.0.1):**
+
+```bash
+echo "🐛 Known Issues Check"
+echo ""
+
+if [ -f "$CONTEXT_DIR/KNOWN_ISSUES.md" ]; then
+  # Check staleness
+  KNOWN_ISSUES_DAYS=$(days_since_file_modified "$CONTEXT_DIR/KNOWN_ISSUES.md" 2>/dev/null || echo "-1")
+
+  if [ "$KNOWN_ISSUES_DAYS" != "-1" ] && [ "$KNOWN_ISSUES_DAYS" -gt 30 ]; then
+    echo "  ⚠️  KNOWN_ISSUES.md is $KNOWN_ISSUES_DAYS days old"
+    echo "     Review for resolved issues that should be removed"
+  fi
+
+  # Count issues marked as resolved (✅ or [RESOLVED] or similar)
+  RESOLVED_COUNT=$(grep -ciE "✅|resolved|\[fixed\]|\[done\]" "$CONTEXT_DIR/KNOWN_ISSUES.md" 2>/dev/null || echo "0")
+
+  if [ "$RESOLVED_COUNT" -gt 0 ]; then
+    echo "  ⚠️  Found $RESOLVED_COUNT potentially resolved issues"
+    echo "     Clean up KNOWN_ISSUES.md - remove fixed issues"
+  fi
+
+  # Count total issues
+  ISSUE_COUNT=$(grep -cE "^##\s+[A-Z]|^###\s+[A-Z]|^\*\s+\*\*" "$CONTEXT_DIR/KNOWN_ISSUES.md" 2>/dev/null || echo "0")
+
+  if [ "$ISSUE_COUNT" -gt 0 ] && [ "$RESOLVED_COUNT" -eq 0 ]; then
+    echo "  ✅ KNOWN_ISSUES.md tracking $ISSUE_COUNT issues"
+  fi
+else
+  echo "  ℹ️  KNOWN_ISSUES.md not found (optional file)"
+fi
+
+echo ""
+```
+
+**Why this matters:**
+- KNOWN_ISSUES.md often becomes stale (issues fixed but not removed)
+- AI agents should be aware of known blockers and gotchas
+- Stale issues mislead AI agents about project state
+
+---
+
 **Why this matters:**
 - Detects documentation drift before it becomes a problem
 - Identifies missing module READMEs (common gap)
