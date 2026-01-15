@@ -21,11 +21,12 @@ Reviews codebase for security vulnerabilities.
 
 **This agent owns (do not duplicate in other agents):**
 - Hardcoded secrets, API keys, credentials
-- Injection attacks: SQL, command, XSS, code
+- Command injection, XSS, code injection (eval)
 - Cryptography issues (weak hashing, insecure randomness)
 - Authentication/authorization flaws
 
 **Other agents own:**
+- SQL injection in database code → database-reviewer
 - N+1 queries, unbounded fetches → database-reviewer
 - CI/CD secrets in workflows → infrastructure-reviewer
 - Console.log in production → performance-reviewer
@@ -81,10 +82,10 @@ Array of `AuditFinding` objects:
 | Issue | Look For | Safe If |
 |-------|----------|---------|
 | Hardcoded secrets | Variables named SECRET, KEY, PASSWORD, TOKEN with string values | References env vars |
-| SQL injection | String concatenation in queries (`query(x + y)`, template literals in SQL) | Uses parameterized/prepared statements |
 | Command injection | `exec()`, `spawn()` with user input concatenation | Uses `escapeshellarg` or allowlist |
 | XSS vulnerabilities | `dangerouslySetInnerHTML`, `innerHTML =` | Uses DOMPurify or sanitization |
 | Auth bypass | Missing auth middleware on protected routes | Has auth check before handler |
+| Insecure deserialization | `JSON.parse()` on untrusted input, `eval()` on user data | Validates/sanitizes before parsing |
 
 ### Medium Severity
 
