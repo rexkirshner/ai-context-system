@@ -120,7 +120,7 @@ Here's what your first session entry might look like after running `/init-contex
 
 ## Session 1 | 2025-10-09 | Project Initialization
 
-**Duration:** 0.5h | **Focus:** Setup AI Context System v2.1 | **Status:** ✅ Complete
+**Duration:** 0.5h | **Focus:** Setup AI Context System | **Status:** ✅ Complete
 
 ### TL;DR
 
@@ -128,14 +128,14 @@ Initialized AI Context System with CLAUDE.md at project root + 5 core files in c
 
 ### Changed
 
-- ✅ Initialized AI Context System v2.1
+- ✅ Initialized AI Context System
 - ✅ Created CLAUDE.md at project root + 5 core files in context/ (CONTEXT, STATUS, DECISIONS, SESSIONS)
-- ✅ Configured .context-config.json with version 2.1.0
+- ✅ Configured .context-config.json
 
 ### Decisions
 
-- **Documentation System:** Chose AI Context System v2.1 for session continuity and AI agent handoffs
-- **File Structure:** Using v2.1 structure with STATUS.md as single source of truth (includes auto-generated Quick Reference)
+- **Documentation System:** Chose AI Context System for session continuity and AI agent handoffs
+- **File Structure:** Using STATUS.md as single source of truth (includes auto-generated Quick Reference)
 
 ### Files
 
