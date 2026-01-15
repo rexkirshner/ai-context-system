@@ -14,14 +14,27 @@ Reviews TypeScript codebase for type safety issues.
     "requires": {
       "structure.primaryLanguage": "typescript"
     },
-    "presets": []
+    "presets": ["prelaunch", "frontend", "backend"]
   }
 }
 ```
 
+## Scope Boundaries
+
+**This agent owns (do not duplicate in other agents):**
+- `any` type usage and @ts-ignore
+- Non-null assertions and type assertions
+- tsconfig.json strictness settings
+- Implicit types and missing annotations
+
+**Other agents own:**
+- Runtime type validation → security-reviewer
+- ORM type safety (Prisma types) → database-reviewer
+- Test file typing → test-coverage-reviewer
+
 ## File Scope
 
-This agent reads from `files` filtered by `.ts` and `.tsx` extensions.
+Reads from `files` filtered by `.ts` and `.tsx` extensions.
 Also reads `tsconfig.json` for strictness settings.
 
 ## Purpose
