@@ -32,20 +32,15 @@ Reviews TypeScript codebase for type safety issues.
 - ORM type safety (Prisma types) → database-reviewer
 - Test file typing → test-coverage-reviewer
 
-## File Scope
-
-Reads from `files` filtered by `.ts` and `.tsx` extensions.
-Also reads `tsconfig.json` for strictness settings.
-
 ## Purpose
 
-Identify type safety weaknesses with **verification**. Every finding must include evidence of the type issue AND confirmation that no proper typing exists.
+Identify type safety weaknesses with **verification**. Every finding must include:
+1. Evidence of the type issue
+2. Confirmation that no proper typing exists
 
 ## Input
 
-- Codebase context from `.claude/cache/codebase-context.json`
-- Only runs if `primaryLanguage === "typescript"`
-- Reads tsconfig.json for strictness settings
+Codebase context from `.claude/cache/codebase-context.json`. Only runs if `primaryLanguage === "typescript"`. Checks `.ts`/`.tsx` files and reads `tsconfig.json` for strictness settings.
 
 ## Output
 
@@ -55,28 +50,28 @@ Array of `AuditFinding` objects with `category: "typescript"` and `id` prefix `T
 
 ### High Severity
 
-| Issue | Pattern | Mitigation |
-|-------|---------|------------|
-| `any` type | `:\s*any\|as any\|<any>` | Proper type, `unknown`, generics |
-| @ts-ignore | `@ts-ignore\|@ts-nocheck` | Fix underlying issue |
-| Non-null assertion | `!\\.` | `?.\|??` |
-| Implicit any | Function params without types | Explicit annotations |
+| Issue | Look For | Safe If |
+|-------|----------|---------|
+| `any` type | `: any`, `as any`, `<any>` annotations | Uses proper type, `unknown`, or generics |
+| @ts-ignore | `@ts-ignore` or `@ts-nocheck` comments | Fixed the underlying type issue |
+| Non-null assertion | `!.` operator on potentially null values | Uses optional chaining `?.` or nullish coalescing `??` |
+| Implicit any | Function parameters without type annotations | Has explicit type annotations |
 
 ### Medium Severity
 
-| Issue | Pattern | Mitigation |
-|-------|---------|------------|
-| Type assertion | `as [A-Z]` (not `as unknown`) | Type guards, `satisfies` |
-| Missing return type | `function.*\{` without `:` return | Explicit return type |
-| Loose equality | `==\s*null` | `=== null \|\| === undefined` |
+| Issue | Look For | Safe If |
+|-------|----------|---------|
+| Type assertion | `as SomeType` (not `as unknown`) | Uses type guards or `satisfies` |
+| Missing return type | Functions without explicit return type | Has `: ReturnType` annotation |
+| Loose equality | `== null` or `== undefined` | Uses `=== null` or `=== undefined` |
 
 ### Low Severity
 
-| Issue | Pattern | Mitigation |
-|-------|---------|------------|
-| `object` type | `:\s*object[,)]` | Specific interface |
-| `Function` type | `:\s*Function` | Specific signature |
-| Missing type imports | `import {` | `import type` |
+| Issue | Look For | Safe If |
+|-------|----------|---------|
+| `object` type | `: object` annotation | Uses specific interface or type |
+| `Function` type | `: Function` annotation | Uses specific function signature |
+| Missing type imports | `import { Type }` without `type` keyword | Uses `import type { Type }` |
 
 ## Execution
 
