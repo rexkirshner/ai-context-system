@@ -33,21 +33,17 @@ Reviews codebase for infrastructure, CI/CD, and deployment issues.
 - Console.log in production → performance-reviewer
 - Database connection pooling → database-reviewer
 
-## File Scope
-
-Reads from `ciWorkflows` file list in scanner output.
-Also checks for deployment configs, Dockerfiles, and infrastructure-as-code.
-
 ## Purpose
 
-Identify infrastructure issues with **verification**. Every finding must include evidence of the issue AND confirmation that no proper configuration exists. Covers CI/CD, deployment, observability, and operational concerns.
+Identify infrastructure issues with **verification**. Every finding must include:
+1. Evidence of the issue
+2. Confirmation that no proper configuration exists
+
+Covers CI/CD, deployment, observability, and operational concerns.
 
 ## Input
 
-- Codebase context from `.claude/cache/codebase-context.json`
-- Focus on `ciWorkflows` list
-- Check for Docker, Kubernetes, Terraform configs
-- Check for observability setup (Sentry, DataDog, etc.)
+Codebase context from `.claude/cache/codebase-context.json`. Prioritize `ciWorkflows` list; also check for Dockerfiles, K8s configs, Terraform, and observability setup (Sentry, DataDog).
 
 ## Output
 
@@ -57,30 +53,30 @@ Array of `AuditFinding` objects with `category: "infrastructure"` and `id` prefi
 
 ### High Severity
 
-| Issue | Vuln Pattern | Mitigation Pattern |
-|-------|--------------|-------------------|
-| Secrets in CI | `password:\|api_key:\|secret:` in workflow files | `${{ secrets.\|env:\|vault` |
-| No health check | API without `/health` or `/healthz` | `health\|healthz\|ready\|live` |
-| No rate limiting | API routes without throttle | `rateLimit\|throttle\|limiter` |
-| Missing env separation | Same config for dev/prod | `NODE_ENV\|environment:` |
+| Issue | Look For | Safe If |
+|-------|----------|---------|
+| Secrets in CI | Hardcoded passwords, API keys, tokens in workflow files | Uses `${{ secrets.* }}`, environment variables, or vault |
+| No health check | API has no `/health` or `/healthz` endpoint | Health endpoint exists and returns proper status |
+| No rate limiting | Auth/API routes without throttle middleware | Has rate limiter (express-rate-limit, etc.) |
+| Missing env separation | Same config values for dev/prod | Uses `NODE_ENV` or separate config files |
 
 ### Medium Severity
 
-| Issue | Vuln Pattern | Mitigation Pattern |
-|-------|--------------|-------------------|
-| No error tracking | Missing APM/error service | `@sentry\|datadog\|newrelic\|bugsnag` |
-| No structured logging | Missing logger setup | `winston\|pino\|bunyan\|logger` |
-| Missing CORS config | API without CORS headers | `cors\|Access-Control` |
-| No cache headers | Responses without caching | `Cache-Control\|ETag\|max-age` |
+| Issue | Look For | Safe If |
+|-------|----------|---------|
+| No error tracking | No APM or error monitoring setup | Has Sentry, DataDog, New Relic, or Bugsnag |
+| No structured logging | No logger configuration | Uses winston, pino, bunyan, or similar |
+| Missing CORS config | API without CORS headers | Has cors middleware or Access-Control headers |
+| No cache headers | Responses missing caching directives | Has Cache-Control, ETag, or max-age headers |
 
 ### Low Severity
 
-| Issue | Vuln Pattern | Mitigation Pattern |
-|-------|--------------|-------------------|
-| No build cache | CI without cache step | `actions/cache\|cache:\|restore-keys` |
-| No dependency caching | npm/yarn install without cache | `node_modules.*cache\|.npm\|.yarn/cache` |
-| Missing CI badge | README without build status | `badge\|shield\|status` |
-| No artifact retention | Builds without artifact storage | `upload-artifact\|artifacts:` |
+| Issue | Look For | Safe If |
+|-------|----------|---------|
+| No build cache | CI workflow without caching step | Uses `actions/cache` or platform cache feature |
+| No dependency caching | npm/yarn install runs fresh each time | Caches node_modules or package manager cache |
+| Missing CI badge | README has no build status indicator | Has badge/shield showing build status |
+| No artifact retention | CI builds without artifact storage | Uses `upload-artifact` or similar |
 
 ## Execution
 
