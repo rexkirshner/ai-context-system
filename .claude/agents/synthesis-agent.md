@@ -19,8 +19,11 @@ Findings from all specialist agents:
   "security": [AuditFinding, ...],
   "performance": [AuditFinding, ...],
   "accessibility": [AuditFinding, ...],
+  "seo": [AuditFinding, ...],
   "typescript": [AuditFinding, ...],
-  "testing": [AuditFinding, ...]
+  "testing": [AuditFinding, ...],
+  "database": [AuditFinding, ...],
+  "infrastructure": [AuditFinding, ...]
 }
 ```
 
@@ -51,16 +54,23 @@ Combine findings from all specialists into single array.
 
 ### 2. Deduplicate
 
-**Duplicate:** Same file AND same line number.
+**True duplicates (merge):** Same file, same line, AND same concern.
+- Example: SEC-001 and INFRA-001 both flagging hardcoded secrets → merge
 
-For duplicates, merge:
+**Related concerns (keep separate, cross-reference):** Same location but different issues.
+- Example: SEC-001 (SQL injection) and PERF-001 (slow query) → keep both, add "See also" note
+
+For merged duplicates:
 - Keep highest severity
 - Combine verification notes
 - Combine remediations if different
 
 ```
-SEC-001 (high) + PERF-001 (medium) at api.ts:15
+SEC-001 (high) + INFRA-001 (high) at api.ts:15 (same concern)
 → SEC-001 (high) with combined notes
+
+SEC-001 (high) + PERF-001 (medium) at api.ts:15 (different concerns)
+→ Keep both, add cross-reference note
 ```
 
 ### 3. Calculate Grade
