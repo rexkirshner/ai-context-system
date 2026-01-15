@@ -30,6 +30,7 @@ Reviews codebase for security vulnerabilities.
 - N+1 queries, unbounded fetches → database-reviewer
 - CI/CD secrets in workflows → infrastructure-reviewer
 - Console.log in production → performance-reviewer
+- Rate limiting middleware → infrastructure-reviewer
 
 ## Purpose
 
@@ -94,7 +95,7 @@ Array of `AuditFinding` objects:
 | Weak cryptography | MD5, SHA1 for passwords/tokens | Uses bcrypt, argon2, SHA256+ |
 | CORS wildcard | `origin: "*"` or `Access-Control-Allow-Origin: *` | Specific allowed origins |
 | Error exposure | Stack traces in API responses | Checks NODE_ENV, uses error handler |
-| Missing rate limiting | Auth endpoints without throttle | Has rate limiter middleware |
+| Sensitive data logging | Passwords, tokens, PII in log statements | Redacts sensitive fields or uses sanitized logging |
 
 ### Low Severity
 

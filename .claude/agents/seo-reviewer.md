@@ -31,6 +31,7 @@ Reviews codebase for SEO (Search Engine Optimization) issues.
 
 **Other agents own:**
 - Image alt text → accessibility-reviewer
+- Missing lang attribute → accessibility-reviewer (WCAG 3.1.1)
 - Page load performance → performance-reviewer
 - API response headers → infrastructure-reviewer
 
@@ -66,7 +67,7 @@ Array of `AuditFinding` objects with `category: "seo"` and `id` prefix `SEO-`.
 |-------|----------|---------|
 | No canonical URL | No `rel="canonical"` link | Has canonical tag or `metadata.alternates.canonical` |
 | Missing structured data | No JSON-LD schema | Has `<script type="application/ld+json">` or `jsonLd` |
-| No lang attribute | `<html>` without `lang` | Has `lang="en"` or appropriate language |
+| No hreflang for i18n | Multi-language site without `hreflang` tags | Has `hreflang` for each language version |
 
 ### Low Severity
 
