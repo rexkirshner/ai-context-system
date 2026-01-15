@@ -38,6 +38,7 @@ echo ""
 echo "Checking project root..."
 LOOSE_ROOT=$(find . -maxdepth 1 -name "*.md" \
   ! -name "README.md" \
+  ! -name "CLAUDE.md" \
   ! -name "SECURITY.md" \
   ! -name "CONTRIBUTING.md" \
   ! -name "LICENSE.md" \
@@ -59,9 +60,12 @@ LOOSE_SRC=$(find src backend frontend lib -name "*.md" -maxdepth 3 \
   ! -path "*/build/*" \
   2>/dev/null || true)
 
-# Count results
-ROOT_COUNT=$(echo "$LOOSE_ROOT" | grep -c "\.md$" || echo "0")
-SRC_COUNT=$(echo "$LOOSE_SRC" | grep -c "\.md$" || echo "0")
+# Count results (zsh-compatible: protect against empty strings in arithmetic)
+# In zsh, grep -c on empty input can return empty string, breaking $((expr))
+ROOT_COUNT=$(echo "$LOOSE_ROOT" | grep -c "\.md$" 2>/dev/null || echo "0")
+ROOT_COUNT=$((ROOT_COUNT + 0))  # Ensure numeric (handles empty string)
+SRC_COUNT=$(echo "$LOOSE_SRC" | grep -c "\.md$" 2>/dev/null || echo "0")
+SRC_COUNT=$((SRC_COUNT + 0))    # Ensure numeric (handles empty string)
 TOTAL=$((ROOT_COUNT + SRC_COUNT))
 
 log_info ""
@@ -228,31 +232,67 @@ Say "cancel" to abort organization
 echo "Step 5/6: Organizing files..."
 echo ""
 
-# Move files to proper locations
-# Use 'git mv' if in git repo, otherwise 'mv'
-if git rev-parse --git-dir > /dev/null 2>&1; then
-  MV_CMD="git mv"
-  echo "Using git mv (changes will be staged)"
-else
-  MV_CMD="mv"
-  echo "Using mv (not a git repository)"
-fi
+# Move files to proper locations using robust move_file function
+# (v5.0.2: Replaced $MV_CMD variable with function for cross-shell compatibility)
 
-# Helper function to safely move files
-safe_move() {
+# Robust file move function with safety checks
+# Usage: move_file <source> <dest> [force]
+#
+# Features:
+# - Validates source exists before moving
+# - Creates destination directory if needed
+# - Checks for overwrite conflicts (unless force=true)
+# - Uses git mv if file is tracked, otherwise mv
+#
+move_file() {
   local source="$1"
   local dest="$2"
+  local force="${3:-false}"
 
-  # Create destination directory if it doesn't exist
-  local dest_dir=$(dirname "$dest")
-  if [ ! -d "$dest_dir" ]; then
-    echo "Creating directory: $dest_dir"
-    mkdir -p "$dest_dir"
+  # Validate source exists
+  if [ ! -e "$source" ]; then
+    echo "  ✗ Error: Source file does not exist: $source" >&2
+    return 1
   fi
 
-  # Execute the move
-  $MV_CMD "$source" "$dest"
-  echo "✓ Moved: $source → $dest"
+  # Create destination directory if needed
+  local dest_dir
+  dest_dir=$(dirname "$dest")
+  if [ ! -d "$dest_dir" ]; then
+    echo "  Creating directory: $dest_dir"
+    mkdir -p "$dest_dir" || {
+      echo "  ✗ Error: Cannot create directory: $dest_dir" >&2
+      return 1
+    }
+  fi
+
+  # Check for destination conflict
+  if [ -e "$dest" ] && [ "$force" != "true" ]; then
+    echo "  ✗ Warning: Destination exists: $dest" >&2
+    echo "    Use force=true to overwrite, or rename destination" >&2
+    return 1
+  fi
+
+  # Perform the move (use git mv if file is tracked)
+  if git rev-parse --git-dir > /dev/null 2>&1 && \
+     git ls-files --error-unmatch "$source" > /dev/null 2>&1; then
+    # File is tracked by git, use git mv
+    if [ "$force" = "true" ] && [ -e "$dest" ]; then
+      git mv -f "$source" "$dest"
+    else
+      git mv "$source" "$dest"
+    fi
+    echo "  ✓ Moved (git): $source → $dest"
+  else
+    # Not in git or file not tracked, use regular mv
+    mv "$source" "$dest"
+    echo "  ✓ Moved: $source → $dest"
+  fi
+}
+
+# Legacy alias for backward compatibility
+safe_move() {
+  move_file "$@"
 }
 
 # Execute each move (examples - customize based on approved plan)
