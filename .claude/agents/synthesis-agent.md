@@ -105,19 +105,30 @@ Ensure unique IDs: `SEC-001`, `SEC-002`, `PERF-001`, etc.
 
 Order by: severity (critical first), then file path.
 
-## Deduplication Example
+## Deduplication Examples
 
-**Input:**
+**Same concern (merge):**
 ```
-SEC-001: api.ts:15 - SQL injection (high)
-PERF-001: api.ts:15 - Slow query (medium)
+Input:
+  SEC-001: api.ts:15 - Hardcoded secret (high)
+  INFRA-001: api.ts:15 - Secret in code (high)
+
+Output:
+  SEC-001: api.ts:15 - Hardcoded secret (high)
+    notes: "Combined: Hardcoded secret flagged by security and infrastructure review"
 ```
 
-**Output:**
+**Different concerns (keep separate):**
 ```
-SEC-001: api.ts:15 - SQL injection (high)
-  notes: "SQL injection risk; Also flagged as slow query"
-  remediation: "Use parameterized queries. Also: Add query caching"
+Input:
+  SEC-001: api.ts:15 - SQL injection (high)
+  PERF-001: api.ts:15 - Slow query (medium)
+
+Output:
+  SEC-001: api.ts:15 - SQL injection (high)
+    seeAlso: "PERF-001"
+  PERF-001: api.ts:15 - Slow query (medium)
+    seeAlso: "SEC-001"
 ```
 
 ## Guardrails
