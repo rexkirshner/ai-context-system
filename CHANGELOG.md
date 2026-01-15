@@ -20,6 +20,7 @@ This release addresses critical bugs identified during initial v5.0.0 deployment
 - **Quick Reference header detection** - Now accepts headers with or without emoji prefix (BUG-008)
 - **Timestamp preservation** - `update_last_modified()` preserves "(Session N)" suffix when updating dates (BUG-009)
 - **Feedback archiving** - Uses hash comparison instead of entry counting for more reliable detection (UX-001)
+- **STATUS.template.md duplicate timestamp** - Removed duplicate "Last Updated" at footer that referenced obsolete command name (BUG-011)
 
 ### Added
 
@@ -38,6 +39,10 @@ This release addresses critical bugs identified during initial v5.0.0 deployment
 - **Large file validation** - `validate-context.sh` warns if DECISIONS.md (>1500 lines) or SESSIONS.md (>1000 lines) missing index sections
 
 - **Upgrade guidance** - `/update-context-system` detects large DECISIONS.md files and provides actionable guidance for adding Decision Index
+
+- **KNOWN_ISSUES.md staleness check** - `/review-context` now flags KNOWN_ISSUES.md files older than 30 days and detects potentially resolved issues
+
+- **Canonical session header format** - `SESSIONS.template.md` now documents the preferred pipe-delimited format (`## Session N | YYYY-MM-DD | Phase`)
 
 - **Test suites** for all new helpers (54 new tests)
 
