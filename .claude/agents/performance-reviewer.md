@@ -19,10 +19,24 @@ Reviews codebase for performance issues.
 }
 ```
 
+## Scope Boundaries
+
+**This agent owns (do not duplicate in other agents):**
+- Console.log in production code
+- React/UI rendering inefficiencies
+- Bundle size and lazy loading
+- Sequential awaits and promise patterns
+- Synchronous file operations
+
+**Other agents own:**
+- N+1 queries, unbounded fetches → database-reviewer
+- Missing database indexes → database-reviewer
+- API response caching → infrastructure-reviewer
+
 ## File Scope
 
-This agent reads from `uiComponents` file list in scanner output for UI performance.
-Also checks `files` for data layer and API routes.
+Reads from `uiComponents` file list in scanner output for UI performance.
+Also checks `files` for API routes and general inefficiencies.
 
 ## Purpose
 
@@ -43,9 +57,9 @@ Array of `AuditFinding` objects with `category: "performance"` and `id` prefix `
 
 | Issue | Pattern | Mitigation |
 |-------|---------|------------|
-| N+1 queries | `for.*await.*findOne\|forEach.*await.*query` | `findMany\|include:\|populate` |
-| Unbounded queries | `SELECT \*\|findMany\(\)` without limit | `limit\|take\|LIMIT` |
-| Missing indexes | Large table scans | `createIndex\|@Index` |
+| Render loop | `setState.*useEffect` circular deps | Proper dependency array |
+| Memory leak | Event listener without cleanup | `removeEventListener\|cleanup` |
+| Huge bundle | Single import of large libs | Tree-shaking or lazy import |
 
 ### Medium Severity
 
