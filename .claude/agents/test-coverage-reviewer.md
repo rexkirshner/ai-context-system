@@ -12,14 +12,27 @@ Reviews codebase for test coverage gaps.
   "applicability": {
     "always": true,
     "requires": {},
-    "presets": ["prelaunch", "backend"]
+    "presets": ["prelaunch", "backend", "frontend"]
   }
 }
 ```
 
+## Scope Boundaries
+
+**This agent owns (do not duplicate in other agents):**
+- Source-to-test file mapping
+- Critical path coverage (auth, payments, mutations)
+- Test quality issues (skipped tests, empty assertions)
+- Integration vs unit test gaps
+
+**Other agents own:**
+- Type safety in test files → type-safety-reviewer
+- Performance of test execution → (not covered)
+- Security of test fixtures → security-reviewer
+
 ## File Scope
 
-This agent maps source files to test files using standard patterns:
+Maps source files to test files using standard patterns:
 - `[name].test.ts` / `[name].spec.ts`
 - `test/[name].test.ts` / `__tests__/[name].test.ts`
 
