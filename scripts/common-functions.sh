@@ -537,6 +537,34 @@ count_files() {
   find "$dir" -maxdepth 1 -type f -name "$pattern" 2>/dev/null | wc -l | tr -d ' '
 }
 
+# Count decisions in DECISIONS.md
+# Handles both ## D001 and ### D001 formats (v5.0.2)
+#
+# Args:
+#   $1 - Path to DECISIONS.md (optional, defaults to context/DECISIONS.md)
+#
+# Returns:
+#   Prints count to stdout (integer >= 0)
+#
+# Example:
+#   count=$(count_decisions "context/DECISIONS.md")
+#   echo "Found $count decisions"
+#
+count_decisions() {
+  local file="${1:-context/DECISIONS.md}"
+
+  # If file doesn't exist, count is 0
+  if [ ! -f "$file" ]; then
+    echo "0"
+    return 0
+  fi
+
+  # Match both ## D001 and ### D001 formats
+  # Pattern: ^##+ D[0-9] (one or more # followed by space, D, then digit)
+  # Use grep -E for extended regex
+  grep -E "^##+ D[0-9]" "$file" 2>/dev/null | wc -l | tr -d ' '
+}
+
 # =============================================================================
 # File Safety Operations
 # =============================================================================

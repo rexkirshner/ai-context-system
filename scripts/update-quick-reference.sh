@@ -78,8 +78,53 @@ CURRENT_PHASE=$(grep "^\*\*Phase:\*\*" "$STATUS_FILE" | head -1 | sed 's/^\*\*Ph
 # Extract status (from top of file)
 PROJECT_STATUS=$(grep "^\*\*Status:\*\*" "$STATUS_FILE" | head -1 | sed 's/^\*\*Status:\*\* //' || echo "🟢 Active")
 
-# Extract first active task (first item under "**In Progress:**")
-CURRENT_FOCUS=$(sed -n '/^\*\*In Progress:\*\*/,/^\*\*.*:\*\*/p' "$STATUS_FILE" | grep "^- \[ \]" | head -1 | sed 's/^- \[ \] //' || echo "[No active tasks]")
+# Extract current focus using pattern cascade (v5.0.2)
+# Tries multiple patterns to handle different STATUS.md formats:
+# 1. **In Progress:** section with - [ ] items
+# 2. **Next Priorities:** under ## Active Tasks
+# 3. First unchecked - [ ] anywhere
+# 4. ## Current Focus header content
+extract_current_focus() {
+  local file="$1"
+  local focus=""
+
+  # Try 1: **In Progress:** with unchecked items
+  focus=$(sed -n '/\*\*In Progress:\*\*/,/\*\*.*:\*\*/p' "$file" 2>/dev/null | \
+          grep "^- \[ \]" | head -1 | sed 's/^- \[ \] //')
+  if [ -n "$focus" ]; then
+    echo "$focus"
+    return 0
+  fi
+
+  # Try 2: **Next Priorities:** under Active Tasks
+  focus=$(sed -n '/^## Active Tasks/,/^## /p' "$file" 2>/dev/null | \
+          sed -n '/\*\*Next Priorities:\*\*/,/\*\*.*:\*\*/p' | \
+          grep "^- " | head -1 | sed 's/^- //')
+  if [ -n "$focus" ]; then
+    echo "$focus"
+    return 0
+  fi
+
+  # Try 3: First unchecked item anywhere
+  focus=$(grep "^- \[ \]" "$file" 2>/dev/null | head -1 | sed 's/^- \[ \] //')
+  if [ -n "$focus" ]; then
+    echo "$focus"
+    return 0
+  fi
+
+  # Try 4: ## Current Focus section
+  focus=$(sed -n '/^## Current Focus/,/^## /p' "$file" 2>/dev/null | \
+          grep -v "^## " | grep -v "^$" | head -1)
+  if [ -n "$focus" ]; then
+    echo "$focus"
+    return 0
+  fi
+
+  # Fallback
+  echo "See STATUS.md"
+}
+
+CURRENT_FOCUS=$(extract_current_focus "$STATUS_FILE")
 
 # =============================================================================
 # Extract last session from SESSIONS.md
