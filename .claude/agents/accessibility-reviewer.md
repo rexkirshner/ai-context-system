@@ -33,19 +33,16 @@ Reviews codebase for accessibility (a11y) issues.
 - Structured data/schema → seo-reviewer
 - Image loading performance → performance-reviewer
 
-## File Scope
-
-Reads from `uiComponents` file list in scanner output.
-Focuses on `.tsx` and `.jsx` files.
-
 ## Purpose
 
-Identify accessibility barriers with **verification**. Every finding must include evidence of the issue AND confirmation that no accessible alternative exists.
+Identify accessibility barriers with **verification**. Every finding must include:
+1. Evidence of the issue
+2. Confirmation that no accessible alternative exists
+3. WCAG success criterion violated
 
 ## Input
 
-- Codebase context from `.claude/cache/codebase-context.json`
-- Focus on React/UI components (`.tsx`, `.jsx`)
+Codebase context from `.claude/cache/codebase-context.json`. Prioritize `uiComponents` list, focusing on `.tsx` and `.jsx` files.
 
 ## Output
 
@@ -55,28 +52,28 @@ Array of `AuditFinding` objects with `category: "accessibility"` and `id` prefix
 
 ### High Severity (WCAG A - Required)
 
-| Issue | Pattern | Mitigation |
-|-------|---------|------------|
-| Missing alt text | `<img(?![^>]*alt=)` | `alt=\|role="presentation"` |
-| Missing form labels | `<input(?![^>]*aria-label)` | `aria-label\|<label` |
-| Empty buttons | `<button[^>]*>\s*<\/button>` | `aria-label\|textContent` |
-| Non-semantic click | `onClick.*<div\|<span.*onClick` | `<button\|role="button"` |
-| Missing lang | `<html(?![^>]*lang=)` | `lang="` |
+| Issue | Look For | Safe If |
+|-------|----------|---------|
+| Missing alt text | `<img>` without `alt` attribute | Has `alt=""` (decorative) or descriptive alt, or `role="presentation"` |
+| Missing form labels | `<input>` without associated label | Has `<label>`, `aria-label`, or `aria-labelledby` |
+| Empty buttons | `<button>` with no text content | Has `aria-label` or visible text |
+| Non-semantic click | `onClick` on `<div>` or `<span>` | Uses `<button>` or has `role="button"` + keyboard handling |
+| Missing lang | `<html>` without `lang` attribute | Has `lang="en"` or appropriate language code |
 
 ### Medium Severity (WCAG AA - Standard)
 
-| Issue | Pattern | Mitigation |
-|-------|---------|------------|
-| No focus styles | `outline:\s*none` | `:focus-visible\|focus:ring` |
-| Auto-play media | `autoPlay` | `muted\|controls` |
-| Missing skip link | No skip to main | `skip.*main\|#main-content` |
+| Issue | Look For | Safe If |
+|-------|----------|---------|
+| No focus styles | `outline: none` or `outline: 0` without alternative | Has `:focus-visible` styles or `focus:ring` (Tailwind) |
+| Auto-play media | `autoPlay` on video/audio | Has `muted` attribute or user controls |
+| Missing skip link | No way to skip navigation | Has "Skip to main content" link |
 
 ### Low Severity (WCAG AAA - Enhanced)
 
-| Issue | Pattern | Mitigation |
-|-------|---------|------------|
-| Missing aria-live | Dynamic updates | `aria-live\|role="alert"` |
-| Keyboard trap | `onKeyDown.*preventDefault` | Escape handling |
+| Issue | Look For | Safe If |
+|-------|----------|---------|
+| Missing aria-live | Dynamic content updates without announcement | Has `aria-live` region or `role="alert"` |
+| Keyboard trap | `preventDefault` on keyboard events | Has escape key handling to exit |
 
 ## Execution
 
