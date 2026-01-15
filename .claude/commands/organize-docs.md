@@ -60,12 +60,16 @@ LOOSE_SRC=$(find src backend frontend lib -name "*.md" -maxdepth 3 \
   ! -path "*/build/*" \
   2>/dev/null || true)
 
-# Count results (zsh-compatible: protect against empty strings in arithmetic)
-# In zsh, grep -c on empty input can return empty string, breaking $((expr))
+# Count results (cross-shell compatible)
+# - grep -c can return empty string in some shells
+# - Output may contain whitespace/newlines in edge cases
+# - Use tr to strip whitespace and ensure clean numeric value
 ROOT_COUNT=$(echo "$LOOSE_ROOT" | grep -c "\.md$" 2>/dev/null || echo "0")
-ROOT_COUNT=$((ROOT_COUNT + 0))  # Ensure numeric (handles empty string)
+ROOT_COUNT=$(echo "$ROOT_COUNT" | tr -d '[:space:]')
+ROOT_COUNT=$((ROOT_COUNT + 0))  # Ensure numeric
 SRC_COUNT=$(echo "$LOOSE_SRC" | grep -c "\.md$" 2>/dev/null || echo "0")
-SRC_COUNT=$((SRC_COUNT + 0))    # Ensure numeric (handles empty string)
+SRC_COUNT=$(echo "$SRC_COUNT" | tr -d '[:space:]')
+SRC_COUNT=$((SRC_COUNT + 0))    # Ensure numeric
 TOTAL=$((ROOT_COUNT + SRC_COUNT))
 
 log_info ""
