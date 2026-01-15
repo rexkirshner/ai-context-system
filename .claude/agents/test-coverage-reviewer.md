@@ -30,21 +30,15 @@ Reviews codebase for test coverage gaps.
 - Performance of test execution → (not covered)
 - Security of test fixtures → security-reviewer
 
-## File Scope
-
-Maps source files to test files using standard patterns:
-- `[name].test.ts` / `[name].spec.ts`
-- `test/[name].test.ts` / `__tests__/[name].test.ts`
-
 ## Purpose
 
-Identify untested code with **verification**. Every finding must include evidence of the gap AND confirmation that no tests exist.
+Identify untested code with **verification**. Every finding must include:
+1. Evidence of the coverage gap
+2. Confirmation that no tests exist in standard locations
 
 ## Input
 
-- Codebase context from `.claude/cache/codebase-context.json`
-- Source-to-test file mapping
-- Coverage reports if available
+Codebase context from `.claude/cache/codebase-context.json`. Maps source files to tests using: `[name].test.ts`, `[name].spec.ts`, `test/[name].test.ts`, `__tests__/[name].test.ts`. Uses coverage reports if available.
 
 ## Output
 
