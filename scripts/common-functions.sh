@@ -29,6 +29,56 @@ export BLUE='\033[0;34m'
 export NC='\033[0m' # No Color
 
 # =============================================================================
+# TTY-Aware Color Output (v5.0.2)
+# =============================================================================
+
+# Color output only if stdout is a terminal
+#
+# When output is piped or redirected, ANSI escape codes cause garbled text.
+# This function detects the output mode and strips codes when appropriate.
+#
+# Handles ALL ANSI escape sequences:
+# - Colors: \e[31m (red), \e[0m (reset), etc.
+# - Cursor: \e[2J (clear), \e[H (home), etc.
+# - Extended: \e[38;5;XXXm (256 colors), \e[38;2;R;G;Bm (24-bit)
+# - Private sequences: \e[?25h (show cursor), etc.
+#
+# Usage:
+#   color_echo "${RED}Error${NC}"
+#   color_echo "${GREEN}Success${NC}"
+#
+# Args:
+#   $1 - String to output (may contain ANSI escape codes)
+#
+# Example:
+#   color_echo "${RED}❌ Build failed${NC}"
+#   result=$(color_echo "${GREEN}✅ Passed${NC}" | cat)  # Codes stripped
+#
+color_echo() {
+  local message="$1"
+
+  if [ -t 1 ]; then
+    # stdout is a terminal - use colors
+    echo -e "$message"
+  else
+    # stdout is piped/redirected - strip ALL ANSI escape sequences
+    # Pattern matches:
+    #   \x1b or \033 - escape character
+    #   \[           - CSI (Control Sequence Introducer)
+    #   [0-9;?]*     - parameters (including ? for private sequences)
+    #   [A-Za-z]     - final byte (command)
+    #
+    # Try perl first (more reliable across platforms), fall back to sed
+    if command -v perl > /dev/null 2>&1; then
+      echo -e "$message" | perl -pe 's/\e\[[0-9;?]*[A-Za-z]//g'
+    else
+      # sed may not handle \x1b on all platforms, but covers most cases
+      echo -e "$message" | sed 's/\x1b\[[0-9;?]*[A-Za-z]//g'
+    fi
+  fi
+}
+
+# =============================================================================
 # Repository Root Detection
 # =============================================================================
 

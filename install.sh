@@ -28,6 +28,17 @@ color_echo() {
 REPO_URL="https://github.com/rexkirshner/ai-context-system"
 RAW_URL="https://raw.githubusercontent.com/rexkirshner/ai-context-system/main"
 
+# =============================================================================
+# CRITICAL: Detect update vs fresh install BEFORE doing anything else! (v5.0.2)
+# This MUST happen before we create any directories or download files
+# =============================================================================
+IS_UPDATE=false
+if [ -f "context/.context-config.json" ] || \
+   [ -f "context/STATUS.md" ] || \
+   [ -d ".claude/commands" ]; then
+  IS_UPDATE=true
+fi
+
 # Optional files (download failures won't block installation)
 OPTIONAL_FILES=(
   "reference/ORGANIZATION.md"
@@ -782,13 +793,26 @@ if [ $FAILED_DOWNLOADS -eq 0 ] && [ $VERIFICATION_FAILED -eq 0 ]; then
   # Run post-installation validation (v3.3.1: auto-fixes common issues)
   post_install_validation
 
-  color_echo "${BLUE}Next steps:${NC}"
-  echo "   1. Run /init-context to initialize your project"
-  echo "   2. Review context/CONTEXT.md for accuracy"
-  echo "   3. Use TodoWrite during active work"
-  echo "   4. Run /save frequently (2-3 min quick updates)"
-  echo "   5. Run /save-full before breaks (10-15 min comprehensive)"
-  echo "   6. Use /code-review for AI agent review"
+  # Show context-appropriate next steps (v5.0.2)
+  if [ "$IS_UPDATE" = "true" ]; then
+    color_echo "${BLUE}✅ Update complete!${NC}"
+    echo ""
+    echo "What's new in v${VERSION}:"
+    echo "   Run 'cat .claude/docs/CHANGELOG.md | head -50' to see recent changes"
+    echo ""
+    color_echo "${BLUE}Next steps:${NC}"
+    echo "   1. Run /validate-context to verify the update"
+    echo "   2. Run /review-context to resume work"
+    echo "   3. Check .claude/docs/ for any new documentation"
+  else
+    color_echo "${BLUE}Next steps:${NC}"
+    echo "   1. Run /init-context to initialize your project"
+    echo "   2. Review context/CONTEXT.md for accuracy"
+    echo "   3. Use TodoWrite during active work"
+    echo "   4. Run /save frequently (2-3 min quick updates)"
+    echo "   5. Run /save-full before breaks (10-15 min comprehensive)"
+    echo "   6. Use /code-review for AI agent review"
+  fi
   echo ""
   color_echo "${BLUE}Documentation:${NC}"
   echo "   - Command philosophy: .claude/docs/command-philosophy.md"
@@ -813,10 +837,16 @@ if [ $FAILED_DOWNLOADS -eq 0 ] && [ $VERIFICATION_FAILED -eq 0 ]; then
   echo ""
 
   # ==========================================================================
-  # Optional: Prompt to initialize context
+  # Optional: Prompt to initialize context (v5.0.2: skip for updates)
   # ==========================================================================
 
-  if [ "$NON_INTERACTIVE" = true ]; then
+  # Skip init-context prompt for updates - context already exists
+  if [ "$IS_UPDATE" = "true" ]; then
+    color_echo "${BLUE}Update complete - context system already initialized${NC}"
+    echo ""
+    echo "Run /validate-context to verify your documentation"
+    echo ""
+  elif [ "$NON_INTERACTIVE" = true ]; then
     # Skip prompt in non-interactive mode
     color_echo "${BLUE}Non-interactive mode: Skipping initialization prompt${NC}"
     echo ""
