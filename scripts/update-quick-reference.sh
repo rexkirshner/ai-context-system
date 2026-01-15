@@ -226,8 +226,7 @@ ${BUILD_CMD}     # Production build
 
 **Documentation Health:** ${DOC_HEALTH}
 - Last validated: ${DOC_AGE} days ago
-- Stale files: ${STALE_FILE_COUNT}
-- ${STALE_FILE_COUNT:-0} file(s) older than 7 days (excluding archives)
+- Stale files: ${STALE_FILE_COUNT:-0} (older than 7 days, excluding archives)
 
 [Full report: Run /validate-context]
 EOF
