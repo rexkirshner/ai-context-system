@@ -17,14 +17,27 @@ Reviews codebase for security vulnerabilities.
 }
 ```
 
+## Scope Boundaries
+
+**This agent owns (do not duplicate in other agents):**
+- Hardcoded secrets, API keys, credentials
+- Injection attacks: SQL, command, XSS, code
+- Cryptography issues (weak hashing, insecure randomness)
+- Authentication/authorization flaws
+
+**Other agents own:**
+- N+1 queries, unbounded fetches → database-reviewer
+- CI/CD secrets in workflows → infrastructure-reviewer
+- Console.log in production → performance-reviewer
+
 ## File Scope
 
-This agent reads from `securityRelevant` file list in scanner output.
+Reads from `securityRelevant` file list in scanner output.
 Falls back to repo-wide scan only if list is empty.
 
 ## Purpose
 
-Identify security issues with **verification**. Every finding must include evidence of the vulnerability AND confirmation that no mitigation exists. This minimizes false positives.
+Identify security vulnerabilities with **verification**. Every finding must include evidence of the vulnerability AND confirmation that no mitigation exists.
 
 ## Input
 
@@ -82,8 +95,8 @@ Array of `AuditFinding` objects:
 
 | Issue | Vulnerability Pattern | Mitigation Pattern |
 |-------|----------------------|-------------------|
-| Console in prod | `console\.(log\|debug)` | `logger\|winston` |
-| Security TODOs | `TODO.*security\|FIXME.*auth` | (needs attention) |
+| Security TODOs | `TODO.*security\|FIXME.*auth` | (resolved or tracked) |
+| Debug endpoints | `/debug\|/test-` in routes | Removed or auth-protected |
 
 ## Execution
 
