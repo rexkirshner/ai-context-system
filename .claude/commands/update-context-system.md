@@ -564,6 +564,15 @@ echo "   docs/audits/                    - New audit reports"
 echo "   docs/audits/INDEX.md            - Audit history index"
 echo "   docs/audits/archive/            - Archived audits"
 echo ""
+
+# v4.0.0: Clean up obsolete .claude/checklists/ directory
+# Checklists are now integrated directly into audit commands
+if [ -d ".claude/checklists" ]; then
+  echo "🧹 Removing obsolete .claude/checklists/ directory..."
+  echo "   (Checklists are now integrated into audit commands)"
+  rm -rf .claude/checklists
+  echo "✅ Cleaned up .claude/checklists/"
+fi
 ```
 
 **What this does:**
