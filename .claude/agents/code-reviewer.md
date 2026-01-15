@@ -251,6 +251,44 @@ Top priority: SEC-001 - Hardcoded API key
 | database-reviewer | database | N+1 queries, SQL injection, unbounded | backend |
 | infrastructure-reviewer | infrastructure | CI secrets, health checks, rate limits | backend |
 
+## Coverage Scope
+
+### What's Covered
+
+The specialist agents focus on issues requiring **contextual understanding** that automated linters cannot provide:
+
+| Category | Coverage |
+|----------|----------|
+| Security | Secrets, injection, auth flaws, XSS, crypto, deserialization |
+| Performance | Rendering inefficiencies, bundle size, memory leaks, async patterns |
+| Accessibility | WCAG A/AA/AAA compliance, alt text, forms, keyboard navigation |
+| SEO | Meta tags, Open Graph, structured data, sitemaps, hreflang |
+| Type Safety | `any` usage, assertions, strictness settings, implicit types |
+| Testing | Coverage gaps, critical path testing, test quality |
+| Database | N+1 queries, SQL injection, transactions, connection pooling |
+| Infrastructure | CI secrets, health checks, rate limiting, observability |
+
+### What's Intentionally Excluded
+
+These concerns are better handled by specialized tools designed for them:
+
+| Concern | Why Excluded | Recommended Tool |
+|---------|--------------|------------------|
+| Dependency vulnerabilities | Requires CVE database, frequent updates | `npm audit`, Dependabot, Snyk |
+| Code complexity | Mechanical metric, no context needed | ESLint `complexity` rule |
+| Dead code detection | Linters handle perfectly | ESLint `no-unused-vars`, TypeScript |
+| API design conventions | Spec-based validation | OpenAPI linters, Spectral |
+| Code formatting/style | Mechanical, no judgment needed | Prettier, ESLint |
+| Documentation coverage | Not a code quality issue | TypeDoc, JSDoc coverage tools |
+| Git commit hygiene | Commit-time enforcement | commitlint, husky |
+| License compliance | Requires license database | license-checker, FOSSA |
+
+### Rationale
+
+The code review system is designed to complement, not replace, existing tooling. By focusing on contextual issues (security flaws that require understanding data flow, performance issues that need architectural awareness), the agents provide value that automated tools cannot.
+
+For mechanical checks, integrate the recommended tools into your CI pipeline alongside the code review system.
+
 ## Fallback Behavior
 
 If any of these occur:
