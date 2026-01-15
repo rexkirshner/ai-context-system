@@ -108,9 +108,9 @@ All conditions must match (AND logic) for the agent to be selected in auto mode.
 
 | Preset | Agents Included |
 |--------|-----------------|
-| `--prelaunch` | security, testing, performance, accessibility, seo |
-| `--frontend` | security, performance, accessibility, seo |
-| `--backend` | security, testing, database, infrastructure |
+| `--prelaunch` | security, testing, performance, accessibility, seo, typescript |
+| `--frontend` | security, testing, performance, accessibility, seo, typescript |
+| `--backend` | security, testing, database, infrastructure, typescript |
 | `--quick` | security |
 | `--all` | All 8 specialists |
 
