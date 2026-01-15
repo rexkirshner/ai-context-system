@@ -13,9 +13,13 @@ Session entry appended to `context/SESSIONS.md`:
 ```markdown
 <!-- BEGIN SESSION [N] -->
 ## Session [N] | [YYYY-MM-DD] | [Focus Area]
+**Duration:** [X hours/minutes] (optional but useful for time tracking)
 
 ### TL;DR
 [50-300 chars summarizing what was accomplished]
+
+### Problem Solved (optional)
+[If this session fixed a specific bug or addressed a user-reported issue]
 
 ### Accomplishments
 - [Specific accomplishment with file reference]
@@ -27,14 +31,25 @@ Session entry appended to `context/SESSIONS.md`:
 ### Files Changed
 - [file paths modified this session]
 
+### Tests & Build (if applicable)
+- Tests: [PASS/FAIL - N tests]
+- Build: [SUCCESS/FAIL]
+- Coverage: [X%] (if tracked)
+
 ### Mental Models
 [Key insight about how the system works that future sessions should know]
+
+### Work In Progress (optional)
+[Any partially completed work that needs to be finished next session]
 
 ### Next Steps
 - [Actionable item starting with verb]
 - [Another actionable item]
 
-### Git
+### Open Loops (optional)
+[Questions, blockers, or dependencies waiting on external input]
+
+### Git Operations
 Commits: [N] | Branch: [name] | Pushed: [yes/no]
 <!-- END SESSION [N] -->
 ```
@@ -87,11 +102,25 @@ Document insights that help future sessions understand:
 
 Also update STATUS.md Quick Reference block (same as /save).
 
-### 7. Append Session Entry
+### 7. Update Session Index (if present)
+
+If SESSIONS.md has a Session Index table at the top, add an entry:
+
+```markdown
+## Session Index
+
+| # | Date | Phase | Focus | Status |
+|---|------|-------|-------|--------|
+| N | YYYY-MM-DD | [Phase/Version] | [Primary focus area] | ✅ Complete / ⏳ In Progress |
+```
+
+**Note:** The Session Index provides quick navigation for long session histories. Skip if not present.
+
+### 8. Append Session Entry
 
 Write entry with BEGIN/END markers. **Atomic write** - never leave partial entry.
 
-### 8. Verify
+### 9. Verify
 
 | Check | Requirement |
 |-------|-------------|

@@ -154,7 +154,78 @@ EOF
 
 **Commands affected:** /organize-docs (Step 5 safe_move function)
 
-### 5. No Broken Promises
+### 5. Shell Execution Model (v5.0.2)
+
+**Each Bash tool call runs in a fresh shell process.**
+
+Variables, exports, and shell state do NOT persist between Bash tool invocations.
+This is a fundamental architecture constraint, not a bug.
+
+**Incorrect assumption:**
+```bash
+# Step 1 (Bash tool call)
+export MY_VAR="value"
+cd /project/subdir
+
+# Step 2 (separate Bash tool call)
+echo $MY_VAR  # Empty! Different shell process
+pwd           # Back to original directory!
+```
+
+**Correct patterns:**
+
+1. **Use temp files for state persistence:**
+   ```bash
+   # Step 1: Save state to temp file
+   echo "/project/subdir" > /tmp/.context-dir
+
+   # Step 2: Read state from temp file
+   CONTEXT_DIR=$(cat /tmp/.context-dir)
+   cd "$CONTEXT_DIR" && pwd
+   ```
+
+2. **Combine dependent commands in single Bash call:**
+   ```bash
+   # All in one Bash call - state persists within call
+   export MY_VAR="value" && \
+   cd /project/subdir && \
+   echo "$MY_VAR" && \
+   pwd
+   ```
+
+3. **Source common-functions.sh in each step:**
+   ```bash
+   # Each Bash call that needs helpers must source them
+   source scripts/common-functions.sh
+   log_success "Helper functions loaded"
+   ```
+
+4. **Use heredocs for multi-line state:**
+   ```bash
+   # Save complex state
+   cat > /tmp/.session-state << 'EOF'
+   VAR1=value1
+   VAR2=value2
+   CONTEXT_DIR=/path/to/context
+   EOF
+
+   # Later step - source the state
+   source /tmp/.session-state
+   ```
+
+**Why this matters:**
+- Commands that assume shell persistence will silently fail
+- Variables "disappear" between steps, causing mysterious bugs
+- Working directory resets between Bash calls
+- Each Bash tool invocation is isolated
+
+**Commands must:**
+- NOT assume variables persist between Bash calls
+- Pass data via files or inline in commands
+- Source required scripts at the start of each Bash call
+- Use absolute paths or recalculate paths each call
+
+### 6. No Broken Promises
 
 **Only promise what we actually deliver.**
 
@@ -165,7 +236,7 @@ v1.4.0 removed JSON artifacts because:
 
 **Lesson:** Don't implement speculative features. Deliver what works.
 
-### 6. Honesty About Enforcement
+### 7. Honesty About Enforcement
 
 **Be clear about what's enforced vs. what's just reference.**
 
@@ -175,7 +246,7 @@ v1.4.0 removed JSON artifacts because:
 
 If a file isn't used by commands, say so clearly.
 
-### 7. Separation of Concerns
+### 8. Separation of Concerns
 
 **Commands DO, documentation EXPLAINS.**
 
@@ -185,7 +256,7 @@ If a file isn't used by commands, say so clearly.
 
 This separation keeps commands scannable.
 
-### 8. Capture Everything, Lose Nothing
+### 9. Capture Everything, Lose Nothing
 
 **When in doubt, save it.**
 
@@ -198,7 +269,7 @@ This separation keeps commands scannable.
 
 Better to over-save than lose context.
 
-### 9. Thoroughness When Time Permits
+### 10. Thoroughness When Time Permits
 
 **/code-review takes its time.**
 
@@ -209,7 +280,7 @@ Better to over-save than lose context.
 
 Quality commands need time to be thorough.
 
-### 10. Fast Paths for Common Cases
+### 11. Fast Paths for Common Cases
 
 **/quick-save-context for active work.**
 
