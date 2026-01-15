@@ -20,9 +20,23 @@ Reviews codebase for SEO (Search Engine Optimization) issues.
 }
 ```
 
+## Scope Boundaries
+
+**This agent owns (do not duplicate in other agents):**
+- Page titles and meta descriptions
+- Open Graph and social sharing tags
+- Structured data (JSON-LD)
+- Canonical URLs and sitemap
+- robots.txt and crawl directives
+
+**Other agents own:**
+- Image alt text → accessibility-reviewer
+- Page load performance → performance-reviewer
+- API response headers → infrastructure-reviewer
+
 ## File Scope
 
-This agent reads from `uiComponents` file list in scanner output.
+Reads from `uiComponents` file list in scanner output.
 Focuses on page components, layouts, and metadata files.
 
 ## Purpose
@@ -63,7 +77,7 @@ Array of `AuditFinding` objects with `category: "seo"` and `id` prefix `SEO-`.
 |-------|--------------|-------------------|
 | No sitemap | Missing sitemap.xml | File exists OR `generateSitemaps\|sitemap.ts` |
 | No robots.txt | Missing robots.txt | File exists OR `robots.ts` |
-| Missing alt text | `<img>` without `alt` | `alt=` attribute present |
+| Missing Twitter cards | No `twitter:` tags | `twitter:\|twitter.*card\|metadata.*twitter` |
 
 ## Execution
 
