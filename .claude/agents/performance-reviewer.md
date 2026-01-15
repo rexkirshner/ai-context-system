@@ -33,19 +33,15 @@ Reviews codebase for performance issues.
 - Missing database indexes → database-reviewer
 - API response caching → infrastructure-reviewer
 
-## File Scope
-
-Reads from `uiComponents` file list in scanner output for UI performance.
-Also checks `files` for API routes and general inefficiencies.
-
 ## Purpose
 
-Identify performance bottlenecks with **verification**. Every finding must include evidence of the issue AND confirmation that no optimization exists.
+Identify performance bottlenecks with **verification**. Every finding must include:
+1. Evidence of the performance issue
+2. Confirmation that no optimization exists
 
 ## Input
 
-- Codebase context from `.claude/cache/codebase-context.json`
-- Focus on data layer, API routes, React components
+Codebase context from `.claude/cache/codebase-context.json`. Prioritize `uiComponents` list for UI performance; also check `files` for general inefficiencies.
 
 ## Output
 
@@ -55,27 +51,27 @@ Array of `AuditFinding` objects with `category: "performance"` and `id` prefix `
 
 ### High Severity
 
-| Issue | Pattern | Mitigation |
-|-------|---------|------------|
-| Render loop | `setState.*useEffect` circular deps | Proper dependency array |
-| Memory leak | Event listener without cleanup | `removeEventListener\|cleanup` |
-| Huge bundle | Single import of large libs | Tree-shaking or lazy import |
+| Issue | Look For | Safe If |
+|-------|----------|---------|
+| Render loop | `setState` inside `useEffect` with missing/wrong deps | Has correct dependency array |
+| Memory leak | Event listeners, subscriptions without cleanup | Has cleanup in `useEffect` return or `componentWillUnmount` |
+| Huge bundle | Full imports of large libs (`import _ from 'lodash'`) | Uses tree-shaking (`import get from 'lodash/get'`) or lazy loading |
 
 ### Medium Severity
 
-| Issue | Pattern | Mitigation |
-|-------|---------|------------|
-| Sequential awaits | `await.*\n.*await` in loop | `Promise\.all` |
-| Missing memoization | Expensive compute in render | `useMemo\|useCallback\|React\.memo` |
-| Large imports | `import.*from ['"]lodash['"]` | `import.*from ['"]lodash/` |
-| Sync file ops | `readFileSync\|writeFileSync` | `readFile\|writeFile` |
+| Issue | Look For | Safe If |
+|-------|----------|---------|
+| Console in prod | `console.log`, `console.debug`, `console.time` | Uses proper logger (winston, pino) or behind NODE_ENV check |
+| Sequential awaits | Multiple `await` in a loop | Uses `Promise.all` for parallel execution |
+| Missing memoization | Expensive computation in render function | Uses `useMemo`, `useCallback`, or `React.memo` |
+| Sync file ops | `readFileSync`, `writeFileSync` in request handlers | Uses async versions (`readFile`, `writeFile`) |
 
 ### Low Severity
 
-| Issue | Pattern | Mitigation |
-|-------|---------|------------|
-| Console in prod | `console\.(log\|time)` | `logger\|winston` |
-| No lazy loading | Large component imports | `React\.lazy\|dynamic` |
+| Issue | Look For | Safe If |
+|-------|----------|---------|
+| No lazy loading | Large components imported at top level | Uses `React.lazy()` or `next/dynamic` |
+| Barrel file imports | `import { x } from './components'` (re-exports) | Direct imports from source files |
 
 ## Execution
 
