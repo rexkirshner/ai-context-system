@@ -19,9 +19,23 @@ Reviews codebase for accessibility (a11y) issues.
 }
 ```
 
+## Scope Boundaries
+
+**This agent owns (do not duplicate in other agents):**
+- Missing alt text on images (WCAG 1.1.1)
+- Form accessibility (labels, errors, fieldsets)
+- Keyboard navigation and focus management
+- ARIA attributes and semantic HTML
+- Color contrast and visual accessibility
+
+**Other agents own:**
+- Page title/meta description → seo-reviewer
+- Structured data/schema → seo-reviewer
+- Image loading performance → performance-reviewer
+
 ## File Scope
 
-This agent reads from `uiComponents` file list in scanner output.
+Reads from `uiComponents` file list in scanner output.
 Focuses on `.tsx` and `.jsx` files.
 
 ## Purpose
