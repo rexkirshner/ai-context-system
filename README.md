@@ -1,6 +1,6 @@
 # AI Context System
 
-**Version 4.2.0** • [What's New](#-v420-user-feedback-fixes)
+**Version 5.0.1** • [What's New](#-v500-first-principles-redesign)
 
 > **Externalize AI context. Enable human-AI collaboration. Perfect session continuity.**
 >
@@ -26,23 +26,23 @@ Facilitate peer review, project handoffs, and collaborative development between 
 
 ---
 
-## 🎉 v4.2.0 User Feedback Fixes
+## 🎉 v5.0.0 First Principles Redesign
 
-**Bug fixes and UX improvements based on real user feedback**
+**A fundamental reimagining of the AI Context System**
 
-**Fixes:**
-- ✅ **Bash operator precedence** - Fixed context directory detection in `/save-full`
-- ✅ **Session regex** - Fixed session number extraction to ignore template text
-- ✅ **Date warning** - Changed misleading date mismatch warning to informational note
+v5.0.0 represents a complete redesign based on three core insights:
+1. **Claude Code has evolved** - Skills, agents, hooks, and MCP servers enable new capabilities
+2. **AI-to-AI handoffs are the primary use case** - Optimized for AI agents, not just humans
+3. **Less is more** - Simplified from 22 commands to 7 skills
 
-**Improvements:**
-- ✅ **Already-initialized detection** - `/init-context` and `/migrate-context` warn if ACS already installed
-- ✅ **CLAUDE.md detection** - Shows integration guidance when existing CLAUDE.md found
+**Key Changes:**
+- ✅ **Skills Architecture** - 7 modular skills replace 22 commands
+- ✅ **Agent-Based Code Review** - 9 specialized agents for comprehensive audits
+- ✅ **Hooks System** - Safe-fail automation on session start
+- ✅ **JSON Schemas** - Structured validation for all outputs
+- ✅ **Settings Profiles** - minimal, standard, comprehensive
 
-**Recent Major Releases:**
-- **v4.1.1** - Context completeness detection, project auto-detection
-- **v4.1.0** - Documentation health checking, shell robustness, color output
-- **v4.0.0** - Modular code review system with specialized audits
+**v5.0.1 Patch:** Cross-platform fixes, session numbering, DECISIONS.md smart loading
 
 **Full details:** [CHANGELOG.md](./CHANGELOG.md) • **Upgrade:** `/update-context-system`
 
@@ -86,10 +86,11 @@ Everything AI thinks gets documented. No hidden context. Perfect session continu
 ### Optimized for Claude Code
 
 **Claude-specific features:**
-- **Slash commands** - `/save`, `/save-full`, `/init-context`, etc. (22 commands)
+- **Skills** - `/save`, `/save-full`, `/init-context`, etc. (7 modular skills)
+- **Agents** - 9 specialized agents for code review and analysis
 - **TodoWrite integration** - Automatic capture of task state
 - **Interactive workflows** - Approval checkpoints, validation prompts
-- **Command system** - Structured `.claude/commands/` architecture
+- **Hooks** - Automated session start health checks
 
 **Other AI tools:**
 - Can use the file structure and templates manually
@@ -145,10 +146,13 @@ rm -rf ai-context-system
 **Core documentation** (`/init-context`):
 ```
 your-project/
-├── .claude/                        # Claude Code commands (optional for other AIs)
-│   ├── commands/                   # 14 slash commands
-│   ├── docs/                       # Comprehensive guides
-│   └── checklists/                 # Review criteria
+├── .claude/                        # Claude Code integration (optional for other AIs)
+│   ├── skills/                     # 7 modular skills
+│   ├── agents/                     # 9 specialized agents
+│   ├── schemas/                    # JSON validation schemas
+│   ├── hooks/                      # Session automation
+│   ├── commands/                   # Slash commands
+│   └── docs/                       # Comprehensive guides
 ├── scripts/
 │   ├── save-full-helper.sh         # Session template generator
 │   ├── update-quick-reference.sh   # Auto-generates Quick Reference
@@ -426,12 +430,13 @@ See [SETUP_GUIDE.md](./SETUP_GUIDE.md) for detailed troubleshooting.
 **Current Version:** See [VERSION](./VERSION) file
 **Status:** Production Ready
 
-**Recent Highlights (v4.x):**
-- Modular code review system with 8 specialized audits
-- Auto-detection for database, hosting, and framework platforms
-- Context completeness detection and auto-population hints
-- CLAUDE.md at project root (auto-loaded by Claude Code)
-- Robust update notifications with suppression during updates
+**Recent Highlights (v5.x):**
+- Skills architecture replacing 22 commands with 7 modular skills
+- Agent-based code review with 9 specialized reviewers
+- Hooks system for safe-fail session automation
+- JSON schemas for structured validation
+- Cross-platform compatibility (macOS, Linux)
+- Smart loading for large DECISIONS.md files
 
 **See:** [CHANGELOG.md](./CHANGELOG.md) for complete version history
 
@@ -469,7 +474,7 @@ Then:
 **See also:**
 - [SETUP_GUIDE.md](./SETUP_GUIDE.md) - Complete installation and usage
 - [CHANGELOG.md](./CHANGELOG.md) - Version history
-- [MIGRATION_GUIDE_v2_to_v3.md](./MIGRATION_GUIDE_v2_to_v3.md) - Migration from v2.x
+- **Upgrading?** Run `/update-context-system` for automatic migration from v4.x
 
 ---
 
