@@ -242,14 +242,14 @@ Top priority: SEC-001 - Hardcoded API key
 
 | Agent | ID | Focus | Preset Membership |
 |-------|----|----|-------------------|
-| security-reviewer | security | Vulnerabilities, secrets, injection | all presets |
-| test-coverage-reviewer | testing | Untested code paths | prelaunch, backend |
-| performance-reviewer | performance | N+1 queries, blocking ops | prelaunch, frontend |
-| accessibility-reviewer | accessibility | WCAG compliance, a11y | prelaunch, frontend |
-| seo-reviewer | seo | Meta tags, OG, sitemap | prelaunch, frontend |
-| type-safety-reviewer | typescript | TypeScript strictness | (auto only) |
-| database-reviewer | database | SQL injection, N+1, unbounded | backend |
-| infrastructure-reviewer | infrastructure | CI secrets, health checks | backend |
+| security-reviewer | security | Secrets, injection, auth flaws | all presets |
+| test-coverage-reviewer | testing | Untested code paths | prelaunch, backend, frontend |
+| performance-reviewer | performance | Render loops, bundle size, memory | prelaunch, frontend |
+| accessibility-reviewer | accessibility | WCAG compliance, alt text, ARIA | prelaunch, frontend |
+| seo-reviewer | seo | Meta tags, OG, sitemap, Twitter cards | prelaunch, frontend |
+| type-safety-reviewer | typescript | TypeScript strictness, `any` usage | prelaunch, frontend, backend |
+| database-reviewer | database | N+1 queries, SQL injection, unbounded | backend |
+| infrastructure-reviewer | infrastructure | CI secrets, health checks, rate limits | backend |
 
 ## Fallback Behavior
 
