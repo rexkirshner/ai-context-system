@@ -34,20 +34,17 @@ Reviews codebase for SEO (Search Engine Optimization) issues.
 - Page load performance → performance-reviewer
 - API response headers → infrastructure-reviewer
 
-## File Scope
-
-Reads from `uiComponents` file list in scanner output.
-Focuses on page components, layouts, and metadata files.
-
 ## Purpose
 
-Identify SEO issues with **verification**. Every finding must include evidence of the issue AND confirmation that no proper SEO implementation exists. Framework-aware patterns avoid false positives for Next.js Metadata API, etc.
+Identify SEO issues with **verification**. Every finding must include:
+1. Evidence of the issue
+2. Confirmation that no proper SEO implementation exists
+
+Framework-aware: adjusts patterns for Next.js Metadata API, etc.
 
 ## Input
 
-- Codebase context from `.claude/cache/codebase-context.json`
-- Focus on `uiComponents` files (pages, layouts)
-- Check for sitemap.xml, robots.txt presence
+Codebase context from `.claude/cache/codebase-context.json`. Prioritize `uiComponents` (pages, layouts). Also check for sitemap.xml and robots.txt.
 
 ## Output
 
@@ -57,27 +54,27 @@ Array of `AuditFinding` objects with `category: "seo"` and `id` prefix `SEO-`.
 
 ### High Severity
 
-| Issue | Vuln Pattern | Mitigation Pattern |
-|-------|--------------|-------------------|
-| Missing title | `<head>` without `<title>` | `<title>\|metadata.*title\|generateMetadata` |
-| No meta description | No description meta tag | `meta.*description\|metadata.*description\|generateMetadata` |
-| Missing Open Graph | No `og:` tags for social sharing | `og:\|openGraph\|metadata.*openGraph` |
+| Issue | Look For | Safe If |
+|-------|----------|---------|
+| Missing title | Page without `<title>` tag | Has `<title>`, `metadata.title`, or `generateMetadata` |
+| No meta description | No description meta tag | Has `<meta name="description">` or `metadata.description` |
+| Missing Open Graph | No `og:` tags | Has `og:title`, `og:description`, or `metadata.openGraph` |
 
 ### Medium Severity
 
-| Issue | Vuln Pattern | Mitigation Pattern |
-|-------|--------------|-------------------|
-| No canonical URL | No `rel="canonical"` | `canonical\|metadata.*canonical\|alternates` |
-| Missing structured data | No JSON-LD | `ld\+json\|jsonLd\|application/ld` |
-| No lang attribute | `<html>` without `lang` | `lang=\|htmlAttributes.*lang` |
+| Issue | Look For | Safe If |
+|-------|----------|---------|
+| No canonical URL | No `rel="canonical"` link | Has canonical tag or `metadata.alternates.canonical` |
+| Missing structured data | No JSON-LD schema | Has `<script type="application/ld+json">` or `jsonLd` |
+| No lang attribute | `<html>` without `lang` | Has `lang="en"` or appropriate language |
 
 ### Low Severity
 
-| Issue | Vuln Pattern | Mitigation Pattern |
-|-------|--------------|-------------------|
-| No sitemap | Missing sitemap.xml | File exists OR `generateSitemaps\|sitemap.ts` |
-| No robots.txt | Missing robots.txt | File exists OR `robots.ts` |
-| Missing Twitter cards | No `twitter:` tags | `twitter:\|twitter.*card\|metadata.*twitter` |
+| Issue | Look For | Safe If |
+|-------|----------|---------|
+| No sitemap | Missing sitemap.xml | File exists or has `sitemap.ts` / `generateSitemaps` |
+| No robots.txt | Missing robots.txt | File exists or has `robots.ts` |
+| Missing Twitter cards | No `twitter:` meta tags | Has Twitter card tags or `metadata.twitter` |
 
 ## Execution
 
