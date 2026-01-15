@@ -1,13 +1,13 @@
-# Migration Guide: v4.x to v5.0
+# Migration Guide: v4.x to v5.0.2
 
-This guide covers migrating from AI Context System v4.x to v5.0.
+This guide covers migrating from AI Context System v4.x to v5.0.2.
 
 ## Overview
 
 v5.0 is a major redesign that:
-- Replaces commands with skills
-- Adds agent-based code review
-- Simplifies configuration
+- Simplifies commands (22 → 7 core commands)
+- Adds agent-based code review (12 specialized agents)
+- Adds skill definitions for modular execution
 - Preserves all user content
 
 ## Prerequisites
@@ -28,42 +28,45 @@ The migration creates a backup at:
 ### 2. Run Update
 
 ```bash
-/update
+/update-context-system
 ```
 
 ### 3. Verify
 
 ```bash
 # Check version
-cat VERSION  # Should show 5.0.0
+cat VERSION  # Should show 5.0.2
 
 # Check skills installed
 ls .claude/skills/*/SKILL.md | wc -l  # Should show 7
 
 # Run health check
-/review
+/review-context
 ```
 
 ## What Changes
 
-### Commands → Skills
+### Commands Renamed
 
-| Old (v4.x) | New (v5.0) |
-|------------|------------|
-| `/init-context` | `/init` |
+| Old (v4.x) | New (v5.0+) |
+|------------|-------------|
 | `/save-session` | `/save` |
 | `/save-session-full` | `/save-full` |
-| `/validate-context` | `/validate` |
-| `/export-context` | `/export` |
-| `/update-context` | `/update` |
-| `/code-review` | `code-reviewer` agent |
-| `/review-context` | `/review` |
+| `/update-context` | `/update-context-system` |
+| `/code-review` | `/code-review` (now with 8 specialized variants) |
+
+**Commands that stay the same:**
+- `/init-context`
+- `/review-context`
+- `/validate-context`
+- `/export-context`
 
 ### New Structure
 
 ```
 .claude/
-├── skills/          # NEW: Skill definitions
+├── commands/        # Core commands (md files)
+├── skills/          # NEW: Skill definitions for modular execution
 │   ├── init/
 │   ├── review/
 │   ├── save/
@@ -71,11 +74,10 @@ ls .claude/skills/*/SKILL.md | wc -l  # Should show 7
 │   ├── validate/
 │   ├── export/
 │   └── update/
-├── agents/          # NEW: Code review agents
+├── agents/          # NEW: Code review agents (12)
 ├── hooks/           # NEW: Session automation
 ├── schemas/         # NEW: JSON validation
-├── settings.json    # NEW: Profile config
-└── commands/        # REMOVED
+└── settings.json    # NEW: Profile config
 ```
 
 ### Configuration
@@ -115,13 +117,13 @@ This restores your v4.x installation from the backup.
 ls -la .claude/skills/
 ```
 
-If empty, try re-running `/update`.
+If empty, try re-running `/update-context-system`.
 
 ### Context Health Low
 
 ```bash
 # Run health check
-/review
+/review-context
 
 # Update Quick Reference
 /save
@@ -150,6 +152,6 @@ python3 -m json.tool context/.context-config.json
 ## Next Steps
 
 After migration:
-1. Run `/review` to check health
+1. Run `/review-context` to check health
 2. Run `/save` to update Quick Reference
 3. Explore new agents with `/code-review`
