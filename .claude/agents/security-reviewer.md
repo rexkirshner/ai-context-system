@@ -30,19 +30,15 @@ Reviews codebase for security vulnerabilities.
 - CI/CD secrets in workflows → infrastructure-reviewer
 - Console.log in production → performance-reviewer
 
-## File Scope
-
-Reads from `securityRelevant` file list in scanner output.
-Falls back to repo-wide scan only if list is empty.
-
 ## Purpose
 
-Identify security vulnerabilities with **verification**. Every finding must include evidence of the vulnerability AND confirmation that no mitigation exists.
+Identify security vulnerabilities with **verification**. Every finding must include:
+1. Evidence of the vulnerability
+2. Confirmation that no mitigation exists
 
 ## Input
 
-- Codebase context from `.claude/cache/codebase-context.json`
-- Focus on `securityRelevant` files first
+Codebase context from `.claude/cache/codebase-context.json`. Prioritize files in `securityRelevant` list; fall back to repo-wide scan if empty.
 
 ## Output
 
@@ -73,30 +69,38 @@ Array of `AuditFinding` objects:
 
 ## Security Patterns
 
+### Critical Severity
+
+| Issue | Look For | Safe If |
+|-------|----------|---------|
+| Eval/code injection | `eval(`, `new Function(`, `vm.runInContext` | Removed entirely |
+| Hardcoded production secrets | Real API keys, passwords in source | Uses `process.env` or secrets manager |
+
 ### High Severity
 
-| Issue | Vulnerability Pattern | Mitigation Pattern |
-|-------|----------------------|-------------------|
-| Hardcoded secrets | `SECRET\|KEY\|PASSWORD\|TOKEN.*=.*["'][^"']+["']` | `process\.env\|env\(` |
-| SQL injection | `query\(.*\+\|execute\(.*\$\{` | `parameterized\|prepared` |
-| Command injection | `exec\(.*\+\|spawn\(.*\+` | `escapeshell\|sanitize` |
-| XSS | `dangerouslySetInnerHTML` | `DOMPurify\|sanitize` |
-| Eval | `eval\(\|new Function\(` | (remove entirely) |
+| Issue | Look For | Safe If |
+|-------|----------|---------|
+| Hardcoded secrets | Variables named SECRET, KEY, PASSWORD, TOKEN with string values | References env vars |
+| SQL injection | String concatenation in queries (`query(x + y)`, template literals in SQL) | Uses parameterized/prepared statements |
+| Command injection | `exec()`, `spawn()` with user input concatenation | Uses `escapeshellarg` or allowlist |
+| XSS vulnerabilities | `dangerouslySetInnerHTML`, `innerHTML =` | Uses DOMPurify or sanitization |
+| Auth bypass | Missing auth middleware on protected routes | Has auth check before handler |
 
 ### Medium Severity
 
-| Issue | Vulnerability Pattern | Mitigation Pattern |
-|-------|----------------------|-------------------|
-| Weak crypto | `MD5\|SHA1(?!256)` | `SHA256\|bcrypt\|argon2` |
-| CORS wildcard | `origin: ['"]\*['"]` | Specific origins |
-| Exposed errors | `stack\|trace.*response` | `production\|NODE_ENV` |
+| Issue | Look For | Safe If |
+|-------|----------|---------|
+| Weak cryptography | MD5, SHA1 for passwords/tokens | Uses bcrypt, argon2, SHA256+ |
+| CORS wildcard | `origin: "*"` or `Access-Control-Allow-Origin: *` | Specific allowed origins |
+| Error exposure | Stack traces in API responses | Checks NODE_ENV, uses error handler |
+| Missing rate limiting | Auth endpoints without throttle | Has rate limiter middleware |
 
 ### Low Severity
 
-| Issue | Vulnerability Pattern | Mitigation Pattern |
-|-------|----------------------|-------------------|
-| Security TODOs | `TODO.*security\|FIXME.*auth` | (resolved or tracked) |
-| Debug endpoints | `/debug\|/test-` in routes | Removed or auth-protected |
+| Issue | Look For | Safe If |
+|-------|----------|---------|
+| Security TODOs | `TODO.*security`, `FIXME.*auth` comments | Tracked in issue tracker |
+| Debug endpoints | Routes like `/debug`, `/test-*` | Removed or behind auth |
 
 ## Execution
 
