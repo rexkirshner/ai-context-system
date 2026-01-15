@@ -495,6 +495,8 @@ TEMPLATES=(
   "ARCHITECTURE.template.md"
   # Audit system
   "audits-index.template.md"
+  # Migration
+  "MIGRATION_SUMMARY.md"
 )
 
 for tmpl in "${TEMPLATES[@]}"; do
@@ -568,6 +570,12 @@ color_echo "${BLUE}⬇️  Downloading documentation...${NC}"
 
 DOCS=(
   "command-philosophy.md"
+  "code-review-guide.md"
+  "README.md"
+  "review-context-guide.md"
+  "TROUBLESHOOTING.md"
+  "usage-examples.md"
+  "VERSION_MANAGEMENT.md"
 )
 
 for doc in "${DOCS[@]}"; do
@@ -671,6 +679,24 @@ if download_file "${RAW_URL}/.claude/hooks/session-start.sh" ".claude/hooks/sess
   chmod +x ".claude/hooks/session-start.sh"
 else
   ((FAILED_DOWNLOADS++))
+fi
+
+echo ""
+
+# =============================================================================
+# Step 9.9: Download settings (v5.0.0 - Profile Configuration)
+# =============================================================================
+
+color_echo "${BLUE}⬇️  Downloading settings...${NC}"
+
+echo -n "   Downloading settings.json... "
+# Only download if settings.json doesn't exist (preserve user customizations)
+if [ ! -f ".claude/settings.json" ]; then
+  if ! download_file "${RAW_URL}/.claude/settings.json" ".claude/settings.json" 50; then
+    ((FAILED_DOWNLOADS++))
+  fi
+else
+  color_echo "${BLUE}(preserved existing)${NC}"
 fi
 
 echo ""
