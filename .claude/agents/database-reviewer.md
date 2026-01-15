@@ -34,20 +34,17 @@ Reviews codebase for database and data access issues.
 - API response caching → infrastructure-reviewer
 - Connection string secrets → security-reviewer
 
-## File Scope
-
-Reads from `databaseFiles` file list in scanner output.
-Focuses on ORM schemas, migrations, queries, and data access layers.
-
 ## Purpose
 
-Identify database issues with **verification**. Every finding must include evidence of the issue AND confirmation that no proper optimization exists. Supports common ORMs: Prisma, Drizzle, TypeORM, Mongoose, Sequelize.
+Identify database issues with **verification**. Every finding must include:
+1. Evidence of the issue
+2. Confirmation that no proper optimization exists
+
+Supports common ORMs: Prisma, Drizzle, TypeORM, Mongoose, Sequelize.
 
 ## Input
 
-- Codebase context from `.claude/cache/codebase-context.json`
-- Focus on `databaseFiles` list
-- Check ORM-specific patterns based on detected dependencies
+Codebase context from `.claude/cache/codebase-context.json`. Prioritize `databaseFiles` list. Detect ORM from dependencies and apply ORM-specific patterns.
 
 ## Output
 
@@ -57,35 +54,35 @@ Array of `AuditFinding` objects with `category: "database"` and `id` prefix `DB-
 
 ### Critical Severity
 
-| Issue | Vuln Pattern | Mitigation Pattern |
-|-------|--------------|-------------------|
-| SQL injection | `$queryRaw\|$executeRaw` with `${` interpolation | `Prisma.sql\|parameterized\|prepared` |
-| Raw query injection | `query\(.*\+\|execute\(.*\$\{` | `parameterized\|placeholder\|?` |
+| Issue | Look For | Safe If |
+|-------|----------|---------|
+| SQL injection | `$queryRaw`/`$executeRaw` with string interpolation (`${var}`) | Uses `Prisma.sql` tagged template or parameterized query |
+| Raw query injection | String concatenation in `.query()` or `.execute()` | Uses placeholders (`?`, `$1`) or prepared statements |
 
 ### High Severity
 
-| Issue | Vuln Pattern | Mitigation Pattern |
-|-------|--------------|-------------------|
-| N+1 queries | `for.*await.*find(One\|Unique)\|forEach.*await` | `include:\|populate\|with:\|findMany` |
-| Unbounded fetch | `findMany()\|find({})` without limit | `take:\|limit\|LIMIT\|first:\|skip:.*take:` |
-| Missing transaction | Multiple writes without wrapper | `$transaction\|transaction\|BEGIN` |
-| No connection pooling | Direct connection strings | `pooling\|pool:\|connectionLimit` |
+| Issue | Look For | Safe If |
+|-------|----------|---------|
+| N+1 queries | `await` inside for/forEach loop calling `findOne`/`findUnique` | Uses `include`, `populate`, `with`, or batch `findMany` |
+| Unbounded fetch | `findMany()` or `find({})` without limit/take | Has `take`, `limit`, or `first` parameter |
+| Missing transaction | Multiple create/update/delete calls without wrapper | Uses `$transaction`, `transaction()`, or `BEGIN/COMMIT` |
+| No connection pooling | Direct connection string without pool config | Has `pool`, `pooling`, or `connectionLimit` setting |
 
 ### Medium Severity
 
-| Issue | Vuln Pattern | Mitigation Pattern |
-|-------|--------------|-------------------|
-| SELECT * usage | `SELECT \*\|findMany()` without select | `select:\|SELECT.*specific.*columns` |
-| Missing index hints | Large table full scans | `@index\|createIndex\|INDEX` |
-| No retry logic | Database calls without retry | `retry\|backoff\|attempts` |
+| Issue | Look For | Safe If |
+|-------|----------|---------|
+| SELECT * usage | `findMany()` without `select`, raw `SELECT *` | Specifies columns with `select:` or explicit column list |
+| Missing indexes | Queries on large tables without index | Has `@index`, `createIndex`, or documented index |
+| No retry logic | Database calls without error handling/retry | Has retry mechanism or backoff logic |
 
 ### Low Severity
 
-| Issue | Vuln Pattern | Mitigation Pattern |
-|-------|--------------|-------------------|
-| No soft delete | `delete()\|destroy()` on user data | `deletedAt\|softDelete\|paranoid` |
-| Raw SQL in code | Inline SQL strings | ORM query builders |
-| Missing timestamps | Models without audit fields | `createdAt\|updatedAt\|timestamps` |
+| Issue | Look For | Safe If |
+|-------|----------|---------|
+| No soft delete | `delete()` or `destroy()` on user data | Uses `deletedAt` field or soft delete pattern |
+| Raw SQL in code | Inline SQL strings in application code | Uses ORM query builders |
+| Missing timestamps | Models without audit fields | Has `createdAt`/`updatedAt` or `timestamps` option |
 
 ## Execution
 
