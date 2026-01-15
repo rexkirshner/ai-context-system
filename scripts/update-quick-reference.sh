@@ -69,6 +69,31 @@ TEST_CMD=$(jq -r '.project.commands.test // "N/A"' "$CONFIG_FILE")
 BUILD_CMD=$(jq -r '.project.commands.build // "N/A"' "$CONFIG_FILE")
 
 # =============================================================================
+# Stale File Detection (v5.0.2)
+# =============================================================================
+
+# Count stale files, excluding archives
+# Files older than 7 days are considered potentially stale
+# Excludes: *-archive-YYYY.md, archive/ subdirectory, *.archive.md
+count_stale_context_files() {
+  local context_dir="$1"
+
+  if [ ! -d "$context_dir" ]; then
+    echo "0"
+    return 0
+  fi
+
+  # Find files older than 7 days, excluding archives
+  find "$context_dir" -name "*.md" -type f -mtime +7 2>/dev/null | \
+    grep -v "/archive/" | \
+    grep -v "\-archive-[0-9]\{4\}\.md$" | \
+    grep -v "\.archive\.md$" | \
+    wc -l | tr -d ' '
+}
+
+STALE_FILE_COUNT=$(count_stale_context_files "$CONTEXT_DIR")
+
+# =============================================================================
 # Extract data from STATUS.md
 # =============================================================================
 
@@ -201,8 +226,8 @@ ${BUILD_CMD}     # Production build
 
 **Documentation Health:** ${DOC_HEALTH}
 - Last validated: ${DOC_AGE} days ago
-- Stale files: 0
-- All critical docs current
+- Stale files: ${STALE_FILE_COUNT}
+- ${STALE_FILE_COUNT:-0} file(s) older than 7 days (excluding archives)
 
 [Full report: Run /validate-context]
 EOF
