@@ -1,6 +1,6 @@
 # AI Context System
 
-**Version 5.0.1** • [What's New](#-v500-first-principles-redesign)
+**Version 5.0.2** • [What's New](#-v500-first-principles-redesign)
 
 > **Externalize AI context. Enable human-AI collaboration. Perfect session continuity.**
 >
@@ -43,6 +43,8 @@ v5.0.0 represents a complete redesign based on three core insights:
 - ✅ **Settings Profiles** - minimal, standard, comprehensive
 
 **v5.0.1 Patch:** Cross-platform fixes, session numbering, DECISIONS.md smart loading
+
+**v5.0.2 Patch:** Shell compatibility (zsh/bash), JSON export rewrite, UX improvements
 
 **Full details:** [CHANGELOG.md](./CHANGELOG.md) • **Upgrade:** `/update-context-system`
 

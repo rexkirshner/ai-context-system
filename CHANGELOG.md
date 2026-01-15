@@ -5,6 +5,46 @@ All notable changes to the AI Context System will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.0.2] - 2026-01-15
+
+**PATCH RELEASE** - Shell Compatibility and Robust Parsing
+
+This release addresses shell compatibility issues (zsh vs bash) and improves JSON export reliability across platforms.
+
+### Fixed
+
+- **zsh arithmetic failures** - `grep -c` empty results now properly handled with fallback (BUG-022)
+- **Variable expansion issues** - Replaced `$MV_CMD` variable with `move_file()` function for cross-shell compatibility (BUG-024)
+- **JSON export truncation** - Complete rewrite of `export-sessions-json.sh` using `|||` delimiter instead of `:` to preserve colons in titles (BUG-010-PARTIAL)
+- **Code blocks in SESSIONS.md** - JSON export now ignores session headers inside fenced code blocks
+- **Multi-paragraph TL;DR** - JSON export now preserves multi-paragraph TL;DR content
+- **Decision count patterns** - `count_decisions()` now supports both `## D001` and `### D001` formats (BUG-014)
+- **Stale file detection** - Archive files (`*-archive-YYYY.md`, `archive/` subdir) now excluded from stale count (BUG-016)
+- **Current focus extraction** - Pattern cascade tries multiple STATUS.md formats (BUG-015)
+
+### Added
+
+- **`color_echo()` function** - TTY-aware output that strips ANSI codes when piped (UX improvement)
+- **`count_decisions()` helper** - Centralized in `common-functions.sh` for consistent decision counting
+- **`IS_UPDATE` detection** - Installer now detects upgrade vs fresh install BEFORE any file operations (BUG-021)
+- **Context-appropriate messages** - Installer shows different "Next Steps" for upgrades vs fresh installs (UX-NEXT)
+- **Shell execution model docs** - Documented that each Bash call runs in fresh process (DOC-003)
+- **Session Index update step** - Added to `/save-full` skill (DOC-002)
+- **Enhanced session template** - Added optional sections: Duration, Problem Solved, Tests & Build, Work In Progress, Open Loops (DOC-001)
+
+### Testing
+
+- **New test suites:**
+  - `test-shell-compatibility.sh` - Runs in bash, zsh, and sh (POSIX)
+  - `test-json-export.sh` - 8 tests including titles with colons
+  - `test-data-extraction.sh` - 5 tests for Quick Reference patterns
+  - `test-exit-codes.sh` - 7 tests for exit code convention
+  - `test-ux-polish.sh` - 6 tests for TTY detection and ANSI stripping
+- All 80 core module tests passing
+- Shell compatibility verified on bash, zsh, and sh
+
+---
+
 ## [5.0.1] - 2026-01-14
 
 **PATCH RELEASE** - Bug Fixes and Cross-Platform Compatibility
