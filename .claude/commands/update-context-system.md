@@ -331,6 +331,33 @@ if [[ "$PREV_MAJOR" == "3" ]]; then
   echo ""
   echo "No action required - migration is automatic!"
   echo ""
+elif [[ "$PREV_MAJOR" == "4" ]]; then
+  echo ""
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo "📋 v4.x → v5.0.0 Migration Notes"
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo ""
+  echo "v5.0.0 is a MAJOR redesign. Key changes:"
+  echo ""
+  echo "  📁 New Directories Added:"
+  echo "  • .claude/skills/    - 7 modular skills (replaces 22 commands)"
+  echo "  • .claude/agents/    - 9 specialized code review agents"
+  echo "  • .claude/schemas/   - JSON validation schemas"
+  echo "  • .claude/hooks/     - Session automation (session-start.sh)"
+  echo ""
+  echo "  🔄 What Changed:"
+  echo "  • Commands are now skills (same names, modular architecture)"
+  echo "  • Code review uses agents (parallel, specialized reviewers)"
+  echo "  • New hooks system for session start automation"
+  echo ""
+  echo "  ✅ What's Preserved:"
+  echo "  • All your context files (CONTEXT.md, STATUS.md, etc.)"
+  echo "  • All your session history"
+  echo "  • All your decisions"
+  echo ""
+  echo "No action required - your content is preserved!"
+  echo "See CHANGELOG.md for full details."
+  echo ""
 elif [[ "$PREV_MAJOR" -lt "3" ]]; then
   echo ""
   echo "⚠️  Upgrading from v$PRE_UPGRADE_VERSION (very old version)"
@@ -340,7 +367,7 @@ elif [[ "$PREV_MAJOR" -lt "3" ]]; then
   echo "  https://github.com/rexkirshner/ai-context-system/blob/main/CHANGELOG.md"
   echo ""
 else
-  echo "✅ Already on v4.x - no migration needed"
+  echo "✅ Already on v5.x - no migration needed"
 fi
 ```
 
@@ -355,6 +382,18 @@ fi
 | `.claude/checklists/*.md` | Integrated into audit commands |
 
 All existing files are preserved in `docs/audits/archive/`.
+
+**v5.0.0 Architecture Changes Summary:**
+
+| Before (v4.x) | After (v5.0.0) |
+|---------------|----------------|
+| 22 commands in `.claude/commands/` | 7 skills in `.claude/skills/` |
+| Sequential code review | 9 parallel specialist agents |
+| Manual session start | Hooks system (session-start.sh) |
+| No schema validation | JSON schemas for all outputs |
+| Single configuration | 3 settings profiles (minimal, standard, comprehensive) |
+
+Your context files are fully preserved - only the tooling architecture changed.
 
 ### Step 5: Review Template Updates (Optional)
 
