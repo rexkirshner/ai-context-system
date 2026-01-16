@@ -120,9 +120,44 @@ Also flag:
 - Empty assertions (`expect(true).toBe(true)`)
 - Console.log in tests
 
+## Handling Intentional Decisions
+
+Before finalizing each finding, check if it matches a Known Project Decision from the context provided by the orchestrator.
+
+**Matching Process:**
+1. If decisions context is provided, compare finding keywords against each decision
+2. If a match is found (confidence >= 0.15):
+   - Change severity to `low`
+   - Prepend `[Intentional]` to the title
+   - Add `intentionalException` field with `decisionId` and `confidence`
+   - Add note to remediation: "This is documented as intentional in DECISIONS.md"
+
+**Example Transformation:**
+
+Before:
+```json
+{
+  "id": "TEST-001",
+  "severity": "high",
+  "title": "No test framework configured"
+}
+```
+
+After (if matches D001 "No test framework"):
+```json
+{
+  "id": "TEST-001",
+  "severity": "low",
+  "title": "[Intentional] No test framework configured",
+  "intentionalException": {"decisionId": "D001", "confidence": 0.65},
+  "remediation": "... Note: This is documented as intentional in DECISIONS.md (D001)"
+}
+```
+
 ## Guardrails
 
 - **DO** search test/, __tests__, and *.test.* locations
 - **DO** prioritize critical paths over 100% coverage
 - **DO** consider indirect testing via integration tests
 - **DO NOT** flag type definitions or interfaces
+- **DO** check findings against documented decisions before reporting

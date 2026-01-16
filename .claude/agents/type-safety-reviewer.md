@@ -111,9 +111,22 @@ Flag if strict options disabled:
 
 Exclude `*.d.ts`, `*generated*`, `*.gen.*`
 
+## Handling Intentional Decisions
+
+Before finalizing each finding, check if it matches a Known Project Decision from the context provided by the orchestrator.
+
+**Matching Process:**
+1. If decisions context is provided, compare finding keywords against each decision
+2. If a match is found (confidence >= 0.15):
+   - Change severity to `low`
+   - Prepend `[Intentional]` to the title
+   - Add `intentionalException` field with `decisionId` and `confidence`
+   - Add note to remediation: "This is documented as intentional in DECISIONS.md"
+
 ## Guardrails
 
 - **DO** check for eslint-disable comments as justification
 - **DO** consider external dependency constraints
 - **DO** use lower severity when uncertain
+- **DO** check findings against documented decisions before reporting
 - **DO NOT** flag generated type definition files

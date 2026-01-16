@@ -2790,6 +2790,94 @@ $formatted
 ---"
 }
 
+# Annotate a finding with decision match information
+#
+# Checks if a finding matches any documented decision, and if so:
+# - Downgrades severity to "low"
+# - Adds intentionalException with decisionId and confidence
+# - Prepends "[Intentional] " to title
+# - Adds note to remediation referencing DECISIONS.md
+#
+# Usage:
+#   annotated=$(annotate_finding_with_decision "$finding_json" "DECISIONS.md")
+#
+# Args:
+#   $1 - Finding JSON object (single finding)
+#   $2 - Path to DECISIONS.md file
+#   $3 - Threshold (optional, default: 0.15)
+#
+# Returns:
+#   Annotated finding JSON (unchanged if no match or file missing)
+#
+# Example:
+#   finding='{"id":"TEST-001","severity":"high",...}'
+#   result=$(annotate_finding_with_decision "$finding" "context/DECISIONS.md")
+#
+annotate_finding_with_decision() {
+  local finding="$1"
+  local decisions_file="$2"
+  local threshold="${3:-0.15}"
+
+  # Return unchanged if file doesn't exist
+  if [ ! -f "$decisions_file" ]; then
+    echo "$finding"
+    return 0
+  fi
+
+  # Extract text from finding to match against
+  local title description
+  title=$(echo "$finding" | jq -r '.title // ""')
+  description=$(echo "$finding" | jq -r '.description // ""')
+  local finding_text="$title $description"
+
+  # Get match result
+  local match_result
+  match_result=$(match_finding_to_decisions "$finding_text" "$decisions_file" "$threshold")
+
+  # Check if matched
+  local matched
+  matched=$(echo "$match_result" | jq -r '.matched // false')
+
+  if [ "$matched" = "true" ]; then
+    # Extract match details
+    local decision_id confidence
+    decision_id=$(echo "$match_result" | jq -r '.decision_id')
+    confidence=$(echo "$match_result" | jq -r '.confidence')
+
+    # Get current remediation
+    local current_remediation
+    current_remediation=$(echo "$finding" | jq -r '.remediation // ""')
+
+    # Add note to remediation
+    local new_remediation
+    if [ -n "$current_remediation" ]; then
+      new_remediation="${current_remediation}
+
+Note: This is documented as intentional in DECISIONS.md ($decision_id)"
+    else
+      new_remediation="Note: This is documented as intentional in DECISIONS.md ($decision_id)"
+    fi
+
+    # Annotate the finding
+    echo "$finding" | jq \
+      --arg did "$decision_id" \
+      --argjson conf "$confidence" \
+      --arg rem "$new_remediation" \
+      '
+        .severity = "low" |
+        .title = "[Intentional] " + .title |
+        .remediation = $rem |
+        .intentionalException = {
+          "decisionId": $did,
+          "confidence": $conf
+        }
+      '
+  else
+    # No match - return unchanged
+    echo "$finding"
+  fi
+}
+
 # =============================================================================
 
 # Run auto-update check in background (non-blocking)

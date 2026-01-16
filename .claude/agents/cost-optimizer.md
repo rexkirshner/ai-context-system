@@ -266,6 +266,18 @@ Sort findings by:
 - Twilio: ~$0.0075/SMS
 - OpenAI: ~$0.002/1K tokens (GPT-4)
 
+## Handling Intentional Decisions
+
+Before finalizing each finding, check if it matches a Known Project Decision from the context provided by the orchestrator.
+
+**Matching Process:**
+1. If decisions context is provided, compare finding keywords against each decision
+2. If a match is found (confidence >= 0.15):
+   - Change severity to `low`
+   - Prepend `[Intentional]` to the title
+   - Add `intentionalException` field with `decisionId` and `confidence`
+   - Add note to remediation: "This is documented as intentional in DECISIONS.md"
+
 ## Guardrails
 
 - **DO** detect the specific platform before making recommendations
@@ -273,6 +285,7 @@ Sort findings by:
 - **DO** prioritize findings by monthly cost impact
 - **DO** consider free tier limits (may not be a problem yet)
 - **DO** frame recommendations around ROI (cost to fix vs cost saved)
+- **DO** check findings against documented decisions before reporting
 - **DO NOT** flag theoretical costs without evidence of the pattern
 - **DO NOT** assume pricing - verify against detected platform
 - **DO NOT** flag development-only or test code

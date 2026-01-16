@@ -84,6 +84,25 @@
       "type": "string",
       "enum": ["trivial", "small", "medium", "large"],
       "description": "Estimated effort to fix"
+    },
+    "intentionalException": {
+      "type": "object",
+      "description": "Present when finding matches a documented decision in DECISIONS.md. These findings have downgraded severity and are marked as intentional.",
+      "properties": {
+        "decisionId": {
+          "type": "string",
+          "pattern": "^D[0-9]+$",
+          "description": "ID of the matching decision (e.g., D001)"
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Match confidence score (0-1)"
+        }
+      },
+      "required": ["decisionId", "confidence"],
+      "additionalProperties": false
     }
   },
   "additionalProperties": false

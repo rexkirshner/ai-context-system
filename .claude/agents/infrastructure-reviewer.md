@@ -117,11 +117,24 @@ From `ciWorkflows`, identify platform:
 - Check for structured logging setup
 - Look for metrics/monitoring config
 
+## Handling Intentional Decisions
+
+Before finalizing each finding, check if it matches a Known Project Decision from the context provided by the orchestrator.
+
+**Matching Process:**
+1. If decisions context is provided, compare finding keywords against each decision
+2. If a match is found (confidence >= 0.15):
+   - Change severity to `low`
+   - Prepend `[Intentional]` to the title
+   - Add `intentionalException` field with `decisionId` and `confidence`
+   - Add note to remediation: "This is documented as intentional in DECISIONS.md"
+
 ## Guardrails
 
 - **DO** check for secrets in ALL config files, not just CI
 - **DO** verify health checks return proper status codes
 - **DO** prioritize secrets exposure over performance
+- **DO** check findings against documented decisions before reporting
 - **DO NOT** flag example/placeholder secrets in documentation
 - **DO NOT** flag development-only configurations
 - **DO NOT** flag optional CI optimizations as high severity
