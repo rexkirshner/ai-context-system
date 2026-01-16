@@ -2485,6 +2485,143 @@ group_similar_findings() {
 }
 
 # =============================================================================
+# Monorepo Detection Utilities (v5.1.0)
+# =============================================================================
+
+# Detect monorepo type and return configuration
+#
+# Checks for monorepo indicator files in priority order:
+# 1. turbo.json (Turborepo)
+# 2. nx.json (Nx)
+# 3. lerna.json (Lerna)
+# 4. pnpm-workspace.yaml (pnpm)
+# 5. package.json with workspaces + yarn.lock (Yarn)
+# 6. package.json with workspaces (npm)
+# 7. Otherwise: single project
+#
+# Usage:
+#   result=$(detect_monorepo)           # Current directory
+#   result=$(detect_monorepo "./apps")  # Specific directory
+#
+# Args:
+#   $1 - Directory to check (optional, default: current directory)
+#
+# Returns:
+#   JSON object with type, buildCmd, and workspaceCmd:
+#   {"type":"turborepo","buildCmd":"turbo build","workspaceCmd":"turbo build --filter="}
+#
+# Example:
+#   detect_monorepo /path/to/repo | jq -r '.type'
+#   # Returns: "turborepo", "nx", "lerna", "pnpm", "yarn", "npm", or "single"
+#
+detect_monorepo() {
+  local dir="${1:-.}"
+
+  # Turborepo (highest priority)
+  if [ -f "$dir/turbo.json" ]; then
+    echo '{"type":"turborepo","buildCmd":"turbo build","workspaceCmd":"turbo build --filter="}'
+    return 0
+  fi
+
+  # Nx
+  if [ -f "$dir/nx.json" ]; then
+    echo '{"type":"nx","buildCmd":"nx run-many --target=build","workspaceCmd":"nx run --project="}'
+    return 0
+  fi
+
+  # Lerna
+  if [ -f "$dir/lerna.json" ]; then
+    echo '{"type":"lerna","buildCmd":"lerna run build","workspaceCmd":"lerna run build --scope="}'
+    return 0
+  fi
+
+  # pnpm workspaces
+  if [ -f "$dir/pnpm-workspace.yaml" ]; then
+    echo '{"type":"pnpm","buildCmd":"pnpm -r build","workspaceCmd":"pnpm --filter="}'
+    return 0
+  fi
+
+  # Yarn or npm workspaces (check package.json for workspaces field)
+  if [ -f "$dir/package.json" ]; then
+    # Check if workspaces field exists
+    if jq -e '.workspaces' "$dir/package.json" >/dev/null 2>&1; then
+      # Distinguish between yarn and npm based on lockfile
+      if [ -f "$dir/yarn.lock" ]; then
+        echo '{"type":"yarn","buildCmd":"yarn workspaces run build","workspaceCmd":"yarn workspace "}'
+        return 0
+      else
+        echo '{"type":"npm","buildCmd":"npm run build --workspaces","workspaceCmd":"npm run build -w "}'
+        return 0
+      fi
+    fi
+  fi
+
+  # Single project (no monorepo indicators)
+  echo '{"type":"single","buildCmd":"npm run build","workspaceCmd":null}'
+}
+
+# List all workspaces in a monorepo
+#
+# Enumerates workspaces based on the detected monorepo type.
+# For tools that use package.json workspaces, it expands glob patterns
+# and finds all directories containing package.json files.
+#
+# Usage:
+#   workspaces=$(list_workspaces)
+#   workspaces=$(list_workspaces "./monorepo")
+#
+# Args:
+#   $1 - Directory to check (optional, default: current directory)
+#
+# Returns:
+#   JSON array of workspace objects:
+#   [{"name":"web","path":"apps/web"},{"name":"api","path":"apps/api"}]
+#
+# Example:
+#   list_workspaces | jq '.[].name'
+#
+list_workspaces() {
+  local dir="${1:-.}"
+  local mono_type
+  mono_type=$(detect_monorepo "$dir" | jq -r '.type')
+
+  case "$mono_type" in
+    turborepo|nx|lerna|yarn|npm)
+      # Find all package.json files excluding node_modules
+      # Extract workspace info from each
+      find "$dir" -name "package.json" -not -path "*/node_modules/*" -not -path "$dir/package.json" 2>/dev/null \
+        | while read -r pkg; do
+            local ws_dir
+            ws_dir=$(dirname "$pkg")
+            local name
+            name=$(jq -r '.name // "unnamed"' "$pkg" 2>/dev/null)
+            # Make path relative to dir
+            local rel_path
+            rel_path=${ws_dir#"$dir/"}
+            echo "{\"name\":\"$name\",\"path\":\"$rel_path\"}"
+          done | jq -s '.' 2>/dev/null || echo "[]"
+      ;;
+    pnpm)
+      # For pnpm, we could parse pnpm-workspace.yaml but the find approach works too
+      find "$dir" -name "package.json" -not -path "*/node_modules/*" -not -path "$dir/package.json" 2>/dev/null \
+        | while read -r pkg; do
+            local ws_dir
+            ws_dir=$(dirname "$pkg")
+            local name
+            name=$(jq -r '.name // "unnamed"' "$pkg" 2>/dev/null)
+            local rel_path
+            rel_path=${ws_dir#"$dir/"}
+            echo "{\"name\":\"$name\",\"path\":\"$rel_path\"}"
+          done | jq -s '.' 2>/dev/null || echo "[]"
+      ;;
+    *)
+      # Single project - no workspaces
+      echo "[]"
+      ;;
+  esac
+}
+
+# =============================================================================
 
 # Run auto-update check in background (non-blocking)
 # Only if not already running and not in quiet mode
