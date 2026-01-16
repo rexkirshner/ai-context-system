@@ -114,6 +114,138 @@ find_context_dir() {
 }
 
 # =============================================================================
+# DECISIONS.md Parsing (v5.1.0)
+# =============================================================================
+
+# Parse DECISIONS.md and output JSON array of decisions
+#
+# Extracts decision blocks from a DECISIONS.md file. Each decision is expected
+# to have a header in the format: ## D### - Title
+#
+# The function handles:
+# - Empty files (returns [])
+# - Non-existent files (returns [])
+# - Malformed headers (skips them)
+# - Special characters in content (properly escapes for JSON)
+#
+# Usage:
+#   decisions=$(parse_decisions "context/DECISIONS.md")
+#   echo "$decisions" | jq '.[0].id'
+#
+# Args:
+#   $1 - Path to DECISIONS.md file
+#
+# Returns:
+#   JSON array of decision objects:
+#   [{"id":"D001","title":"Decision Title","content":"Full content..."}]
+#
+# Example:
+#   parse_decisions "context/DECISIONS.md" | jq 'length'
+#   # Returns: 5 (number of decisions)
+#
+parse_decisions() {
+  local decisions_file="$1"
+
+  # Return empty array if file doesn't exist or is empty
+  if [ ! -f "$decisions_file" ] || [ ! -s "$decisions_file" ]; then
+    echo "[]"
+    return 0
+  fi
+
+  # Use awk to parse the file - handles multi-line content properly
+  # Pattern: ## D### - Title (where ### is numbers)
+  awk '
+    BEGIN {
+      first = 1
+      printf "["
+    }
+
+    # Match decision headers: ## D001 - Title
+    /^## D[0-9]+ - / {
+      # If we had a previous decision, close it
+      if (id != "") {
+        # Escape the content for JSON
+        gsub(/\\/, "\\\\", content)  # Backslashes first
+        gsub(/"/, "\\\"", content)   # Double quotes
+        gsub(/\t/, "\\t", content)   # Tabs
+        gsub(/\r/, "", content)      # Carriage returns
+        # Newlines are handled by gsub below
+
+        # Remove leading/trailing whitespace from content
+        gsub(/^[[:space:]]+/, "", content)
+        gsub(/[[:space:]]+$/, "", content)
+
+        # Replace actual newlines with \n for JSON
+        gsub(/\n/, "\\n", content)
+
+        if (!first) printf ","
+        first = 0
+        printf "{\"id\":\"%s\",\"title\":\"%s\",\"content\":\"%s\"}", id, title, content
+      }
+
+      # Extract ID (D followed by digits)
+      match($0, /D[0-9]+/)
+      id = substr($0, RSTART, RLENGTH)
+
+      # Extract title (everything after "D### - ")
+      title = $0
+      sub(/^## D[0-9]+ - /, "", title)
+
+      # Escape title for JSON
+      gsub(/\\/, "\\\\", title)
+      gsub(/"/, "\\\"", title)
+
+      content = ""
+      next
+    }
+
+    # Skip other ## headers (like "## Decision Index", "## Guidelines")
+    /^## / {
+      # If we had a decision in progress, close it first
+      if (id != "") {
+        gsub(/\\/, "\\\\", content)
+        gsub(/"/, "\\\"", content)
+        gsub(/\t/, "\\t", content)
+        gsub(/\r/, "", content)
+        gsub(/^[[:space:]]+/, "", content)
+        gsub(/[[:space:]]+$/, "", content)
+        gsub(/\n/, "\\n", content)
+
+        if (!first) printf ","
+        first = 0
+        printf "{\"id\":\"%s\",\"title\":\"%s\",\"content\":\"%s\"}", id, title, content
+        id = ""
+        content = ""
+      }
+      next
+    }
+
+    # Accumulate content for current decision
+    id != "" {
+      if (content != "") content = content "\n"
+      content = content $0
+    }
+
+    END {
+      # Close any remaining decision
+      if (id != "") {
+        gsub(/\\/, "\\\\", content)
+        gsub(/"/, "\\\"", content)
+        gsub(/\t/, "\\t", content)
+        gsub(/\r/, "", content)
+        gsub(/^[[:space:]]+/, "", content)
+        gsub(/[[:space:]]+$/, "", content)
+        gsub(/\n/, "\\n", content)
+
+        if (!first) printf ","
+        printf "{\"id\":\"%s\",\"title\":\"%s\",\"content\":\"%s\"}", id, title, content
+      }
+      printf "]"
+    }
+  ' "$decisions_file"
+}
+
+# =============================================================================
 # Network Operations with Retry and Validation
 # =============================================================================
 
