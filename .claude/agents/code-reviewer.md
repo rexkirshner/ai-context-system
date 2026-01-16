@@ -108,24 +108,25 @@ All conditions must match (AND logic) for the agent to be selected in auto mode.
 
 | Preset | Agents Included |
 |--------|-----------------|
-| `--prelaunch` | security, testing, performance, accessibility, seo, typescript |
+| `--prelaunch` | security, testing, performance, accessibility, seo, typescript, cost |
 | `--frontend` | security, testing, performance, accessibility, seo, typescript |
-| `--backend` | security, testing, database, infrastructure, typescript |
+| `--backend` | security, testing, database, infrastructure, typescript, cost |
 | `--quick` | security |
-| `--all` | All 8 specialists |
+| `--all` | All 9 specialists |
 
 ## Input Options
 
 | Flag | Effect |
 |------|--------|
 | `--all` | Run all discovered specialists |
-| `--prelaunch` | Pre-deployment checklist (5 agents) |
-| `--frontend` | UI-focused review (4 agents) |
-| `--backend` | API-focused review (4 agents) |
+| `--prelaunch` | Pre-deployment checklist (7 agents) |
+| `--frontend` | UI-focused review (6 agents) |
+| `--backend` | API-focused review (6 agents) |
 | `--quick` | Security only |
 | `--security` | Just security agent |
 | `--seo` | Just SEO agent |
 | `--database` | Just database agent |
+| `--cost` | Just cost optimizer agent |
 | `--incremental` | Only review files changed since last audit |
 
 Multiple specific flags can be combined: `--security --database`
@@ -238,7 +239,7 @@ Reports: docs/audits/audit-03.{md,json}
 Top priority: SEC-001 - Hardcoded API key
 ```
 
-## Specialist Agents (8 total)
+## Specialist Agents (9 total)
 
 | Agent | ID | Focus | Preset Membership |
 |-------|----|----|-------------------|
@@ -250,6 +251,7 @@ Top priority: SEC-001 - Hardcoded API key
 | type-safety-reviewer | typescript | TypeScript strictness, `any` usage | prelaunch, frontend, backend |
 | database-reviewer | database | N+1 queries, SQL injection, unbounded | backend |
 | infrastructure-reviewer | infrastructure | CI secrets, health checks, rate limits | backend |
+| cost-optimizer | cost | External service costs, scaling inefficiencies | prelaunch, backend |
 
 ## Coverage Scope
 
@@ -267,6 +269,7 @@ The specialist agents focus on issues requiring **contextual understanding** tha
 | Testing | Coverage gaps, critical path testing, test quality |
 | Database | N+1 queries, SQL injection, transactions, connection pooling |
 | Infrastructure | CI secrets, health checks, rate limiting, observability |
+| Cost | External API efficiency, serverless optimization, database costs, bandwidth |
 
 ### What's Intentionally Excluded
 
