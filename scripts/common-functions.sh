@@ -160,27 +160,32 @@ parse_decisions() {
       printf "["
     }
 
+    # Function to escape and output a decision as JSON
+    # This eliminates code duplication (was repeated 3 times)
+    function output_decision(dec_id, dec_title, dec_content) {
+      # Escape content for JSON
+      gsub(/\\/, "\\\\", dec_content)  # Backslashes first
+      gsub(/"/, "\\\"", dec_content)   # Double quotes
+      gsub(/\t/, "\\t", dec_content)   # Tabs
+      gsub(/\r/, "", dec_content)      # Carriage returns
+
+      # Remove leading/trailing whitespace from content
+      gsub(/^[[:space:]]+/, "", dec_content)
+      gsub(/[[:space:]]+$/, "", dec_content)
+
+      # Replace actual newlines with \n for JSON
+      gsub(/\n/, "\\n", dec_content)
+
+      if (!first) printf ","
+      first = 0
+      printf "{\"id\":\"%s\",\"title\":\"%s\",\"content\":\"%s\"}", dec_id, dec_title, dec_content
+    }
+
     # Match decision headers: ## D001 - Title
     /^## D[0-9]+ - / {
-      # If we had a previous decision, close it
+      # If we had a previous decision, output it
       if (id != "") {
-        # Escape the content for JSON
-        gsub(/\\/, "\\\\", content)  # Backslashes first
-        gsub(/"/, "\\\"", content)   # Double quotes
-        gsub(/\t/, "\\t", content)   # Tabs
-        gsub(/\r/, "", content)      # Carriage returns
-        # Newlines are handled by gsub below
-
-        # Remove leading/trailing whitespace from content
-        gsub(/^[[:space:]]+/, "", content)
-        gsub(/[[:space:]]+$/, "", content)
-
-        # Replace actual newlines with \n for JSON
-        gsub(/\n/, "\\n", content)
-
-        if (!first) printf ","
-        first = 0
-        printf "{\"id\":\"%s\",\"title\":\"%s\",\"content\":\"%s\"}", id, title, content
+        output_decision(id, title, content)
       }
 
       # Extract ID (D followed by digits)
@@ -194,6 +199,7 @@ parse_decisions() {
       # Escape title for JSON
       gsub(/\\/, "\\\\", title)
       gsub(/"/, "\\\"", title)
+      gsub(/\t/, "\\t", title)
 
       content = ""
       next
@@ -201,19 +207,9 @@ parse_decisions() {
 
     # Skip other ## headers (like "## Decision Index", "## Guidelines")
     /^## / {
-      # If we had a decision in progress, close it first
+      # If we had a decision in progress, output it first
       if (id != "") {
-        gsub(/\\/, "\\\\", content)
-        gsub(/"/, "\\\"", content)
-        gsub(/\t/, "\\t", content)
-        gsub(/\r/, "", content)
-        gsub(/^[[:space:]]+/, "", content)
-        gsub(/[[:space:]]+$/, "", content)
-        gsub(/\n/, "\\n", content)
-
-        if (!first) printf ","
-        first = 0
-        printf "{\"id\":\"%s\",\"title\":\"%s\",\"content\":\"%s\"}", id, title, content
+        output_decision(id, title, content)
         id = ""
         content = ""
       }
@@ -227,18 +223,9 @@ parse_decisions() {
     }
 
     END {
-      # Close any remaining decision
+      # Output any remaining decision
       if (id != "") {
-        gsub(/\\/, "\\\\", content)
-        gsub(/"/, "\\\"", content)
-        gsub(/\t/, "\\t", content)
-        gsub(/\r/, "", content)
-        gsub(/^[[:space:]]+/, "", content)
-        gsub(/[[:space:]]+$/, "", content)
-        gsub(/\n/, "\\n", content)
-
-        if (!first) printf ","
-        printf "{\"id\":\"%s\",\"title\":\"%s\",\"content\":\"%s\"}", id, title, content
+        output_decision(id, title, content)
       }
       printf "]"
     }
@@ -405,61 +392,55 @@ match_finding_to_decisions() {
     return 0
   fi
 
-  # Check if decisions file has any valid decisions (use pipe to avoid variable issues)
-  local count
-  count=$(parse_decisions "$decisions_file" | jq 'length')
-  if [ "$count" -eq 0 ]; then
-    echo '{"matched":false}'
-    return 0
-  fi
-
   # Use a temp file to store decisions JSON (avoids bash interpreting escape sequences)
   local temp_file
   temp_file=$(mktemp)
+
+  # Ensure cleanup on exit (handles errors, interrupts, etc.)
+  trap "rm -f '$temp_file'" EXIT
+
+  # Parse decisions once and store in temp file
   parse_decisions "$decisions_file" > "$temp_file"
+
+  # Check if we have any valid decisions
+  local count
+  count=$(jq 'length' "$temp_file")
+  if [ "$count" -eq 0 ]; then
+    rm -f "$temp_file"
+    trap - EXIT
+    echo '{"matched":false}'
+    return 0
+  fi
 
   # Find best match
   local best_id=""
   local best_score="0.00"
 
-  # Iterate through decisions by index
-  local i=0
-  while [ "$i" -lt "$count" ]; do
-    # Extract fields using jq with index from the temp file
-    local id title content
-    id=$(jq -r ".[$i].id" "$temp_file")
-    title=$(jq -r ".[$i].title" "$temp_file")
-    content=$(jq -r ".[$i].content" "$temp_file")
-
-    # Combine title and content for matching (limit content to avoid huge strings)
-    # Take first 500 chars of content to keep matching fast
+  # Extract all decisions in a single jq call (MUCH faster than 3 calls per decision)
+  # Format: id<TAB>title<TAB>content (truncated)
+  # Using NULL as record separator to handle content with newlines
+  while IFS=$'\t' read -r id title content; do
+    # Combine title and content for matching (content already truncated by jq)
     local decision_text
-    decision_text="$title ${content:0:500}"
+    decision_text="$title $content"
 
     # Calculate similarity
     local score
     score=$(jaccard_similarity "$finding" "$decision_text")
 
-    # Check if this is the best match
-    local is_better
-    is_better=$(awk -v new="$score" -v old="$best_score" 'BEGIN { print (new > old) ? "1" : "0" }')
-
-    if [ "$is_better" -eq 1 ]; then
+    # Check if this is the best match (inline comparison for speed)
+    if awk -v new="$score" -v old="$best_score" 'BEGIN { exit (new > old) ? 0 : 1 }'; then
       best_id="$id"
       best_score="$score"
     fi
+  done < <(jq -r '.[] | [.id, .title, (.content | .[0:500] | gsub("\n"; " "))] | @tsv' "$temp_file")
 
-    i=$((i + 1))
-  done
-
-  # Clean up temp file
+  # Clean up
   rm -f "$temp_file"
+  trap - EXIT
 
   # Check if best match exceeds threshold
-  local exceeds_threshold
-  exceeds_threshold=$(awk -v score="$best_score" -v thresh="$threshold" 'BEGIN { print (score >= thresh) ? "1" : "0" }')
-
-  if [ "$exceeds_threshold" -eq 1 ] && [ -n "$best_id" ]; then
+  if awk -v score="$best_score" -v thresh="$threshold" 'BEGIN { exit (score >= thresh) ? 0 : 1 }' && [ -n "$best_id" ]; then
     echo "{\"matched\":true,\"decision_id\":\"$best_id\",\"confidence\":$best_score}"
   else
     echo '{"matched":false}'
@@ -2398,18 +2379,28 @@ detect_project_type() {
 #
 dedupe_by_location() {
   jq '
-    # Group findings by file:line
-    group_by(.location.file + ":" + (.location.line | tostring))
+    # Create a grouping key that handles missing location gracefully
+    # Findings without location get unique keys (their ID) so they are not merged
+    def location_key:
+      if .location.file and .location.line then
+        .location.file + ":" + (.location.line | tostring)
+      else
+        # Use finding ID as key for findings without location - prevents incorrect merging
+        "NO_LOCATION:" + .id
+      end;
+
+    # Group findings by location key
+    group_by(location_key)
     | map(
       if length == 1 then
         # Single finding - return as-is
         .[0]
       else
-        # Multiple findings - merge them
+        # Multiple findings at same location - merge them
         .[0] + {
           "id": (.[0].id + "-MERGED"),
           "severity": (
-            [.[] | .severity] | map(
+            [.[] | .severity // "LOW"] | map(
               if . == "CRITICAL" then 4
               elif . == "HIGH" then 3
               elif . == "MEDIUM" then 2
@@ -2453,25 +2444,28 @@ group_similar_findings() {
   local min_group_size="${1:-3}"
 
   jq --argjson min "$min_group_size" '
-    # Create grouping key: category + normalized title
+    # Create grouping key: category + normalized title (with null safety)
     def grouping_key:
-      .category + ":" + (.title | gsub(" in .*$"; ""));
+      ((.category // "uncategorized") + ":" + ((.title // "") | gsub(" in .*$"; "")));
 
     # Group by the key
     group_by(grouping_key)
+    | to_entries
     | map(
+      .key as $group_index |
+      .value |
       if length >= $min then
         # Add a GROUP entry for patterns with enough matches
-        # Use string interpolation for the id field
-        (.[0].category | ascii_upcase) as $cat |
-        (length | tostring) as $len |
+        # Use group index for unique ID to avoid collisions
+        (.[0].category // "uncategorized") as $cat |
+        ($cat | ascii_upcase) as $cat_upper |
         . + [{
-          "id": "GROUP-\($cat)-\($len)",
+          "id": "GROUP-\($cat_upper)-\($group_index)",
           "type": "group",
-          "category": .[0].category,
-          "pattern": (.[0].title | gsub(" in .*$"; "")),
+          "category": $cat,
+          "pattern": ((.[0].title // "") | gsub(" in .*$"; "")),
           "count": length,
-          "files": ([.[] | .location.file] | unique),
+          "files": ([.[] | .location.file // null] | map(select(. != null)) | unique),
           "memberIds": ([.[] | .id])
         }]
       else
@@ -2586,30 +2580,15 @@ list_workspaces() {
   mono_type=$(detect_monorepo "$dir" | jq -r '.type')
 
   case "$mono_type" in
-    turborepo|nx|lerna|yarn|npm)
-      # Find all package.json files excluding node_modules
+    turborepo|nx|lerna|pnpm|yarn|npm)
+      # Find all package.json files excluding node_modules and root package.json
       # Extract workspace info from each
       find "$dir" -name "package.json" -not -path "*/node_modules/*" -not -path "$dir/package.json" 2>/dev/null \
         | while read -r pkg; do
-            local ws_dir
+            local ws_dir name rel_path
             ws_dir=$(dirname "$pkg")
-            local name
             name=$(jq -r '.name // "unnamed"' "$pkg" 2>/dev/null)
             # Make path relative to dir
-            local rel_path
-            rel_path=${ws_dir#"$dir/"}
-            echo "{\"name\":\"$name\",\"path\":\"$rel_path\"}"
-          done | jq -s '.' 2>/dev/null || echo "[]"
-      ;;
-    pnpm)
-      # For pnpm, we could parse pnpm-workspace.yaml but the find approach works too
-      find "$dir" -name "package.json" -not -path "*/node_modules/*" -not -path "$dir/package.json" 2>/dev/null \
-        | while read -r pkg; do
-            local ws_dir
-            ws_dir=$(dirname "$pkg")
-            local name
-            name=$(jq -r '.name // "unnamed"' "$pkg" 2>/dev/null)
-            local rel_path
             rel_path=${ws_dir#"$dir/"}
             echo "{\"name\":\"$name\",\"path\":\"$rel_path\"}"
           done | jq -s '.' 2>/dev/null || echo "[]"

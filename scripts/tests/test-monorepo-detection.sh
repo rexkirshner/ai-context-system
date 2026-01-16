@@ -234,6 +234,75 @@ test_workspace_cmd_present() {
 }
 
 # =============================================================================
+# Test 12: list_workspaces returns workspace array for monorepos
+# =============================================================================
+test_list_workspaces_monorepo() {
+  echo ""
+  echo "Test 12: list_workspaces should return workspaces for turborepo"
+
+  local result
+  result=$(list_workspaces "$FIXTURES_DIR/monorepo-turborepo")
+
+  # Should be valid JSON array
+  echo "$result" | jq . > /dev/null 2>&1
+  assert_equal "$?" "0" "Output should be valid JSON"
+
+  # Should have 3 workspaces (web, api, ui)
+  local count
+  count=$(echo "$result" | jq 'length')
+  assert_equal "$count" "3" "Should find 3 workspaces"
+}
+
+# =============================================================================
+# Test 13: list_workspaces returns workspace names
+# =============================================================================
+test_list_workspaces_names() {
+  echo ""
+  echo "Test 13: list_workspaces should include workspace names"
+
+  local result
+  result=$(list_workspaces "$FIXTURES_DIR/monorepo-turborepo")
+
+  # Check that names are present
+  local names
+  names=$(echo "$result" | jq -r '.[].name' | sort | tr '\n' ',')
+  assert_contains "$names" "@fixture/api" "Should contain @fixture/api"
+  assert_contains "$names" "@fixture/web" "Should contain @fixture/web"
+  assert_contains "$names" "@fixture/ui" "Should contain @fixture/ui"
+}
+
+# =============================================================================
+# Test 14: list_workspaces returns workspace paths
+# =============================================================================
+test_list_workspaces_paths() {
+  echo ""
+  echo "Test 14: list_workspaces should include workspace paths"
+
+  local result
+  result=$(list_workspaces "$FIXTURES_DIR/monorepo-turborepo")
+
+  # Check that paths are present
+  local paths
+  paths=$(echo "$result" | jq -r '.[].path' | sort | tr '\n' ',')
+  assert_contains "$paths" "apps/api" "Should contain apps/api path"
+  assert_contains "$paths" "apps/web" "Should contain apps/web path"
+  assert_contains "$paths" "packages/ui" "Should contain packages/ui path"
+}
+
+# =============================================================================
+# Test 15: list_workspaces returns empty for single project
+# =============================================================================
+test_list_workspaces_single() {
+  echo ""
+  echo "Test 15: list_workspaces should return empty array for single project"
+
+  local result
+  result=$(list_workspaces "$FIXTURES_DIR/single-project")
+
+  assert_equal "$result" "[]" "Single project should have no workspaces"
+}
+
+# =============================================================================
 # Run all tests
 # =============================================================================
 echo "╔════════════════════════════════════════════════════════════╗"
@@ -252,5 +321,9 @@ test_priority_order
 test_default_directory
 test_nonexistent_directory
 test_workspace_cmd_present
+test_list_workspaces_monorepo
+test_list_workspaces_names
+test_list_workspaces_paths
+test_list_workspaces_single
 
 print_test_summary
