@@ -257,6 +257,14 @@ When decisions context is available, each specialist agent receives it prepended
 
 This enables agents to recognize intentional decisions and mark findings accordingly.
 
+**Match Accuracy Logging:**
+All decision match attempts are logged to `.claude/cache/decision-matches.log` for accuracy analysis:
+```json
+{"timestamp":"2026-01-16T...","findingId":"SEC-001","findingTitle":"...","decisionId":"D001","confidence":0.65,"threshold":0.15,"result":"matched","agentId":"security"}
+```
+
+Use `./scripts/analyze-decision-matches.sh` to view match statistics and recommendations.
+
 ### 5. Run Synthesis Agent
 
 Pass all findings to synthesis-agent for:

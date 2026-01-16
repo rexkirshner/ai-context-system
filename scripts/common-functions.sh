@@ -2878,6 +2878,82 @@ Note: This is documented as intentional in DECISIONS.md ($decision_id)"
   fi
 }
 
+# Log a decision match attempt for accuracy tracking
+#
+# Logs match attempts (both matches and non-matches) to enable
+# threshold tuning and match accuracy analysis over time.
+#
+# Usage:
+#   log_decision_match "SEC-001" "Finding title" "D001" "0.65" "true" "security" "0.15"
+#
+# Args:
+#   $1 - Finding ID
+#   $2 - Finding title
+#   $3 - Matched decision ID (empty if no match)
+#   $4 - Confidence score
+#   $5 - Match result ("true" or "false")
+#   $6 - Agent ID
+#   $7 - Threshold used (optional, default: 0.15)
+#
+# Environment:
+#   DECISION_MATCH_LOG_DIR - Override log directory (default: .claude/cache)
+#
+# Log format: JSONL (one JSON object per line)
+#
+log_decision_match() {
+  local finding_id="$1"
+  local finding_title="$2"
+  local decision_id="$3"
+  local confidence="$4"
+  local matched="$5"
+  local agent_id="$6"
+  local threshold="${7:-0.15}"
+
+  # Determine log directory
+  local log_dir="${DECISION_MATCH_LOG_DIR:-.claude/cache}"
+  local log_file="$log_dir/decision-matches.log"
+
+  # Create directory if needed
+  mkdir -p "$log_dir" 2>/dev/null
+
+  # Determine result string
+  local result
+  if [ "$matched" = "true" ]; then
+    result="matched"
+  else
+    result="not_matched"
+  fi
+
+  # Build JSON entry
+  local timestamp
+  timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+  # Escape special characters in strings
+  finding_title=$(echo "$finding_title" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g')
+
+  # Create JSON entry
+  local json_entry
+  if [ -n "$decision_id" ]; then
+    json_entry=$(printf '{"timestamp":"%s","findingId":"%s","findingTitle":"%s","decisionId":"%s","confidence":%s,"threshold":%s,"result":"%s","agentId":"%s"}' \
+      "$timestamp" "$finding_id" "$finding_title" "$decision_id" "$confidence" "$threshold" "$result" "$agent_id")
+  else
+    json_entry=$(printf '{"timestamp":"%s","findingId":"%s","findingTitle":"%s","decisionId":null,"confidence":%s,"threshold":%s,"result":"%s","agentId":"%s"}' \
+      "$timestamp" "$finding_id" "$finding_title" "$confidence" "$threshold" "$result" "$agent_id")
+  fi
+
+  # Append to log file
+  echo "$json_entry" >> "$log_file"
+
+  # Check for large file (>10MB) and emit hint
+  if [ -f "$log_file" ]; then
+    local size
+    size=$(wc -c < "$log_file" | tr -d ' ')
+    if [ "$size" -gt 10485760 ]; then
+      echo "[INFO] Decision match log is large (>10MB). Consider rotation." >&2
+    fi
+  fi
+}
+
 # =============================================================================
 
 # Run auto-update check in background (non-blocking)
