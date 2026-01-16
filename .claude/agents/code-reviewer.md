@@ -27,12 +27,18 @@ Run comprehensive code review by:
 │     → Validate against schema                                   │
 │     → Check for duplicate IDs (HARD FAIL if found)             │
 │                                                                  │
+│  2.5. Load project decisions (if context/DECISIONS.md exists)  │
+│     → Parse decisions using parse_decisions()                   │
+│     → Format as table using format_decisions_for_agents()       │
+│     → Decisions passed to specialists for exception handling    │
+│                                                                  │
 │  3. Select agents based on:                                     │
 │     → User flags (--all, --prelaunch, --security, etc.)        │
 │     → OR: Match applicability conditions against scanner        │
 │                                                                  │
 │  4. Run selected specialists in parallel                        │
 │     → Each uses scanner's specialized file lists               │
+│     → Each receives project decisions context                  │
 │                                                                  │
 │  5. Run synthesis-agent                                         │
 │     → Deduplicate (same file:line = one finding)               │
@@ -196,6 +202,36 @@ Cache is stale when:
 
 Read all `*-reviewer.md` files and extract contracts. Fail hard on duplicate IDs.
 
+### 2.5. Load Project Decisions
+
+Check if `context/DECISIONS.md` exists and load decision context for agents.
+
+**Algorithm:**
+1. Check if `context/DECISIONS.md` exists
+2. If exists, call `load_decisions_context()` from common-functions.sh
+3. Store the formatted decisions context in orchestrator state
+4. Pass to each specialist agent's input prompt
+
+**Graceful Degradation:**
+- If no DECISIONS.md exists, this step is skipped silently
+- Agents run normally without decision matching capability
+- No warning logged (missing DECISIONS.md is valid for many projects)
+
+**Decision Context Format:**
+```markdown
+---
+## Known Project Decisions
+
+The following decisions are documented in DECISIONS.md. If a finding matches
+one of these decisions, downgrade its severity to LOW and mark as intentional.
+
+| ID | Decision | Keywords |
+|----|----------|----------|
+| D001 | No Test Framework | test, testing, manual |
+| D003 | Use Vanilla JavaScript | vanilla, javascript, no typescript |
+---
+```
+
 ### 3. Select Agents
 
 Apply selection algorithm based on flags and scanner output.
@@ -205,7 +241,21 @@ Apply selection algorithm based on flags and scanner output.
 Use Task tool to launch selected specialists concurrently. Each:
 - Reads from cached codebase context
 - Uses scanner's specialized file lists (not repo-wide grep)
+- Receives project decisions context (from step 2.5) for exception handling
 - Returns `AuditFinding[]`
+
+**Agent Input Enhancement:**
+When decisions context is available, each specialist agent receives it prepended to their prompt:
+```
+[Standard agent prompt]
+
+---
+## Known Project Decisions
+[Decisions table from step 2.5]
+---
+```
+
+This enables agents to recognize intentional decisions and mark findings accordingly.
 
 ### 5. Run Synthesis Agent
 

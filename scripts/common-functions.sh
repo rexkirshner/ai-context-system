@@ -2601,6 +2601,196 @@ list_workspaces() {
 }
 
 # =============================================================================
+# PHASE 4: DECISION-AWARE CODE REVIEW
+# =============================================================================
+
+# Extract keywords from decision text
+#
+# Extracts meaningful keywords from decision title and content,
+# filtering out stopwords and normalizing to lowercase.
+# Used for displaying relevant keywords to agents.
+#
+# Usage:
+#   keywords=$(get_decision_keywords "No test framework - manual testing only")
+#
+# Args:
+#   $1 - Text to extract keywords from (title + content)
+#
+# Returns:
+#   Space-separated list of lowercase keywords (max 8)
+#
+# Example:
+#   get_decision_keywords "Use vanilla JavaScript" → "vanilla javascript"
+#
+get_decision_keywords() {
+  local text="$1"
+
+  # Skip if empty
+  [ -z "$text" ] && return 0
+
+  # Extract keywords using awk
+  # 1. Lowercase
+  # 2. Remove punctuation
+  # 3. Split on whitespace
+  # 4. Filter stopwords
+  # 5. Take unique, limit to 8
+  echo "$text" | awk '
+    BEGIN {
+      # Common stopwords to filter
+      split("the a an is are was were be been being have has had do does did will would could should may might must shall can this that these those it its they them their there here where when what which who whom whose how why and or but if then else for of to from by with at in on as", stop)
+      for (i in stop) stopwords[stop[i]] = 1
+    }
+    {
+      # Lowercase and clean
+      text = tolower($0)
+      gsub(/[^a-z0-9 ]/, " ", text)
+
+      # Split and filter
+      n = split(text, words)
+      count = 0
+      for (i = 1; i <= n && count < 8; i++) {
+        w = words[i]
+        if (length(w) > 2 && !(w in stopwords) && !(w in seen)) {
+          seen[w] = 1
+          result = result (result ? " " : "") w
+          count++
+        }
+      }
+    }
+    END { print result }
+  '
+}
+
+# Format decisions as markdown table for agent input
+#
+# Takes a DECISIONS.md file and formats its decisions as a markdown
+# table suitable for inclusion in agent prompts. Each decision is
+# represented with its ID, title, and extracted keywords.
+#
+# Usage:
+#   table=$(format_decisions_for_agents "context/DECISIONS.md")
+#
+# Args:
+#   $1 - Path to DECISIONS.md file
+#
+# Returns:
+#   Markdown-formatted section with decisions table, or empty string if file missing
+#
+# Example output:
+#   ## Known Project Decisions
+#
+#   The following decisions are documented in DECISIONS.md...
+#
+#   | ID | Decision | Keywords |
+#   |----|----------|----------|
+#   | D001 | No test framework | test, testing, manual |
+#
+format_decisions_for_agents() {
+  local decisions_file="$1"
+
+  # Return empty if file doesn't exist
+  [ -f "$decisions_file" ] || return 0
+
+  # Parse decisions
+  local decisions
+  decisions=$(parse_decisions "$decisions_file")
+
+  # Check if we have any decisions
+  local count
+  count=$(echo "$decisions" | jq 'length' 2>/dev/null || echo "0")
+
+  # Build the output
+  local output=""
+
+  # Section header
+  output="## Known Project Decisions
+
+The following decisions are documented in DECISIONS.md. If a finding matches
+one of these decisions, downgrade its severity to LOW and mark as intentional.
+
+"
+
+  # If no decisions, indicate that
+  if [ "$count" = "0" ] || [ "$count" = "null" ]; then
+    output="${output}*No decisions documented.*"
+    echo "$output"
+    return 0
+  fi
+
+  # Table header
+  output="${output}| ID | Decision | Keywords |
+|----|----------|----------|
+"
+
+  # Add each decision as a row
+  local temp_file
+  temp_file=$(mktemp)
+  trap "rm -f '$temp_file'" RETURN
+
+  echo "$decisions" > "$temp_file"
+
+  # Process each decision
+  while IFS= read -r line; do
+    local id title content keywords
+    id=$(echo "$line" | jq -r '.id // ""')
+    title=$(echo "$line" | jq -r '.title // ""')
+    content=$(echo "$line" | jq -r '.content // ""')
+
+    # Skip if no ID
+    [ -z "$id" ] && continue
+
+    # Extract keywords from title and content
+    keywords=$(get_decision_keywords "$title $content")
+
+    # Escape pipe characters in title for markdown table
+    title=$(echo "$title" | sed 's/|/\\|/g')
+
+    # Add row
+    output="${output}| $id | $title | $keywords |
+"
+  done < <(jq -c '.[]' "$temp_file" 2>/dev/null)
+
+  echo "$output"
+}
+
+# Load complete decisions context block for agent injection
+#
+# Combines format_decisions_for_agents with markdown separators
+# to create a complete context block ready for agent prompts.
+#
+# Usage:
+#   context=$(load_decisions_context "context/DECISIONS.md")
+#
+# Args:
+#   $1 - Path to DECISIONS.md file
+#
+# Returns:
+#   Complete markdown context block with separators, or empty string if no file
+#
+# Example:
+#   context=$(load_decisions_context "context/DECISIONS.md")
+#   # Pass $context to agent prompts
+#
+load_decisions_context() {
+  local decisions_file="$1"
+
+  # Return empty if file doesn't exist
+  [ -f "$decisions_file" ] || return 0
+
+  # Get formatted decisions
+  local formatted
+  formatted=$(format_decisions_for_agents "$decisions_file")
+
+  # Return empty if formatting failed
+  [ -z "$formatted" ] && return 0
+
+  # Wrap in markdown separators
+  echo "---
+$formatted
+---"
+}
+
+# =============================================================================
 
 # Run auto-update check in background (non-blocking)
 # Only if not already running and not in quiet mode
