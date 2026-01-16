@@ -29,7 +29,7 @@ Findings from all specialist agents:
 
 ## Output
 
-Complete `AuditReport`:
+Complete `AuditReport` with deduplication stats:
 
 ```json
 {
@@ -41,7 +41,31 @@ Complete `AuditReport`:
     "mediumCount": 3,
     "lowCount": 5
   },
-  "findings": [/* deduplicated, merged */],
+  "findings": [
+    {
+      "id": "SEC-001-MERGED",
+      "severity": "high",
+      "title": "Issue at api.ts:15",
+      "detectedBy": ["security", "infrastructure"],
+      "mergedFrom": ["SEC-001", "INFRA-001"]
+    }
+  ],
+  "groups": [
+    {
+      "id": "GROUP-SECURITY-0",
+      "type": "group",
+      "pattern": "Missing error handling",
+      "count": 5,
+      "files": ["auth.ts", "db.ts", "api.ts"],
+      "memberIds": ["SEC-002", "SEC-003", "SEC-004"]
+    }
+  ],
+  "stats": {
+    "rawFindings": 136,
+    "afterLocationDedup": 67,
+    "afterPatternGrouping": 45,
+    "reductionPercent": 67
+  },
   "positives": ["TypeScript strict mode", "Good test coverage"]
 }
 ```
@@ -52,26 +76,31 @@ Complete `AuditReport`:
 
 Combine findings from all specialists into single array.
 
-### 2. Deduplicate
+### 2. Deduplicate (Two-Layer)
 
-**True duplicates (merge):** Same file, same line, AND same concern.
-- Example: SEC-001 and INFRA-001 both flagging hardcoded secrets → merge
-
-**Related concerns (keep separate, cross-reference):** Same location but different issues.
-- Example: SEC-001 (SQL injection) and PERF-001 (slow query) → keep both, add "See also" note
-
-For merged duplicates:
-- Keep highest severity
-- Combine verification notes
-- Combine remediations if different
+**Layer 1: Location-based deduplication** using `dedupe_by_location()`:
+- Findings at identical file:line are merged
+- Highest severity wins (critical > high > medium > low > info)
+- `detectedBy` array lists all detecting agents
+- `mergedFrom` array preserves original IDs
+- ID gets `-MERGED` suffix
 
 ```
-SEC-001 (high) + INFRA-001 (high) at api.ts:15 (same concern)
-→ SEC-001 (high) with combined notes
-
-SEC-001 (high) + PERF-001 (medium) at api.ts:15 (different concerns)
-→ Keep both, add cross-reference note
+SEC-001 (high) + INFRA-001 (medium) at api.ts:15
+→ SEC-001-MERGED (high) with detectedBy: ["SEC", "INFRA"]
 ```
+
+**Layer 2: Pattern-based grouping** using `group_similar_findings()`:
+- Groups findings with similar titles (>=3 threshold)
+- Creates GROUP-* entries linking related findings
+- Original findings remain, groups provide overview
+
+```
+5 findings about "Missing error handling in <file>"
+→ GROUP-SECURITY-0 with count: 5, memberIds: [...]
+```
+
+**Result:** The `synthesize_findings()` function orchestrates both layers.
 
 ### 3. Calculate Grade
 

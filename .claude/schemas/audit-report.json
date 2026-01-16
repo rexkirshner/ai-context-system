@@ -114,6 +114,82 @@
         "type": "string"
       },
       "description": "Positive observations about the codebase"
+    },
+    "groups": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "type", "pattern", "count", "memberIds"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^GROUP-[A-Z]+-[0-9]+$",
+            "description": "Group identifier (e.g., GROUP-SECURITY-0)"
+          },
+          "type": {
+            "type": "string",
+            "const": "group",
+            "description": "Type indicator for group entries"
+          },
+          "category": {
+            "type": "string",
+            "description": "Category of the grouped findings"
+          },
+          "pattern": {
+            "type": "string",
+            "description": "Common pattern description"
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Number of findings in this group"
+          },
+          "files": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Files affected by this pattern"
+          },
+          "memberIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "IDs of findings in this group"
+          }
+        },
+        "additionalProperties": false
+      },
+      "description": "Groups of similar findings (pattern-based grouping)"
+    },
+    "stats": {
+      "type": "object",
+      "properties": {
+        "rawFindings": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total raw findings before deduplication"
+        },
+        "afterLocationDedup": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Findings after location-based deduplication"
+        },
+        "afterPatternGrouping": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Findings after pattern-based grouping"
+        },
+        "reductionPercent": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Percentage reduction from deduplication"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Deduplication statistics"
     }
   },
   "additionalProperties": false

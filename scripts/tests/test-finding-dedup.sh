@@ -57,10 +57,10 @@ test_location_dedup_severity() {
   local result
   result=$(cat "$FIXTURES_DIR/raw-sample.json" | dedupe_by_location)
 
-  # PhotoGallery:363 has HIGH, MEDIUM, LOW → should become HIGH
+  # PhotoGallery:363 has HIGH, MEDIUM, LOW → should become high (lowercase)
   local merged_severity
   merged_severity=$(echo "$result" | jq -r '.[] | select(.location.file == "src/components/PhotoGallery.astro" and .location.line == 363) | .severity')
-  assert_equal "$merged_severity" "HIGH" "Merged finding should have HIGH severity (highest of HIGH, MEDIUM, LOW)"
+  assert_equal "$merged_severity" "high" "Merged finding should have high severity (highest of high, medium, low)"
 }
 
 # =============================================================================

@@ -2400,16 +2400,18 @@ dedupe_by_location() {
         .[0] + {
           "id": (.[0].id + "-MERGED"),
           "severity": (
-            [.[] | .severity // "LOW"] | map(
-              if . == "CRITICAL" then 4
-              elif . == "HIGH" then 3
-              elif . == "MEDIUM" then 2
+            [.[] | .severity // "low" | ascii_downcase] | map(
+              if . == "critical" then 4
+              elif . == "high" then 3
+              elif . == "medium" then 2
+              elif . == "info" then 0
               else 1 end
             ) | max |
-            if . == 4 then "CRITICAL"
-            elif . == 3 then "HIGH"
-            elif . == 2 then "MEDIUM"
-            else "LOW" end
+            if . == 4 then "critical"
+            elif . == 3 then "high"
+            elif . == 2 then "medium"
+            elif . == 0 then "info"
+            else "low" end
           ),
           "detectedBy": ([.[] | .id | split("-")[0]] | unique),
           "mergedFrom": ([.[] | .id])
@@ -2952,6 +2954,90 @@ log_decision_match() {
       echo "[INFO] Decision match log is large (>10MB). Consider rotation." >&2
     fi
   fi
+}
+
+# =============================================================================
+# PHASE 5: SYNTHESIS AND REPORTING
+# =============================================================================
+
+# Synthesize findings with deduplication and grouping
+#
+# Applies two-layer deduplication to raw findings:
+# 1. Location-based: merge findings at identical file:line
+# 2. Pattern-based: group similar findings (>=3 threshold)
+#
+# Usage:
+#   echo "$findings_json" | synthesize_findings
+#
+# Input: JSON array of AuditFinding objects from stdin
+#
+# Returns:
+#   JSON object with:
+#   - findings: deduplicated array
+#   - groups: pattern-based groups
+#   - stats: deduplication statistics
+#
+# Example:
+#   cat raw-findings.json | synthesize_findings | jq '.stats'
+#
+synthesize_findings() {
+  local input
+  input=$(cat)
+
+  # Handle empty or null input
+  if [ -z "$input" ] || [ "$input" = "[]" ] || [ "$input" = "null" ]; then
+    echo '{"findings":[],"groups":[],"stats":{"rawFindings":0,"afterLocationDedup":0,"afterPatternGrouping":0,"reductionPercent":0}}'
+    return 0
+  fi
+
+  # Count raw findings
+  local raw_count
+  raw_count=$(echo "$input" | jq 'length' 2>/dev/null || echo "0")
+
+  # Layer 1: Location-based deduplication
+  local after_location_dedup
+  after_location_dedup=$(echo "$input" | dedupe_by_location)
+
+  # Count after location dedup
+  local location_dedup_count
+  location_dedup_count=$(echo "$after_location_dedup" | jq 'length' 2>/dev/null || echo "$raw_count")
+
+  # Layer 2: Pattern-based grouping
+  # group_similar_findings returns a flat array with GROUP-* entries mixed in
+  local with_groups
+  with_groups=$(echo "$after_location_dedup" | group_similar_findings)
+
+  # Extract findings and groups from the flat array
+  # Groups have type == "group", findings don't have a type field
+  local findings groups
+  findings=$(echo "$with_groups" | jq '[.[] | select(.type != "group")]' 2>/dev/null || echo "[]")
+  groups=$(echo "$with_groups" | jq '[.[] | select(.type == "group")]' 2>/dev/null || echo "[]")
+
+  # Calculate reduction percent
+  local reduction_percent
+  if [ "$raw_count" -gt 0 ]; then
+    reduction_percent=$((100 - (location_dedup_count * 100 / raw_count)))
+  else
+    reduction_percent=0
+  fi
+
+  # Build final result
+  jq -n \
+    --argjson findings "$findings" \
+    --argjson groups "$groups" \
+    --argjson raw "$raw_count" \
+    --argjson after_loc "$location_dedup_count" \
+    --argjson reduction "$reduction_percent" \
+    '{
+      "findings": $findings,
+      "groups": $groups,
+      "stats": {
+        "rawFindings": $raw,
+        "afterLocationDedup": $after_loc,
+        "afterPatternGrouping": ($findings | length),
+        "reductionPercent": $reduction
+      }
+    }'
 }
 
 # =============================================================================
