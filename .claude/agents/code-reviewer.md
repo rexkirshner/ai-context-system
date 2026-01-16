@@ -134,8 +134,30 @@ All conditions must match (AND logic) for the agent to be selected in auto mode.
 | `--database` | Just database agent |
 | `--cost` | Just cost optimizer agent |
 | `--incremental` | Only review files changed since last audit |
+| `--dry-run` | Preview which agents would run without executing |
 
 Multiple specific flags can be combined: `--security --database`
+
+### Dry-Run Mode
+
+The `--dry-run` flag shows what a code review would do without actually running it:
+
+```
+/code-review --dry-run
+```
+
+Output includes:
+- **Codebase Analysis:** File counts, frameworks, project type
+- **Agent Selection:** Which agents would run and why (with selection reason)
+- **Project Decisions:** Summary of DECISIONS.md entries (if exists)
+- **Estimated Scope:** Line and file counts
+
+This is useful for:
+- Verifying agent selection before a long review
+- Understanding why certain agents are skipped
+- Testing configuration changes
+
+Uses `format_dry_run_output()` from common-functions.sh.
 
 ## Output
 

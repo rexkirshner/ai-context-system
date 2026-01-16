@@ -3336,6 +3336,167 @@ generate_audit_report() {
 }
 
 # =============================================================================
+# PHASE 5.3: DRY-RUN MODE
+# =============================================================================
+
+# Format dry-run output for code review preview
+#
+# Shows what would happen during a code review without actually running it:
+# - Codebase analysis summary
+# - Agent selection with reasons
+# - Project decisions (if available)
+# - Estimated review scope
+#
+# Usage:
+#   output=$(format_dry_run_output "$codebase_context" "$decisions_context" "$project_dir")
+#
+# Args:
+#   $1 - Codebase context JSON (from codebase scanner)
+#   $2 - Decisions context string (from load_decisions_context, may be empty)
+#   $3 - Project directory (for path context, default: current dir)
+#
+# Returns:
+#   Formatted text output suitable for display
+#
+format_dry_run_output() {
+  local context="$1"
+  local decisions_context="$2"
+  local project_dir="${3:-.}"
+
+  # Extract codebase info
+  local project_type has_ui has_tests has_database
+  project_type=$(echo "$context" | jq -r '.structure.projectType // "unknown"')
+  has_ui=$(echo "$context" | jq -r '.structure.hasUI // false')
+  has_tests=$(echo "$context" | jq -r '.structure.hasTests // false')
+  has_database=$(echo "$context" | jq -r '.structure.hasDatabase // false')
+
+  # Extract file info
+  local total_files total_lines has_typescript
+  total_files=$(echo "$context" | jq -r '.files.totalFiles // 0')
+  total_lines=$(echo "$context" | jq -r '.size.totalLines // 0')
+  has_typescript=$(echo "$context" | jq -r '.files.hasTypeScript // false')
+
+  # Extract frameworks
+  local frameworks
+  frameworks=$(echo "$context" | jq -r '.structure.frameworks // [] | join(", ")')
+  if [ -z "$frameworks" ]; then
+    frameworks="None detected"
+  fi
+
+  # Build file type breakdown
+  local file_breakdown
+  file_breakdown=$(echo "$context" | jq -r '
+    if .files.byExtension then
+      .files.byExtension | to_entries | sort_by(-.value) | .[0:5] |
+      map("    " + .key + ": " + (.value | tostring)) | join("\n")
+    else
+      "    (No file breakdown available)"
+    end
+  ')
+
+  # Determine agent selection
+  local agents_output=""
+  local selected_count=0
+  local total_agents=9
+
+  # Security - always selected
+  agents_output+="  ✓ security-reviewer (always)\n"
+  selected_count=$((selected_count + 1))
+
+  # Performance - always selected
+  agents_output+="  ✓ performance-reviewer (always)\n"
+  selected_count=$((selected_count + 1))
+
+  # Accessibility - requires UI
+  if [ "$has_ui" = "true" ]; then
+    agents_output+="  ✓ accessibility-reviewer (hasUI: true)\n"
+    selected_count=$((selected_count + 1))
+  else
+    agents_output+="  ✗ accessibility-reviewer (hasUI: false)\n"
+  fi
+
+  # SEO - requires UI
+  if [ "$has_ui" = "true" ]; then
+    agents_output+="  ✓ seo-reviewer (hasUI: true)\n"
+    selected_count=$((selected_count + 1))
+  else
+    agents_output+="  ✗ seo-reviewer (hasUI: false)\n"
+  fi
+
+  # Database - requires database
+  if [ "$has_database" = "true" ]; then
+    agents_output+="  ✓ database-reviewer (hasDatabase: true)\n"
+    selected_count=$((selected_count + 1))
+  else
+    agents_output+="  ✗ database-reviewer (hasDatabase: false)\n"
+  fi
+
+  # Testing - always selected
+  agents_output+="  ✓ testing-reviewer (always)\n"
+  selected_count=$((selected_count + 1))
+
+  # Type Safety - requires TypeScript or always
+  if [ "$has_typescript" = "true" ]; then
+    agents_output+="  ✓ type-safety-reviewer (hasTypeScript: true)\n"
+    selected_count=$((selected_count + 1))
+  else
+    agents_output+="  ✗ type-safety-reviewer (hasTypeScript: false)\n"
+  fi
+
+  # Infrastructure - always selected
+  agents_output+="  ✓ infrastructure-reviewer (always)\n"
+  selected_count=$((selected_count + 1))
+
+  # Cost - always selected
+  agents_output+="  ✓ cost-optimizer (always)\n"
+  selected_count=$((selected_count + 1))
+
+  # Build decisions section
+  local decisions_section=""
+  if [ -n "$decisions_context" ]; then
+    # Extract decision count and IDs from the context
+    local decision_count
+    decision_count=$(echo "$decisions_context" | grep -c "^| D[0-9]" 2>/dev/null | head -1 | tr -d ' ' || echo "0")
+    # Ensure it's a number
+    decision_count="${decision_count:-0}"
+    if [ "$decision_count" -gt 0 ] 2>/dev/null; then
+      decisions_section="
+Project Decisions ($decision_count found):
+$(echo "$decisions_context" | grep "^| D[0-9]" | sed 's/^| /  /' | cut -d'|' -f1-2 | sed 's/|/:/g')
+"
+    fi
+  fi
+
+  # Build output
+  cat << EOF
+╔════════════════════════════════════════════════════════════════╗
+║                    Code Review Dry Run                          ║
+╚════════════════════════════════════════════════════════════════╝
+
+Codebase Analysis:
+  Project Type: $project_type
+  Total Files: $total_files
+  Total Lines: $total_lines
+  Frameworks: $frameworks
+  Has UI: $has_ui
+  Has Tests: $has_tests
+  Has Database: $has_database
+  Has TypeScript: $has_typescript
+
+File Types:
+$file_breakdown
+$decisions_section
+Selected Agents ($selected_count/$total_agents):
+$(echo -e "$agents_output")
+Estimated Scope:
+  ~$total_lines lines across $total_files files
+
+To run the full review:
+  /code-review --all
+EOF
+}
+
+# =============================================================================
 
 # Run auto-update check in background (non-blocking)
 # Only if not already running and not in quiet mode
