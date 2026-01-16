@@ -246,6 +246,227 @@ parse_decisions() {
 }
 
 # =============================================================================
+# Decision Matching Algorithm (v5.1.0)
+# =============================================================================
+
+# Common English stopwords to filter out during keyword extraction
+# These words don't contribute meaningful signal for matching
+STOPWORDS="a an the is are was were be been being have has had do does did will would could should may might must shall can this that these those it its he she they them their what which who whom where when why how and or but if then else for of to in on at by with from as into through during before after above below between under again further once here there all each few more most other some such no nor not only own same so than too very just"
+
+# Calculate Jaccard similarity between two keyword sets
+#
+# Jaccard similarity = |A ∩ B| / |A ∪ B|
+# Returns a value between 0.00 (no overlap) and 1.00 (identical)
+#
+# Processing:
+# - Converts to lowercase
+# - Removes punctuation
+# - Splits on whitespace
+# - Removes stopwords
+#
+# Usage:
+#   similarity=$(jaccard_similarity "no test framework" "test coverage missing")
+#   echo "$similarity"  # e.g., "0.33"
+#
+# Args:
+#   $1 - First text string
+#   $2 - Second text string
+#
+# Returns:
+#   Similarity score as decimal string (e.g., "0.50")
+#
+jaccard_similarity() {
+  local text_a="$1"
+  local text_b="$2"
+
+  # Use awk for fully portable implementation (no bash 4+ associative arrays)
+  # Replace newlines with spaces first to handle multi-line content
+  # Use a unique delimiter that won't appear in normal text
+  local delimiter="__JACCARD_SPLIT__"
+
+  # Preprocess: convert newlines to spaces
+  local clean_a clean_b
+  clean_a=$(printf '%s' "$text_a" | tr '\n\r' '  ')
+  clean_b=$(printf '%s' "$text_b" | tr '\n\r' '  ')
+
+  # Pass both texts separated by the delimiter
+  printf '%s%s%s' "$clean_a" "$delimiter" "$clean_b" | awk -v stopwords="$STOPWORDS" -v delim="$delimiter" '
+    BEGIN {
+      # Build stopword lookup
+      n = split(stopwords, arr)
+      for (i = 1; i <= n; i++) {
+        stop[tolower(arr[i])] = 1
+      }
+    }
+    {
+      # Split input on delimiter
+      idx = index($0, delim)
+      if (idx > 0) {
+        text_a = substr($0, 1, idx - 1)
+        text_b = substr($0, idx + length(delim))
+      } else {
+        text_a = $0
+        text_b = ""
+      }
+
+      # Process text_a: lowercase, remove punctuation, split
+      gsub(/[^a-zA-Z0-9 ]/, " ", text_a)
+      text_a = tolower(text_a)
+      n_a = split(text_a, words_a)
+
+      # Build set A (unique words, excluding stopwords)
+      for (i = 1; i <= n_a; i++) {
+        w = words_a[i]
+        if (w != "" && !(w in stop)) {
+          set_a[w] = 1
+        }
+      }
+
+      # Process text_b: lowercase, remove punctuation, split
+      gsub(/[^a-zA-Z0-9 ]/, " ", text_b)
+      text_b = tolower(text_b)
+      n_b = split(text_b, words_b)
+
+      # Build set B (unique words, excluding stopwords)
+      for (i = 1; i <= n_b; i++) {
+        w = words_b[i]
+        if (w != "" && !(w in stop)) {
+          set_b[w] = 1
+        }
+      }
+
+      # Calculate intersection and union
+      intersection = 0
+      for (w in set_a) {
+        union_set[w] = 1
+        if (w in set_b) {
+          intersection++
+        }
+      }
+      for (w in set_b) {
+        union_set[w] = 1
+      }
+
+      # Count union
+      union_size = 0
+      for (w in union_set) {
+        union_size++
+      }
+
+      # Calculate and print Jaccard similarity
+      if (union_size == 0) {
+        printf "0.00"
+      } else {
+        printf "%.2f", intersection / union_size
+      }
+    }
+  '
+}
+
+# Match a finding against all decisions in a DECISIONS.md file
+#
+# Parses the decisions file, extracts keywords from each decision,
+# and finds the best match for the given finding text.
+#
+# The default threshold of 0.15 is calibrated for matching short findings
+# against verbose decision content. Jaccard similarity is diluted when
+# one set (decision) is much larger than the other (finding). Testing shows:
+# - Related findings score ~0.20-0.30
+# - Unrelated findings score ~0.00-0.05
+#
+# Usage:
+#   result=$(match_finding_to_decisions "No test coverage" "context/DECISIONS.md")
+#   echo "$result" | jq '.matched'
+#
+# Args:
+#   $1 - Finding text to match
+#   $2 - Path to DECISIONS.md file
+#   $3 - Similarity threshold (optional, default 0.15)
+#
+# Returns:
+#   JSON object:
+#   - On match: {"matched":true,"decision_id":"D001","confidence":0.65}
+#   - No match: {"matched":false}
+#
+match_finding_to_decisions() {
+  local finding="$1"
+  local decisions_file="$2"
+  local threshold="${3:-0.15}"
+
+  # Handle empty finding
+  if [ -z "$finding" ]; then
+    echo '{"matched":false}'
+    return 0
+  fi
+
+  # Handle non-existent file
+  if [ ! -f "$decisions_file" ]; then
+    echo '{"matched":false}'
+    return 0
+  fi
+
+  # Check if decisions file has any valid decisions (use pipe to avoid variable issues)
+  local count
+  count=$(parse_decisions "$decisions_file" | jq 'length')
+  if [ "$count" -eq 0 ]; then
+    echo '{"matched":false}'
+    return 0
+  fi
+
+  # Use a temp file to store decisions JSON (avoids bash interpreting escape sequences)
+  local temp_file
+  temp_file=$(mktemp)
+  parse_decisions "$decisions_file" > "$temp_file"
+
+  # Find best match
+  local best_id=""
+  local best_score="0.00"
+
+  # Iterate through decisions by index
+  local i=0
+  while [ "$i" -lt "$count" ]; do
+    # Extract fields using jq with index from the temp file
+    local id title content
+    id=$(jq -r ".[$i].id" "$temp_file")
+    title=$(jq -r ".[$i].title" "$temp_file")
+    content=$(jq -r ".[$i].content" "$temp_file")
+
+    # Combine title and content for matching (limit content to avoid huge strings)
+    # Take first 500 chars of content to keep matching fast
+    local decision_text
+    decision_text="$title ${content:0:500}"
+
+    # Calculate similarity
+    local score
+    score=$(jaccard_similarity "$finding" "$decision_text")
+
+    # Check if this is the best match
+    local is_better
+    is_better=$(awk -v new="$score" -v old="$best_score" 'BEGIN { print (new > old) ? "1" : "0" }')
+
+    if [ "$is_better" -eq 1 ]; then
+      best_id="$id"
+      best_score="$score"
+    fi
+
+    i=$((i + 1))
+  done
+
+  # Clean up temp file
+  rm -f "$temp_file"
+
+  # Check if best match exceeds threshold
+  local exceeds_threshold
+  exceeds_threshold=$(awk -v score="$best_score" -v thresh="$threshold" 'BEGIN { print (score >= thresh) ? "1" : "0" }')
+
+  if [ "$exceeds_threshold" -eq 1 ] && [ -n "$best_id" ]; then
+    echo "{\"matched\":true,\"decision_id\":\"$best_id\",\"confidence\":$best_score}"
+  else
+    echo '{"matched":false}'
+  fi
+}
+
+# =============================================================================
 # Network Operations with Retry and Validation
 # =============================================================================
 
