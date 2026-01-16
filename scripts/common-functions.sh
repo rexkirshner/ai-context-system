@@ -3036,6 +3036,306 @@ synthesize_findings() {
 }
 
 # =============================================================================
+# PHASE 5.2: REPORT GENERATION
+# =============================================================================
+
+# Get the next available audit filename
+#
+# Determines the next audit filename based on date and existing files.
+# First audit of the day: audit-YYYY-MM-DD
+# Subsequent audits: audit-YYYY-MM-DD-002, audit-YYYY-MM-DD-003, etc.
+#
+# Usage:
+#   filename=$(get_next_audit_filename "/path/to/docs/audits")
+#
+# Args:
+#   $1 - Output directory (default: docs/audits)
+#
+# Returns:
+#   Filename without extension (e.g., "audit-2026-01-16" or "audit-2026-01-16-002")
+#
+get_next_audit_filename() {
+  local output_dir="${1:-docs/audits}"
+  local today
+  today=$(date +%Y-%m-%d)
+  local date_prefix="audit-${today}"
+
+  # Count existing audits for today
+  local existing_count
+  existing_count=$(find "$output_dir" -maxdepth 1 -name "${date_prefix}*.md" 2>/dev/null | wc -l | tr -d ' ')
+
+  if [ "$existing_count" -eq 0 ]; then
+    # First audit of the day
+    echo "$date_prefix"
+  else
+    # Subsequent audit - add numbered suffix
+    local next_num=$((existing_count + 1))
+    printf "%s-%03d" "$date_prefix" "$next_num"
+  fi
+}
+
+# Clean up stale .tmp files from interrupted writes
+#
+# Removes any .tmp files left over from failed report generation.
+# Should be called at the start of report generation.
+#
+# Usage:
+#   cleanup_audit_tmp_files "/path/to/docs/audits"
+#
+# Args:
+#   $1 - Output directory (default: docs/audits)
+#
+cleanup_audit_tmp_files() {
+  local output_dir="${1:-docs/audits}"
+
+  # Find and remove .tmp files
+  find "$output_dir" -maxdepth 1 -name "*.tmp" -type f -delete 2>/dev/null
+}
+
+# Generate markdown audit report
+#
+# Creates a human-readable markdown report from synthesized findings.
+# Uses atomic write (temp file → rename) for safety.
+#
+# Usage:
+#   md_file=$(generate_audit_markdown "$report_json" "/path/to/docs/audits")
+#   md_file=$(generate_audit_markdown "$report_json" "/path/to/docs/audits" "audit-2026-01-16")
+#
+# Args:
+#   $1 - JSON report data (synthesized findings with metadata)
+#   $2 - Output directory (default: docs/audits)
+#   $3 - Optional: pre-determined filename (without extension)
+#
+# Returns:
+#   Path to generated markdown file
+#
+generate_audit_markdown() {
+  local report="$1"
+  local output_dir="${2:-docs/audits}"
+  local filename="${3:-}"  # Optional: pre-determined filename
+
+  # Ensure output directory exists
+  mkdir -p "$output_dir"
+
+  # Clean up any stale temp files
+  cleanup_audit_tmp_files "$output_dir"
+
+  # Get filename if not provided
+  if [ -z "$filename" ]; then
+    filename=$(get_next_audit_filename "$output_dir")
+  fi
+  local md_file="$output_dir/${filename}.md"
+  local tmp_file="${md_file}.tmp"
+
+  # Extract metadata
+  local project_name timestamp grade
+  project_name=$(echo "$report" | jq -r '.metadata.projectName // "Unknown"')
+  timestamp=$(echo "$report" | jq -r '.metadata.timestamp // "Unknown"')
+  grade=$(echo "$report" | jq -r '.summary.grade // "N/A"')
+
+  # Extract counts
+  local files_scanned agents_run
+  files_scanned=$(echo "$report" | jq -r '.metadata.filesScanned // 0')
+  agents_run=$(echo "$report" | jq -r '.metadata.agentsRun // [] | join(", ")')
+
+  local critical_count high_count medium_count low_count total_findings
+  critical_count=$(echo "$report" | jq -r '.summary.criticalCount // 0')
+  high_count=$(echo "$report" | jq -r '.summary.highCount // 0')
+  medium_count=$(echo "$report" | jq -r '.summary.mediumCount // 0')
+  low_count=$(echo "$report" | jq -r '.summary.lowCount // 0')
+  total_findings=$((critical_count + high_count + medium_count + low_count))
+
+  # Extract stats
+  local raw_findings after_location_dedup after_pattern_grouping reduction_percent
+  raw_findings=$(echo "$report" | jq -r '.stats.rawFindings // 0')
+  after_location_dedup=$(echo "$report" | jq -r '.stats.afterLocationDedup // 0')
+  after_pattern_grouping=$(echo "$report" | jq -r '.stats.afterPatternGrouping // 0')
+  reduction_percent=$(echo "$report" | jq -r '.stats.reductionPercent // 0')
+
+  # Build positives section
+  local positives_section
+  positives_section=$(echo "$report" | jq -r '
+    if (.positives // []) | length > 0 then
+      (.positives | map("- " + .) | join("\n"))
+    else
+      "_No specific positives identified._"
+    end
+  ')
+
+  # Build findings section - sorted by severity (critical > high > medium > low)
+  local findings_section
+  findings_section=$(echo "$report" | jq -r '
+    # Sort by severity priority
+    def severity_priority:
+      if . == "critical" then 0
+      elif . == "high" then 1
+      elif . == "medium" then 2
+      elif . == "low" then 3
+      else 4
+      end;
+
+    if (.findings // []) | length > 0 then
+      (.findings | sort_by(.severity | severity_priority) | map(
+        "### " + .id + " (" + (.severity | ascii_upcase) + ")\n\n" +
+        "**" + .title + "**\n\n" +
+        (if .description then .description + "\n\n" else "" end) +
+        "- **Location:** `" + .location.file + ":" + (.location.line | tostring) + "`\n" +
+        "- **Category:** " + .category + "\n" +
+        (if .remediation then "- **Remediation:** " + .remediation + "\n" else "" end)
+      ) | join("\n---\n\n"))
+    else
+      "_No findings to report._"
+    end
+  ')
+
+  # Write to temp file
+  cat > "$tmp_file" << EOF
+# Code Audit Report
+
+**Project:** ${project_name}
+**Date:** ${timestamp}
+**Grade:** ${grade}
+
+---
+
+## Executive Summary
+
+| Metric | Value |
+|--------|-------|
+| Files Scanned | ${files_scanned} |
+| Agents Run | ${agents_run} |
+| Total Findings | ${total_findings} |
+| Deduplication | ${reduction_percent}% reduction |
+
+### Severity Breakdown
+
+| Severity | Count |
+|----------|-------|
+| Critical | ${critical_count} |
+| High | ${high_count} |
+| Medium | ${medium_count} |
+| Low | ${low_count} |
+
+---
+
+## Positives
+
+${positives_section}
+
+---
+
+## Findings
+
+${findings_section}
+
+---
+
+## Deduplication Statistics
+
+| Stage | Count |
+|-------|-------|
+| Raw findings | ${raw_findings} |
+| After location dedup | ${after_location_dedup} |
+| After pattern grouping | ${after_pattern_grouping} |
+| **Reduction** | **${reduction_percent}%** |
+
+---
+
+## Metadata
+
+- **Schema Version:** $(echo "$report" | jq -r '.metadata.schemaVersion // "1.0.0"')
+- **Generated:** ${timestamp}
+EOF
+
+  # Atomic rename
+  mv "$tmp_file" "$md_file"
+
+  # Return path
+  echo "$md_file"
+}
+
+# Generate JSON audit report
+#
+# Creates a machine-readable JSON report from synthesized findings.
+# Uses atomic write (temp file → rename) for safety.
+#
+# Usage:
+#   json_file=$(generate_audit_json "$report_json" "/path/to/docs/audits")
+#
+# Args:
+#   $1 - JSON report data (synthesized findings with metadata)
+#   $2 - Output directory (default: docs/audits)
+#
+# Returns:
+#   Path to generated JSON file
+#
+generate_audit_json() {
+  local report="$1"
+  local output_dir="${2:-docs/audits}"
+  local filename="${3:-}"  # Optional: pre-determined filename
+
+  # Ensure output directory exists
+  mkdir -p "$output_dir"
+
+  # Get filename if not provided
+  if [ -z "$filename" ]; then
+    filename=$(get_next_audit_filename "$output_dir")
+  fi
+  local json_file="$output_dir/${filename}.json"
+  local tmp_file="${json_file}.tmp"
+
+  # Write formatted JSON to temp file
+  echo "$report" | jq '.' > "$tmp_file"
+
+  # Atomic rename
+  mv "$tmp_file" "$json_file"
+
+  # Return path
+  echo "$json_file"
+}
+
+# Generate complete audit report (both MD and JSON)
+#
+# Main entry point for report generation. Creates both markdown
+# and JSON reports with atomic writes.
+#
+# Usage:
+#   result=$(generate_audit_report "$report_json" "/path/to/docs/audits")
+#
+# Args:
+#   $1 - JSON report data (synthesized findings with metadata)
+#   $2 - Output directory (default: docs/audits)
+#
+# Returns:
+#   JSON object with paths to generated files
+#
+generate_audit_report() {
+  local report="$1"
+  local output_dir="${2:-docs/audits}"
+
+  # Ensure output directory exists
+  mkdir -p "$output_dir"
+
+  # Clean up any stale temp files first
+  cleanup_audit_tmp_files "$output_dir"
+
+  # Get filename once and use for both reports
+  local filename
+  filename=$(get_next_audit_filename "$output_dir")
+
+  # Generate both reports with the same filename
+  local md_file json_file
+  md_file=$(generate_audit_markdown "$report" "$output_dir" "$filename")
+  json_file=$(generate_audit_json "$report" "$output_dir" "$filename")
+
+  # Return result
+  jq -n \
+    --arg md "$md_file" \
+    --arg json "$json_file" \
+    '{"markdown": $md, "json": $json}'
+}
+
+# =============================================================================
 
 # Run auto-update check in background (non-blocking)
 # Only if not already running and not in quiet mode

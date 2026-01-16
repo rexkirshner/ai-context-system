@@ -276,7 +276,28 @@ Pass all findings to synthesis-agent for:
 
 ### 6. Generate Reports
 
-Write both JSON and Markdown reports to `docs/audits/audit-NN.{json,md}`.
+Automatically generate both markdown and JSON reports using `generate_audit_report()`:
+
+**Filename Convention:** Date-based for easy tracking
+- First audit of day: `audit-2026-01-16.{md,json}`
+- Subsequent audits: `audit-2026-01-16-002.{md,json}`, etc.
+
+**Atomic Writes:** Reports are written to temp files first, then renamed atomically.
+This ensures no corrupt files if the process is interrupted.
+
+**Markdown Report Contents:**
+- Executive summary with grade
+- Severity breakdown table
+- Positives section
+- Findings sorted by severity (critical first)
+- Deduplication statistics
+
+**JSON Report Contents:**
+- Full AuditReport schema
+- Machine-readable for CI integration
+- All finding details preserved
+
+**Helper Script:** `./scripts/generate-audit-report.sh` provides CLI access.
 
 ### 7. Display Summary
 
@@ -291,8 +312,9 @@ Agents Run: security, testing, performance, seo
 Agents Skipped: database (no database detected)
 
 Findings: 0 critical, 1 high, 3 medium, 5 low
+Deduplication: 67% reduction (from 136 raw findings)
 
-Reports: docs/audits/audit-03.{md,json}
+Reports: docs/audits/audit-2026-01-16.{md,json}
 
 Top priority: SEC-001 - Hardcoded API key
 ```

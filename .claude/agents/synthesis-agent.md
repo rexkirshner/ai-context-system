@@ -134,6 +134,36 @@ Ensure unique IDs: `SEC-001`, `SEC-002`, `PERF-001`, etc.
 
 Order by: severity (critical first), then file path.
 
+### 7. Generate Report Files
+
+After synthesis completes, automatically generate report files:
+
+1. **Determine filename** using `get_next_audit_filename()`:
+   - First audit of day: `audit-YYYY-MM-DD`
+   - Subsequent audits: `audit-YYYY-MM-DD-002`, `audit-YYYY-MM-DD-003`, etc.
+
+2. **Generate markdown report** using `generate_audit_markdown()`:
+   - Human-readable format
+   - Executive summary with grade
+   - Findings sorted by severity
+   - Positives section
+   - Deduplication statistics
+
+3. **Generate JSON report** using `generate_audit_json()`:
+   - Machine-readable format
+   - Schema-validated against `audit-report.json`
+   - Suitable for CI integration
+
+4. **Atomic write strategy**:
+   - Write to temp file first (`*.tmp`)
+   - Validate content
+   - Atomic rename to final location
+   - Clean up any stale `.tmp` files on startup
+
+**Output location:** `docs/audits/audit-YYYY-MM-DD.{md,json}`
+
+**Helper script:** `./scripts/generate-audit-report.sh`
+
 ## Deduplication Examples
 
 **Same concern (merge):**
