@@ -2374,6 +2374,117 @@ detect_project_type() {
 }
 
 # =============================================================================
+# Finding Deduplication Utilities (v5.1.0)
+# =============================================================================
+
+# Deduplicate findings by location (file:line)
+#
+# Merges findings that occur at the same file and line number. When multiple
+# findings are at the same location, they are merged with:
+# - ID: First finding's ID with "-MERGED" suffix
+# - Severity: Highest severity among merged findings
+# - detectedBy: Array of detector prefixes (extracted from IDs)
+# - mergedFrom: Array of original finding IDs
+#
+# Usage:
+#   cat findings.json | dedupe_by_location
+#   dedupe_by_location < findings.json
+#
+# Input: JSON array of findings (stdin)
+# Output: JSON array of deduplicated findings
+#
+# Example:
+#   cat raw.json | dedupe_by_location | jq 'length'
+#
+dedupe_by_location() {
+  jq '
+    # Group findings by file:line
+    group_by(.location.file + ":" + (.location.line | tostring))
+    | map(
+      if length == 1 then
+        # Single finding - return as-is
+        .[0]
+      else
+        # Multiple findings - merge them
+        .[0] + {
+          "id": (.[0].id + "-MERGED"),
+          "severity": (
+            [.[] | .severity] | map(
+              if . == "CRITICAL" then 4
+              elif . == "HIGH" then 3
+              elif . == "MEDIUM" then 2
+              else 1 end
+            ) | max |
+            if . == 4 then "CRITICAL"
+            elif . == 3 then "HIGH"
+            elif . == 2 then "MEDIUM"
+            else "LOW" end
+          ),
+          "detectedBy": ([.[] | .id | split("-")[0]] | unique),
+          "mergedFrom": ([.[] | .id])
+        }
+      end
+    )
+  '
+}
+
+# Group similar findings by pattern
+#
+# Groups findings that have similar titles (ignoring the specific file/location
+# portion). When 3+ similar findings exist, creates a GROUP-* entry that
+# summarizes them.
+#
+# The grouping key is: category + normalized title (with " in <file>" removed)
+#
+# Usage:
+#   cat findings.json | group_similar_findings
+#   cat findings.json | group_similar_findings 5   # threshold of 5
+#
+# Args:
+#   $1 - Minimum group size threshold (optional, default 3)
+#
+# Input: JSON array of findings (stdin)
+# Output: JSON array with GROUP entries added
+#
+# Example:
+#   cat raw.json | group_similar_findings 3 | jq '[.[] | select(.type == "group")]'
+#
+group_similar_findings() {
+  local min_group_size="${1:-3}"
+
+  jq --argjson min "$min_group_size" '
+    # Create grouping key: category + normalized title
+    def grouping_key:
+      .category + ":" + (.title | gsub(" in .*$"; ""));
+
+    # Group by the key
+    group_by(grouping_key)
+    | map(
+      if length >= $min then
+        # Add a GROUP entry for patterns with enough matches
+        # Use string interpolation for the id field
+        (.[0].category | ascii_upcase) as $cat |
+        (length | tostring) as $len |
+        . + [{
+          "id": "GROUP-\($cat)-\($len)",
+          "type": "group",
+          "category": .[0].category,
+          "pattern": (.[0].title | gsub(" in .*$"; "")),
+          "count": length,
+          "files": ([.[] | .location.file] | unique),
+          "memberIds": ([.[] | .id])
+        }]
+      else
+        # Return findings as-is
+        .
+      end
+    )
+    # Flatten nested arrays back into single array
+    | flatten
+  '
+}
+
+# =============================================================================
 
 # Run auto-update check in background (non-blocking)
 # Only if not already running and not in quiet mode

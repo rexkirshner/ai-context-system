@@ -1,0 +1,167 @@
+[
+  {
+    "id": "SEC-001",
+    "category": "security",
+    "title": "innerHTML usage in PhotoGallery.astro:363",
+    "severity": "HIGH",
+    "location": {
+      "file": "src/components/PhotoGallery.astro",
+      "line": 363
+    },
+    "description": "Potential XSS vulnerability from innerHTML"
+  },
+  {
+    "id": "A11Y-012",
+    "category": "accessibility",
+    "title": "Dynamic content without aria-live in PhotoGallery.astro:363",
+    "severity": "MEDIUM",
+    "location": {
+      "file": "src/components/PhotoGallery.astro",
+      "line": 363
+    },
+    "description": "Screen readers may not announce dynamic updates"
+  },
+  {
+    "id": "PERF-007",
+    "category": "performance",
+    "title": "Forced reflow from innerHTML in PhotoGallery.astro:363",
+    "severity": "LOW",
+    "location": {
+      "file": "src/components/PhotoGallery.astro",
+      "line": 363
+    },
+    "description": "innerHTML triggers layout recalculation"
+  },
+  {
+    "id": "TEST-001",
+    "category": "testing",
+    "title": "Missing tests in utils/validation.ts",
+    "severity": "MEDIUM",
+    "location": {
+      "file": "src/utils/validation.ts",
+      "line": 1
+    },
+    "description": "No test file found for validation utilities"
+  },
+  {
+    "id": "TS-015",
+    "category": "typescript",
+    "title": "Missing tests in utils/validation.ts",
+    "severity": "LOW",
+    "location": {
+      "file": "src/utils/validation.ts",
+      "line": 1
+    },
+    "description": "Type coverage report shows untested code"
+  },
+  {
+    "id": "SEC-002",
+    "category": "security",
+    "title": "Hardcoded API key in config.ts",
+    "severity": "CRITICAL",
+    "location": {
+      "file": "src/config.ts",
+      "line": 42
+    },
+    "description": "API key should be loaded from environment"
+  },
+  {
+    "id": "TEST-002",
+    "category": "testing",
+    "title": "Missing tests in utils/format.ts",
+    "severity": "MEDIUM",
+    "location": {
+      "file": "src/utils/format.ts",
+      "line": 1
+    },
+    "description": "No test file found for format utilities"
+  },
+  {
+    "id": "TEST-003",
+    "category": "testing",
+    "title": "Missing tests in utils/parse.ts",
+    "severity": "MEDIUM",
+    "location": {
+      "file": "src/utils/parse.ts",
+      "line": 1
+    },
+    "description": "No test file found for parse utilities"
+  },
+  {
+    "id": "TEST-004",
+    "category": "testing",
+    "title": "Missing tests in utils/transform.ts",
+    "severity": "MEDIUM",
+    "location": {
+      "file": "src/utils/transform.ts",
+      "line": 1
+    },
+    "description": "No test file found for transform utilities"
+  },
+  {
+    "id": "A11Y-001",
+    "category": "accessibility",
+    "title": "Missing alt text in Header.astro",
+    "severity": "HIGH",
+    "location": {
+      "file": "src/components/Header.astro",
+      "line": 15
+    },
+    "description": "Image lacks alt attribute"
+  },
+  {
+    "id": "A11Y-002",
+    "category": "accessibility",
+    "title": "Missing alt text in Footer.astro",
+    "severity": "HIGH",
+    "location": {
+      "file": "src/components/Footer.astro",
+      "line": 28
+    },
+    "description": "Image lacks alt attribute"
+  },
+  {
+    "id": "A11Y-003",
+    "category": "accessibility",
+    "title": "Missing alt text in Card.astro",
+    "severity": "HIGH",
+    "location": {
+      "file": "src/components/Card.astro",
+      "line": 10
+    },
+    "description": "Image lacks alt attribute"
+  },
+  {
+    "id": "PERF-001",
+    "category": "performance",
+    "title": "Unoptimized image in Header.astro:15",
+    "severity": "MEDIUM",
+    "location": {
+      "file": "src/components/Header.astro",
+      "line": 15
+    },
+    "description": "Large image without lazy loading"
+  },
+  {
+    "id": "DOC-001",
+    "category": "documentation",
+    "title": "Missing JSDoc in api/users.ts",
+    "severity": "LOW",
+    "location": {
+      "file": "src/api/users.ts",
+      "line": 1
+    },
+    "description": "Public API lacks documentation"
+  },
+  {
+    "id": "PERF-002",
+    "category": "performance",
+    "title": "N+1 query in api/posts.ts",
+    "severity": "HIGH",
+    "location": {
+      "file": "src/api/posts.ts",
+      "line": 45
+    },
+    "description": "Loop queries database for each post"
+  }
+]
