@@ -2846,29 +2846,22 @@ annotate_finding_with_decision() {
     decision_id=$(echo "$match_result" | jq -r '.decision_id')
     confidence=$(echo "$match_result" | jq -r '.confidence')
 
-    # Get current remediation
-    local current_remediation
-    current_remediation=$(echo "$finding" | jq -r '.remediation // ""')
-
-    # Add note to remediation
-    local new_remediation
-    if [ -n "$current_remediation" ]; then
-      new_remediation="${current_remediation}
-
-Note: This is documented as intentional in DECISIONS.md ($decision_id)"
-    else
-      new_remediation="Note: This is documented as intentional in DECISIONS.md ($decision_id)"
-    fi
-
-    # Annotate the finding
+    # Annotate the finding using jq to properly handle string escaping
+    # - Add [Intentional] prefix only if not already present
+    # - Append note to remediation with proper newline handling
     echo "$finding" | jq \
       --arg did "$decision_id" \
       --argjson conf "$confidence" \
-      --arg rem "$new_remediation" \
       '
         .severity = "low" |
-        .title = "[Intentional] " + .title |
-        .remediation = $rem |
+        .title = (if (.title | startswith("[Intentional]")) then .title else "[Intentional] " + .title end) |
+        .remediation = (
+          if (.remediation // "") != "" then
+            .remediation + "\n\nNote: This is documented as intentional in DECISIONS.md (" + $did + ")"
+          else
+            "Note: This is documented as intentional in DECISIONS.md (" + $did + ")"
+          end
+        ) |
         .intentionalException = {
           "decisionId": $did,
           "confidence": $conf
@@ -2930,8 +2923,10 @@ log_decision_match() {
   local timestamp
   timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
-  # Escape special characters in strings
-  finding_title=$(echo "$finding_title" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g')
+  # Escape special characters in strings for valid JSON
+  # Using jq for reliable JSON string escaping (handles all edge cases)
+  # jq -Rs reads raw input and converts to JSON string; we strip the outer quotes
+  finding_title=$(printf '%s' "$finding_title" | jq -Rs '.' | sed 's/^"//;s/"$//')
 
   # Create JSON entry
   local json_entry

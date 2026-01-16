@@ -262,6 +262,34 @@ test_finding_title_recorded() {
 }
 
 # =============================================================================
+# Test 9: Newlines in title produce valid JSON (regression test)
+# =============================================================================
+test_newlines_in_title() {
+  echo ""
+  echo "Test 9: Newlines in title should produce valid JSON (regression)"
+
+  setup_logging_test_env
+
+  # Log a finding with newlines in the title
+  log_decision_match "SEC-001" "Title with
+newline and	tab" "D001" "0.50" "true" "security"
+
+  local log_file="$TEST_LOG_DIR/decision-matches.log"
+  local last_line
+  last_line=$(tail -1 "$log_file")
+
+  # Should be valid JSON
+  local valid
+  valid=$(echo "$last_line" | jq . > /dev/null 2>&1 && echo "yes" || echo "no")
+  assert_equal "$valid" "yes" "Log entry with newlines should be valid JSON"
+
+  # Escaped newline should be present
+  assert_contains "$last_line" '\\n' "Newline should be escaped as \\n"
+
+  cleanup_logging_test_env
+}
+
+# =============================================================================
 # Run all tests
 # =============================================================================
 echo "╔════════════════════════════════════════════════════════════╗"
@@ -277,5 +305,6 @@ test_log_rotation_hint
 test_analyze_script
 test_threshold_recorded
 test_finding_title_recorded
+test_newlines_in_title
 
 print_test_summary

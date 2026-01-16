@@ -362,6 +362,68 @@ test_info_severity_preserved() {
 }
 
 # =============================================================================
+# Test 11: Double [Intentional] prefix prevented (regression test)
+# =============================================================================
+test_no_double_prefix() {
+  echo ""
+  echo "Test 11: Already-prefixed title should not get double [Intentional] (regression)"
+
+  # Finding that already has [Intentional] prefix
+  local finding='{
+    "id": "TEST-011",
+    "severity": "low",
+    "category": "testing",
+    "title": "[Intentional] No test framework configured. Skip testing setup. Manual testing only.",
+    "description": "No test framework",
+    "location": {"file": "src/", "line": 1},
+    "verified": {"vulnPatternSearched": "test", "mitigationPatternSearched": "spec", "mitigationFound": false},
+    "remediation": "Add tests"
+  }'
+
+  local result
+  result=$(annotate_finding_with_decision "$finding" "$FIXTURES_DIR/decisions/single.md")
+
+  local title
+  title=$(echo "$result" | jq -r '.title')
+
+  # Count occurrences of [Intentional]
+  local count
+  count=$(echo "$title" | grep -o '\[Intentional\]' | wc -l | tr -d ' ')
+
+  # Should have at most 1 [Intentional] prefix
+  local has_double
+  has_double=$([ "$count" -gt 1 ] && echo "yes" || echo "no")
+  assert_equal "$has_double" "no" "Should not have double [Intentional] prefix (found $count)"
+}
+
+# =============================================================================
+# Test 12: Remediation with newlines produces valid JSON (regression test)
+# =============================================================================
+test_remediation_newlines_valid_json() {
+  echo ""
+  echo "Test 12: Remediation with newlines should produce valid JSON (regression)"
+
+  local finding='{
+    "id": "TEST-012",
+    "severity": "high",
+    "category": "testing",
+    "title": "No test framework configured. Skip testing setup. Manual testing only.",
+    "description": "Project has no test framework",
+    "location": {"file": "src/", "line": 1},
+    "verified": {"vulnPatternSearched": "test", "mitigationPatternSearched": "spec", "mitigationFound": false},
+    "remediation": "Add test framework\n\nSteps:\n1. Install jest\n2. Configure\n3. Add tests"
+  }'
+
+  local result
+  result=$(annotate_finding_with_decision "$finding" "$FIXTURES_DIR/decisions/single.md")
+
+  # Should be valid JSON
+  local valid
+  valid=$(echo "$result" | jq . > /dev/null 2>&1 && echo "yes" || echo "no")
+  assert_equal "$valid" "yes" "Output should be valid JSON even with newlines in remediation"
+}
+
+# =============================================================================
 # Run all tests
 # =============================================================================
 echo "╔════════════════════════════════════════════════════════════╗"
@@ -379,5 +441,7 @@ test_remediation_note
 test_no_decisions_file
 test_empty_finding_text
 test_info_severity_preserved
+test_no_double_prefix
+test_remediation_newlines_valid_json
 
 print_test_summary
