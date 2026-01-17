@@ -3117,8 +3117,9 @@ generate_audit_markdown() {
   # Ensure output directory exists
   mkdir -p "$output_dir"
 
-  # Clean up any stale temp files
-  cleanup_audit_tmp_files "$output_dir"
+  # Note: cleanup_audit_tmp_files is called by generate_audit_report() when
+  # this function is called from there. When called directly, temp files
+  # will be cleaned up next time generate_audit_report runs.
 
   # Get filename if not provided
   if [ -z "$filename" ]; then
@@ -3127,30 +3128,49 @@ generate_audit_markdown() {
   local md_file="$output_dir/${filename}.md"
   local tmp_file="${md_file}.tmp"
 
-  # Extract metadata
-  local project_name timestamp grade
-  project_name=$(echo "$report" | jq -r '.metadata.projectName // "Unknown"')
-  timestamp=$(echo "$report" | jq -r '.metadata.timestamp // "Unknown"')
-  grade=$(echo "$report" | jq -r '.summary.grade // "N/A"')
+  # Extract all basic values in a single jq call for efficiency
+  local extracted
+  extracted=$(echo "$report" | jq -r '
+    [
+      (.metadata.projectName // "Unknown"),
+      (.metadata.timestamp // "Unknown"),
+      (.summary.grade // "N/A"),
+      (.metadata.filesScanned // 0 | tostring),
+      (.metadata.agentsRun // [] | join(", ")),
+      (.summary.criticalCount // 0 | tostring),
+      (.summary.highCount // 0 | tostring),
+      (.summary.mediumCount // 0 | tostring),
+      (.summary.lowCount // 0 | tostring),
+      (.stats.rawFindings // 0 | tostring),
+      (.stats.afterLocationDedup // 0 | tostring),
+      (.stats.afterPatternGrouping // 0 | tostring),
+      (.stats.reductionPercent // 0 | tostring),
+      (.metadata.schemaVersion // "1.0.0")
+    ] | join("\n")
+  ')
 
-  # Extract counts
-  local files_scanned agents_run
-  files_scanned=$(echo "$report" | jq -r '.metadata.filesScanned // 0')
-  agents_run=$(echo "$report" | jq -r '.metadata.agentsRun // [] | join(", ")')
-
+  # Parse extracted values (one jq call instead of 12+)
+  local project_name timestamp grade files_scanned agents_run
   local critical_count high_count medium_count low_count total_findings
-  critical_count=$(echo "$report" | jq -r '.summary.criticalCount // 0')
-  high_count=$(echo "$report" | jq -r '.summary.highCount // 0')
-  medium_count=$(echo "$report" | jq -r '.summary.mediumCount // 0')
-  low_count=$(echo "$report" | jq -r '.summary.lowCount // 0')
-  total_findings=$((critical_count + high_count + medium_count + low_count))
-
-  # Extract stats
   local raw_findings after_location_dedup after_pattern_grouping reduction_percent
-  raw_findings=$(echo "$report" | jq -r '.stats.rawFindings // 0')
-  after_location_dedup=$(echo "$report" | jq -r '.stats.afterLocationDedup // 0')
-  after_pattern_grouping=$(echo "$report" | jq -r '.stats.afterPatternGrouping // 0')
-  reduction_percent=$(echo "$report" | jq -r '.stats.reductionPercent // 0')
+  local schema_version
+
+  project_name=$(echo "$extracted" | sed -n '1p')
+  timestamp=$(echo "$extracted" | sed -n '2p')
+  grade=$(echo "$extracted" | sed -n '3p')
+  files_scanned=$(echo "$extracted" | sed -n '4p')
+  agents_run=$(echo "$extracted" | sed -n '5p')
+  critical_count=$(echo "$extracted" | sed -n '6p')
+  high_count=$(echo "$extracted" | sed -n '7p')
+  medium_count=$(echo "$extracted" | sed -n '8p')
+  low_count=$(echo "$extracted" | sed -n '9p')
+  raw_findings=$(echo "$extracted" | sed -n '10p')
+  after_location_dedup=$(echo "$extracted" | sed -n '11p')
+  after_pattern_grouping=$(echo "$extracted" | sed -n '12p')
+  reduction_percent=$(echo "$extracted" | sed -n '13p')
+  schema_version=$(echo "$extracted" | sed -n '14p')
+
+  total_findings=$((critical_count + high_count + medium_count + low_count))
 
   # Build positives section
   local positives_section
@@ -3174,12 +3194,21 @@ generate_audit_markdown() {
       else 4
       end;
 
+    # Format location safely (handles null/missing location)
+    def format_location:
+      if .location and .location.file then
+        "- **Location:** `" + .location.file +
+        (if .location.line then ":" + (.location.line | tostring) else "" end) + "`\n"
+      else
+        ""
+      end;
+
     if (.findings // []) | length > 0 then
       (.findings | sort_by(.severity | severity_priority) | map(
         "### " + .id + " (" + (.severity | ascii_upcase) + ")\n\n" +
         "**" + .title + "**\n\n" +
         (if .description then .description + "\n\n" else "" end) +
-        "- **Location:** `" + .location.file + ":" + (.location.line | tostring) + "`\n" +
+        format_location +
         "- **Category:** " + .category + "\n" +
         (if .remediation then "- **Remediation:** " + .remediation + "\n" else "" end)
       ) | join("\n---\n\n"))
@@ -3243,7 +3272,7 @@ ${findings_section}
 
 ## Metadata
 
-- **Schema Version:** $(echo "$report" | jq -r '.metadata.schemaVersion // "1.0.0"')
+- **Schema Version:** ${schema_version}
 - **Generated:** ${timestamp}
 EOF
 

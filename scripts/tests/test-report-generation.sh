@@ -484,6 +484,111 @@ test_full_report_generation() {
 }
 
 # =============================================================================
+# Test 13: Missing location in finding (regression test)
+# =============================================================================
+test_missing_location() {
+  echo ""
+  echo "Test 13: Finding without location should not produce ':null'"
+
+  setup_report_test_env
+
+  # Finding with no location field at all
+  local report='{
+    "metadata": {"schemaVersion": "1.0.0", "timestamp": "2026-01-16T12:00:00Z", "projectName": "test", "agentsRun": ["security"], "filesScanned": 10},
+    "summary": {"grade": "B", "criticalCount": 0, "highCount": 0, "mediumCount": 1, "lowCount": 0},
+    "findings": [
+      {"id": "SEC-001", "severity": "medium", "category": "security", "title": "Missing location test"}
+    ]
+  }'
+
+  local output_dir="$TEST_OUTPUT_DIR/docs/audits"
+  local md_file
+  md_file=$(generate_audit_markdown "$report" "$output_dir")
+
+  # Should not contain ':null' (the bug we fixed)
+  local has_null
+  has_null=$(grep -c ":null" "$md_file" 2>/dev/null | head -1 | tr -d ' ' || echo "0")
+  assert_equal "$has_null" "0" "Should not have :null in output"
+
+  # Should still have the finding title
+  local has_title
+  has_title=$(grep -c "Missing location test" "$md_file" 2>/dev/null | head -1 | tr -d ' ' || echo "0")
+  assert_equal "$has_title" "1" "Should still include finding title"
+
+  cleanup_report_test_env
+}
+
+# =============================================================================
+# Test 14: Partial location (file only, no line)
+# =============================================================================
+test_partial_location() {
+  echo ""
+  echo "Test 14: Finding with file but no line should handle gracefully"
+
+  setup_report_test_env
+
+  # Finding with file but no line number
+  local report='{
+    "metadata": {"schemaVersion": "1.0.0", "timestamp": "2026-01-16T12:00:00Z", "projectName": "test", "agentsRun": ["security"], "filesScanned": 10},
+    "summary": {"grade": "B", "criticalCount": 0, "highCount": 0, "mediumCount": 1, "lowCount": 0},
+    "findings": [
+      {"id": "SEC-001", "severity": "medium", "category": "security", "title": "Partial location", "location": {"file": "test.ts"}}
+    ]
+  }'
+
+  local output_dir="$TEST_OUTPUT_DIR/docs/audits"
+  local md_file
+  md_file=$(generate_audit_markdown "$report" "$output_dir")
+
+  # Should include the file path without :null
+  local has_file
+  has_file=$(grep -c "test.ts" "$md_file" 2>/dev/null | head -1 | tr -d ' ' || echo "0")
+  assert_equal "$has_file" "1" "Should include file path"
+
+  # Should not have :null anywhere
+  local has_null
+  has_null=$(grep -c ":null" "$md_file" 2>/dev/null | head -1 | tr -d ' ' || echo "0")
+  assert_equal "$has_null" "0" "Should not have :null for missing line"
+
+  cleanup_report_test_env
+}
+
+# =============================================================================
+# Test 15: Null location object (regression test)
+# =============================================================================
+test_null_location_object() {
+  echo ""
+  echo "Test 15: Finding with explicit null location should handle gracefully"
+
+  setup_report_test_env
+
+  # Finding with explicit null location
+  local report='{
+    "metadata": {"schemaVersion": "1.0.0", "timestamp": "2026-01-16T12:00:00Z", "projectName": "test", "agentsRun": ["security"], "filesScanned": 10},
+    "summary": {"grade": "B", "criticalCount": 0, "highCount": 0, "mediumCount": 1, "lowCount": 0},
+    "findings": [
+      {"id": "SEC-001", "severity": "medium", "category": "security", "title": "Null location", "location": null}
+    ]
+  }'
+
+  local output_dir="$TEST_OUTPUT_DIR/docs/audits"
+  local md_file
+  md_file=$(generate_audit_markdown "$report" "$output_dir")
+
+  # Should not contain ':null' or produce errors
+  local has_null
+  has_null=$(grep -c ":null" "$md_file" 2>/dev/null | head -1 | tr -d ' ' || echo "0")
+  assert_equal "$has_null" "0" "Should not have :null for null location"
+
+  # Should have the finding
+  local has_finding
+  has_finding=$(grep -c "SEC-001" "$md_file" 2>/dev/null | head -1 | tr -d ' ' || echo "0")
+  assert_equal "$has_finding" "1" "Should still include finding ID"
+
+  cleanup_report_test_env
+}
+
+# =============================================================================
 # Run all tests
 # =============================================================================
 echo "╔════════════════════════════════════════════════════════════╗"
@@ -503,5 +608,8 @@ test_findings_sorted_by_severity
 test_positives_included
 test_dedup_stats_included
 test_full_report_generation
+test_missing_location
+test_partial_location
+test_null_location_object
 
 print_test_summary
