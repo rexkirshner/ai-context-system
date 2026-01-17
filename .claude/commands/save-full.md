@@ -407,7 +407,33 @@ fi
 
 echo "✅ Session entry ready to append"
 echo ""
+
+# After appending session, regenerate Session Index (v5.1.0)
+echo "After appending the session, regenerate the Session Index:"
+echo ""
+echo "   source scripts/common-functions.sh"
+echo "   generate_session_index \"$CONTEXT_DIR/SESSIONS.md\""
+echo ""
+echo "This keeps the Session Index table current automatically."
+echo ""
 ```
+
+**Auto-Update Session Index (v5.1.0):**
+
+After appending the session entry to SESSIONS.md, the AI agent should regenerate the Session Index:
+
+```bash
+# Regenerate Session Index after appending session
+source scripts/common-functions.sh 2>/dev/null
+if type generate_session_index &>/dev/null; then
+  generate_session_index "$CONTEXT_DIR/SESSIONS.md"
+  echo "✅ Session Index updated"
+else
+  echo "ℹ️  Session Index update not available (v5.1.0+ feature)"
+fi
+```
+
+This ensures the Session Index table at the top of SESSIONS.md stays current without manual updates.
 
 ---
 

@@ -257,6 +257,16 @@ else
   exit 1
 fi
 
+# Regenerate Session Index after archiving (v5.1.0)
+if type generate_session_index &>/dev/null; then
+  echo "📇 Regenerating Session Index..."
+  if generate_session_index "$SESSIONS_FILE"; then
+    echo "   ✅ Session Index updated"
+  else
+    echo "   ⚠️ Session Index update failed (non-critical)"
+  fi
+fi
+
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "✅ Archiving complete!"

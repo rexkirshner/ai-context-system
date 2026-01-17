@@ -3526,6 +3526,153 @@ EOF
 }
 
 # =============================================================================
+# PHASE 1.2: SESSION INDEX AUTO-GENERATION
+# =============================================================================
+
+# Generate session index from SESSIONS.md
+#
+# Parses all session headers and regenerates the Session Index table.
+# Handles both pipe-delimited (## Session N | DATE | PHASE) and legacy
+# (## Session N - DATE) formats.
+#
+# Usage:
+#   generate_session_index "$CONTEXT_DIR/SESSIONS.md"
+#
+# Args:
+#   $1 - Path to SESSIONS.md file
+#
+# Returns:
+#   0 on success, 1 on error
+#   Modifies SESSIONS.md in place with updated index
+#
+generate_session_index() {
+  local sessions_file="$1"
+
+  if [ ! -f "$sessions_file" ]; then
+    echo "Error: SESSIONS.md not found: $sessions_file" >&2
+    return 1
+  fi
+
+  local temp_file="${sessions_file}.tmp"
+
+  # Extract all session headers with their info
+  # Format: ## Session N | DATE | PHASE or ## Session N - DATE
+  local sessions_data=()
+
+  while IFS= read -r header_line; do
+    local session_num=""
+    local session_date=""
+    local phase=""
+    local focus=""
+    local session_status=""
+
+    # Parse pipe-delimited format: ## Session N | DATE | PHASE
+    if echo "$header_line" | grep -qE "^## Session [0-9]+ \|"; then
+      session_num=$(echo "$header_line" | grep -oE "Session [0-9]+" | grep -oE "[0-9]+")
+      session_date=$(echo "$header_line" | cut -d'|' -f2 | tr -d ' ')
+      phase=$(echo "$header_line" | cut -d'|' -f3- | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+    # Parse legacy format: ## Session N - DATE
+    elif echo "$header_line" | grep -qE "^## Session [0-9]+ -"; then
+      session_num=$(echo "$header_line" | grep -oE "Session [0-9]+" | grep -oE "[0-9]+")
+      session_date=$(echo "$header_line" | sed -E 's/^## Session [0-9]+ - //' | grep -oE "[0-9]{4}-[0-9]{2}-[0-9]{2}" | head -1)
+      phase="(legacy)"
+    else
+      continue
+    fi
+
+    # Find the status line for this session (next few lines after header)
+    local line_num
+    line_num=$(grep -n "^## Session $session_num " "$sessions_file" | head -1 | cut -d: -f1)
+
+    if [ -n "$line_num" ]; then
+      # Look for **Status:** or **Focus:** in next 5 lines
+      local context_lines
+      context_lines=$(sed -n "$((line_num+1)),$((line_num+5))p" "$sessions_file")
+
+      # Extract focus
+      focus=$(echo "$context_lines" | grep -oE '\*\*Focus:\*\* [^|]+' | head -1 | sed 's/\*\*Focus:\*\* //')
+      focus=$(echo "$focus" | sed 's/[[:space:]]*$//' | cut -c1-30)  # Truncate to 30 chars
+
+      # Extract status
+      if echo "$context_lines" | grep -q "✅"; then
+        session_status="✅"
+      elif echo "$context_lines" | grep -q "⏳"; then
+        session_status="⏳"
+      else
+        session_status="?"
+      fi
+    fi
+
+    if [ -n "$session_num" ] && [ -n "$session_date" ]; then
+      sessions_data+=("$session_num|$session_date|$phase|$focus|$session_status")
+    fi
+  done < <(grep -E "^## Session [0-9]+" "$sessions_file")
+
+  # Build the new index table
+  local index_content="| # | Date | Phase | Focus | Status |
+|---|------|-------|-------|--------|"
+
+  for entry in "${sessions_data[@]}"; do
+    IFS='|' read -r num dt ph fo st <<< "$entry"
+    # Escape any special characters and truncate
+    fo=$(echo "$fo" | cut -c1-30)
+    index_content+=$'\n'"| $num | $dt | $ph | $fo | $st |"
+  done
+
+  # Check if Session Index section exists
+  if grep -q "## Session Index" "$sessions_file"; then
+    # Replace existing index section
+    # Find the start and end of the index section
+    local index_start index_end
+    index_start=$(grep -n "## Session Index" "$sessions_file" | head -1 | cut -d: -f1)
+
+    # Find the next --- after the index (end of index section)
+    index_end=$(sed -n "$((index_start+1)),\$p" "$sessions_file" | grep -n "^---$" | head -1 | cut -d: -f1)
+
+    if [ -n "$index_start" ] && [ -n "$index_end" ]; then
+      index_end=$((index_start + index_end))
+
+      # Build new file: header + new index + rest
+      {
+        head -n "$index_start" "$sessions_file"
+        echo ""
+        echo "$index_content"
+        echo ""
+        tail -n "+$index_end" "$sessions_file"
+      } > "$temp_file"
+
+      mv "$temp_file" "$sessions_file"
+    else
+      echo "Warning: Could not find index section boundaries" >&2
+      return 1
+    fi
+  else
+    # Insert index section after the first ---
+    local first_separator
+    first_separator=$(grep -n "^---$" "$sessions_file" | head -1 | cut -d: -f1)
+
+    if [ -n "$first_separator" ]; then
+      {
+        head -n "$first_separator" "$sessions_file"
+        echo ""
+        echo "## Session Index"
+        echo ""
+        echo "$index_content"
+        echo ""
+        tail -n "+$((first_separator+1))" "$sessions_file"
+      } > "$temp_file"
+
+      mv "$temp_file" "$sessions_file"
+    else
+      echo "Warning: Could not find separator to insert index" >&2
+      return 1
+    fi
+  fi
+
+  return 0
+}
+
+# =============================================================================
 
 # Run auto-update check in background (non-blocking)
 # Only if not already running and not in quiet mode
