@@ -5,6 +5,125 @@ All notable changes to the AI Context System will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.1.0] - 2026-01-17
+
+**MINOR RELEASE** - Code Review Intelligence & Right-Sizing
+
+This release focuses on two themes: making the agent-based code review system smarter, and ensuring context files serve their purpose without becoming unwieldy.
+
+### Added
+
+#### Foundation Utilities (Phase 0)
+
+- **`parse_decisions()`** - Parses DECISIONS.md into JSON array for programmatic access
+- **`jaccard_similarity()`** - Token-based similarity scoring for text comparison
+- **`match_finding_to_decisions()`** - Matches code review findings against documented decisions
+- **`dedupe_by_location()`** - Deduplicates findings by file and line number
+- **`group_similar_findings()`** - Groups related findings with pattern detection
+- **`detect_monorepo()`** - Detects monorepo type (npm, pnpm, yarn, nx, turborepo, lerna)
+- **`list_workspaces()`** - Lists all workspaces in a monorepo
+
+#### Decision-Aware Code Review (Phase 4)
+
+- **Decision context injection** - Code review agents now receive DECISIONS.md context
+- **Intentional exception handling** - Findings matching documented decisions are flagged, not reported as issues
+- **Match accuracy logging** - `analyze-decision-matches.sh` script for tuning match thresholds
+- **`intentionalException` field** - Added to audit-finding.json schema
+
+#### Automated Synthesis (Phase 5)
+
+- **`synthesize_findings()`** - Two-layer deduplication (location + pattern grouping)
+- **`generate_audit_report()`** - Automatic markdown and JSON report generation
+- **`format_dry_run_output()`** - Preview which agents would run without executing
+- **`--dry-run` flag** - Added to `/code-review` command
+
+#### Monorepo Support (Phase 6)
+
+- **`get_monorepo_context()`** - Returns monorepo metadata for codebase scanner
+- **`get_build_context()`** - Workspace-aware build command detection
+- **`--workspace` flag** - Run builds for specific workspace
+- **`--list` flag** - List all workspaces in monorepo
+- **codebase-context.json schema** - New schema (v1.3.0) with monorepo fields
+
+#### Scanner Improvements (Phase 7)
+
+- **`count_file_lines()`** - Counts non-blank, non-comment lines
+- **`is_binary_file()`** - Detects binary files using `file` command
+- **`get_file_complexity()`** - Classifies files as low/medium/high complexity
+- **`get_language_from_extension()`** - Maps file extensions to languages
+- **`is_security_relevant()`** - Tiered security pattern detection (reduces false positives)
+- **`check_content_for_secrets()`** - Content-based secret detection (Tier 3)
+- **Tier 1 patterns** - High-confidence (auth, login, session, oauth, jwt, .env)
+- **Tier 2 patterns** - With exclusions (key but not keyboard, password but not validator)
+
+#### Upgrade Protection (Phase 9)
+
+- **`record_install()`** - Creates `.install-manifest.json` with file hashes
+- **`is_file_modified()`** - Detects user modifications via hash comparison
+- **`get_modified_files()`** - Lists all files modified since installation
+- **Modification prompts** - Installer asks before overwriting customized files
+- **`.context-local/` folder** - Local customization that survives upgrades
+- **`get_local_override_path()`** - Maps system files to local overrides
+- **`has_local_override()`** - Checks if local override exists
+- **`get_effective_file()`** - Returns local override or system file
+- **`init_context_local()`** - Initializes customization folder with README
+
+#### File Growth Management (Phase 1)
+
+- **`archive-decisions-helper.sh`** - Archives old decisions to `.decisions-archive/`
+- **`generate_session_index()`** - Auto-regenerates Session Index table
+- **Auto-archiving prompts** - `/save-full` suggests archiving when files grow large
+
+#### Efficiency Improvements (Phase 3)
+
+- **`get_quick_context()`** - Extracts only Quick Reference, last session, active tasks
+- **`--quick` flag** - Added to `/review-context` for fast session startup
+- **Archive subdirectories** - Archives now stored in `.sessions-archive/` and `.decisions-archive/`
+
+#### Documentation (Phase 2)
+
+- **`.claude/docs/FILE_PURPOSES.md`** - Comprehensive guide to file purposes
+- **Template badges** - [CORE FILE], [STANDARD FILE], [OPTIONAL FILE] badges added
+- **CONTEXT.md vs README.md** - Clear differentiation documented
+- **ARCHITECTURE.md size guidance** - 500-line threshold with splitting strategy
+
+### Fixed
+
+- **zsh spurious output** - Fixed `is_security_relevant()` outputting `dir_path=.` in zsh by combining local declaration with assignment
+
+### Changed
+
+- **Archive locations** - Sessions archive to `.sessions-archive/`, decisions to `.decisions-archive/`
+- **Synthesis agent workflow** - Now uses `synthesize_findings()` for automatic deduplication
+- **Code reviewer workflow** - Now loads decision context before dispatching to specialists
+
+### Testing
+
+- **New test suites:**
+  - `test-parse-decisions.sh` - 20 tests for DECISIONS.md parser
+  - `test-decision-matching.sh` - 13 tests for similarity matching
+  - `test-finding-dedup.sh` - 17 tests for deduplication
+  - `test-monorepo-detection.sh` - 29 tests for monorepo detection
+  - `test-decision-injection.sh` - 29 tests for decision context
+  - `test-agent-decision-handling.sh` - 11 tests for agent behavior
+  - `test-match-logging.sh` - 19 tests for match logging
+  - `test-synthesis-dedup.sh` - 16 tests for synthesis
+  - `test-report-generation.sh` - 27 tests for report generation
+  - `test-dry-run.sh` - 18 tests for dry-run mode
+  - `test-archive-decisions.sh` - 18 tests for decision archiving
+  - `test-session-index.sh` - 15 tests for session index
+  - `test-scanner-monorepo.sh` - 29 tests for scanner integration
+  - `test-build-check-monorepo.sh` - 26 tests for build check
+  - `test-quick-context.sh` - 23 tests for quick context
+  - `test-archive-location.sh` - 10 tests for archive locations
+  - `test-line-counting.sh` - 36 tests for line counting
+  - `test-security-patterns.sh` - 51 tests for security patterns
+  - `test-upgrade-protection.sh` - 16 tests for manifest tracking
+  - `test-context-local.sh` - 20 tests for local overrides
+- **Total: 200+ new tests, 80 core tests, all passing**
+
+---
+
 ## [5.0.2] - 2026-01-15
 
 **PATCH RELEASE** - Shell Compatibility and Robust Parsing
