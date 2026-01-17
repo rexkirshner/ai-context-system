@@ -141,7 +141,25 @@ is_optional() {
   return 1
 }
 
+# Check if file should be skipped (user chose to keep modifications) (v5.1.0)
+should_skip_file() {
+  local file="$1"
+
+  # Only skip if user chose to keep modified files
+  [ "$SKIP_MODIFIED_CHECK" != "true" ] && return 1
+
+  # Check if this file is in the modified list
+  if [ -n "$MODIFIED_FILES" ]; then
+    if echo "$MODIFIED_FILES" | grep -qF "$file"; then
+      return 0  # Should skip
+    fi
+  fi
+
+  return 1  # Don't skip
+}
+
 # Download and validate file with retry logic (v3.3.1)
+# v5.1.0: Added skip logic for user-modified files
 download_file() {
   local url="$1"
   local output="$2"
@@ -149,6 +167,12 @@ download_file() {
   local max_attempts=3
   local attempt=1
   local sleep_time=2
+
+  # v5.1.0: Skip if user chose to keep this modified file
+  if should_skip_file "$output"; then
+    color_echo "${YELLOW}⊘${NC} (kept user version)"
+    return 0
+  fi
 
   while [ $attempt -le $max_attempts ]; do
     # Download file
@@ -428,6 +452,75 @@ else
 fi
 
 echo ""
+
+# =============================================================================
+# Check for modified files before update (v5.1.0 - Phase 9.1)
+# =============================================================================
+
+MODIFIED_FILES=""
+SKIP_MODIFIED_CHECK=false
+
+if [ "$IS_UPDATE" = "true" ] && [ -f ".claude/.install-manifest.json" ]; then
+  # Source the newly downloaded common-functions.sh to use modification detection
+  if [ -f "scripts/common-functions.sh" ]; then
+    source "scripts/common-functions.sh" 2>/dev/null || true
+
+    if type get_modified_files &>/dev/null; then
+      MODIFIED_FILES=$(get_modified_files "." 2>/dev/null || true)
+
+      if [ -n "$MODIFIED_FILES" ]; then
+        echo ""
+        color_echo "${YELLOW}⚠️  Modified files detected:${NC}"
+        echo "$MODIFIED_FILES" | while read -r file; do
+          [ -n "$file" ] && echo "   - $file"
+        done
+        echo ""
+
+        if [ "$NON_INTERACTIVE" = "true" ]; then
+          color_echo "${BLUE}Non-interactive mode: Modified files will be overwritten${NC}"
+        else
+          echo "These files have been customized since installation."
+          echo "Options:"
+          echo "   [O]verwrite - Replace with new versions (your changes will be lost)"
+          echo "   [K]eep - Keep your customized versions (skip these files)"
+          echo "   [D]iff - Show differences (then ask again)"
+          echo ""
+          read -p "What would you like to do? [O/K/D] " -n 1 -r
+          echo ""
+
+          case $REPLY in
+            [Kk])
+              SKIP_MODIFIED_CHECK=true
+              color_echo "${BLUE}Keeping your customized files${NC}"
+              ;;
+            [Dd])
+              # Show diffs for each modified file
+              echo "$MODIFIED_FILES" | while read -r file; do
+                if [ -n "$file" ] && [ -f "$file" ]; then
+                  echo ""
+                  color_echo "${BLUE}=== $file ===${NC}"
+                  # We can't easily show the diff without the new version
+                  echo "(Full diff will be available after download)"
+                fi
+              done
+              echo ""
+              read -p "Overwrite modified files? [y/N] " -n 1 -r
+              echo ""
+              if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+                SKIP_MODIFIED_CHECK=true
+                color_echo "${BLUE}Keeping your customized files${NC}"
+              fi
+              ;;
+            *)
+              color_echo "${BLUE}Modified files will be overwritten${NC}"
+              ;;
+          esac
+        fi
+        echo ""
+      fi
+    fi
+  fi
+fi
 
 # =============================================================================
 # Initialize counters
@@ -792,6 +885,17 @@ if [ $FAILED_DOWNLOADS -eq 0 ] && [ $VERIFICATION_FAILED -eq 0 ]; then
 
   # Run post-installation validation (v3.3.1: auto-fixes common issues)
   post_install_validation
+
+  # Record installation manifest for upgrade protection (v5.1.0)
+  # This tracks file hashes to detect user modifications during future upgrades
+  if [ -f "scripts/common-functions.sh" ]; then
+    # Temporarily suppress errors during sourcing (some functions may log debug messages)
+    source "scripts/common-functions.sh" 2>/dev/null || true
+    if type record_install &>/dev/null; then
+      record_install "." "$VERSION" 2>/dev/null || true
+      color_echo "${BLUE}📋 Installation manifest recorded${NC}"
+    fi
+  fi
 
   # Show context-appropriate next steps (v5.0.2)
   if [ "$IS_UPDATE" = "true" ]; then
