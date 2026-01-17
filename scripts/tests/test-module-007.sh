@@ -85,7 +85,7 @@ test_commands_use_context_dir() {
   COMMANDS_USING_VAR=0
 
   for cmd in validate-context.md export-context.md; do
-    if grep -q '\$CONTEXT_DIR\|$CONTEXT_DIR' .claude/commands/$cmd 2>/dev/null; then
+    if grep -qE '\$CONTEXT_DIR|$CONTEXT_DIR' .claude/commands/$cmd 2>/dev/null; then
       ((COMMANDS_USING_VAR++))
     fi
   done

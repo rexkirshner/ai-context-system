@@ -161,7 +161,7 @@ grep -rn "\.filter\|\.map\|\.reduce" --include="*.tsx" app/ | head -20
 
 ```bash
 # Find images without dimensions
-grep -rn "<img\|<Image" --include="*.tsx" | grep -v "width\|height" | head -20
+grep -rnE "<img|<Image" --include="*.tsx" | grep -vE "width|height" | head -20
 
 # Find dynamic content insertion
 grep -rn "useState.*\[\]" --include="*.tsx" | head -20

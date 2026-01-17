@@ -121,10 +121,10 @@ grep -rn "<img" --include="*.tsx" --include="*.jsx" | grep -v "alt="
 grep -rn "alt=\"\"" --include="*.tsx"
 
 # Find background images with meaning
-grep -rn "background-image\|backgroundImage" --include="*.tsx" --include="*.css"
+grep -rnE "background-image|backgroundImage" --include="*.tsx" --include="*.css"
 
 # Find icons without labels
-grep -rn "<Icon\|<svg" --include="*.tsx" | grep -v "aria-label\|aria-hidden"
+grep -rnE "<Icon|<svg" --include="*.tsx" | grep -vE "aria-label|aria-hidden"
 ```
 
 **Check for:**
@@ -220,7 +220,7 @@ grep -rn "<table\|<th\|<td" --include="*.tsx"
 
 ```bash
 # Find interactive elements with onClick but no keyboard
-grep -rn "onClick" --include="*.tsx" | grep -v "onKeyDown\|onKeyPress\|<button\|<a\s\|<input\|<select"
+grep -rn "onClick" --include="*.tsx" | grep -vE "onKeyDown|onKeyPress|<button|<a\s|<input|<select"
 
 # Find tabIndex usage
 grep -rn "tabIndex" --include="*.tsx"
@@ -323,7 +323,7 @@ grep -rn "prefers-reduced-motion" --include="*.css" --include="*.tsx"
 
 ```bash
 # Find form fields without labels
-grep -rn "<input" --include="*.tsx" | grep -v "id=\|aria-label"
+grep -rn "<input" --include="*.tsx" | grep -vE "id=|aria-label"
 
 # Find labels
 grep -rn "<label" --include="*.tsx"

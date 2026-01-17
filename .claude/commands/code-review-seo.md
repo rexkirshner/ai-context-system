@@ -343,13 +343,13 @@ ls app/not-found.tsx 2>/dev/null || ls pages/404.tsx 2>/dev/null
 
 ```bash
 # Large images without optimization
-grep -rn "src=.*\.(png|jpg|jpeg)" --include="*.tsx" | grep -v "next/image\|Image"
+grep -rn "src=.*\.(png|jpg|jpeg)" --include="*.tsx" | grep -vE "next/image|Image"
 
 # Render-blocking scripts
-grep -rn "<script" --include="*.tsx" | grep -v "async\|defer"
+grep -rn "<script" --include="*.tsx" | grep -vE "async|defer"
 
 # Fonts without display strategy
-grep -rn "font-family\|@font-face" --include="*.css" --include="*.scss"
+grep -rnE "font-family|@font-face" --include="*.css" --include="*.scss"
 ```
 
 ### Step 10: Generate Audit Report

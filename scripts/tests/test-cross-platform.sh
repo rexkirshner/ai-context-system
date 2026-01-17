@@ -54,7 +54,7 @@ for script in $SCRIPTS_WITH_STAT; do
   # 3. If/else pattern with stat -f and stat -c in same function
   HAS_MAC_STAT=$(grep -c 'stat -f' "$script" 2>/dev/null || true)
   HAS_LIN_STAT=$(grep -c 'stat -c' "$script" 2>/dev/null || true)
-  if grep -q 'darwin\|OSTYPE' "$script" 2>/dev/null || \
+  if grep -qE 'darwin|OSTYPE' "$script" 2>/dev/null || \
      { [ "${HAS_MAC_STAT:-0}" -gt 0 ] && [ "${HAS_LIN_STAT:-0}" -gt 0 ]; }; then
     check "true" "$script handles both macOS and Linux stat"
   else
@@ -89,9 +89,9 @@ for script in $SCRIPTS_WITH_SED; do
   # 3. Both macOS and Linux variants present
   HAS_MAC_SED=$(grep -c "sed -i ''" "$script" 2>/dev/null || true)
   HAS_LIN_SED=$(grep -c "sed -i[^']" "$script" 2>/dev/null || true)
-  if grep -q 'darwin\|OSTYPE' "$script" 2>/dev/null || \
+  if grep -qE 'darwin|OSTYPE' "$script" 2>/dev/null || \
      { [ "${HAS_MAC_SED:-0}" -gt 0 ] && [ "${HAS_LIN_SED:-0}" -gt 0 ]; } || \
-     grep -q 'tmp\|temp\|mktemp' "$script" 2>/dev/null; then
+     grep -qE 'tmp\|temp|mktemp' "$script" 2>/dev/null; then
     check "true" "$script uses portable sed"
   else
     check "false" "$script uses portable sed"
@@ -115,7 +115,7 @@ check "[ '${BAD_READLINK:-0}' -eq 0 ]" "No readlink -f usage (not portable)"
 echo ""
 echo "--- Array Syntax ---"
 # Bash arrays are fine, but ensure we're using bash
-SCRIPTS_WITH_ARRAYS=$(grep -rl '\[@\]\|(\s*)' scripts/ .claude/hooks/ 2>/dev/null || true)
+SCRIPTS_WITH_ARRAYS=$(grep -rlE '\[@\]|(\s*)' scripts/ .claude/hooks/ 2>/dev/null || true)
 for script in $SCRIPTS_WITH_ARRAYS; do
   check "head -1 '$script' | grep -q 'bash'" "$script using arrays has bash shebang"
 done
@@ -128,7 +128,7 @@ MISSING_CHECKS=""
 # Check if any script uses jq without fallback
 SCRIPTS_WITH_JQ=$(grep -rl 'jq ' scripts/ .claude/hooks/ 2>/dev/null || true)
 if [ -n "$SCRIPTS_WITH_JQ" ]; then
-  JQ_CHECK=$(grep -l 'command -v jq\|which jq\|type jq' scripts/*.sh .claude/hooks/*.sh 2>/dev/null || true)
+  JQ_CHECK=$(grep -lE 'command -v jq\|which jq|type jq' scripts/*.sh .claude/hooks/*.sh 2>/dev/null || true)
   if [ -z "$JQ_CHECK" ]; then
     # No jq availability check - that's OK if jq is a hard dependency
     check "true" "jq usage is acceptable (common tool)"
@@ -140,10 +140,10 @@ fi
 echo ""
 echo "--- Color Code Portability ---"
 # Check that color codes use portable ANSI escapes
-SCRIPTS_WITH_COLORS=$(grep -rl 'echo.*\\033\|echo.*\\e\[' scripts/ .claude/hooks/ 2>/dev/null || true)
+SCRIPTS_WITH_COLORS=$(grep -rlE 'echo.*\\033|echo.*\\e\[' scripts/ .claude/hooks/ 2>/dev/null || true)
 for script in $SCRIPTS_WITH_COLORS; do
   # \033 is more portable than \e
-  if grep -q 'echo.*\\e\[' "$script" 2>/dev/null && ! grep -q 'echo -e\|printf' "$script" 2>/dev/null; then
+  if grep -q 'echo.*\\e\[' "$script" 2>/dev/null && ! grep -qE 'echo -e|printf' "$script" 2>/dev/null; then
     check "false" "$script uses portable color codes"
   else
     check "true" "$script uses portable color codes"

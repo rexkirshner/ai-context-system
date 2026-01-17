@@ -45,14 +45,14 @@ check "grep -q 'is_optional()' '$INSTALL_SCRIPT'" "Has is_optional function"
 
 echo ""
 echo "--- Backup Handling ---"
-check "grep -q 'backup\|BACKUP' '$INSTALL_SCRIPT'" "Creates backups"
+check "grep -qE 'backup|BACKUP' '$INSTALL_SCRIPT'" "Creates backups"
 check "grep -q '.claude-backup' '$INSTALL_SCRIPT'" "Uses standard backup naming"
 
 echo ""
 echo "--- Directory Creation ---"
 check "grep -q 'mkdir -p' '$INSTALL_SCRIPT'" "Creates directories"
 check "grep -q '.claude/commands' '$INSTALL_SCRIPT'" "Creates .claude/commands"
-check "grep -q '.claude/schemas\|schema' '$INSTALL_SCRIPT'" "Handles schema files"
+check "grep -qE '.claude/schemas|schema' '$INSTALL_SCRIPT'" "Handles schema files"
 check "grep -q 'templates' '$INSTALL_SCRIPT'" "Handles templates directory"
 check "grep -q 'scripts' '$INSTALL_SCRIPT'" "Handles scripts directory"
 
@@ -67,19 +67,19 @@ check "grep -q 'common-functions.sh' '$INSTALL_SCRIPT'" "Downloads common-functi
 
 echo ""
 echo "--- Error Handling ---"
-check "grep -q 'curl.*-L\|curl.*-sL' '$INSTALL_SCRIPT'" "Uses curl with redirect follow"
-check "grep -q '404\|error' '$INSTALL_SCRIPT'" "Handles 404 errors"
-check "grep -q 'retry\|RETRY\|attempt' '$INSTALL_SCRIPT'" "Has retry logic"
+check "grep -qE 'curl.*-L|curl.*-sL' '$INSTALL_SCRIPT'" "Uses curl with redirect follow"
+check "grep -qE '404|error' '$INSTALL_SCRIPT'" "Handles 404 errors"
+check "grep -qE 'retry\|RETRY|attempt' '$INSTALL_SCRIPT'" "Has retry logic"
 check "grep -q 'OPTIONAL_FILES' '$INSTALL_SCRIPT'" "Defines optional files"
 
 echo ""
 echo "--- Post-Install Validation ---"
-check "grep -q 'validation\|verify\|check' '$INSTALL_SCRIPT'" "Has validation step"
+check "grep -qE 'validation\|verify|check' '$INSTALL_SCRIPT'" "Has validation step"
 
 echo ""
 echo "--- Security ---"
 # No unsafe patterns (exclude comments which are usage examples)
-UNSAFE_CURL=$(grep -v '^#' "$INSTALL_SCRIPT" | grep -c 'curl.*| bash\|curl.*|bash' 2>/dev/null || true)
+UNSAFE_CURL=$(grep -v '^#' "$INSTALL_SCRIPT" | grep -cE 'curl.*\| bash|curl.*\|bash' 2>/dev/null || true)
 check "[ '${UNSAFE_CURL:-0}' -eq 0 ]" "No unsafe curl|bash patterns (excludes comments)"
 
 echo ""

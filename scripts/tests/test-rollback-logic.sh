@@ -31,10 +31,10 @@ check "grep -q 'set -e' '$ROLLBACK_SCRIPT'" "Uses set -e for safety"
 echo ""
 echo "--- Safety Checks ---"
 # Must confirm before destructive action
-check "grep -q 'read -p\|read -n' '$ROLLBACK_SCRIPT'" "Requires user confirmation"
+check "grep -qE 'read -p|read -n' '$ROLLBACK_SCRIPT'" "Requires user confirmation"
 
 # Must validate backup exists before proceeding
-check "grep -q 'test -d.*BACKUP\|\\[ -d.*backup\\|\\[ ! -d' '$ROLLBACK_SCRIPT'" "Validates backup directory"
+check "grep -qE 'test -d.*BACKUP|\\[ -d.*backup|\\[ ! -d' '$ROLLBACK_SCRIPT'" "Validates backup directory"
 
 # Must not use rm -rf on root or with unquoted variables
 # Safe: rm -rf "$dir" or rm -rf "${dir}"
@@ -54,26 +54,26 @@ check "grep -q 'SESSIONS.md' '$ROLLBACK_SCRIPT'" "Mentions SESSIONS.md preservat
 echo ""
 echo "--- Backup Handling ---"
 # Should find most recent backup if not specified
-check "grep -q 'ls -dt.*backup\|ls.*backup.*sort' '$ROLLBACK_SCRIPT'" "Can find most recent backup"
+check "grep -qE 'ls -dt.*backup|ls.*backup.*sort' '$ROLLBACK_SCRIPT'" "Can find most recent backup"
 
 # Should validate backup has required components
-check "grep -q 'REQUIRED_BACKUP\|required.*backup\|validate\|VERSION' '$ROLLBACK_SCRIPT'" "Validates backup contents"
+check "grep -qE 'REQUIRED_BACKUP|required.*backup|validate|VERSION' '$ROLLBACK_SCRIPT'" "Validates backup contents"
 
 echo ""
 echo "--- Error Messaging ---"
 # Should have helpful error messages
-check "grep -q 'Error:\|ERROR:\|error' '$ROLLBACK_SCRIPT'" "Has error messages"
+check "grep -qE 'Error:|ERROR:|error' '$ROLLBACK_SCRIPT'" "Has error messages"
 
 # Should provide usage instructions
-check "grep -q 'Usage:\|usage' '$ROLLBACK_SCRIPT'" "Has usage instructions"
+check "grep -qE 'Usage:|usage' '$ROLLBACK_SCRIPT'" "Has usage instructions"
 
 echo ""
 echo "--- Logging ---"
 # Should log what it's doing
-check "grep -q 'echo.*Step\|echo.*Rollback\|echo.*Restoring' '$ROLLBACK_SCRIPT'" "Logs progress steps"
+check "grep -qE 'echo.*Step|echo.*Rollback|echo.*Restoring' '$ROLLBACK_SCRIPT'" "Logs progress steps"
 
 # Should preserve backup after rollback (not delete it)
-check "grep -qi 'keep.*backup\|preserv.*backup\|Keeping backup' '$ROLLBACK_SCRIPT'" "Preserves backup after rollback"
+check "grep -qiE 'keep.*backup|preserv.*backup|Keeping backup' '$ROLLBACK_SCRIPT'" "Preserves backup after rollback"
 
 echo ""
 echo "--- Simulated Execution Test ---"

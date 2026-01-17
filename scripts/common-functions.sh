@@ -2191,7 +2191,7 @@ detect_project_description() {
     for readme in README.md README.rst README.txt README; do
       if [ -f "$readme" ]; then
         # Get first non-empty, non-header line
-        desc=$(grep -v '^#\|^$\|^==\|^--' "$readme" 2>/dev/null | head -1 | cut -c1-200)
+        desc=$(grep -vE '^#|^$|^==|^--' "$readme" 2>/dev/null | head -1 | cut -c1-200)
         [ -n "$desc" ] && break
       fi
     done
@@ -2261,7 +2261,7 @@ detect_tech_stack() {
     fi
 
     # Check for database
-    if grep -q '"pg"\|"postgres"' package.json 2>/dev/null; then
+    if grep -qE '"pg"|"postgres"' package.json 2>/dev/null; then
       stack+=("PostgreSQL")
     elif grep -q '"mysql' package.json 2>/dev/null; then
       stack+=("MySQL")
@@ -2346,7 +2346,7 @@ detect_project_type() {
   fi
 
   # CLI indicators
-  if [ -f "setup.py" ] && grep -q 'entry_points\|console_scripts' setup.py 2>/dev/null; then
+  if [ -f "setup.py" ] && grep -qE 'entry_points|console_scripts' setup.py 2>/dev/null; then
     echo "cli"
     return 0
   fi
