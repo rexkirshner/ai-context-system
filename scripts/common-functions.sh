@@ -2732,6 +2732,94 @@ get_monorepo_context() {
     }'
 }
 
+# Get build context for /build-check command
+#
+# Provides workspace-aware build commands for the /build-check command.
+# Handles monorepo detection, workspace selection, and command generation.
+#
+# Usage:
+#   context=$(get_build_context)                    # Current directory, all workspaces
+#   context=$(get_build_context "./monorepo")       # Specific directory
+#   context=$(get_build_context "./monorepo" "web") # Specific workspace
+#   context=$(get_build_context "./monorepo" "all") # All workspaces (explicit)
+#
+# Args:
+#   $1 - Directory to check (optional, default: current directory)
+#   $2 - Workspace filter (optional): workspace name, "all", or empty for root
+#
+# Returns:
+#   JSON object with build context:
+#   {
+#     "monorepoType": "turborepo",
+#     "buildCmd": "turbo build",
+#     "workspaceCmd": "turbo build --filter=",
+#     "context": "root",
+#     "workspaces": [...],
+#     "effectiveCmd": "turbo build"
+#   }
+#
+# Example:
+#   get_build_context | jq -r '.effectiveCmd'
+#
+get_build_context() {
+  local dir="${1:-.}"
+  local workspace_filter="${2:-}"
+
+  # Handle non-existent directory
+  if [ ! -d "$dir" ]; then
+    echo '{"monorepoType":"single","buildCmd":"npm run build","workspaceCmd":null,"context":"root","workspaces":[],"effectiveCmd":"npm run build"}'
+    return 0
+  fi
+
+  # Get base monorepo detection
+  local mono_info
+  mono_info=$(detect_monorepo "$dir")
+
+  local mono_type
+  mono_type=$(echo "$mono_info" | jq -r '.type')
+
+  local build_cmd
+  build_cmd=$(echo "$mono_info" | jq -r '.buildCmd')
+
+  local workspace_cmd
+  workspace_cmd=$(echo "$mono_info" | jq -r '.workspaceCmd // "null"')
+
+  # Get workspaces
+  local workspaces
+  workspaces=$(list_workspaces "$dir")
+
+  # Determine context
+  local context="root"
+  local effective_cmd="$build_cmd"
+
+  if [ -n "$workspace_filter" ] && [ "$workspace_filter" != "all" ]; then
+    context="workspace"
+    # Build workspace-specific command
+    if [ "$workspace_cmd" != "null" ]; then
+      effective_cmd="${workspace_cmd}${workspace_filter} build"
+    else
+      effective_cmd="npm run build"
+    fi
+  fi
+
+  # Build final output
+  jq -n \
+    --arg monorepoType "$mono_type" \
+    --arg buildCmd "$build_cmd" \
+    --arg workspaceCmd "$workspace_cmd" \
+    --arg context "$context" \
+    --argjson workspaces "$workspaces" \
+    --arg effectiveCmd "$effective_cmd" \
+    '{
+      monorepoType: $monorepoType,
+      buildCmd: $buildCmd,
+      workspaceCmd: (if $workspaceCmd == "null" then null else $workspaceCmd end),
+      context: $context,
+      workspaces: $workspaces,
+      effectiveCmd: $effectiveCmd
+    }'
+}
+
 # =============================================================================
 # PHASE 4: DECISION-AWARE CODE REVIEW
 # =============================================================================

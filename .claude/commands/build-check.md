@@ -7,12 +7,31 @@ description: Pre-push build gate - runs lint, typecheck, tests, and build to ens
 
 Run all quality gates before pushing to remote. This command executes lint, typecheck, tests, and build in sequence, stopping at the first failure. Use this to catch CI failures locally.
 
+## Monorepo Support (v5.1.0)
+
+This command supports monorepo workspaces. Use flags to control scope:
+
+| Flag | Behavior |
+|------|----------|
+| (none) | Auto-detect context, run at root level |
+| `--workspace=<name>` | Run build for specific workspace only |
+| `--all` | Run build for all workspaces (root command) |
+| `--list` | List detected workspaces without building |
+
+**Examples:**
+```bash
+/build-check                    # Runs at monorepo root
+/build-check --workspace=web    # Runs only for "web" workspace
+/build-check --list             # Shows available workspaces
+```
+
 ## CRITICAL RULES
 
 1. **Stop on first failure** - Don't continue if a check fails
 2. **Run all checks** - Lint, types, tests, build (in that order)
 3. **Report clear status** - Pass/fail for each step
 4. **Suggest fixes** - For common failures
+5. **Respect workspace scope** - When --workspace specified, only check that workspace
 
 ## When to Use This Command
 
@@ -41,6 +60,46 @@ Stopping on first failure to save time.
 ```
 
 ### Step 1: Detect Project Configuration
+
+**Detect monorepo and workspace context (v5.1.0):**
+
+```bash
+# Source monorepo detection utilities
+source scripts/common-functions.sh 2>/dev/null || true
+
+# Get build context
+if type get_build_context &>/dev/null; then
+  BUILD_CONTEXT=$(get_build_context)
+  MONO_TYPE=$(echo "$BUILD_CONTEXT" | jq -r '.monorepoType')
+  BUILD_CMD=$(echo "$BUILD_CONTEXT" | jq -r '.effectiveCmd')
+
+  if [ "$MONO_TYPE" != "single" ]; then
+    echo "Monorepo detected: $MONO_TYPE"
+    echo "Build command: $BUILD_CMD"
+
+    # Handle --list flag
+    if [ "$1" = "--list" ]; then
+      echo ""
+      echo "Available workspaces:"
+      echo "$BUILD_CONTEXT" | jq -r '.workspaces[] | "  - \(.name) (\(.path))"'
+      exit 0
+    fi
+  fi
+fi
+```
+
+**Handle workspace flag:**
+
+```bash
+# Parse --workspace=<name> flag
+WORKSPACE=""
+if [[ "$1" =~ ^--workspace=(.+)$ ]]; then
+  WORKSPACE="${BASH_REMATCH[1]}"
+  echo "Running for workspace: $WORKSPACE"
+  BUILD_CONTEXT=$(get_build_context . "$WORKSPACE")
+  BUILD_CMD=$(echo "$BUILD_CONTEXT" | jq -r '.effectiveCmd')
+fi
+```
 
 **Identify available checks:**
 
@@ -391,6 +450,66 @@ jobs:
 ```
 
 Running `/build-check` locally before pushing ensures CI won't fail.
+
+## Monorepo-Specific Commands (v5.1.0)
+
+### Turborepo
+
+```bash
+# Build all workspaces
+turbo build
+
+# Build specific workspace
+turbo build --filter=web
+
+# List workspaces
+/build-check --list
+```
+
+### Nx
+
+```bash
+# Build all
+nx run-many --target=build
+
+# Build specific workspace
+nx run --project=web build
+
+# List projects
+nx show projects
+```
+
+### pnpm Workspaces
+
+```bash
+# Build all
+pnpm -r build
+
+# Build specific workspace
+pnpm --filter=web build
+```
+
+### Yarn/npm Workspaces
+
+```bash
+# Yarn
+yarn workspaces run build
+yarn workspace web build
+
+# npm
+npm run build --workspaces
+npm run build -w web
+```
+
+### Lerna
+
+```bash
+# Build all
+lerna run build
+
+# Build specific package
+lerna run build --scope=web
+```
 
 ## Quick Reference
 
