@@ -1,7 +1,7 @@
 #!/bin/bash
 # export-sessions-json.sh - Export SESSIONS.md to JSON format
 #
-# Version: 5.0.2
+# Version: 5.1.0
 # Rewritten for robustness and cross-platform compatibility
 #
 # Features:
@@ -238,7 +238,7 @@ export_sessions_to_json() {
 
   # Get metadata
   local version project_name exported_at
-  version=$(grep -m 1 '"version":' "$context_dir/.context-config.json" 2>/dev/null | cut -d'"' -f4 || echo "5.0.2")
+  version=$(grep -m 1 '"version":' "$context_dir/.context-config.json" 2>/dev/null | cut -d'"' -f4 || echo "5.1.0")
   project_name=$(grep -m 1 '"name":' "$context_dir/.context-config.json" 2>/dev/null | cut -d'"' -f4 || echo "Unknown Project")
   exported_at=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 

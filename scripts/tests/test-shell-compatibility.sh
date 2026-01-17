@@ -1,10 +1,10 @@
 #!/bin/bash
-# test-shell-compatibility.sh - Test shell compatibility for v5.0.2
+# test-shell-compatibility.sh - Test shell compatibility for v5.1.0
 #
 # Tests that critical functions work correctly in both bash and zsh.
 # This is important because macOS uses zsh by default.
 #
-# Version: 5.0.2
+# Version: 5.1.0
 # Part of: Phase 1 - Shell Compatibility
 
 set -e
@@ -13,7 +13,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ERRORS=0
 
 echo "=============================================="
-echo "  Shell Compatibility Tests (v5.0.2)"
+echo "  Shell Compatibility Tests (v5.1.0)"
 echo "=============================================="
 echo ""
 

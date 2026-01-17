@@ -1,7 +1,7 @@
 #!/bin/bash
 # test-json-export.sh - Comprehensive tests for export-sessions-json.sh
 #
-# Version: 5.0.2
+# Version: 5.1.0
 # Part of: Phase 2 - JSON Export Rewrite
 #
 # Tests:
@@ -20,7 +20,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 EXPORT_SCRIPT="$SCRIPT_DIR/../export-sessions-json.sh"
 
 echo "=============================================="
-echo "  JSON Export Tests (v5.0.2)"
+echo "  JSON Export Tests (v5.1.0)"
 echo "=============================================="
 echo ""
 
@@ -33,7 +33,7 @@ mkdir -p "$TEST_DIR/context"
 # Create minimal .context-config.json
 cat > "$TEST_DIR/context/.context-config.json" << 'EOF'
 {
-  "version": "5.0.2",
+  "version": "5.1.0",
   "name": "Test Project"
 }
 EOF
