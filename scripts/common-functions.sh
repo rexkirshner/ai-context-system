@@ -2821,6 +2821,142 @@ get_build_context() {
 }
 
 # =============================================================================
+# PHASE 3: QUICK CONTEXT MODE
+# =============================================================================
+
+# Get quick context for fast session startup
+#
+# Extracts minimal context for the /review-context --quick mode:
+# - Quick Reference section from STATUS.md
+# - Last session from SESSIONS.md
+# - Active tasks from STATUS.md
+#
+# Designed to be fast even for large context files by reading only
+# the necessary portions.
+#
+# Usage:
+#   context=$(get_quick_context)
+#   context=$(get_quick_context "./context")
+#
+# Args:
+#   $1 - Context directory (optional, default: "context")
+#
+# Returns:
+#   JSON object with quick context:
+#   {
+#     "quickReference": "...",
+#     "lastSession": "...",
+#     "activeTasks": "...",
+#     "summary": "..."
+#   }
+#
+# Example:
+#   get_quick_context | jq -r '.summary'
+#
+get_quick_context() {
+  local context_dir="${1:-context}"
+
+  local quick_ref=""
+  local last_session=""
+  local active_tasks=""
+  local summary=""
+
+  # Extract Quick Reference from STATUS.md
+  if [ -f "$context_dir/STATUS.md" ]; then
+    # Try to extract Quick Reference section
+    # Look for "## Quick Reference" and extract until next "##"
+    quick_ref=$(awk '
+      /^## Quick Reference/,/^## [^Q]/ {
+        if (/^## [^Q]/) exit
+        print
+      }
+    ' "$context_dir/STATUS.md" 2>/dev/null)
+
+    # If no Quick Reference section, extract header info
+    if [ -z "$quick_ref" ]; then
+      quick_ref=$(head -30 "$context_dir/STATUS.md" 2>/dev/null)
+    fi
+
+    # Extract Active Tasks section
+    active_tasks=$(awk '
+      /^## Active Tasks/,/^## [^A]/ {
+        if (/^## [^A]/ && !/^## Active/) exit
+        print
+      }
+    ' "$context_dir/STATUS.md" 2>/dev/null)
+
+    # If no Active Tasks section, look for any task markers
+    if [ -z "$active_tasks" ]; then
+      active_tasks=$(grep -E "^- \[ \]|^- \[x\]|### In Progress|### Blocked" "$context_dir/STATUS.md" 2>/dev/null | head -20)
+    fi
+  fi
+
+  # Extract last session from SESSIONS.md (efficiently)
+  if [ -f "$context_dir/SESSIONS.md" ]; then
+    local file_lines
+    file_lines=$(wc -l < "$context_dir/SESSIONS.md" 2>/dev/null | tr -d ' ')
+
+    if [ -n "$file_lines" ] && [ "$file_lines" -gt 0 ]; then
+      # Find the last session header line number
+      local last_session_line
+      last_session_line=$(grep -n "^## Session [0-9]" "$context_dir/SESSIONS.md" 2>/dev/null | tail -1 | cut -d: -f1)
+
+      if [ -n "$last_session_line" ]; then
+        # Extract from last session header to end of file (or max 150 lines)
+        local lines_to_read=$((file_lines - last_session_line + 1))
+        if [ "$lines_to_read" -gt 150 ]; then
+          lines_to_read=150
+        fi
+        last_session=$(tail -n "+$last_session_line" "$context_dir/SESSIONS.md" 2>/dev/null | head -n "$lines_to_read")
+      fi
+    fi
+  fi
+
+  # Handle missing data
+  if [ -z "$quick_ref" ]; then
+    quick_ref="No STATUS.md or Quick Reference section found."
+  fi
+
+  if [ -z "$last_session" ]; then
+    last_session="No sessions found in SESSIONS.md."
+  fi
+
+  if [ -z "$active_tasks" ]; then
+    active_tasks="No active tasks found."
+  fi
+
+  # Generate concise summary
+  local project_name=""
+  local phase=""
+  local current_focus=""
+
+  # Extract project name from quick reference
+  project_name=$(echo "$quick_ref" | grep -E "Project|Name" | head -1 | sed 's/.*|[[:space:]]*//' | sed 's/[[:space:]]*|.*//' | tr -d '|')
+
+  # Extract phase
+  phase=$(echo "$quick_ref" | grep -E "Phase" | head -1 | sed 's/.*|[[:space:]]*//' | sed 's/[[:space:]]*|.*//' | tr -d '|')
+
+  # Extract current focus from last session
+  current_focus=$(echo "$last_session" | grep -E "Focus:|TL;DR" | head -1 | sed 's/.*Focus:[[:space:]]*//' | sed 's/.*TL;DR[[:space:]]*//' | head -c 100)
+
+  summary="Project: ${project_name:-Unknown}. Phase: ${phase:-Unknown}. ${current_focus:-No current focus.}"
+
+  # Build JSON output - escape special characters for JSON
+  # Use jq for proper JSON escaping
+  jq -n \
+    --arg quickReference "$quick_ref" \
+    --arg lastSession "$last_session" \
+    --arg activeTasks "$active_tasks" \
+    --arg summary "$summary" \
+    '{
+      quickReference: $quickReference,
+      lastSession: $lastSession,
+      activeTasks: $activeTasks,
+      summary: $summary
+    }'
+}
+
+# =============================================================================
 # PHASE 4: DECISION-AWARE CODE REVIEW
 # =============================================================================
 

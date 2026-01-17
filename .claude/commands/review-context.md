@@ -31,7 +31,85 @@ Verify that all context documentation is accurate, consistent, and complete enou
 5. Reports confidence level for continuity
 6. Identifies gaps or issues
 
+## Quick Mode (v5.1.0)
+
+**Flag:** `--quick` or `-q`
+
+Quick mode loads minimal context for fast session startup:
+- STATUS.md Quick Reference section only
+- Last session from SESSIONS.md only
+- Active tasks (in progress, blocked)
+
+**When to use:**
+- When you just need current state, not full history
+- Large projects where full review is slow
+- Quick check before minor changes
+
+**Usage:**
+```bash
+/review-context --quick
+```
+
+**Performance:** Completes in <5 seconds for any project size.
+
+---
+
 ## Execution Steps
+
+### Step -1: Check for Quick Mode (v5.1.0)
+
+**ACTION:** Check if `--quick` flag was passed:
+
+```bash
+QUICK_MODE=false
+if [[ "$1" == "--quick" ]] || [[ "$1" == "-q" ]]; then
+  QUICK_MODE=true
+fi
+```
+
+**If QUICK_MODE is true:**
+
+1. Source common-functions.sh
+2. Find context folder
+3. Call `get_quick_context()` function
+4. Display quick context report
+5. Skip all other steps (exit early)
+
+```bash
+if [ "$QUICK_MODE" = "true" ]; then
+  source scripts/common-functions.sh 2>/dev/null || true
+  CONTEXT_DIR=$(find_context_folder 2>/dev/null || echo "context")
+
+  echo "⚡ Quick Context Review"
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo ""
+
+  QUICK_CONTEXT=$(get_quick_context "$CONTEXT_DIR")
+
+  echo "📋 Quick Reference:"
+  echo "$QUICK_CONTEXT" | jq -r '.quickReference' | head -20
+  echo ""
+
+  echo "📝 Last Session:"
+  echo "$QUICK_CONTEXT" | jq -r '.lastSession' | head -30
+  echo ""
+
+  echo "✅ Active Tasks:"
+  echo "$QUICK_CONTEXT" | jq -r '.activeTasks' | head -15
+  echo ""
+
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo "📊 Summary: $(echo "$QUICK_CONTEXT" | jq -r '.summary')"
+  echo ""
+  echo "💡 For full review: /review-context"
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  exit 0
+fi
+```
+
+**Why quick mode:** Sometimes AI just needs current state, not full history. Full review can take 30+ seconds on large projects. Quick mode provides essential context in <5 seconds.
+
+---
 
 ### Step 0: Load Shared Functions
 
