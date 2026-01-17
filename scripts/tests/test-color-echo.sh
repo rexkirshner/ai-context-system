@@ -2,7 +2,7 @@
 
 # test-color-echo.sh
 # Tests color_echo() function and verifies ANSI escape code handling
-# Version: 4.1.0
+# Version: 5.1.0
 #
 # Tests:
 # 1. color_echo function is defined in install.sh

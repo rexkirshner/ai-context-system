@@ -2,7 +2,7 @@
 
 # test-repo-root.sh
 # Tests get_repo_root() function from common-functions.sh
-# Version: 4.1.0
+# Version: 5.1.0
 #
 # Tests:
 # 1. From repo root - should return current directory

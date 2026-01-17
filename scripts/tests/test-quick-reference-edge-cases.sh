@@ -2,7 +2,7 @@
 
 # test-quick-reference-edge-cases.sh
 # Tests update-quick-reference.sh with edge case STATUS.md files
-# Version: 4.1.0
+# Version: 5.1.0
 #
 # Tests:
 # 1. Normal STATUS.md - should update successfully
@@ -78,7 +78,7 @@ echo "Test 1: STATUS.md without Quick Reference section"
 mkdir -p "$TEST_DIR/test1/context"
 cat > "$TEST_DIR/test1/context/.context-config.json" << 'CONFIGEOF'
 {
-  "version": "4.0.2",
+  "version": "5.1.0",
   "project": {
     "name": "Test Project",
     "type": "web",

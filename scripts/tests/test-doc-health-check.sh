@@ -2,7 +2,7 @@
 
 # test-doc-health-check.sh
 # Tests check_documentation_health() function from common-functions.sh
-# Version: 4.1.0
+# Version: 5.1.0
 #
 # Tests:
 # 1. Healthy project - both files exist and are current

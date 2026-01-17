@@ -2,7 +2,7 @@
 
 # test-file-detection.sh
 # Tests file existence detection for /save-full command
-# Version: 4.0.2
+# Version: 5.1.0
 
 set -e
 
