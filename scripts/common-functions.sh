@@ -4276,6 +4276,251 @@ update_manifest_file() {
 }
 
 # =============================================================================
+# PHASE 9.2: LOCAL CUSTOMIZATION FOLDER
+# =============================================================================
+
+# Get the local override path for a system file
+#
+# Converts a system file path to its corresponding .context-local path.
+#
+# Usage:
+#   local_path=$(get_local_override_path ".claude/agents/security-reviewer.md" "/path/to/project")
+#
+# Args:
+#   $1 - System file path (relative)
+#   $2 - Project root directory
+#
+# Returns:
+#   Absolute path to the local override location
+#
+get_local_override_path() {
+  local system_path="$1"
+  local project_dir="${2:-.}"
+
+  # Convert .claude/agents/foo.md to .context-local/agents/foo.md
+  # Convert .claude/commands/foo.md to .context-local/commands/foo.md
+  # Convert templates/foo.md to .context-local/templates/foo.md
+  local local_path
+
+  case "$system_path" in
+    .claude/agents/*)
+      local_path=".context-local/agents/${system_path#.claude/agents/}"
+      ;;
+    .claude/commands/*)
+      local_path=".context-local/commands/${system_path#.claude/commands/}"
+      ;;
+    .claude/schemas/*)
+      local_path=".context-local/schemas/${system_path#.claude/schemas/}"
+      ;;
+    templates/*)
+      local_path=".context-local/templates/${system_path#templates/}"
+      ;;
+    *)
+      # For other files, just put them in .context-local root
+      local_path=".context-local/$(basename "$system_path")"
+      ;;
+  esac
+
+  echo "$project_dir/$local_path"
+}
+
+# Check if a file has a local override
+#
+# Usage:
+#   if [ "$(has_local_override ".claude/agents/test.md" ".")" = "true" ]; then
+#     echo "Has override"
+#   fi
+#
+# Args:
+#   $1 - System file path (relative)
+#   $2 - Project root directory
+#
+# Returns:
+#   "true" if local override exists, "false" otherwise
+#
+has_local_override() {
+  local system_path="$1"
+  local project_dir="${2:-.}"
+
+  local local_path
+  local_path=$(get_local_override_path "$system_path" "$project_dir")
+
+  if [ -f "$local_path" ]; then
+    echo "true"
+  else
+    echo "false"
+  fi
+}
+
+# Get the effective file path (local override or system)
+#
+# Returns the local override if it exists, otherwise the system file.
+#
+# Usage:
+#   effective=$(get_effective_file ".claude/agents/security-reviewer.md" ".")
+#   cat "$effective"
+#
+# Args:
+#   $1 - System file path (relative)
+#   $2 - Project root directory
+#
+# Returns:
+#   Absolute path to the file that should be used
+#
+get_effective_file() {
+  local system_path="$1"
+  local project_dir="${2:-.}"
+
+  local local_path
+  local_path=$(get_local_override_path "$system_path" "$project_dir")
+
+  if [ -f "$local_path" ]; then
+    echo "$local_path"
+  else
+    echo "$project_dir/$system_path"
+  fi
+}
+
+# List all local overrides
+#
+# Returns all files in .context-local/ directory.
+#
+# Usage:
+#   overrides=$(list_local_overrides "/path/to/project")
+#
+# Args:
+#   $1 - Project root directory
+#
+# Returns:
+#   Newline-separated list of override file paths (relative)
+#
+list_local_overrides() {
+  local project_dir="${1:-.}"
+  local context_local="$project_dir/.context-local"
+
+  if [ ! -d "$context_local" ]; then
+    return 0
+  fi
+
+  find "$context_local" -type f -name "*.md" -o -name "*.json" 2>/dev/null | while read -r file; do
+    echo "${file#$project_dir/}"
+  done
+}
+
+# Initialize .context-local directory structure
+#
+# Creates the .context-local directory with subdirectories and README.
+#
+# Usage:
+#   init_context_local "/path/to/project"
+#
+# Args:
+#   $1 - Project root directory
+#
+# Returns:
+#   0 on success
+#
+init_context_local() {
+  local project_dir="${1:-.}"
+  local context_local="$project_dir/.context-local"
+
+  # Create directories
+  mkdir -p "$context_local/agents"
+  mkdir -p "$context_local/commands"
+  mkdir -p "$context_local/templates"
+  mkdir -p "$context_local/schemas"
+
+  # Create README if it doesn't exist
+  if [ ! -f "$context_local/README.md" ]; then
+    cat > "$context_local/README.md" << 'EOF'
+# .context-local/
+
+This directory contains your local customizations that **survive upgrades**.
+
+## How It Works
+
+Files placed here override the corresponding system files:
+
+| Local File | Overrides |
+|------------|-----------|
+| `.context-local/agents/security-reviewer.md` | `.claude/agents/security-reviewer.md` |
+| `.context-local/commands/build-check.md` | `.claude/commands/build-check.md` |
+| `.context-local/templates/STATUS.template.md` | `templates/STATUS.template.md` |
+| `.context-local/config.local.json` | Merged with `.claude/settings.json` |
+
+## To Customize a File
+
+1. Copy the system file to the corresponding location here
+2. Make your changes
+3. Your version will be used instead of the system version
+
+## Example
+
+```bash
+# Customize the security reviewer agent
+cp .claude/agents/security-reviewer.md .context-local/agents/
+# Edit .context-local/agents/security-reviewer.md
+```
+
+## During Upgrades
+
+- System files in `.claude/` and `templates/` are updated normally
+- Your files in `.context-local/` are **never touched**
+- Your customizations continue to work with the new system version
+
+## config.local.json
+
+Create this file to override settings:
+
+```json
+{
+  "myCustomSetting": "value"
+}
+```
+
+Values here are merged with `.claude/settings.json`, with local values taking precedence.
+EOF
+  fi
+
+  return 0
+}
+
+# Get merged config (system + local overrides)
+#
+# Merges .claude/settings.json with .context-local/config.local.json
+#
+# Usage:
+#   config=$(get_merged_config "/path/to/project")
+#
+# Args:
+#   $1 - Project root directory
+#
+# Returns:
+#   Merged JSON config
+#
+get_merged_config() {
+  local project_dir="${1:-.}"
+  local system_config="$project_dir/.claude/settings.json"
+  local local_config="$project_dir/.context-local/config.local.json"
+
+  # Start with system config
+  local base="{}"
+  if [ -f "$system_config" ]; then
+    base=$(cat "$system_config")
+  fi
+
+  # Merge local config if it exists
+  if [ -f "$local_config" ]; then
+    local override
+    override=$(cat "$local_config")
+    # Use jq to merge (local values override system values)
+    echo "$base" | jq --argjson override "$override" '. * $override'
+  else
+    echo "$base"
+  fi
+}
+
+# =============================================================================
 
 # Run auto-update check in background (non-blocking)
 # Only if not already running and not in quiet mode
