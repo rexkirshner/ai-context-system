@@ -5,6 +5,28 @@ All notable changes to the AI Context System will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.1.1] - 2026-01-17
+
+**PATCH RELEASE** - Shell Compatibility Fixes
+
+This patch release fixes shell compatibility bugs discovered during v5.1.0 deployment across multiple real-world projects.
+
+### Fixed
+
+- **macOS grep compatibility** (BUG-A): Fixed grep patterns using BRE alternation (`\|`) that failed silently on BSD grep when combined with `^` anchors and special characters like `==` or `--`. All patterns now use ERE (`-E` flag) for better portability.
+
+- **Parent directory detection** (BUG-B): Fixed `.claude` directory detection incorrectly finding sibling project directories. Now only checks direct ancestor directories using the new `check_ancestor_claude()` function.
+
+- **zsh debug output** (BUG-C): Fixed spurious variable assignment output (`line_num=X`, `context_lines=...`) when running in zsh. Combined local variable declaration with assignment to prevent zsh from printing inside loops.
+
+### Technical Details
+
+- BUG-D (arithmetic errors) was audited and found to already have proper mitigations in place. No changes needed.
+- All 80 unit tests pass
+- Smoke tests verify all fixes work on macOS with both bash and zsh
+
+---
+
 ## [5.1.0] - 2026-01-17
 
 **MINOR RELEASE** - Code Review Intelligence & Right-Sizing
