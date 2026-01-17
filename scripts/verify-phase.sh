@@ -405,10 +405,10 @@ verify_phase_8() {
     # Check VERSION
     if [ -f "$REPO_ROOT/VERSION" ]; then
         local version=$(cat "$REPO_ROOT/VERSION")
-        if [ "$version" = "5.0.0" ]; then
-            pass "VERSION is 5.0.0"
+        if [ "$version" = "5.1.0" ]; then
+            pass "VERSION is 5.1.0"
         else
-            fail "VERSION is $version, expected 5.0.0"
+            fail "VERSION is $version, expected 5.1.0"
         fi
     else
         fail "VERSION file missing"
