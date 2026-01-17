@@ -2585,9 +2585,10 @@ list_workspaces() {
     turborepo|nx|lerna|pnpm|yarn|npm)
       # Find all package.json files excluding node_modules and root package.json
       # Extract workspace info from each
+      # Note: Do NOT use 'local' inside the while loop - it runs in a subshell
+      # and 'local' causes the pipeline to silently fail
       find "$dir" -name "package.json" -not -path "*/node_modules/*" -not -path "$dir/package.json" 2>/dev/null \
         | while read -r pkg; do
-            local ws_dir name rel_path
             ws_dir=$(dirname "$pkg")
             name=$(jq -r '.name // "unnamed"' "$pkg" 2>/dev/null)
             # Make path relative to dir
@@ -2600,6 +2601,135 @@ list_workspaces() {
       echo "[]"
       ;;
   esac
+}
+
+# =============================================================================
+# PHASE 6: MONOREPO SCANNER CONTEXT
+# =============================================================================
+
+# Generate monorepo context for codebase scanner
+#
+# Builds a JSON object with complete monorepo information for the
+# codebase scanner agent to use. Combines detect_monorepo() and
+# list_workspaces() with additional workspace type and dependency analysis.
+#
+# Usage:
+#   context=$(get_monorepo_context)
+#   context=$(get_monorepo_context "./monorepo")
+#
+# Args:
+#   $1 - Directory to check (optional, default: current directory)
+#
+# Returns:
+#   JSON object with monorepo context:
+#   {
+#     "isMonorepo": true,
+#     "monorepoType": "nx",
+#     "buildCmd": "nx run-many --target=build",
+#     "workspaceCmd": "nx run --project=",
+#     "workspaces": [
+#       {"name": "web", "path": "apps/web", "type": "next", "dependencies": ["react", "next"]}
+#     ],
+#     "dependencies": {
+#       "byWorkspace": {"web": ["react", "next"], "api": ["express"]}
+#     }
+#   }
+#
+# Example:
+#   get_monorepo_context | jq -r '.monorepoType'
+#
+get_monorepo_context() {
+  local dir="${1:-.}"
+
+  # Handle non-existent directory
+  if [ ! -d "$dir" ]; then
+    echo '{"isMonorepo":false,"monorepoType":"single","workspaces":[],"dependencies":{"byWorkspace":{}}}'
+    return 0
+  fi
+
+  # Get base monorepo detection
+  local mono_info
+  mono_info=$(detect_monorepo "$dir")
+
+  local mono_type
+  mono_type=$(echo "$mono_info" | jq -r '.type')
+
+  local build_cmd
+  build_cmd=$(echo "$mono_info" | jq -r '.buildCmd')
+
+  local workspace_cmd
+  workspace_cmd=$(echo "$mono_info" | jq -r '.workspaceCmd // "null"')
+
+  # Get workspaces
+  local workspaces
+  workspaces=$(list_workspaces "$dir")
+
+  # Determine if it's a monorepo (has workspaces or specific monorepo indicator)
+  local is_monorepo="false"
+  local workspace_count
+  workspace_count=$(echo "$workspaces" | jq -r 'length')
+
+  if [ "$mono_type" != "single" ] || [ "$workspace_count" -gt 0 ]; then
+    is_monorepo="true"
+  fi
+
+  # Enrich workspaces with type and dependencies
+  local enriched_workspaces="[]"
+  local deps_by_workspace="{}"
+
+  if [ "$workspace_count" -gt 0 ]; then
+    enriched_workspaces=$(echo "$workspaces" | jq -c '.[]' | while read -r ws; do
+      ws_name=$(echo "$ws" | jq -r '.name')
+      ws_path=$(echo "$ws" | jq -r '.path')
+      pkg_json="$dir/$ws_path/package.json"
+
+      # Detect workspace type
+      ws_type="library"  # default
+      if [ -f "$pkg_json" ]; then
+        # Check dependencies to determine type
+        if jq -e '.dependencies.next' "$pkg_json" >/dev/null 2>&1; then
+          ws_type="next"
+        elif jq -e '.dependencies.express' "$pkg_json" >/dev/null 2>&1; then
+          ws_type="express"
+        elif jq -e '.dependencies.react' "$pkg_json" >/dev/null 2>&1 && \
+             ! jq -e '.dependencies.next' "$pkg_json" >/dev/null 2>&1; then
+          ws_type="react"
+        elif jq -e '.bin' "$pkg_json" >/dev/null 2>&1; then
+          ws_type="cli"
+        fi
+
+        # Extract dependencies
+        deps=$(jq -r '[.dependencies // {} | keys[]] | join(",")' "$pkg_json" 2>/dev/null || echo "")
+
+        # Build enriched workspace object
+        echo "{\"name\":\"$ws_name\",\"path\":\"$ws_path\",\"type\":\"$ws_type\",\"dependencies\":[$(echo "$deps" | tr ',' '\n' | sed 's/.*/\"&\"/' | tr '\n' ',' | sed 's/,$//' | sed 's/^""//' | sed 's/""//g')]}"
+      else
+        echo "{\"name\":\"$ws_name\",\"path\":\"$ws_path\",\"type\":\"$ws_type\",\"dependencies\":[]}"
+      fi
+    done | jq -s '.')
+
+    # Build dependencies by workspace
+    deps_by_workspace=$(echo "$enriched_workspaces" | jq '[.[] | {(.name): .dependencies}] | add // {}')
+  fi
+
+  # Build final output
+  jq -n \
+    --argjson isMonorepo "$is_monorepo" \
+    --arg monorepoType "$mono_type" \
+    --arg buildCmd "$build_cmd" \
+    --arg workspaceCmd "$workspace_cmd" \
+    --argjson workspaces "$enriched_workspaces" \
+    --argjson depsByWorkspace "$deps_by_workspace" \
+    '{
+      isMonorepo: $isMonorepo,
+      monorepoType: $monorepoType,
+      buildCmd: $buildCmd,
+      workspaceCmd: (if $workspaceCmd == "null" then null else $workspaceCmd end),
+      workspaces: $workspaces,
+      dependencies: {
+        byWorkspace: $depsByWorkspace
+      }
+    }'
 }
 
 # =============================================================================

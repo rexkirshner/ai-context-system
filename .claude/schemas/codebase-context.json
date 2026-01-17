@@ -1,0 +1,216 @@
+{
+  "$id": "https://acs.rexkirshner.com/schemas/codebase-context.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "schemaVersion": "1.3.0",
+  "title": "CodebaseContext",
+  "description": "Cached codebase context for code review specialists",
+  "type": "object",
+  "required": ["schemaVersion", "metadata", "structure", "files", "dependencies"],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "Schema version (semver format)"
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["scannedAt", "isGitRepo", "filesScanned", "linesScanned"],
+      "properties": {
+        "scannedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp of when scan was performed"
+        },
+        "commit": {
+          "type": "string",
+          "description": "Git commit hash at time of scan"
+        },
+        "isGitRepo": {
+          "type": "boolean",
+          "description": "Whether the project is a git repository"
+        },
+        "filesScanned": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of files scanned"
+        },
+        "linesScanned": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total lines of code scanned"
+        }
+      },
+      "additionalProperties": false
+    },
+    "structure": {
+      "type": "object",
+      "required": ["projectType", "primaryLanguage", "frameworks", "hasTests", "hasCI", "hasDatabase", "hasUI", "isServerless", "isMonorepo", "monorepoType", "workspaces"],
+      "properties": {
+        "projectType": {
+          "type": "string",
+          "enum": ["webapp", "api", "cli", "library", "monorepo", "unknown"],
+          "description": "Type of project"
+        },
+        "primaryLanguage": {
+          "type": "string",
+          "enum": ["typescript", "javascript", "python", "go", "rust", "java", "unknown"],
+          "description": "Primary programming language"
+        },
+        "frameworks": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Detected frameworks (next.js, react, express, etc.)"
+        },
+        "hasTests": {
+          "type": "boolean",
+          "description": "Whether project has test files"
+        },
+        "hasCI": {
+          "type": "boolean",
+          "description": "Whether project has CI/CD configuration"
+        },
+        "hasDatabase": {
+          "type": "boolean",
+          "description": "Whether project uses a database"
+        },
+        "hasUI": {
+          "type": "boolean",
+          "description": "Whether project has UI components"
+        },
+        "isServerless": {
+          "type": "boolean",
+          "description": "Whether project is serverless (Vercel, Netlify, etc.)"
+        },
+        "isMonorepo": {
+          "type": "boolean",
+          "description": "Whether project is a monorepo"
+        },
+        "monorepoType": {
+          "type": "string",
+          "enum": ["turborepo", "nx", "lerna", "pnpm", "yarn", "npm", "single"],
+          "description": "Type of monorepo tool (single for non-monorepos)"
+        },
+        "workspaces": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "path", "type", "dependencies"],
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Package name from package.json"
+              },
+              "path": {
+                "type": "string",
+                "description": "Relative path to workspace"
+              },
+              "type": {
+                "type": "string",
+                "enum": ["next", "express", "react", "cli", "library", "unknown"],
+                "description": "Type of workspace"
+              },
+              "dependencies": {
+                "type": "array",
+                "items": {"type": "string"},
+                "description": "Production dependencies for this workspace"
+              }
+            },
+            "additionalProperties": false
+          },
+          "description": "Workspaces in monorepo (empty array for non-monorepos)"
+        }
+      },
+      "additionalProperties": false
+    },
+    "files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "language", "lines", "complexity"],
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Relative path from project root"
+          },
+          "language": {
+            "type": "string",
+            "description": "Programming language"
+          },
+          "lines": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Number of non-blank lines"
+          },
+          "exports": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "Exported symbols"
+          },
+          "complexity": {
+            "type": "string",
+            "enum": ["low", "medium", "high"],
+            "description": "Complexity based on line count"
+          }
+        },
+        "additionalProperties": false
+      },
+      "description": "Scanned file metadata"
+    },
+    "dependencies": {
+      "type": "object",
+      "required": ["production", "development", "byWorkspace"],
+      "properties": {
+        "production": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Root production dependencies"
+        },
+        "development": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Root development dependencies"
+        },
+        "shared": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Dependencies shared across workspaces (monorepos only)"
+        },
+        "byWorkspace": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {"type": "string"}
+          },
+          "description": "Dependencies by workspace name (empty object for non-monorepos)"
+        }
+      },
+      "additionalProperties": false
+    },
+    "entryPoints": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Main entry point files"
+    },
+    "securityRelevant": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Files relevant for security review"
+    },
+    "databaseFiles": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Database-related files"
+    },
+    "uiComponents": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "UI component files"
+    },
+    "ciWorkflows": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "CI/CD workflow files"
+    }
+  },
+  "additionalProperties": false
+}

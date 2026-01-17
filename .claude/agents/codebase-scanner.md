@@ -29,7 +29,7 @@ Scan codebase once and cache results. Other agents read from cache instead of re
 
 ```json
 {
-  "schemaVersion": "1.2.0",
+  "schemaVersion": "1.3.0",
   "metadata": {
     "scannedAt": "2026-01-13T10:30:00Z",
     "commit": "abc123",
@@ -46,7 +46,13 @@ Scan codebase once and cache results. Other agents read from cache instead of re
     "hasDatabase": true,
     "hasUI": true,
     "isServerless": false,
-    "isMonorepo": false
+    "isMonorepo": true,
+    "monorepoType": "nx",
+    "workspaces": [
+      {"name": "web", "path": "apps/web", "type": "next", "dependencies": ["react", "next"]},
+      {"name": "api", "path": "apps/api", "type": "express", "dependencies": ["express", "prisma"]},
+      {"name": "ui", "path": "packages/ui", "type": "library", "dependencies": ["react"]}
+    ]
   },
   "files": [
     {
@@ -59,7 +65,13 @@ Scan codebase once and cache results. Other agents read from cache instead of re
   ],
   "dependencies": {
     "production": ["next", "react", "prisma"],
-    "development": ["typescript", "jest"]
+    "development": ["typescript", "jest"],
+    "shared": ["react", "typescript"],
+    "byWorkspace": {
+      "web": ["next", "tailwindcss"],
+      "api": ["express", "prisma"],
+      "ui": []
+    }
   },
   "entryPoints": ["src/app/layout.tsx", "src/app/page.tsx"],
   "securityRelevant": ["src/lib/auth.ts", "src/middleware.ts"],
@@ -73,6 +85,10 @@ Scan codebase once and cache results. Other agents read from cache instead of re
 - All `structure.*` fields are always present (use `false`, not omission)
 - All specialized file lists are always present (use `[]`, not omission)
 - `metadata.isGitRepo` reflects whether git commands succeeded
+- `structure.isMonorepo` is always boolean (never omitted)
+- `structure.monorepoType` is always present (use `"single"` for non-monorepos)
+- `structure.workspaces` is always an array (use `[]` for non-monorepos)
+- `dependencies.byWorkspace` is always an object (use `{}` for non-monorepos)
 
 ## Execution
 
@@ -97,8 +113,58 @@ If valid, skip scan and return cached data.
 | `hasDatabase` | prisma, drizzle, typeorm, mongoose, sequelize, pg, mysql2 in deps |
 | `hasUI` | `.tsx`/`.jsx` files exist OR react/vue/svelte in deps |
 | `isServerless` | `vercel.json` OR `netlify.toml` OR `serverless.yml` exists |
-| `isMonorepo` | `workspaces` in package.json OR `pnpm-workspace.yaml` exists |
 | `metadata.isGitRepo` | `git rev-parse --git-dir` succeeds |
+
+### 2.5. Detect Monorepo (v5.1.0)
+
+Use `get_monorepo_context()` from `scripts/common-functions.sh` for comprehensive monorepo detection.
+
+```bash
+source scripts/common-functions.sh
+mono_context=$(get_monorepo_context)
+```
+
+**Monorepo Types Detected:**
+
+| Tool | Indicator | Build Command |
+|------|-----------|---------------|
+| Turborepo | `turbo.json` | `turbo build` |
+| Nx | `nx.json` | `nx run-many --target=build` |
+| Lerna | `lerna.json` | `lerna run build` |
+| pnpm | `pnpm-workspace.yaml` | `pnpm -r build` |
+| Yarn | `workspaces` in package.json + yarn.lock | `yarn workspaces run build` |
+| npm | `workspaces` in package.json | `npm run build --workspaces` |
+
+**Output from get_monorepo_context():**
+
+| Field | Description |
+|-------|-------------|
+| `isMonorepo` | `true` if monorepo detected, `false` otherwise |
+| `monorepoType` | One of: `turborepo`, `nx`, `lerna`, `pnpm`, `yarn`, `npm`, `single` |
+| `workspaces` | Array of `{name, path, type, dependencies}` for each workspace |
+| `buildCmd` | Root build command for the monorepo |
+| `workspaceCmd` | Command prefix for building specific workspaces |
+
+**Workspace Types:**
+
+- `next` - Next.js application (has `next` in dependencies)
+- `express` - Express API (has `express` in dependencies)
+- `react` - React app without Next.js
+- `cli` - CLI tool (has `bin` in package.json)
+- `library` - Shared library (default for packages/)
+
+**For monorepos, scan each workspace:**
+
+1. Aggregate dependencies (shared vs workspace-specific)
+2. Identify workspace types
+3. Include workspace info in output
+
+**Graceful Degradation:**
+
+If monorepo detection fails:
+- Log warning
+- Fall back to single-project scanning (root package.json only)
+- Set `isMonorepo: false`
 
 ### 3. Scan Files
 
