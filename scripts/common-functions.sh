@@ -4521,6 +4521,300 @@ get_merged_config() {
 }
 
 # =============================================================================
+# Phase 7.1: Line Counting Functions for Codebase Scanner
+# =============================================================================
+
+# is_binary_file - Determines if a file is binary (non-text)
+#
+# Uses file command to check if file is text-based.
+# Binary files should not be line-counted.
+#
+# Arguments:
+#   $1 - Path to file
+#
+# Output:
+#   "true" if binary, "false" if text
+#
+# Example:
+#   is_binary_file "image.png"  # Returns "true"
+#   is_binary_file "code.js"    # Returns "false"
+is_binary_file() {
+  local file="$1"
+
+  if [ ! -f "$file" ]; then
+    echo "false"
+    return
+  fi
+
+  # Use file command to detect type
+  local file_type
+  file_type=$(file -b "$file" 2>/dev/null || echo "")
+
+  # Check for text indicators
+  if echo "$file_type" | grep -qiE "text|ascii|utf-8|json|xml|empty"; then
+    echo "false"
+  else
+    echo "true"
+  fi
+}
+
+# count_non_blank_lines - Counts non-blank lines in a file
+#
+# Blank lines are lines that are empty or contain only whitespace.
+# This is the core line counting function.
+#
+# Arguments:
+#   $1 - Path to file
+#
+# Output:
+#   Integer count of non-blank lines
+#
+# Example:
+#   count_non_blank_lines "src/app.ts"  # Returns "42"
+count_non_blank_lines() {
+  local file="$1"
+
+  if [ ! -f "$file" ]; then
+    echo "0"
+    return
+  fi
+
+  # Count lines that have at least one non-whitespace character
+  # Note: grep -c returns "0" but exits with code 1 when no matches,
+  # so we capture output and ignore exit code
+  local count
+  count=$(grep -cE '[^[:space:]]' "$file" 2>/dev/null) || true
+  echo "${count:-0}"
+}
+
+# count_file_lines - Counts lines in a file, handling binary files
+#
+# Main entry point for line counting. Returns 0 for binary files
+# and non-blank line count for text files.
+#
+# Arguments:
+#   $1 - Path to file
+#
+# Output:
+#   Integer count (0 for binary files, non-blank count for text)
+#
+# Example:
+#   count_file_lines "src/app.ts"  # Returns "42"
+#   count_file_lines "image.png"   # Returns "0"
+count_file_lines() {
+  local file="$1"
+
+  if [ ! -f "$file" ]; then
+    echo "0"
+    return
+  fi
+
+  # Return 0 for binary files
+  if [ "$(is_binary_file "$file")" = "true" ]; then
+    echo "0"
+    return
+  fi
+
+  count_non_blank_lines "$file"
+}
+
+# get_file_complexity - Determines complexity level based on line count
+#
+# Complexity levels:
+#   - low: <50 lines
+#   - medium: 50-200 lines
+#   - high: >200 lines
+#
+# Arguments:
+#   $1 - Line count (integer)
+#
+# Output:
+#   "low", "medium", or "high"
+#
+# Example:
+#   get_file_complexity 25   # Returns "low"
+#   get_file_complexity 100  # Returns "medium"
+#   get_file_complexity 300  # Returns "high"
+get_file_complexity() {
+  local lines="$1"
+
+  # Handle empty input
+  if [ -z "$lines" ]; then
+    echo "low"
+    return
+  fi
+
+  if [ "$lines" -lt 50 ]; then
+    echo "low"
+  elif [ "$lines" -le 200 ]; then
+    echo "medium"
+  else
+    echo "high"
+  fi
+}
+
+# get_language_from_extension - Determines programming language from file extension
+#
+# Arguments:
+#   $1 - File path or name with extension
+#
+# Output:
+#   Language name (typescript, javascript, python, go, rust, java, unknown)
+#
+# Example:
+#   get_language_from_extension "app.ts"  # Returns "typescript"
+#   get_language_from_extension "src/lib.py"  # Returns "python"
+get_language_from_extension() {
+  local file="$1"
+
+  # Extract extension (handle paths like src/file.ts)
+  local ext="${file##*.}"
+
+  case "$ext" in
+    ts|tsx)
+      echo "typescript"
+      ;;
+    js|jsx|mjs|cjs)
+      echo "javascript"
+      ;;
+    py|pyw)
+      echo "python"
+      ;;
+    go)
+      echo "go"
+      ;;
+    rs)
+      echo "rust"
+      ;;
+    java)
+      echo "java"
+      ;;
+    rb)
+      echo "ruby"
+      ;;
+    php)
+      echo "php"
+      ;;
+    c|h)
+      echo "c"
+      ;;
+    cpp|cc|cxx|hpp)
+      echo "cpp"
+      ;;
+    cs)
+      echo "csharp"
+      ;;
+    swift)
+      echo "swift"
+      ;;
+    kt|kts)
+      echo "kotlin"
+      ;;
+    scala)
+      echo "scala"
+      ;;
+    sh|bash)
+      echo "shell"
+      ;;
+    *)
+      echo "unknown"
+      ;;
+  esac
+}
+
+# scan_file_for_lines - Returns complete file metadata as JSON
+#
+# Scans a single file and returns metadata including path, lines,
+# language, and complexity. Used by the codebase scanner.
+#
+# Arguments:
+#   $1 - File path
+#   $2 - Project root (for relative path calculation)
+#
+# Output:
+#   JSON object: {"path": "...", "lines": N, "language": "...", "complexity": "..."}
+#
+# Example:
+#   scan_file_for_lines "src/app.ts" "/project"
+scan_file_for_lines() {
+  local file="$1"
+  local project_root="${2:-.}"
+
+  if [ ! -f "$file" ]; then
+    echo '{"error": "file not found"}'
+    return
+  fi
+
+  # Calculate relative path
+  local rel_path
+  if [[ "$file" = /* ]]; then
+    # Absolute path - make it relative to project root
+    rel_path="${file#$project_root/}"
+  else
+    rel_path="$file"
+  fi
+
+  local lines language complexity
+
+  lines=$(count_file_lines "$file")
+  language=$(get_language_from_extension "$file")
+  complexity=$(get_file_complexity "$lines")
+
+  # Output as JSON
+  jq -n \
+    --arg path "$rel_path" \
+    --argjson lines "$lines" \
+    --arg language "$language" \
+    --arg complexity "$complexity" \
+    '{path: $path, lines: $lines, language: $language, complexity: $complexity}'
+}
+
+# aggregate_file_metadata - Aggregates metadata for all files in a directory
+#
+# Scans all files in a directory and returns aggregate statistics.
+# Used by the codebase scanner for metadata.linesScanned.
+#
+# Arguments:
+#   $1 - Directory to scan
+#   $2 - File pattern (optional, default: "*.ts *.js *.py *.go *.rs *.java")
+#
+# Output:
+#   JSON object: {"filesScanned": N, "linesScanned": N, "binaryFilesSkipped": N}
+#
+# Example:
+#   aggregate_file_metadata "/project/src"
+aggregate_file_metadata() {
+  local dir="$1"
+
+  if [ ! -d "$dir" ]; then
+    echo '{"filesScanned": 0, "linesScanned": 0, "binaryFilesSkipped": 0}'
+    return
+  fi
+
+  local files_scanned=0
+  local lines_scanned=0
+  local binary_skipped=0
+
+  # Find all files (not directories)
+  while IFS= read -r -d '' file; do
+    if [ "$(is_binary_file "$file")" = "true" ]; then
+      binary_skipped=$((binary_skipped + 1))
+    else
+      local lines
+      lines=$(count_file_lines "$file")
+      lines_scanned=$((lines_scanned + lines))
+      files_scanned=$((files_scanned + 1))
+    fi
+  done < <(find "$dir" -maxdepth 1 -type f -print0 2>/dev/null)
+
+  jq -n \
+    --argjson filesScanned "$files_scanned" \
+    --argjson linesScanned "$lines_scanned" \
+    --argjson binaryFilesSkipped "$binary_skipped" \
+    '{filesScanned: $filesScanned, linesScanned: $linesScanned, binaryFilesSkipped: $binaryFilesSkipped}'
+}
+
+# =============================================================================
 
 # Run auto-update check in background (non-blocking)
 # Only if not already running and not in quiet mode
