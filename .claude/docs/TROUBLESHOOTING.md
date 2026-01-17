@@ -364,5 +364,5 @@ If the above doesn't help:
 
 ---
 
-**Version:** 5.0.2
+**Version:** 5.1.0
 **Last Updated:** 2026-01-15

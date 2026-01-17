@@ -26,7 +26,7 @@ Creates timestamped files in `artifacts/exports/`:
 ```json
 {
   "exportedAt": "2026-01-13T10:00:00Z",
-  "acsVersion": "5.0.0",
+  "acsVersion": "5.1.0",
   "project": {
     "name": "my-project",
     "type": "nextjs"
