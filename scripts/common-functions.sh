@@ -4027,6 +4027,255 @@ generate_session_index() {
 }
 
 # =============================================================================
+# PHASE 9: UPGRADE PROTECTION
+# =============================================================================
+
+# Compute SHA256 hash of a file
+#
+# Wrapper around hash_file() for consistency with Phase 9 naming.
+#
+# Usage:
+#   hash=$(compute_file_hash "/path/to/file")
+#
+# Args:
+#   $1 - Path to file
+#
+# Returns:
+#   SHA256 hash string, or empty on error
+#
+compute_file_hash() {
+  local file="$1"
+
+  if [ ! -f "$file" ]; then
+    echo ""
+    return 1
+  fi
+
+  hash_file "$file"
+}
+
+# Record installation manifest
+#
+# Creates .claude/.install-manifest.json with hashes of all installed files.
+# This allows detection of user modifications during future upgrades.
+#
+# Usage:
+#   record_install "/path/to/project" "5.1.0"
+#
+# Args:
+#   $1 - Project root directory
+#   $2 - Version being installed
+#
+# Returns:
+#   0 on success, 1 on error
+#
+record_install() {
+  local project_dir="$1"
+  local version="$2"
+
+  if [ ! -d "$project_dir" ]; then
+    echo "Error: Project directory not found: $project_dir" >&2
+    return 1
+  fi
+
+  local manifest="$project_dir/.claude/.install-manifest.json"
+  local timestamp
+  timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+  # Find all tracked files in .claude/ directory
+  local files_json="[]"
+
+  while IFS= read -r file; do
+    # Skip the manifest itself
+    [ "$file" = "$manifest" ] && continue
+
+    # Get relative path from project root
+    local rel_path="${file#$project_dir/}"
+
+    # Compute hash
+    local file_hash
+    file_hash=$(compute_file_hash "$file")
+
+    if [ -n "$file_hash" ]; then
+      # Add to files array
+      files_json=$(echo "$files_json" | jq \
+        --arg path "$rel_path" \
+        --arg hash "$file_hash" \
+        --arg ts "$timestamp" \
+        '. + [{
+          "path": $path,
+          "installedHash": $hash,
+          "installedAt": $ts
+        }]')
+    fi
+  done < <(find "$project_dir/.claude" -type f -name "*.md" -o -name "*.json" 2>/dev/null | sort)
+
+  # Create manifest
+  jq -n \
+    --arg version "$version" \
+    --arg ts "$timestamp" \
+    --argjson files "$files_json" \
+    '{
+      "version": $version,
+      "installedAt": $ts,
+      "files": $files
+    }' > "$manifest"
+
+  return 0
+}
+
+# Check if a file has been modified since installation
+#
+# Compares current file hash against the hash recorded in the manifest.
+#
+# Usage:
+#   status=$(is_file_modified "/path/to/file" "/path/to/project")
+#
+# Args:
+#   $1 - Path to file to check
+#   $2 - Project root directory
+#
+# Returns:
+#   "true" - file has been modified
+#   "false" - file is unchanged
+#   "new" - file is not in manifest (new file or missing manifest)
+#
+is_file_modified() {
+  local file="$1"
+  local project_dir="$2"
+  local manifest="$project_dir/.claude/.install-manifest.json"
+
+  # If manifest doesn't exist, treat as new installation
+  if [ ! -f "$manifest" ]; then
+    echo "new"
+    return 0
+  fi
+
+  # Get relative path
+  local rel_path="${file#$project_dir/}"
+
+  # Look up file in manifest
+  local installed_hash
+  installed_hash=$(jq -r --arg path "$rel_path" \
+    '.files[] | select(.path == $path) | .installedHash // empty' \
+    "$manifest" 2>/dev/null)
+
+  # If not in manifest, it's a new file
+  if [ -z "$installed_hash" ]; then
+    echo "new"
+    return 0
+  fi
+
+  # Compute current hash
+  local current_hash
+  current_hash=$(compute_file_hash "$file")
+
+  # Compare
+  if [ "$current_hash" = "$installed_hash" ]; then
+    echo "false"
+  else
+    echo "true"
+  fi
+}
+
+# Get list of modified files
+#
+# Returns all files that have been modified since installation.
+#
+# Usage:
+#   modified=$(get_modified_files "/path/to/project")
+#
+# Args:
+#   $1 - Project root directory
+#
+# Returns:
+#   Newline-separated list of modified file paths (relative to project)
+#
+get_modified_files() {
+  local project_dir="$1"
+  local manifest="$project_dir/.claude/.install-manifest.json"
+
+  # If no manifest, return empty
+  if [ ! -f "$manifest" ]; then
+    return 0
+  fi
+
+  # Check each file in manifest
+  local modified_files=""
+
+  while IFS= read -r rel_path; do
+    local full_path="$project_dir/$rel_path"
+
+    # Skip if file was deleted
+    [ ! -f "$full_path" ] && continue
+
+    # Check if modified
+    local status
+    status=$(is_file_modified "$full_path" "$project_dir")
+
+    if [ "$status" = "true" ]; then
+      if [ -n "$modified_files" ]; then
+        modified_files="$modified_files"$'\n'"$rel_path"
+      else
+        modified_files="$rel_path"
+      fi
+    fi
+  done < <(jq -r '.files[].path' "$manifest" 2>/dev/null)
+
+  echo "$modified_files"
+}
+
+# Update manifest hash for a specific file
+#
+# Updates the hash for a file after user chooses to overwrite.
+#
+# Usage:
+#   update_manifest_file ".claude/agents/test.md" "/path/to/project"
+#
+# Args:
+#   $1 - Relative path of file
+#   $2 - Project root directory
+#
+# Returns:
+#   0 on success, 1 on error
+#
+update_manifest_file() {
+  local rel_path="$1"
+  local project_dir="$2"
+  local manifest="$project_dir/.claude/.install-manifest.json"
+  local full_path="$project_dir/$rel_path"
+
+  if [ ! -f "$manifest" ]; then
+    echo "Error: Manifest not found" >&2
+    return 1
+  fi
+
+  if [ ! -f "$full_path" ]; then
+    echo "Error: File not found: $full_path" >&2
+    return 1
+  fi
+
+  # Compute new hash
+  local new_hash
+  new_hash=$(compute_file_hash "$full_path")
+  local timestamp
+  timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+  # Update manifest
+  local updated
+  updated=$(jq \
+    --arg path "$rel_path" \
+    --arg hash "$new_hash" \
+    --arg ts "$timestamp" \
+    '(.files[] | select(.path == $path)) |= . + {
+      "installedHash": $hash,
+      "installedAt": $ts
+    }' "$manifest")
+
+  echo "$updated" > "$manifest"
+}
+
+# =============================================================================
 
 # Run auto-update check in background (non-blocking)
 # Only if not already running and not in quiet mode
