@@ -503,6 +503,60 @@ else
 
   echo "Then link from SESSIONS.md entry: 'See DECISIONS.md D[ID]'"
   echo ""
+
+  # Auto-Archiving Check for DECISIONS.md (v5.1.0)
+  echo "Checking DECISIONS.md file size..."
+  DECISIONS_COUNT=$(grep -cE "^## D[0-9]+ -" "$CONTEXT_DIR/DECISIONS.md" 2>/dev/null || echo "0")
+
+  if [ "$DECISIONS_COUNT" -gt 100 ]; then
+    # Check if user has disabled auto-archiving
+    if [ -f "$CONTEXT_DIR/.no-archive-decisions" ]; then
+      echo ""
+      echo "ℹ️  Auto-archiving disabled for DECISIONS.md"
+      echo "   File has $DECISIONS_COUNT decisions but archiving is skipped"
+      echo "   To re-enable: rm $CONTEXT_DIR/.no-archive-decisions"
+      echo ""
+    else
+      echo ""
+      echo "📦 DECISIONS.md is large ($DECISIONS_COUNT decisions)"
+      echo "   Archiving old decisions improves performance."
+      echo ""
+      read -p "Archive old decisions (keep last 50)? [Y/n] " -n 1 -r
+      echo
+
+      if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
+        echo ""
+        echo "🗄️  Archiving old decisions..."
+        bash "$(dirname "$CONTEXT_DIR")/scripts/archive-decisions-helper.sh" --keep 50 --context "$CONTEXT_DIR"
+
+        if [ $? -eq 0 ]; then
+          echo "✅ Old decisions archived successfully"
+          echo ""
+          DECISIONS_COUNT=$(grep -cE "^## D[0-9]+ -" "$CONTEXT_DIR/DECISIONS.md" 2>/dev/null || echo "0")
+          echo "📊 DECISIONS.md now has $DECISIONS_COUNT decisions"
+        else
+          echo ""
+          echo "❌ Archiving failed!"
+          echo ""
+          echo "⚠️  IMPORTANT: Check your DECISIONS.md file"
+          echo "   • Backup available at: $CONTEXT_DIR/DECISIONS.md.backup"
+          echo "   • To restore: cp $CONTEXT_DIR/DECISIONS.md.backup $CONTEXT_DIR/DECISIONS.md"
+          echo ""
+        fi
+      else
+        echo "Skipped archiving (file will continue growing)"
+        echo ""
+        read -p "Don't ask again? [y/N] " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+          touch "$CONTEXT_DIR/.no-archive-decisions"
+          echo "✅ Auto-archiving disabled for DECISIONS.md"
+          echo "   To re-enable: rm $CONTEXT_DIR/.no-archive-decisions"
+        fi
+      fi
+      echo ""
+    fi
+  fi
 fi
 ```
 

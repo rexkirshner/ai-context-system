@@ -182,6 +182,30 @@ Use PostgreSQL with Prisma ORM instead of MongoDB.
 
 ---
 
+## Archiving Old Decisions
+
+When DECISIONS.md grows large (>100 decisions), use the archiving script:
+
+```bash
+# Preview what would be archived (dry run)
+./scripts/archive-decisions-helper.sh --dry-run --keep 50
+
+# Archive old decisions, keeping most recent 50
+./scripts/archive-decisions-helper.sh --keep 50
+```
+
+**What happens:**
+- Oldest decisions are moved to `DECISIONS-archive-YYYY-MM-DD-HHMMSS.md`
+- Decision Index is automatically updated
+- Backup created before any changes
+- No data is lost
+
+**When to archive:**
+- The `/save-full` command will prompt when >100 decisions exist
+- Or archive manually when the file becomes hard to navigate
+
+---
+
 ## Guidelines for AI Agents
 
 When reviewing this file:
