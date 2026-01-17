@@ -1,0 +1,55 @@
+{
+  "findings": [
+    {
+      "id": "SEC-001",
+      "category": "security",
+      "severity": "high",
+      "title": "Hardcoded API key in config.ts",
+      "location": {
+        "file": "src/config.ts",
+        "line": 15
+      },
+      "detectedBy": ["security-reviewer"]
+    },
+    {
+      "id": "PERF-001-MERGED",
+      "category": "performance",
+      "severity": "medium",
+      "title": "Unnecessary re-renders in Dashboard component",
+      "location": {
+        "file": "src/components/Dashboard.tsx",
+        "line": 42
+      },
+      "detectedBy": ["performance-reviewer", "type-safety-reviewer"],
+      "mergedFrom": ["PERF-001", "TYPE-003"]
+    },
+    {
+      "id": "TEST-001",
+      "category": "testing",
+      "severity": "low",
+      "title": "Missing unit tests for UserService",
+      "location": {
+        "file": "src/services/UserService.ts",
+        "line": 1
+      },
+      "detectedBy": ["test-coverage-reviewer"]
+    }
+  ],
+  "groups": [
+    {
+      "id": "GROUP-SECURITY-0",
+      "type": "group",
+      "category": "security",
+      "pattern": "Hardcoded API key",
+      "count": 1,
+      "files": ["src/config.ts"],
+      "memberIds": ["SEC-001"]
+    }
+  ],
+  "stats": {
+    "rawFindings": 4,
+    "afterLocationDedup": 3,
+    "afterPatternGrouping": 3,
+    "reductionPercent": 25
+  }
+}
