@@ -45,13 +45,13 @@ OPTIONAL_FILES=(
 )
 
 # Get version from GitHub VERSION file (with validation)
-VERSION=$(curl -sL "${RAW_URL}/VERSION" 2>/dev/null || echo "5.0.0")
+VERSION=$(curl -sL "${RAW_URL}/VERSION" 2>/dev/null || echo "5.1.0")
 
 # Validate VERSION format (must be X.Y.Z)
 if ! echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
   color_echo "${YELLOW}⚠️  Warning: Could not fetch version from GitHub${NC}"
-  echo "   Using fallback version: 5.0.0"
-  VERSION="5.0.0"
+  echo "   Using fallback version: 5.1.0"
+  VERSION="5.1.0"
 fi
 
 color_echo "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
