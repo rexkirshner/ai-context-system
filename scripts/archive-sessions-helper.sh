@@ -74,7 +74,9 @@ BACKUP_FILE="$SESSIONS_FILE.backup"
 YEAR=$(date +%Y)
 DATE=$(date +%Y-%m-%d)
 TIMESTAMP=$(date +%Y-%m-%d-%H%M%S)
-ARCHIVE_FILE="$CONTEXT_DIR/SESSIONS-archive-$TIMESTAMP.md"
+# v5.1.0: Archive to subdirectory to keep context/ clean
+ARCHIVE_DIR="$CONTEXT_DIR/.sessions-archive"
+ARCHIVE_FILE="$ARCHIVE_DIR/sessions-archive-$TIMESTAMP.md"
 TEMP_FILE="$SESSIONS_FILE.tmp"
 
 # Validate inputs
@@ -162,6 +164,11 @@ fi
 KEEP_START_INDEX=$((TOTAL_SESSIONS - KEEP_RECENT))
 
 # Extract sessions to archive (first SESSIONS_TO_ARCHIVE)
+# v5.1.0: Create archive subdirectory if it doesn't exist
+if [ ! -d "$ARCHIVE_DIR" ]; then
+  mkdir -p "$ARCHIVE_DIR"
+  echo "📁 Created archive directory: $ARCHIVE_DIR"
+fi
 echo "📦 Creating archive file..."
 
 # Extract actual session numbers from headers (not line numbers)

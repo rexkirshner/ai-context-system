@@ -72,7 +72,9 @@ done
 DECISIONS_FILE="$CONTEXT_DIR/DECISIONS.md"
 BACKUP_FILE="$DECISIONS_FILE.backup"
 TIMESTAMP=$(date +%Y-%m-%d-%H%M%S)
-ARCHIVE_FILE="$CONTEXT_DIR/DECISIONS-archive-$TIMESTAMP.md"
+# v5.1.0: Archive to subdirectory to keep context/ clean
+ARCHIVE_DIR="$CONTEXT_DIR/.decisions-archive"
+ARCHIVE_FILE="$ARCHIVE_DIR/decisions-archive-$TIMESTAMP.md"
 TEMP_FILE="$DECISIONS_FILE.tmp"
 
 # Validate inputs
@@ -158,6 +160,11 @@ fi
 KEEP_START_INDEX=$((TOTAL_DECISIONS - KEEP_RECENT))
 
 # Extract decisions to archive
+# v5.1.0: Create archive subdirectory if it doesn't exist
+if [ ! -d "$ARCHIVE_DIR" ]; then
+  mkdir -p "$ARCHIVE_DIR"
+  echo "Created archive directory: $ARCHIVE_DIR"
+fi
 echo "Creating archive file..."
 
 # Get first and last decision IDs for archive header
