@@ -1,5 +1,7 @@
 # Session History
 
+> **[CORE FILE]** - This file is essential for AI context. Create it when initializing the system.
+
 **Structured, comprehensive history** - for AI agent review and takeover. Append-only.
 
 **For current status:** See `STATUS.md` (single source of truth)

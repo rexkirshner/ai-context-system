@@ -1,5 +1,7 @@
 # Known Issues & Limitations
 
+> **[OPTIONAL FILE]** - Create this when tracking persistent issues, technical debt, or known limitations.
+
 This document tracks current bugs, limitations, technical debt, and future improvements. Honesty is key - hidden issues compound.
 
 ## Current Status

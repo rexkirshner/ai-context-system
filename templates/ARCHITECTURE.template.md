@@ -1,5 +1,10 @@
 # Architecture Documentation
 
+> **[OPTIONAL FILE]** - Create this for complex projects with multiple components.
+>
+> **Size Guidance:** If this file exceeds 500 lines, consider splitting into `docs/architecture/` subdirectory.
+> Keep this file as a high-level overview and link to detailed docs. See `.claude/docs/FILE_PURPOSES.md` for guidance.
+
 ## System Overview
 
 **Architecture Pattern:** [e.g., Layered, MVC, Microservices, Event-driven]

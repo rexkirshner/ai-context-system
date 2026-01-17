@@ -1,5 +1,7 @@
 # Product Requirements Document
 
+> **[OPTIONAL FILE]** - Create this when building to a specification or tracking product requirements.
+
 ## Executive Summary
 
 **Product Name:** [Project Name]

@@ -1,5 +1,7 @@
 # Project Status
 
+> **[CORE FILE]** - This file is essential for AI context. Create it when initializing the system.
+
 **Last Updated:** [Auto-updated by /save]
 **Status:** 🟢 Active
 

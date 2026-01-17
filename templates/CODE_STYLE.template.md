@@ -1,5 +1,7 @@
 # Code Style Guide
 
+> **[OPTIONAL FILE]** - Create this when your team has specific conventions beyond linter config.
+
 This document defines coding standards and principles for this project.
 
 <!-- TEMPLATE SECTION: KEEP ALL - Core principles are standard and should be preserved -->

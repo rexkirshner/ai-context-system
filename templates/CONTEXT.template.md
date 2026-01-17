@@ -1,5 +1,9 @@
 # Project Context
 
+> **[CORE FILE]** - This file is essential for AI context. Create it when initializing the system.
+>
+> **Note:** This file is for AI agents. For human-readable project documentation, see README.md.
+
 **Last Updated:** [Auto-updated]
 **Purpose:** Project orientation and high-level architecture
 

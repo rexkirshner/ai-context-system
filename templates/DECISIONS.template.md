@@ -1,5 +1,7 @@
 # DECISIONS.md
 
+> **[STANDARD FILE]** - Create this when making significant architectural or technical decisions.
+
 **Decision log** - WHY choices were made. **Critical for AI agent review and takeover.**
 
 **For current status:** See `STATUS.md`
