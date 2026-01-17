@@ -4815,6 +4815,374 @@ aggregate_file_metadata() {
 }
 
 # =============================================================================
+# Phase 7.2: Security-Relevant Pattern Detection
+# =============================================================================
+
+# Tier 1 patterns: High-confidence patterns that are always flagged
+# These patterns strongly indicate security-relevant files
+readonly SECURITY_TIER1_PATTERNS=(
+  "auth"
+  "login"
+  "logout"
+  "session"
+  "oauth"
+  "jwt"
+  "credential"
+  "middleware"
+)
+
+# Tier 2 patterns: Patterns with exclusions
+# Format: "pattern:exclusion1,exclusion2,..."
+readonly SECURITY_TIER2_PATTERNS=(
+  "key:keyboard,keydown,keyup,keypress,hotkey,keyframe,keycode,keynote"
+  "password:validator,policy,strength,rules,requirements,reset,forgot"
+  "token:tokenize,tokenizer,token_type,tokenization"
+  "secret:_test,_spec,.spec,.test,.md"
+  "api:/"
+)
+
+# is_security_relevant - Determines if a file is security-relevant
+#
+# Uses tiered pattern matching:
+#   Tier 1: High-confidence patterns (always flagged)
+#   Tier 2: Patterns with exclusions
+#   Tier 3: Content-based (for ambiguous cases)
+#
+# Arguments:
+#   $1 - File path
+#   $2 - Project directory (optional, for config lookup)
+#
+# Output:
+#   "true" if security-relevant, "false" otherwise
+#
+# Example:
+#   is_security_relevant "auth.ts"       # Returns "true"
+#   is_security_relevant "keyboard.ts"   # Returns "false"
+is_security_relevant() {
+  local file="$1"
+  local project_dir="${2:-.}"
+
+  # Extract just the filename for pattern matching
+  local filename
+  filename=$(basename "$file")
+  local filename_lower
+  filename_lower=$(echo "$filename" | tr '[:upper:]' '[:lower:]')
+
+  # Check for user exclusions first
+  if _check_user_exclusions "$file" "$project_dir"; then
+    echo "false"
+    return
+  fi
+
+  # Check for .env.example exclusion (special case)
+  if [[ "$filename_lower" == *".env.example"* ]] || [[ "$filename_lower" == *".env.sample"* ]]; then
+    echo "false"
+    return
+  fi
+
+  # Special case: .env files (not .env.example)
+  if [[ "$filename_lower" == ".env" ]] || [[ "$filename_lower" == ".env."* ]]; then
+    echo "true"
+    return
+  fi
+
+  # Check user additional patterns
+  if _check_user_additional_patterns "$file" "$project_dir"; then
+    echo "true"
+    return
+  fi
+
+  # Tier 1: High-confidence patterns
+  # Check both filename and directory components
+  local path_lower
+  path_lower=$(echo "$file" | tr '[:upper:]' '[:lower:]')
+
+  for pattern in "${SECURITY_TIER1_PATTERNS[@]}"; do
+    # Check filename
+    if [[ "$filename_lower" == *"$pattern"* ]]; then
+      echo "true"
+      return
+    fi
+    # Also check if pattern is in directory path (e.g., src/auth/index.ts)
+    # Split path and check directory components
+    local dir_path
+    dir_path=$(dirname "$file")
+    if [[ "$dir_path" != "." ]] && [[ "$dir_path" == *"/$pattern"* ]] || [[ "$dir_path" == *"$pattern/"* ]] || [[ "$dir_path" == "$pattern" ]]; then
+      echo "true"
+      return
+    fi
+  done
+
+  # Tier 2: Patterns with exclusions
+  for pattern_spec in "${SECURITY_TIER2_PATTERNS[@]}"; do
+    local pattern="${pattern_spec%%:*}"
+    local exclusions="${pattern_spec#*:}"
+
+    # Check if filename matches the pattern
+    if [[ "$filename_lower" == *"$pattern"* ]]; then
+      # Special handling for api/ directory paths
+      if [ "$pattern" = "api" ]; then
+        # Check if "api" is in the directory path (not in filename itself)
+        local dir_path
+        dir_path=$(dirname "$file")
+        if [[ "$dir_path" == *"api"* ]]; then
+          # api is in directory path, not a match
+          continue
+        fi
+        # Check if filename is just "api" followed by something else
+        if [[ "$filename_lower" != *"api"* ]] || [[ "$filename_lower" == "api/"* ]]; then
+          continue
+        fi
+      fi
+
+      # Check exclusions
+      local excluded=false
+      IFS=',' read -ra EXCL_ARRAY <<< "$exclusions"
+      for exclusion in "${EXCL_ARRAY[@]}"; do
+        if [[ "$filename_lower" == *"$exclusion"* ]]; then
+          excluded=true
+          break
+        fi
+      done
+
+      if [ "$excluded" = "false" ]; then
+        echo "true"
+        return
+      fi
+    fi
+  done
+
+  echo "false"
+}
+
+# _check_user_exclusions - Check if file matches user-defined exclusions
+#
+# Arguments:
+#   $1 - File path
+#   $2 - Project directory
+#
+# Output:
+#   Exit code 0 if excluded, 1 otherwise
+_check_user_exclusions() {
+  local file="$1"
+  local project_dir="$2"
+  local config_file="$project_dir/.context-config.json"
+
+  if [ ! -f "$config_file" ]; then
+    return 1
+  fi
+
+  local exclusions
+  exclusions=$(jq -r '.scanner.securityPatterns.exclusions // [] | .[]' "$config_file" 2>/dev/null)
+
+  if [ -z "$exclusions" ]; then
+    return 1
+  fi
+
+  local filename
+  filename=$(basename "$file")
+  local filename_lower
+  filename_lower=$(echo "$filename" | tr '[:upper:]' '[:lower:]')
+
+  while IFS= read -r pattern; do
+    # Remove leading/trailing wildcards for contains check
+    local check_pattern
+    check_pattern=$(echo "$pattern" | sed 's/^\*//; s/\*$//')
+    check_pattern=$(echo "$check_pattern" | tr '[:upper:]' '[:lower:]')
+
+    if [[ "$filename_lower" == *"$check_pattern"* ]]; then
+      return 0
+    fi
+  done <<< "$exclusions"
+
+  return 1
+}
+
+# _check_user_additional_patterns - Check if file matches user-defined additional patterns
+#
+# Arguments:
+#   $1 - File path
+#   $2 - Project directory
+#
+# Output:
+#   Exit code 0 if matches, 1 otherwise
+_check_user_additional_patterns() {
+  local file="$1"
+  local project_dir="$2"
+  local config_file="$project_dir/.context-config.json"
+
+  if [ ! -f "$config_file" ]; then
+    return 1
+  fi
+
+  local patterns
+  patterns=$(jq -r '.scanner.securityPatterns.additionalPatterns // [] | .[]' "$config_file" 2>/dev/null)
+
+  if [ -z "$patterns" ]; then
+    return 1
+  fi
+
+  local filename
+  filename=$(basename "$file")
+  local filename_lower
+  filename_lower=$(echo "$filename" | tr '[:upper:]' '[:lower:]')
+
+  while IFS= read -r pattern; do
+    # Remove leading/trailing wildcards for contains check
+    local check_pattern
+    check_pattern=$(echo "$pattern" | sed 's/^\*//; s/\*$//')
+    check_pattern=$(echo "$check_pattern" | tr '[:upper:]' '[:lower:]')
+
+    if [[ "$filename_lower" == *"$check_pattern"* ]]; then
+      return 0
+    fi
+  done <<< "$patterns"
+
+  return 1
+}
+
+# check_content_for_secrets - Checks file content for secret patterns (Tier 3)
+#
+# Scans first 100 lines of a file for patterns that indicate secrets:
+#   - Hardcoded API keys (20+ character strings)
+#   - Password assignments
+#   - Connection strings
+#
+# Arguments:
+#   $1 - File path
+#
+# Output:
+#   "true" if secrets found, "false" otherwise
+#
+# Example:
+#   check_content_for_secrets "config.ts"  # Returns "true" if has hardcoded secrets
+check_content_for_secrets() {
+  local file="$1"
+
+  if [ ! -f "$file" ]; then
+    echo "false"
+    return
+  fi
+
+  # Read first 100 lines
+  local content
+  content=$(head -100 "$file" 2>/dev/null)
+
+  # Pattern 1: Hardcoded long strings that look like API keys/secrets
+  # Look for: "string_of_20+_chars" or 'string_of_20+_chars'
+  if echo "$content" | grep -qE "[\"'][A-Za-z0-9_\-]{20,}[\"']"; then
+    echo "true"
+    return
+  fi
+
+  # Pattern 2: Password assignment
+  # Look for: password = "..." or password: "..."
+  if echo "$content" | grep -qiE "password[[:space:]]*[:=][[:space:]]*[\"']"; then
+    echo "true"
+    return
+  fi
+
+  # Pattern 3: Connection strings
+  # Look for: mongodb://, postgres://, mysql://
+  if echo "$content" | grep -qE "(mongodb|postgres|postgresql|mysql|redis|amqp)://"; then
+    echo "true"
+    return
+  fi
+
+  # Pattern 4: API key assignment
+  # Look for: api_key = "..." or apiKey: "..."
+  if echo "$content" | grep -qiE "(api[_-]?key|apikey)[[:space:]]*[:=][[:space:]]*[\"']"; then
+    echo "true"
+    return
+  fi
+
+  echo "false"
+}
+
+# get_security_tier - Returns the security tier for a file
+#
+# Arguments:
+#   $1 - File path
+#   $2 - Project directory (optional)
+#
+# Output:
+#   0 = Not security relevant
+#   1 = Tier 1 (high confidence)
+#   2 = Tier 2 (pattern with exclusions)
+#   3 = Tier 3 (content-based)
+#
+# Example:
+#   get_security_tier "auth.ts"    # Returns "1"
+#   get_security_tier "apiKey.ts"  # Returns "1"
+#   get_security_tier "button.tsx" # Returns "0"
+get_security_tier() {
+  local file="$1"
+  local project_dir="${2:-.}"
+
+  local filename
+  filename=$(basename "$file")
+  local filename_lower
+  filename_lower=$(echo "$filename" | tr '[:upper:]' '[:lower:]')
+
+  # Check for exclusions first
+  if _check_user_exclusions "$file" "$project_dir"; then
+    echo "0"
+    return
+  fi
+
+  # Check .env.example exclusion
+  if [[ "$filename_lower" == *".env.example"* ]] || [[ "$filename_lower" == *".env.sample"* ]]; then
+    echo "0"
+    return
+  fi
+
+  # Special case: .env files
+  if [[ "$filename_lower" == ".env" ]] || [[ "$filename_lower" == ".env."* ]]; then
+    echo "1"
+    return
+  fi
+
+  # Check user additional patterns (treat as tier 1)
+  if _check_user_additional_patterns "$file" "$project_dir"; then
+    echo "1"
+    return
+  fi
+
+  # Tier 1 patterns
+  for pattern in "${SECURITY_TIER1_PATTERNS[@]}"; do
+    if [[ "$filename_lower" == *"$pattern"* ]]; then
+      echo "1"
+      return
+    fi
+  done
+
+  # Tier 2 patterns
+  for pattern_spec in "${SECURITY_TIER2_PATTERNS[@]}"; do
+    local pattern="${pattern_spec%%:*}"
+    local exclusions="${pattern_spec#*:}"
+
+    if [[ "$filename_lower" == *"$pattern"* ]]; then
+      # Check exclusions
+      local excluded=false
+      IFS=',' read -ra EXCL_ARRAY <<< "$exclusions"
+      for exclusion in "${EXCL_ARRAY[@]}"; do
+        if [[ "$filename_lower" == *"$exclusion"* ]]; then
+          excluded=true
+          break
+        fi
+      done
+
+      if [ "$excluded" = "false" ]; then
+        echo "1"
+        return
+      fi
+    fi
+  done
+
+  echo "0"
+}
+
+# =============================================================================
 
 # Run auto-update check in background (non-blocking)
 # Only if not already running and not in quiet mode
