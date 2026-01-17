@@ -4108,7 +4108,7 @@ record_install() {
           "installedAt": $ts
         }]')
     fi
-  done < <(find "$project_dir/.claude" -type f -name "*.md" -o -name "*.json" 2>/dev/null | sort)
+  done < <(find "$project_dir/.claude" -type f \( -name "*.md" -o -name "*.json" \) 2>/dev/null | sort)
 
   # Create manifest
   jq -n \
@@ -4261,18 +4261,21 @@ update_manifest_file() {
   local timestamp
   timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
-  # Update manifest
-  local updated
-  updated=$(jq \
+  # Update manifest (atomic write via temp file)
+  local tmp_manifest
+  tmp_manifest=$(mktemp)
+  trap "rm -f '$tmp_manifest'" EXIT
+
+  jq \
     --arg path "$rel_path" \
     --arg hash "$new_hash" \
     --arg ts "$timestamp" \
     '(.files[] | select(.path == $path)) |= . + {
       "installedHash": $hash,
       "installedAt": $ts
-    }' "$manifest")
+    }' "$manifest" > "$tmp_manifest"
 
-  echo "$updated" > "$manifest"
+  mv "$tmp_manifest" "$manifest"
 }
 
 # =============================================================================
@@ -4402,7 +4405,7 @@ list_local_overrides() {
     return 0
   fi
 
-  find "$context_local" -type f -name "*.md" -o -name "*.json" 2>/dev/null | while read -r file; do
+  find "$context_local" -type f \( -name "*.md" -o -name "*.json" \) 2>/dev/null | while read -r file; do
     echo "${file#$project_dir/}"
   done
 }
