@@ -421,12 +421,11 @@ match_finding_to_decisions() {
   # Using NULL as record separator to handle content with newlines
   while IFS=$'\t' read -r id title content; do
     # Combine title and content for matching (content already truncated by jq)
-    local decision_text
-    decision_text="$title $content"
+    # Note: Combined declaration+assignment prevents zsh from printing assignments inside loops
+    local decision_text="$title $content"
 
     # Calculate similarity
-    local score
-    score=$(jaccard_similarity "$finding" "$decision_text")
+    local score=$(jaccard_similarity "$finding" "$decision_text")
 
     # Check if this is the best match (inline comparison for speed)
     if awk -v new="$score" -v old="$best_score" 'BEGIN { exit (new > old) ? 0 : 1 }'; then
@@ -3970,13 +3969,12 @@ generate_session_index() {
     fi
 
     # Find the status line for this session (next few lines after header)
-    local line_num
-    line_num=$(grep -n "^## Session $session_num " "$sessions_file" | head -1 | cut -d: -f1)
+    # Note: Combined declaration+assignment prevents zsh from printing assignments inside loops
+    local line_num=$(grep -n "^## Session $session_num " "$sessions_file" | head -1 | cut -d: -f1)
 
     if [ -n "$line_num" ]; then
       # Look for **Status:** or **Focus:** in next 5 lines
-      local context_lines
-      context_lines=$(sed -n "$((line_num+1)),$((line_num+5))p" "$sessions_file")
+      local context_lines=$(sed -n "$((line_num+1)),$((line_num+5))p" "$sessions_file")
 
       # Extract focus
       focus=$(echo "$context_lines" | grep -oE '\*\*Focus:\*\* [^|]+' | head -1 | sed 's/\*\*Focus:\*\* //')
