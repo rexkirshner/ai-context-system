@@ -26,8 +26,8 @@ test_basic_archiving() {
   # Count sessions in main file (exclude "Session Index" header)
   MAIN_COUNT=$(grep -cE "^## Session [0-9]+" context/SESSIONS.md 2>/dev/null || echo "0")
 
-  # Count sessions in archive
-  ARCHIVE_FILE=$(ls context/SESSIONS-archive-*.md 2>/dev/null | head -1)
+  # Count sessions in archive (v5.1.0: now in .sessions-archive/ subdirectory)
+  ARCHIVE_FILE=$(ls context/.sessions-archive/sessions-archive-*.md 2>/dev/null | head -1)
   if [ -n "$ARCHIVE_FILE" ]; then
     ARCHIVE_COUNT=$(grep -cE "^## Session [0-9]+" "$ARCHIVE_FILE" 2>/dev/null || echo "0")
   else
@@ -101,19 +101,19 @@ test_archive_file_naming() {
   # Run archiving
   bash "$PROJECT_ROOT/scripts/archive-sessions-helper.sh" --keep 10 --context context 2>/dev/null
 
-  # Check archive file exists with current year prefix (format: SESSIONS-archive-YYYY-MM-DD-HHMMSS.md)
+  # Check archive file exists with current year prefix (v5.1.0: now sessions-archive-YYYY-MM-DD-HHMMSS.md)
   YEAR=$(date +%Y)
 
-  # Find any archive file with the current year
-  ARCHIVE_FILE=$(ls context/SESSIONS-archive-${YEAR}*.md 2>/dev/null | head -1)
+  # Find any archive file with the current year (v5.1.0: now in .sessions-archive/ subdirectory)
+  ARCHIVE_FILE=$(ls context/.sessions-archive/sessions-archive-${YEAR}*.md 2>/dev/null | head -1)
 
   if [ -n "$ARCHIVE_FILE" ] && [ -f "$ARCHIVE_FILE" ]; then
     echo -e "\033[0;32m✓\033[0m Archive file named correctly: $(basename "$ARCHIVE_FILE")"
     TESTS_RUN=$((TESTS_RUN + 1))
     TESTS_PASSED=$((TESTS_PASSED + 1))
   else
-    echo -e "\033[0;31m✗\033[0m Archive file not found matching SESSIONS-archive-${YEAR}*.md"
-    echo "   Found files: $(ls context/ 2>/dev/null)"
+    echo -e "\033[0;31m✗\033[0m Archive file not found matching sessions-archive-${YEAR}*.md"
+    echo "   Found files: $(ls context/.sessions-archive/ 2>/dev/null || echo 'directory not found')"
     TESTS_RUN=$((TESTS_RUN + 1))
   fi
 
