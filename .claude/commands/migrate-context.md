@@ -141,6 +141,9 @@ parent-folder/
 **ACTION:** Check for .claude location issues:
 
 ```bash
+# Load shared utilities if available
+source scripts/common-functions.sh 2>/dev/null || true
+
 # Get absolute path to current directory
 CURRENT_DIR=$(pwd)
 echo "Working directory: $CURRENT_DIR"
@@ -161,8 +164,20 @@ if [ ! -d "$CURRENT_DIR/.claude" ]; then
   fi
 fi
 
-# Check parent directories for conflicting .claude
-PARENT_CLAUDE=$(find "$CURRENT_DIR/.." -maxdepth 2 -name ".claude" 2>/dev/null | grep -v "$CURRENT_DIR/.claude" || echo "")
+# Check ancestor directories (not siblings) for .claude
+# Uses check_ancestor_claude if available, fallback to basic check
+if type check_ancestor_claude &>/dev/null; then
+  PARENT_CLAUDE=$(check_ancestor_claude "$CURRENT_DIR" 2>/dev/null || echo "")
+else
+  # Fallback: simple parent directory check (doesn't catch siblings)
+  PARENT_CLAUDE=""
+  for level in ".." "../.." "../../.."; do
+    if [ -d "$CURRENT_DIR/$level/.claude" ]; then
+      PARENT_CLAUDE=$(cd "$CURRENT_DIR/$level" && pwd)/.claude
+      break
+    fi
+  done
+fi
 
 if [ -n "$PARENT_CLAUDE" ]; then
   echo ""

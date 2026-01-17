@@ -2175,6 +2175,41 @@ detect_project_name() {
   echo "$name"
 }
 
+# Check ancestor directories for .claude (not siblings)
+# Walks up the directory tree from the given path, checking for .claude
+# directories. Only checks direct ancestors, not sibling directories.
+#
+# Arguments:
+#   $1 - Starting directory path (usually $PWD)
+#
+# Output:
+#   Path to ancestor .claude directory if found, empty otherwise
+#
+# Returns:
+#   0 if found, 1 if not found
+#
+# Example:
+#   ancestor=$(check_ancestor_claude "$PWD")
+#   [ -n "$ancestor" ] && echo "Found: $ancestor"
+check_ancestor_claude() {
+  local current="$1"
+  local parent
+  local levels=0
+  local max_levels=3
+
+  while [ $levels -lt $max_levels ]; do
+    parent=$(dirname "$current")
+    # Reached filesystem root
+    [ "$parent" = "$current" ] && return 1
+    # Found .claude in ancestor
+    [ -d "$parent/.claude" ] && { echo "$parent/.claude"; return 0; }
+    current="$parent"
+    levels=$((levels + 1))
+  done
+
+  return 1
+}
+
 # Detect project description
 # Priority: package.json > README first line
 # Usage: desc=$(detect_project_description)
