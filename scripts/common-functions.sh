@@ -4908,8 +4908,7 @@ is_security_relevant() {
     fi
     # Also check if pattern is in directory path (e.g., src/auth/index.ts)
     # Split path and check directory components
-    local dir_path
-    dir_path=$(dirname "$file")
+    local dir_path=$(dirname "$file")
     if [[ "$dir_path" != "." ]] && [[ "$dir_path" == *"/$pattern"* ]] || [[ "$dir_path" == *"$pattern/"* ]] || [[ "$dir_path" == "$pattern" ]]; then
       echo "true"
       return
@@ -4926,8 +4925,7 @@ is_security_relevant() {
       # Special handling for api/ directory paths
       if [ "$pattern" = "api" ]; then
         # Check if "api" is in the directory path (not in filename itself)
-        local dir_path
-        dir_path=$(dirname "$file")
+        local dir_path=$(dirname "$file")
         if [[ "$dir_path" == *"api"* ]]; then
           # api is in directory path, not a match
           continue
