@@ -1,12 +1,12 @@
-# Migration Guide: v4.x to v5.0.2
+# Migration Guide: v4.x to v5.x
 
-This guide covers migrating from AI Context System v4.x to v5.0.2.
+This guide covers migrating from AI Context System v4.x to v5.x.
 
 ## Overview
 
 v5.0 is a major redesign that:
 - Simplifies commands (22 → 7 core commands)
-- Adds agent-based code review (12 specialized agents)
+- Adds agent-based code review (9 specialist reviewers + orchestration agents)
 - Adds skill definitions for modular execution
 - Preserves all user content
 
@@ -35,7 +35,7 @@ The migration creates a backup at:
 
 ```bash
 # Check version
-cat VERSION  # Should show 5.0.2
+cat VERSION  # Should show current version (5.x.x)
 
 # Check skills installed
 ls .claude/skills/*/SKILL.md | wc -l  # Should show 7
@@ -53,7 +53,7 @@ ls .claude/skills/*/SKILL.md | wc -l  # Should show 7
 | `/save-session` | `/save` |
 | `/save-session-full` | `/save-full` |
 | `/update-context` | `/update-context-system` |
-| `/code-review` | `/code-review` (now with 8 specialized variants) |
+| `/code-review` | `/code-review` (now with 9 specialist reviewers) |
 
 **Commands that stay the same:**
 - `/init-context`
@@ -74,7 +74,7 @@ ls .claude/skills/*/SKILL.md | wc -l  # Should show 7
 │   ├── validate/
 │   ├── export/
 │   └── update/
-├── agents/          # NEW: Code review agents (12)
+├── agents/          # NEW: Code review agents (9 specialists + orchestrators)
 ├── hooks/           # NEW: Session automation
 ├── schemas/         # NEW: JSON validation
 └── settings.json    # NEW: Profile config
@@ -147,7 +147,7 @@ python3 -m json.tool context/.context-config.json
 
 - Run `/review` for health check
 - Check MIGRATION_SUMMARY.md for specifics
-- Report issues: https://github.com/anthropics/claude-code/issues
+- Report issues: https://github.com/rexkirshner/ai-context-system/issues
 
 ## Next Steps
 
