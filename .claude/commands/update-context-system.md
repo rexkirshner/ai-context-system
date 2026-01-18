@@ -592,6 +592,61 @@ fi
 
 ---
 
+### Step 5.7: Settings File Migration (v5.1.2+)
+
+**v5.1.2:** Remove old `.claude/settings.json` if it uses the ACS schema (conflicts with Claude Code's reserved schema).
+
+**ACTION:** Migrate old settings.json to avoid Claude Code conflicts:
+
+```bash
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "🔍 Settings File Migration (v5.1.2)"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+
+# Check for old settings.json that conflicts with Claude Code
+if [ -f ".claude/settings.json" ]; then
+  # Only remove if it's our ACS file (has our custom schema)
+  if grep -q "acs.rexkirshner.com/schemas/settings.json" ".claude/settings.json" 2>/dev/null; then
+    echo "⚠️  Found conflicting .claude/settings.json"
+    echo "   This file uses the ACS schema which conflicts with Claude Code."
+    echo ""
+
+    # Remove the conflicting file (acs-settings.json will be used instead)
+    rm -f ".claude/settings.json"
+
+    echo "✅ Removed conflicting .claude/settings.json"
+    echo "   ACS now uses .claude/acs-settings.json instead."
+    echo ""
+    echo "💡 Note: Claude Code reserves .claude/settings.json for its own settings."
+    echo "   If you want to configure Claude Code settings, create a new"
+    echo "   .claude/settings.json using the Claude Code schema."
+  else
+    echo "ℹ️  Found .claude/settings.json (not ACS schema - preserving)"
+    echo "   This appears to be a Claude Code settings file."
+  fi
+else
+  echo "✅ No settings.json migration needed"
+fi
+
+echo ""
+```
+
+**What this does:**
+- Checks if `.claude/settings.json` exists
+- Only removes it if it has the ACS custom schema URL
+- Preserves user's Claude Code settings (different schema)
+- ACS now uses `.claude/acs-settings.json` instead (no conflict)
+
+**Why this matters:**
+- Claude Code reserves `.claude/settings.json` for its own schema
+- Old ACS versions created this file with a custom schema
+- Claude Code shows "Settings Error" and ignores all project settings when schema doesn't match
+- This fix allows both ACS and Claude Code to work correctly
+
+---
+
 ### Step 6: Generate Update Report
 
 Provide a clear summary to the user:
