@@ -42,7 +42,7 @@ Gather without prompting the user:
 **context/.context-config.json:**
 ```json
 {
-  "version": "5.1.0",
+  "version": "5.1.1",
   "profile": "standard",
   "project": { "name": "[detected]", "type": "[detected]" }
 }

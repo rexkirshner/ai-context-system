@@ -1,6 +1,6 @@
 # AI Context System
 
-**Version 5.1.0** • [What's New](#-v500-first-principles-redesign)
+**Version 5.1.1** • [What's New](#-v500-first-principles-redesign)
 
 > **Externalize AI context. Enable human-AI collaboration. Perfect session continuity.**
 >

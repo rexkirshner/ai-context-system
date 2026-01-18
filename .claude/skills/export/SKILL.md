@@ -22,7 +22,7 @@ artifacts/exports/
 {
   "metadata": {
     "exportedAt": "2026-01-13T10:30:00Z",
-    "acsVersion": "5.1.0",
+    "acsVersion": "5.1.1",
     "projectName": "my-app"
   },
   "summary": {
