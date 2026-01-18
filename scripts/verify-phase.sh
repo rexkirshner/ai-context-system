@@ -275,11 +275,11 @@ verify_phase_5() {
         fail "Hook missing: session-start.sh"
     fi
 
-    # Check settings.json
-    if [ -f "$REPO_ROOT/.claude/settings.json" ]; then
-        pass "Settings file exists: settings.json"
+    # Check acs-settings.json (renamed in v5.1.2 to avoid Claude Code conflict)
+    if [ -f "$REPO_ROOT/.claude/acs-settings.json" ]; then
+        pass "Settings file exists: acs-settings.json"
     else
-        fail "Settings file missing: settings.json"
+        fail "Settings file missing: acs-settings.json"
     fi
 
     # Run Phase 5 e2e tests

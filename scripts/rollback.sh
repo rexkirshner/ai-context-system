@@ -89,10 +89,15 @@ for dir in "${V5_DIRS[@]}"; do
     fi
 done
 
-# Remove v5.0 settings
+# Remove v5.0+ settings (renamed in v5.1.2 to avoid Claude Code conflict)
+if [ -f ".claude/acs-settings.json" ]; then
+    rm -f ".claude/acs-settings.json"
+    echo "  Removed: .claude/acs-settings.json"
+fi
+# Also remove old settings.json if present (pre-v5.1.2)
 if [ -f ".claude/settings.json" ]; then
     rm -f ".claude/settings.json"
-    echo "  Removed: .claude/settings.json"
+    echo "  Removed: .claude/settings.json (legacy)"
 fi
 
 # Step 2: Restore from backup

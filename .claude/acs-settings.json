@@ -1,5 +1,5 @@
 {
-  "$schema": "https://acs.rexkirshner.com/schemas/settings.json",
+  "$schema": "https://acs.rexkirshner.com/schemas/acs-settings.json",
   "schemaVersion": "1.0.0",
   "profile": "standard",
   "hooks": {

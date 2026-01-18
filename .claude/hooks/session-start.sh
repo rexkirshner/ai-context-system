@@ -27,7 +27,7 @@ if [ -z "$CONTEXT_DIR" ]; then
 fi
 
 # Check profile - exit if minimal
-SETTINGS_FILE=".claude/settings.json"
+SETTINGS_FILE=".claude/acs-settings.json"
 if [ -f "$SETTINGS_FILE" ]; then
     PROFILE=$(jq -r '.profile // "standard"' "$SETTINGS_FILE" 2>/dev/null || echo "standard")
     if [ "$PROFILE" = "minimal" ]; then

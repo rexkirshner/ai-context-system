@@ -728,13 +728,13 @@ echo ""
 color_echo "${BLUE}⬇️  Downloading schemas...${NC}"
 
 SCHEMAS=(
+  "acs-settings.json"
   "agent-contract.json"
   "audit-finding.json"
   "audit-report.json"
   "context-health.json"
   "handoff-package.json"
   "session-entry.json"
-  "settings.json"
 )
 
 for schema in "${SCHEMAS[@]}"; do
@@ -793,10 +793,10 @@ echo ""
 
 color_echo "${BLUE}⬇️  Downloading settings...${NC}"
 
-echo -n "   Downloading settings.json... "
-# Only download if settings.json doesn't exist (preserve user customizations)
-if [ ! -f ".claude/settings.json" ]; then
-  if ! download_file "${RAW_URL}/.claude/settings.json" ".claude/settings.json" 50; then
+echo -n "   Downloading acs-settings.json... "
+# Only download if acs-settings.json doesn't exist (preserve user customizations)
+if [ ! -f ".claude/acs-settings.json" ]; then
+  if ! download_file "${RAW_URL}/.claude/acs-settings.json" ".claude/acs-settings.json" 50; then
     ((FAILED_DOWNLOADS++))
   fi
 else

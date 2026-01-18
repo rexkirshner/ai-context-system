@@ -24,13 +24,13 @@ SCHEMA_DIR=".claude/schemas"
 
 echo "--- Schema Files Exist ---"
 SCHEMAS=(
+  "acs-settings.json"
   "agent-contract.json"
   "audit-finding.json"
   "audit-report.json"
   "context-health.json"
   "handoff-package.json"
   "session-entry.json"
-  "settings.json"
 )
 
 for schema in "${SCHEMAS[@]}"; do
@@ -74,8 +74,8 @@ check "jq -e '.properties.findings' '$SCHEMA_DIR/audit-report.json'" "audit-repo
 check "jq -e '.properties.metadata' '$SCHEMA_DIR/audit-report.json'" "audit-report has metadata property"
 check "jq -e '.properties.metadata.properties.agentsSkipped' '$SCHEMA_DIR/audit-report.json'" "audit-report tracks skipped agents"
 
-# Settings schema
-check "jq -e '.properties.profile' '$SCHEMA_DIR/settings.json'" "settings has profile property"
+# ACS Settings schema (renamed in v5.1.2 to avoid Claude Code conflict)
+check "jq -e '.properties.profile' '$SCHEMA_DIR/acs-settings.json'" "acs-settings has profile property"
 
 echo ""
 echo "=== Summary ==="

@@ -295,8 +295,8 @@ test_config_override() {
 
   setup_context_local_test_env
 
-  # Create system config
-  echo '{"theme": "light", "feature": "default"}' > "$TEST_DIR/.claude/settings.json"
+  # Create system config (using acs-settings.json as of v5.1.2)
+  echo '{"theme": "light", "feature": "default"}' > "$TEST_DIR/.claude/acs-settings.json"
 
   # Create local config override
   mkdir -p "$TEST_DIR/.context-local"

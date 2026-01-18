@@ -58,7 +58,7 @@ check "grep -q 'stat -c' '$HOOK_SCRIPT'" "Uses Linux stat format"
 
 echo ""
 echo "--- Profile Support ---"
-check "grep -q 'settings.json' '$HOOK_SCRIPT'" "Reads settings"
+check "grep -q 'acs-settings.json' '$HOOK_SCRIPT'" "Reads settings"
 check "grep -q 'profile' '$HOOK_SCRIPT'" "Checks profile setting"
 check "grep -q 'minimal' '$HOOK_SCRIPT'" "Respects minimal profile"
 

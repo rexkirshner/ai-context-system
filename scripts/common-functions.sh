@@ -4482,7 +4482,7 @@ Files placed here override the corresponding system files:
 | `.context-local/agents/security-reviewer.md` | `.claude/agents/security-reviewer.md` |
 | `.context-local/commands/build-check.md` | `.claude/commands/build-check.md` |
 | `.context-local/templates/STATUS.template.md` | `templates/STATUS.template.md` |
-| `.context-local/config.local.json` | Merged with `.claude/settings.json` |
+| `.context-local/config.local.json` | Merged with `.claude/acs-settings.json` |
 
 ## To Customize a File
 
@@ -4514,7 +4514,7 @@ Create this file to override settings:
 }
 ```
 
-Values here are merged with `.claude/settings.json`, with local values taking precedence.
+Values here are merged with `.claude/acs-settings.json`, with local values taking precedence.
 EOF
   fi
 
@@ -4523,7 +4523,7 @@ EOF
 
 # Get merged config (system + local overrides)
 #
-# Merges .claude/settings.json with .context-local/config.local.json
+# Merges .claude/acs-settings.json with .context-local/config.local.json
 #
 # Usage:
 #   config=$(get_merged_config "/path/to/project")
@@ -4536,7 +4536,7 @@ EOF
 #
 get_merged_config() {
   local project_dir="${1:-.}"
-  local system_config="$project_dir/.claude/settings.json"
+  local system_config="$project_dir/.claude/acs-settings.json"
   local local_config="$project_dir/.context-local/config.local.json"
 
   # Start with system config

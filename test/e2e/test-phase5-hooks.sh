@@ -1,7 +1,7 @@
 #!/bin/bash
 # test-phase5-hooks.sh - Validation tests for Phase 5 hooks
 #
-# Tests: session-start.sh, settings.json, safe-fail behavior
+# Tests: session-start.sh, acs-settings.json, safe-fail behavior
 
 set -e
 
@@ -70,44 +70,44 @@ echo ""
 echo "━━━ Test: Settings Configuration ━━━"
 echo ""
 
-if [ -f "$REPO_ROOT/.claude/settings.json" ]; then
-    pass "settings.json exists"
+if [ -f "$REPO_ROOT/.claude/acs-settings.json" ]; then
+    pass "acs-settings.json exists"
 
     # Validate JSON
-    if python3 -m json.tool "$REPO_ROOT/.claude/settings.json" > /dev/null 2>&1; then
-        pass "settings.json is valid JSON"
+    if python3 -m json.tool "$REPO_ROOT/.claude/acs-settings.json" > /dev/null 2>&1; then
+        pass "acs-settings.json is valid JSON"
     else
-        fail "settings.json is invalid JSON"
+        fail "acs-settings.json is invalid JSON"
     fi
 
     # Check for profiles
-    if jq -e '.profiles.minimal' "$REPO_ROOT/.claude/settings.json" > /dev/null 2>&1; then
-        pass "settings.json has minimal profile"
+    if jq -e '.profiles.minimal' "$REPO_ROOT/.claude/acs-settings.json" > /dev/null 2>&1; then
+        pass "acs-settings.json has minimal profile"
     else
-        fail "settings.json missing minimal profile"
+        fail "acs-settings.json missing minimal profile"
     fi
 
-    if jq -e '.profiles.standard' "$REPO_ROOT/.claude/settings.json" > /dev/null 2>&1; then
-        pass "settings.json has standard profile"
+    if jq -e '.profiles.standard' "$REPO_ROOT/.claude/acs-settings.json" > /dev/null 2>&1; then
+        pass "acs-settings.json has standard profile"
     else
-        fail "settings.json missing standard profile"
+        fail "acs-settings.json missing standard profile"
     fi
 
     # Check for hook timeout setting
-    if jq -e '.hooks.timeout' "$REPO_ROOT/.claude/settings.json" > /dev/null 2>&1; then
-        pass "settings.json has hook timeout"
+    if jq -e '.hooks.timeout' "$REPO_ROOT/.claude/acs-settings.json" > /dev/null 2>&1; then
+        pass "acs-settings.json has hook timeout"
     else
-        fail "settings.json missing hook timeout"
+        fail "acs-settings.json missing hook timeout"
     fi
 
     # Check for onFailure setting
-    if jq -e '.hooks.onFailure' "$REPO_ROOT/.claude/settings.json" > /dev/null 2>&1; then
-        pass "settings.json has onFailure setting"
+    if jq -e '.hooks.onFailure' "$REPO_ROOT/.claude/acs-settings.json" > /dev/null 2>&1; then
+        pass "acs-settings.json has onFailure setting"
     else
-        fail "settings.json missing onFailure setting"
+        fail "acs-settings.json missing onFailure setting"
     fi
 else
-    fail "settings.json not found"
+    fail "acs-settings.json not found"
 fi
 
 echo ""
@@ -215,7 +215,7 @@ else
 fi
 
 # Check that minimal disables hooks in settings
-MINIMAL_HOOKS=$(jq -r '.profiles.minimal.hooks | length' "$REPO_ROOT/.claude/settings.json" 2>/dev/null || echo "1")
+MINIMAL_HOOKS=$(jq -r '.profiles.minimal.hooks | length' "$REPO_ROOT/.claude/acs-settings.json" 2>/dev/null || echo "1")
 if [ "$MINIMAL_HOOKS" = "0" ]; then
     pass "Minimal profile has no hooks"
 else
@@ -228,7 +228,7 @@ echo ""
 echo "━━━ Test: Timeout Configuration ━━━"
 echo ""
 
-TIMEOUT=$(jq -r '.hooks.timeout' "$REPO_ROOT/.claude/settings.json" 2>/dev/null || echo "0")
+TIMEOUT=$(jq -r '.hooks.timeout' "$REPO_ROOT/.claude/acs-settings.json" 2>/dev/null || echo "0")
 if [ "$TIMEOUT" = "2000" ]; then
     pass "Hook timeout is 2 seconds (2000ms)"
 else
@@ -236,7 +236,7 @@ else
 fi
 
 # Check that onFailure is warn
-ONFAILURE=$(jq -r '.hooks.onFailure' "$REPO_ROOT/.claude/settings.json" 2>/dev/null || echo "")
+ONFAILURE=$(jq -r '.hooks.onFailure' "$REPO_ROOT/.claude/acs-settings.json" 2>/dev/null || echo "")
 if [ "$ONFAILURE" = "warn" ]; then
     pass "onFailure is set to warn"
 else
