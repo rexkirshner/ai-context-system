@@ -207,6 +207,47 @@ else
     fail "find_context_folder failed to find local context (got: $RESULT)"
 fi
 
+# Test 2.5.4: CRITICAL - subdirectory of nested repo doesn't find parent's context
+# This is the exact scenario from the bug report
+mkdir -p "$TEST_DIR/bug-report-scenario/parent-project/context"
+mkdir -p "$TEST_DIR/bug-report-scenario/parent-project/child-app/src/components"
+mkdir -p "$TEST_DIR/bug-report-scenario/parent-project/child-app/context"
+echo '{"version": "5.1.2"}' > "$TEST_DIR/bug-report-scenario/parent-project/context/.context-config.json"
+echo "# STATUS" > "$TEST_DIR/bug-report-scenario/parent-project/child-app/context/STATUS.md"
+# Note: child-app/context has STATUS.md but NO .context-config.json (orphaned)
+git init --quiet "$TEST_DIR/bug-report-scenario/parent-project" 2>/dev/null
+git init --quiet "$TEST_DIR/bug-report-scenario/parent-project/child-app" 2>/dev/null
+
+# From child-app/src/components/ - should NOT find parent-project's context
+cd "$TEST_DIR/bug-report-scenario/parent-project/child-app/src/components"
+RESULT=$(find_context_folder 2>/dev/null)
+EXIT_CODE=$?
+
+if [ $EXIT_CODE -ne 0 ]; then
+    pass "Subdirectory of nested repo does NOT find parent's context (bug report scenario)"
+else
+    fail "Subdirectory of nested repo incorrectly found context: $RESULT"
+fi
+
+# Test 2.5.5: Subdirectory of nested repo WITH valid local context finds it
+mkdir -p "$TEST_DIR/nested-with-context/parent/context"
+mkdir -p "$TEST_DIR/nested-with-context/parent/child/context"
+mkdir -p "$TEST_DIR/nested-with-context/parent/child/src"
+echo '{"version": "5.1.2"}' > "$TEST_DIR/nested-with-context/parent/context/.context-config.json"
+echo '{"version": "5.1.2"}' > "$TEST_DIR/nested-with-context/parent/child/context/.context-config.json"
+git init --quiet "$TEST_DIR/nested-with-context/parent" 2>/dev/null
+git init --quiet "$TEST_DIR/nested-with-context/parent/child" 2>/dev/null
+
+cd "$TEST_DIR/nested-with-context/parent/child/src"
+RESULT=$(find_context_folder 2>/dev/null)
+EXIT_CODE=$?
+
+if [ $EXIT_CODE -eq 0 ] && [ "$RESULT" = "../context" ]; then
+    pass "Subdirectory of nested repo finds ITS OWN context (not parent's)"
+else
+    fail "Failed to find nested repo's own context from subdirectory (got: $RESULT)"
+fi
+
 # =============================================================================
 # Test Suite 3: Documentation Updated
 # =============================================================================

@@ -3,8 +3,9 @@
 # Find context folder by checking current directory and up to 2 parent directories
 # Returns the relative path to context folder or exits with error
 #
-# v5.1.2: Respects git boundaries - won't traverse into parent if current dir
-#         is a separate git repository (prevents nested repo context confusion)
+# v5.1.2: Respects git boundaries - won't traverse past a .git/ directory
+#         This prevents nested repo context confusion where a child repo
+#         accidentally uses a parent repo's context files
 #
 # Usage:
 #   source "$(dirname "${BASH_SOURCE[0]}")/../scripts/find-context-folder.sh" || exit 1
@@ -14,6 +15,8 @@
 
 find_context_folder() {
   local current_dir="$PWD"
+  local git_boundary_hit=false
+  local git_boundary_at=""
 
   # Check current directory
   if [ -d "context" ] && [ -f "context/.context-config.json" ]; then
@@ -21,21 +24,34 @@ find_context_folder() {
     return 0
   fi
 
-  # v5.1.2: Check if current directory is a git repo root
-  # If so, don't traverse upward (prevents nested repo confusion)
-  local is_git_root=false
+  # v5.1.2: Check for git boundary at current directory
   if [ -d ".git" ]; then
-    is_git_root=true
+    git_boundary_hit=true
+    git_boundary_at="$PWD"
   fi
 
-  # Check parent directory (only if we're not at a git root without local context)
-  if [ "$is_git_root" = false ]; then
+  # Check parent directory (only if no git boundary hit yet)
+  if [ "$git_boundary_hit" = false ]; then
+    # First check if parent has .git (would be a boundary)
+    if [ -d "../.git" ]; then
+      git_boundary_hit=true
+      git_boundary_at="$(cd .. && pwd)"
+    fi
+
     if [ -d "../context" ] && [ -f "../context/.context-config.json" ]; then
       echo "../context"
       return 0
     fi
+  fi
 
-    # Check grandparent directory
+  # Check grandparent directory (only if no git boundary hit yet)
+  if [ "$git_boundary_hit" = false ]; then
+    # First check if grandparent has .git (would be a boundary)
+    if [ -d "../../.git" ]; then
+      git_boundary_hit=true
+      git_boundary_at="$(cd ../.. && pwd)"
+    fi
+
     if [ -d "../../context" ] && [ -f "../../context/.context-config.json" ]; then
       echo "../../context"
       return 0
@@ -49,10 +65,11 @@ find_context_folder() {
   echo "" >&2
   echo "Searched:" >&2
   echo "  - $PWD/context/" >&2
-  if [ "$is_git_root" = true ]; then
+  if [ "$git_boundary_hit" = true ]; then
     echo "" >&2
-    echo "Note: This directory contains .git/ - treating as separate project." >&2
-    echo "      Parent directories were NOT searched to prevent context confusion." >&2
+    echo "⚠️  Git boundary detected at: $git_boundary_at" >&2
+    echo "   Search stopped to prevent nested repo context confusion." >&2
+    echo "   Parent directories beyond this point were NOT searched." >&2
   else
     echo "  - $PWD/../context/" >&2
     echo "  - $PWD/../../context/" >&2
@@ -64,15 +81,15 @@ find_context_folder() {
   echo "  1. Navigate to your project root" >&2
   echo "  2. Run: /init-context" >&2
   echo "" >&2
-  if [ "$is_git_root" = false ]; then
+  if [ "$git_boundary_hit" = true ]; then
+    echo "If this is a nested project inside another:" >&2
+    echo "  - Install AI Context System in THIS repo: /init-context" >&2
+    echo "  - Or cd to the parent project to use its context" >&2
+  else
     echo "If context folder exists elsewhere:" >&2
     echo "  - Commands work from project root" >&2
     echo "  - Commands work from subdirectories (up to 2 levels deep)" >&2
     echo "  - Example: backend/, frontend/, src/, etc." >&2
-  else
-    echo "If this is a nested project inside another:" >&2
-    echo "  - Install AI Context System in THIS directory: /init-context" >&2
-    echo "  - Or cd to the parent project to use its context" >&2
   fi
   echo "" >&2
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
