@@ -54,12 +54,12 @@ Or specify a backup:
 > /update
 
 Checking for updates...
-Current: 5.1.0
-Latest:  5.1.1
+Current: 5.1.1
+Latest:  5.1.2
 
-Creating backup: .claude-backup-20260113-100000
+Creating backup: .claude-backup-20260118-100000
 
-Downloading v5.1.1...
+Downloading v5.1.2...
   ✓ Checksum verified
 
 Installing...
@@ -67,7 +67,7 @@ Installing...
   ✓ Agents updated
   ✓ Schemas updated
 
-Update complete: v5.1.0 → v5.1.1
+Update complete: v5.1.1 → v5.1.2
 
 See MIGRATION_SUMMARY.md for details.
 Rollback: ./scripts/rollback.sh

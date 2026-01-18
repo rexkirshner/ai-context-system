@@ -402,13 +402,14 @@ verify_phase_8() {
         "verify_phase_$i"
     done
 
-    # Check VERSION
+    # Check VERSION (validate format, not specific value)
     if [ -f "$REPO_ROOT/VERSION" ]; then
         local version=$(cat "$REPO_ROOT/VERSION")
-        if [ "$version" = "5.1.0" ]; then
-            pass "VERSION is 5.1.0"
+        # Validate semver format (X.Y.Z)
+        if echo "$version" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            pass "VERSION is valid semver: $version"
         else
-            fail "VERSION is $version, expected 5.1.0"
+            fail "VERSION has invalid format: $version (expected X.Y.Z)"
         fi
     else
         fail "VERSION file missing"
