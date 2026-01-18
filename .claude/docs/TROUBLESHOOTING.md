@@ -293,6 +293,47 @@ cp templates/CLAUDE.md.template ./CLAUDE.md
 
 ---
 
+### Claude Code Shows "Settings Error" for .claude/settings.json
+
+**Symptom:**
+```
+Settings Error
+.claude/settings.json
+  ├ $schema: Invalid value. Expected one of:
+  │ "https://json.schemastore.org/claude-code-settings.json"
+  └ hooks
+    ├ enabled: Invalid key in record
+    ├ onFailure: Invalid key in record
+    └ timeout: Invalid key in record
+```
+
+**Cause:** Older versions of ACS (pre-v5.1.2) created `.claude/settings.json` with a custom schema that conflicts with Claude Code's reserved schema for that filename.
+
+**Impact:** Claude Code ignores ALL project settings when this file is present.
+
+**Solution:**
+
+1. **Upgrade ACS (recommended):**
+   ```bash
+   /update-context-system
+   ```
+   The v5.1.2 upgrade automatically removes the conflicting file.
+
+2. **Manual removal:**
+   ```bash
+   # First check if it's the ACS file (has our schema)
+   grep "acs.rexkirshner.com" .claude/settings.json
+
+   # If it shows a match, remove it
+   rm .claude/settings.json
+   ```
+
+**Note:** v5.1.2+ uses `.claude/acs-settings.json` instead, which doesn't conflict with Claude Code.
+
+**Fixed in:** v5.1.2
+
+---
+
 ## Debug Mode
 
 For detailed troubleshooting, enable verbose output:
@@ -364,5 +405,5 @@ If the above doesn't help:
 
 ---
 
-**Version:** 5.1.1
-**Last Updated:** 2026-01-17
+**Version:** 5.1.2
+**Last Updated:** 2026-01-18

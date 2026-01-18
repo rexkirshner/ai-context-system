@@ -25,7 +25,7 @@ If you need to restore the previous version:
 - `.claude/agents/` - 9 agent definitions
 - `.claude/hooks/` - Session automation
 - `.claude/schemas/` - JSON validation schemas
-- `.claude/settings.json` - Profile configuration
+- `.claude/acs-settings.json` - Profile configuration (renamed v5.1.2)
 
 ### Removed
 - `.claude/commands/` - Replaced by skills

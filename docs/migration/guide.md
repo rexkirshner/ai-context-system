@@ -77,7 +77,7 @@ ls .claude/skills/*/SKILL.md | wc -l  # Should show 7
 ├── agents/          # NEW: Code review agents (13 total: 8 reviewers + 5 support)
 ├── hooks/           # NEW: Session automation
 ├── schemas/         # NEW: JSON validation
-└── settings.json    # NEW: Profile config
+└── acs-settings.json  # NEW: Profile config (renamed v5.1.2)
 ```
 
 ### Configuration
