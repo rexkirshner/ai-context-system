@@ -803,6 +803,14 @@ else
   color_echo "${BLUE}(preserved existing)${NC}"
 fi
 
+# v5.1.2: Remove old settings.json if it has ACS schema (conflicts with Claude Code)
+if [ -f ".claude/settings.json" ]; then
+  if grep -q "acs.rexkirshner.com/schemas/settings.json" ".claude/settings.json" 2>/dev/null; then
+    rm -f ".claude/settings.json"
+    color_echo "${YELLOW}   Removed conflicting .claude/settings.json (v5.1.2 migration)${NC}"
+  fi
+fi
+
 echo ""
 
 # =============================================================================

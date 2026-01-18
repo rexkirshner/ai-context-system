@@ -168,6 +168,13 @@ else
     fail "install.sh download message does NOT reference acs-settings.json"
 fi
 
+# Test 4.4: install.sh has migration logic to remove old settings.json
+if grep -q "v5.1.2.*migration\|Remove old settings.json" "$REPO_ROOT/install.sh"; then
+    pass "install.sh has migration logic for old settings.json"
+else
+    fail "install.sh missing migration logic for old settings.json"
+fi
+
 # =============================================================================
 # Test Suite 5: Schema File Updated
 # =============================================================================
