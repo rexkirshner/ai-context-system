@@ -5,6 +5,37 @@ All notable changes to the AI Context System will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.1.2] - 2026-01-18
+
+**PATCH RELEASE** - Claude Code Settings Conflict Fix
+
+This patch release fixes a critical bug where ACS created `.claude/settings.json` with a custom schema that conflicts with Claude Code's expected schema, causing Claude Code to reject all project settings.
+
+### Fixed
+
+- **Claude Code settings conflict**: Renamed `.claude/settings.json` to `.claude/acs-settings.json` to avoid schema validation errors in Claude Code. The old file used a custom schema that conflicted with Claude Code's reserved schema for that filename.
+
+### Migration
+
+- **Automatic**: Running `/update-context-system` automatically removes the conflicting `.claude/settings.json` if it has the ACS schema
+- **Preserves Claude Code settings**: If you manually created a `.claude/settings.json` with Claude Code's schema, it will NOT be touched
+- **ACS settings unchanged**: All ACS profile/hook settings now live in `.claude/acs-settings.json`
+
+### Technical Details
+
+- ACS now uses `.claude/acs-settings.json` instead of `.claude/settings.json`
+- Schema file renamed to `.claude/schemas/acs-settings.json`
+- All scripts updated to reference new filename
+- Migration step added to `/update-context-system` (Step 5.7)
+- Troubleshooting entry added for users who encounter this issue
+
+### Notes
+
+- If you see "Settings Error" in Claude Code on startup, upgrade to v5.1.2
+- Alternatively, manually remove `.claude/settings.json` if it has `acs.rexkirshner.com` in the schema URL
+
+---
+
 ## [5.1.1] - 2026-01-17
 
 **PATCH RELEASE** - Shell Compatibility Fixes
