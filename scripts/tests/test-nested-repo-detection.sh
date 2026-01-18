@@ -150,6 +150,64 @@ else
 fi
 
 # =============================================================================
+# Test Suite 2.5: Runtime Git Boundary Tests (find_context_folder)
+# =============================================================================
+header "Test Suite 2.5: Runtime Git Boundary Tests"
+
+# Source the find-context-folder.sh script
+source "$REPO_ROOT/scripts/find-context-folder.sh"
+
+# Test 2.5.1: find_context_folder respects git boundary
+# Setup: parent has context, child is separate git repo without context
+mkdir -p "$TEST_DIR/git-boundary-test/parent/context"
+mkdir -p "$TEST_DIR/git-boundary-test/parent/child-repo"
+echo '{"version": "5.1.2"}' > "$TEST_DIR/git-boundary-test/parent/context/.context-config.json"
+git init --quiet "$TEST_DIR/git-boundary-test/parent" 2>/dev/null
+git init --quiet "$TEST_DIR/git-boundary-test/parent/child-repo" 2>/dev/null
+
+# From child-repo (which has .git but no context), should NOT find parent's context
+cd "$TEST_DIR/git-boundary-test/parent/child-repo"
+RESULT=$(find_context_folder 2>/dev/null)
+EXIT_CODE=$?
+
+if [ $EXIT_CODE -ne 0 ] && [ -z "$RESULT" ]; then
+    pass "find_context_folder does NOT traverse into parent when in nested git repo"
+else
+    fail "find_context_folder incorrectly found parent context from nested git repo (got: $RESULT)"
+fi
+
+# Test 2.5.2: find_context_folder still works from subdirectory (non-git)
+mkdir -p "$TEST_DIR/subdir-test/context"
+mkdir -p "$TEST_DIR/subdir-test/src/components"
+echo '{"version": "5.1.2"}' > "$TEST_DIR/subdir-test/context/.context-config.json"
+# Note: NOT a git repo
+
+cd "$TEST_DIR/subdir-test/src/components"
+RESULT=$(find_context_folder 2>/dev/null)
+EXIT_CODE=$?
+
+if [ $EXIT_CODE -eq 0 ] && [ -n "$RESULT" ]; then
+    pass "find_context_folder still traverses upward in non-git subdirectories"
+else
+    fail "find_context_folder failed to find context from subdirectory"
+fi
+
+# Test 2.5.3: find_context_folder finds local context in git repo
+mkdir -p "$TEST_DIR/local-context-test/context"
+echo '{"version": "5.1.2"}' > "$TEST_DIR/local-context-test/context/.context-config.json"
+git init --quiet "$TEST_DIR/local-context-test" 2>/dev/null
+
+cd "$TEST_DIR/local-context-test"
+RESULT=$(find_context_folder 2>/dev/null)
+EXIT_CODE=$?
+
+if [ $EXIT_CODE -eq 0 ] && [ "$RESULT" = "context" ]; then
+    pass "find_context_folder finds local context in git repo root"
+else
+    fail "find_context_folder failed to find local context (got: $RESULT)"
+fi
+
+# =============================================================================
 # Test Suite 3: Documentation Updated
 # =============================================================================
 header "Test Suite 3: Documentation"

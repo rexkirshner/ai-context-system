@@ -21,6 +21,8 @@ This patch release fixes a critical bug where ACS created `.claude/settings.json
 
 - **Claude Code settings conflict**: Renamed `.claude/settings.json` to `.claude/acs-settings.json` to avoid schema validation errors in Claude Code. The old file used a custom schema that conflicted with Claude Code's reserved schema for that filename.
 
+- **Nested repo context confusion**: The `find_context_folder()` function now respects git boundaries. If you're in a nested git repository (child `.git/` exists), it will NOT traverse upward to find a parent's context folder. This prevents accidentally saving session data to the wrong project's context files.
+
 ### Migration
 
 - **Automatic**: Running `/update-context-system` automatically removes the conflicting `.claude/settings.json` if it has the ACS schema
