@@ -6,7 +6,7 @@ This guide covers migrating from AI Context System v4.x to v5.x.
 
 v5.0 is a major redesign that:
 - Simplifies commands (22 → 7 core commands)
-- Adds agent-based code review (9 specialist reviewers + orchestration agents)
+- Adds agent-based code review (8 specialist reviewers + 5 supporting agents)
 - Adds skill definitions for modular execution
 - Preserves all user content
 
@@ -74,7 +74,7 @@ ls .claude/skills/*/SKILL.md | wc -l  # Should show 7
 │   ├── validate/
 │   ├── export/
 │   └── update/
-├── agents/          # NEW: Code review agents (9 specialists + orchestrators)
+├── agents/          # NEW: Code review agents (13 total: 8 reviewers + 5 support)
 ├── hooks/           # NEW: Session automation
 ├── schemas/         # NEW: JSON validation
 └── settings.json    # NEW: Profile config
