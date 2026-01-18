@@ -293,6 +293,55 @@ cp templates/CLAUDE.md.template ./CLAUDE.md
 
 ---
 
+### Nested Git Repositories Causing Context Confusion
+
+**Symptom:** Context files appear in wrong location, `/save` saves to parent project, or you have duplicate context folders.
+
+**Cause:** You have a nested git repository structure where both the parent and child directories have (or should have) separate context systems.
+
+**Example structure:**
+```
+parent-project/           # Has .git/ and context/
+├── .git/
+├── context/
+│   └── STATUS.md         # Parent's context
+└── child-app/            # Also has .git/ (separate repo)
+    └── .git/
+    └── context/
+        └── STATUS.md     # Child's context (may be orphaned)
+```
+
+**Solution:**
+
+1. **Install ACS in each repository separately:**
+   ```bash
+   # In parent
+   cd parent-project
+   curl -sL https://raw.githubusercontent.com/rexkirshner/ai-context-system/main/install.sh | bash
+
+   # In child (separate installation)
+   cd parent-project/child-app
+   curl -sL https://raw.githubusercontent.com/rexkirshner/ai-context-system/main/install.sh | bash
+   ```
+
+2. **Or use only the parent's context system:**
+   - Remove any manually-created `context/` folders in child directories
+   - All context files will be managed at the parent level
+
+3. **Fix orphaned context folders:**
+   If you have `context/STATUS.md` without `.context-config.json`:
+   ```bash
+   # Run /init-context to properly initialize, or
+   # Delete the orphaned context/ folder if not needed
+   rm -rf context/
+   ```
+
+**Prevention:** The v5.1.2 installer now detects nested repos and warns before installation.
+
+**Added in:** v5.1.2
+
+---
+
 ### Claude Code Shows "Settings Error" for .claude/settings.json
 
 **Symptom:**

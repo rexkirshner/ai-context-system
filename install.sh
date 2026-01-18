@@ -345,6 +345,65 @@ color_echo "${BLUE}📁 Installation directory:${NC} $CURRENT_DIR"
 echo ""
 
 # =============================================================================
+# Step 1.5: Check for nested/parent repository conflicts (v5.1.2)
+# =============================================================================
+
+NESTED_REPO_WARNING=false
+PARENT_CONTEXT_WARNING=false
+
+# Check for nested git repositories (excluding .git in current dir)
+NESTED_REPOS=$(find . -mindepth 2 -name ".git" -type d 2>/dev/null | head -5)
+if [ -n "$NESTED_REPOS" ]; then
+  NESTED_REPO_WARNING=true
+  color_echo "${YELLOW}⚠️  Nested git repositories detected:${NC}"
+  echo "$NESTED_REPOS" | while read -r repo; do
+    echo "   - ${repo%/.git}"
+  done
+  echo ""
+  color_echo "${BLUE}ℹ️  Recommendation:${NC} Install AI Context System in each git repository separately,"
+  echo "   or install only at the top level. Nested repos may cause context confusion."
+  echo ""
+fi
+
+# Check if parent directory already has context system
+if [ -f "../context/.context-config.json" ] || [ -f "../../context/.context-config.json" ]; then
+  PARENT_CONTEXT_WARNING=true
+  color_echo "${YELLOW}⚠️  Parent directory has AI Context System installed${NC}"
+  echo ""
+  color_echo "${BLUE}ℹ️  Recommendation:${NC} Use the parent's context system, or ensure this is"
+  echo "   intentionally a separate project with its own context."
+  echo ""
+fi
+
+# Check for orphaned context folder (context/ exists without .context-config.json)
+if [ -d "context" ] && [ ! -f "context/.context-config.json" ]; then
+  color_echo "${YELLOW}⚠️  Orphaned context folder detected${NC}"
+  echo "   Found context/ directory without .context-config.json"
+  echo ""
+  color_echo "${BLUE}ℹ️  This may be manually created context files.${NC}"
+  echo "   The installer will create .context-config.json to properly manage this folder."
+  echo ""
+fi
+
+# If warnings were shown, confirm before proceeding
+if [ "$NESTED_REPO_WARNING" = true ] || [ "$PARENT_CONTEXT_WARNING" = true ]; then
+  if [ "$NON_INTERACTIVE" = true ]; then
+    echo "   Non-interactive mode: Proceeding despite warnings"
+  else
+    read -p "Continue with installation? [y/N] " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+      color_echo "${YELLOW}Installation cancelled${NC}"
+      echo ""
+      echo "To install in a nested repository, cd into that directory first:"
+      echo "   cd path/to/nested-repo && curl -sL install-url | bash"
+      exit 0
+    fi
+  fi
+  echo ""
+fi
+
+# =============================================================================
 # Step 2: Check for existing installation
 # =============================================================================
 

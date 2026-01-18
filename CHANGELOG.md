@@ -7,9 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [5.1.2] - 2026-01-18
 
-**PATCH RELEASE** - Claude Code Settings Conflict Fix
+**PATCH RELEASE** - Claude Code Settings Conflict Fix + Nested Repo Detection
 
-This patch release fixes a critical bug where ACS created `.claude/settings.json` with a custom schema that conflicts with Claude Code's expected schema, causing Claude Code to reject all project settings.
+This patch release fixes a critical bug where ACS created `.claude/settings.json` with a custom schema that conflicts with Claude Code's expected schema, and adds detection for nested git repositories to prevent context confusion.
+
+### Added
+
+- **Nested repository detection**: Installer now detects nested git repositories and warns users before installation. This prevents the common issue where a child repository's context files get mixed up with a parent repository's context.
+- **Parent context detection**: Installer warns if a parent directory already has AI Context System installed, helping users make informed decisions about installation scope.
+- **Orphaned context detection**: Installer detects `context/` folders that exist without `.context-config.json`, which indicates manually-created or incomplete context setup.
 
 ### Fixed
 
