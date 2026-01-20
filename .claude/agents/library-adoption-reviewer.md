@@ -40,7 +40,12 @@ Scan code for homegrown implementations that could be replaced with well-maintai
 
 ## Input
 
-Full codebase scan. Focus on utility files, helpers, and custom implementations of common patterns.
+Codebase context from `.claude/cache/codebase-context.json`. Use:
+- `dependencies.production` and `dependencies.development` to skip already-installed libraries
+- `files` list to identify utility/helper files to scan
+- `structure.primaryLanguage` for language-appropriate recommendations
+
+Focus on utility files, helpers, and custom implementations of common patterns.
 
 ## Output
 
