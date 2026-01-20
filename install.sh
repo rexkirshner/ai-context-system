@@ -769,6 +769,7 @@ AGENTS=(
   "infrastructure-reviewer.md"
   "test-coverage-reviewer.md"
   "type-safety-reviewer.md"
+  "library-adoption-reviewer.md"
 )
 
 for agent in "${AGENTS[@]}"; do
