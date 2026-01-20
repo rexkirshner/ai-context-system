@@ -8,7 +8,7 @@ Identifies opportunities to replace homegrown implementations with battle-tested
 {
   "id": "libraries",
   "prefix": "LIB",
-  "category": "library-adoption",
+  "category": "libraries",
   "applicability": {
     "always": false,
     "requires": {},
@@ -55,7 +55,7 @@ Array of `AuditFinding` objects:
 {
   "id": "LIB-001",
   "severity": "medium",
-  "category": "library-adoption",
+  "category": "libraries",
   "title": "Replace custom date formatting with date-fns",
   "description": "Custom date formatting implementation could be replaced with date-fns for better reliability and maintainability.",
   "location": {
@@ -222,7 +222,7 @@ Every recommendation MUST include downsides:
 {
   "id": "LIB-001",
   "severity": "medium",
-  "category": "library-adoption",
+  "category": "libraries",
   "title": "Replace custom date formatting with date-fns",
   "location": {
     "file": "src/utils/date.ts",
@@ -269,7 +269,7 @@ Every recommendation MUST include downsides:
 {
   "id": "LIB-002",
   "severity": "low",
-  "category": "library-adoption",
+  "category": "libraries",
   "title": "Replace JSON clone pattern with structuredClone",
   "location": {
     "file": "src/utils/helpers.ts",
@@ -316,7 +316,7 @@ Every recommendation MUST include downsides:
 {
   "id": "LIB-003",
   "severity": "medium",
-  "category": "library-adoption",
+  "category": "libraries",
   "title": "Replace manual validation with Zod schema",
   "location": {
     "file": "src/utils/validate.ts",
