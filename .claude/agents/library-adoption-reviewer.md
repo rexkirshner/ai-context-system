@@ -100,6 +100,7 @@ Array of `AuditFinding` objects:
     "migrationEffort": "Need to update 12 call sites"
   },
   "difficulty": "easy",
+  "effort": "small",
   "effortEstimate": "2-4 hours",
   "priority": "recommended",
   "remediation": "npm install date-fns && replace custom formatDate with format()"
@@ -293,6 +294,7 @@ Do NOT generate placeholder findings or apologize for finding nothing.
     "migrationEffort": "Update 8 import statements and call sites"
   },
   "difficulty": "easy",
+  "effort": "small",
   "effortEstimate": "1-2 hours",
   "priority": "recommended",
   "remediation": "npm install date-fns && import { format } from 'date-fns'"
@@ -340,6 +342,7 @@ Do NOT generate placeholder findings or apologize for finding nothing.
     "migrationEffort": "Find/replace across 5 files"
   },
   "difficulty": "easy",
+  "effort": "trivial",
   "effortEstimate": "30 minutes",
   "priority": "recommended",
   "remediation": "Replace JSON.parse(JSON.stringify(x)) with structuredClone(x)"
@@ -387,6 +390,7 @@ Do NOT generate placeholder findings or apologize for finding nothing.
     "migrationEffort": "Rewrite 5 validators as schemas, update call sites"
   },
   "difficulty": "medium",
+  "effort": "medium",
   "effortEstimate": "4-6 hours",
   "priority": "recommended",
   "remediation": "npm install zod && define schemas in src/schemas/"
