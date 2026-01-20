@@ -13,13 +13,22 @@ This patch release fixes confirmed bugs and improves documentation clarity for A
 
 ### Fixed
 
-- **Session statistics**: `/review-context` now uses `get_max_session_number()` from common-functions.sh instead of raw `grep -c`. Shows both count and max session number when they differ, correctly handling gaps from archived sessions.
+- **Session statistics**: `/review-context` now uses `get_max_session_number()` from common-functions.sh instead of raw `grep -c`. Shows both count and max session number when they differ, correctly handling gaps from archived sessions. Additional robustness improvements:
+  - Sanitized grep output with `tr -d` for clean integers
+  - Added defensive check for function availability
+  - Uses numeric comparison (`-ne`, `-gt`) instead of string comparison
+  - Fallback defaults for empty variables
 
 - **CHANGELOG reference**: `install.sh` now links to the GitHub CHANGELOG instead of referencing a local file that wasn't downloaded during installation.
 
 ### Documentation
 
-- **Bash block labeling standard**: Documented the existing `**ACTION:**` convention in command-philosophy.md to clarify which bash blocks should be executed vs treated as reference. Key guideline: if a block has `ACTION:` before it, execute it.
+- **Bash block labeling standard**: Documented the existing `**ACTION:**` convention in command-philosophy.md with numbered guidelines:
+  1. `ACTION:` prefix = definitely execute
+  2. `Usage:` prefix = reference, not execute directly
+  3. `Example output:` = never execute
+  4. Descriptive headers = likely executable, read context
+  5. Plain code blocks = usually example output
 
 - **ACTION labels added**: Added explicit `ACTION:` labels to unlabeled executable bash blocks in `/review-context` Step 3 (git status, file system checks).
 
