@@ -217,6 +217,13 @@ Every recommendation MUST include downsides:
 - Migration effort
 - Potential breaking changes in library updates
 
+### 7. Prioritize and Limit Output
+
+- Report **maximum 10-15 findings** per review to avoid overwhelming users
+- Prioritize by: (1) security implications, (2) code reduction potential, (3) difficulty (easy wins first)
+- If more opportunities exist, add a summary note in the final finding:
+  `"Additional patterns detected but not detailed: [list pattern names]"`
+
 ## Severity Guidelines
 
 | Severity | Criteria |
