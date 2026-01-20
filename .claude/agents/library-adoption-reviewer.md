@@ -10,7 +10,7 @@ Identifies opportunities to replace homegrown implementations with battle-tested
   "prefix": "LIB",
   "category": "library-adoption",
   "applicability": {
-    "always": true,
+    "always": false,
     "requires": {},
     "presets": ["all"]
   }
