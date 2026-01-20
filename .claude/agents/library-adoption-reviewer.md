@@ -91,7 +91,7 @@ Array of `AuditFinding` objects:
   },
   "impact": {
     "codeReduction": "~45 lines removed",
-    "reliability": "Battle-tested with 40M+ weekly downloads",
+    "reliability": "Battle-tested with very high adoption",
     "maintenance": "No custom code to maintain"
   },
   "downsides": {
@@ -284,7 +284,7 @@ Do NOT generate placeholder findings or apologize for finding nothing.
   },
   "impact": {
     "codeReduction": "47 lines removed",
-    "reliability": "Handles all edge cases, 42M weekly downloads",
+    "reliability": "Handles all edge cases, very high adoption",
     "maintenance": "No custom date logic to maintain"
   },
   "downsides": {
