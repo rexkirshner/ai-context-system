@@ -11,7 +11,7 @@
       "type": "string",
       "pattern": "^[A-Z]+-[0-9]+$",
       "description": "Unique identifier (e.g., SEC-001, PERF-003)",
-      "examples": ["SEC-001", "PERF-003", "A11Y-012"]
+      "examples": ["SEC-001", "PERF-003", "A11Y-012", "LIB-001"]
     },
     "severity": {
       "type": "string",
@@ -20,7 +20,7 @@
     },
     "category": {
       "type": "string",
-      "description": "Category matching the agent ID that produced this finding (e.g., security, seo, database)"
+      "description": "Category matching the agent ID that produced this finding (e.g., security, seo, database, libraries)"
     },
     "title": {
       "type": "string",
