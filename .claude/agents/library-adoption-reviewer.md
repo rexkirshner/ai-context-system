@@ -108,6 +108,7 @@ Array of `AuditFinding` objects:
 | HTTP client | Custom fetch wrapper, manual retry logic, error handling | axios, ky, got | 50M+ |
 | Deep cloning | `JSON.parse(JSON.stringify())`, recursive clone functions | structuredClone (native), lodash.clonedeep | N/A |
 | UUID generation | Math.random() patterns, timestamp-based IDs | uuid, nanoid | 80M+ |
+| Encryption/hashing | Custom crypto implementations | crypto-js, bcrypt, argon2 | 30M+ |
 
 ### Medium-Value Replacements (Consider)
 
@@ -123,7 +124,6 @@ Array of `AuditFinding` objects:
 
 | Pattern | Homegrown Signs | Recommended Libraries | Notes |
 |---------|-----------------|----------------------|-------|
-| Encryption/hashing | Custom implementations | crypto-js, bcrypt, argon2 | Security-critical - recommend strongly |
 | Color manipulation | Manual hex/rgb conversion | chroma-js, color | Only if extensive color work |
 | Currency formatting | Manual locale handling | Intl.NumberFormat (native), dinero.js | Native often sufficient |
 
