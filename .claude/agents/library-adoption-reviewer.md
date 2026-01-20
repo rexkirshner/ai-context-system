@@ -47,6 +47,15 @@ Codebase context from `.claude/cache/codebase-context.json`. Use:
 
 Focus on utility files, helpers, and custom implementations of common patterns.
 
+### Language Considerations
+
+This agent's detection patterns and library recommendations are optimized for **JavaScript/TypeScript** codebases.
+
+For other languages:
+- Use `structure.primaryLanguage` from codebase context to determine applicability
+- Skip library recommendations if language-appropriate alternatives aren't known
+- Use `severity: info` with note: "Custom implementation detected; no language-specific library recommendation available"
+
 ## Output
 
 Array of `AuditFinding` objects:
