@@ -21,7 +21,7 @@ This patch release adds a new code review specialist that identifies opportuniti
   - **Difficulty rating**: Easy (< 2 hours), Medium (2-8 hours), Hard (> 1 day)
   - **Priority level**: Recommended, Consider, or Optional
 
-- **`/code-review --libraries` flag**: Run the library advisor independently to get modernization recommendations
+- **`/code-review --libraries` flag**: Run the library adoption reviewer independently to get modernization recommendations
 
 - **Detection patterns** for common reinvented wheels:
   - Date manipulation → date-fns, dayjs, luxon
@@ -37,6 +37,7 @@ This patch release adds a new code review specialist that identifies opportuniti
 
 - **Available specialists**: Increased from 8 to 9 (added library-adoption-reviewer)
 - **`--all` preset**: Now includes library-adoption-reviewer
+- **audit-finding.json schema** (1.0.0 → 1.1.0): Now allows additional properties for agent-specific fields
 
 ### Documentation
 
