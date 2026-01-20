@@ -72,7 +72,7 @@ The review system uses **self-declaring agents**. Each specialist declares when 
 |------------|----|----|----------------|
 | security-reviewer | security | Vulnerabilities, auth, injection | Always |
 | test-coverage-reviewer | testing | Untested code paths | Always |
-| library-adoption-reviewer | libraries | Homegrown code → battle-tested libraries | Always (with --all) |
+| library-adoption-reviewer | libraries | Homegrown code → battle-tested libraries | With --all or --libraries only |
 | performance-reviewer | performance | Core Web Vitals, blocking ops | hasUI = true |
 | accessibility-reviewer | accessibility | WCAG compliance | hasUI = true |
 | seo-reviewer | seo | Meta tags, Open Graph | hasUI = true, webapp/monorepo |
