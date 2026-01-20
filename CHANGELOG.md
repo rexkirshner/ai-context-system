@@ -42,7 +42,7 @@ This patch release fixes confirmed bugs and improves documentation clarity for A
 
 ### Testing
 
-- All 70 unit tests pass (9 modules)
+- All 80 unit tests pass (11 modules)
 - Session numbering tests (12/12) verify gap handling works correctly
 
 ---
