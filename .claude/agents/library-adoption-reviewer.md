@@ -112,24 +112,24 @@ Array of `AuditFinding` objects:
 
 ### High-Value Replacements (Recommended)
 
-| Pattern | Homegrown Signs | Recommended Libraries | Weekly Downloads |
-|---------|-----------------|----------------------|------------------|
-| Date manipulation | Manual string formatting, timezone math, date arithmetic | date-fns, dayjs, luxon | 40M+ |
-| Schema validation | Manual if/else chains, regex validation, type coercion | zod, yup, joi, valibot | 20M+ |
-| HTTP client | Custom fetch wrapper, manual retry logic, error handling | axios, ky, got | 50M+ |
-| Deep cloning | `JSON.parse(JSON.stringify())`, recursive clone functions | structuredClone (native), lodash.clonedeep | N/A |
-| UUID generation | Math.random() patterns, timestamp-based IDs | uuid, nanoid | 80M+ |
-| Encryption/hashing | Custom crypto implementations | crypto-js, bcrypt, argon2 | 30M+ |
+| Pattern | Homegrown Signs | Recommended Libraries | Adoption |
+|---------|-----------------|----------------------|----------|
+| Date manipulation | Manual string formatting, timezone math, date arithmetic | date-fns, dayjs, luxon | Very high |
+| Schema validation | Manual if/else chains, regex validation, type coercion | zod, yup, joi, valibot | Very high |
+| HTTP client | Custom fetch wrapper, manual retry logic, error handling | axios, ky, got | Very high |
+| Deep cloning | `JSON.parse(JSON.stringify())`, recursive clone functions | structuredClone (native), lodash.clonedeep | Native/High |
+| UUID generation | Math.random() patterns, timestamp-based IDs | uuid, nanoid | Very high |
+| Encryption/hashing | Custom crypto implementations | crypto-js, bcrypt, argon2 | High |
 
 ### Medium-Value Replacements (Consider)
 
-| Pattern | Homegrown Signs | Recommended Libraries | Weekly Downloads |
-|---------|-----------------|----------------------|------------------|
-| State management | Custom pub/sub, global objects, event emitters | zustand, jotai, redux-toolkit | 10M+ |
-| Retry logic | Custom while loops with delays, manual backoff | p-retry, async-retry | 5M+ |
-| Debounce/throttle | Custom setTimeout patterns | lodash-es (debounce/throttle), throttle-debounce | 50M+ |
-| Query strings | Manual URL parsing/building, regex extraction | qs, query-string | 30M+ |
-| Markdown parsing | Regex-based parsing, custom tokenizers | marked, remark, markdown-it | 15M+ |
+| Pattern | Homegrown Signs | Recommended Libraries | Adoption |
+|---------|-----------------|----------------------|----------|
+| State management | Custom pub/sub, global objects, event emitters | zustand, jotai, redux-toolkit | High |
+| Retry logic | Custom while loops with delays, manual backoff | p-retry, async-retry | Moderate |
+| Debounce/throttle | Custom setTimeout patterns | lodash-es (debounce/throttle), throttle-debounce | Very high |
+| Query strings | Manual URL parsing/building, regex extraction | qs, query-string | High |
+| Markdown parsing | Regex-based parsing, custom tokenizers | marked, remark, markdown-it | High |
 
 ### Low-Value Replacements (Optional)
 
