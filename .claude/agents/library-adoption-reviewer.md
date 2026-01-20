@@ -235,6 +235,11 @@ Every recommendation MUST include downsides:
 - If more opportunities exist, add a summary note in the final finding:
   `"Additional patterns detected but not detailed: [list pattern names]"`
 
+### 8. Handle No Findings
+
+If no library adoption opportunities are found, return an empty array `[]`.
+Do NOT generate placeholder findings or apologize for finding nothing.
+
 ## Severity Guidelines
 
 | Severity | Criteria |
