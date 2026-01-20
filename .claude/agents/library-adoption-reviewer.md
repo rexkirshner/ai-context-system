@@ -12,7 +12,7 @@ Identifies opportunities to replace homegrown implementations with battle-tested
   "applicability": {
     "always": false,
     "requires": {},
-    "presets": ["all"]
+    "presets": []
   }
 }
 ```
