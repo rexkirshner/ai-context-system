@@ -327,3 +327,34 @@ Every recommendation MUST include downsides:
   "remediation": "npm install zod && define schemas in src/schemas/"
 }
 ```
+
+## Handling Intentional Decisions
+
+Before finalizing each finding, check if it matches a Known Project Decision from the context provided by the orchestrator.
+
+**Matching Process:**
+1. If decisions context is provided, compare finding keywords against each decision
+2. If a match is found (e.g., "intentionally minimal dependencies", "avoid external deps"):
+   - Change severity to `low`
+   - Prepend `[Intentional]` to the title
+   - Add `intentionalException` field with `decisionId` and `confidence`
+   - Add note to remediation: "This is documented as intentional in DECISIONS.md"
+
+**Common Intentional Patterns:**
+- "Zero dependencies" philosophy
+- "Minimal bundle size" constraints
+- "No external network calls" requirements
+- Security-sensitive code avoiding third-party deps
+
+## Guardrails
+
+- **DO** verify the library is actually installed before skipping
+- **DO** check package.json for existing library before recommending
+- **DO** provide honest downsides for every recommendation
+- **DO** check findings against documented decisions before reporting
+- **DO** estimate bundle size impact accurately
+- **DO NOT** recommend libraries for trivial utilities (< 10 lines)
+- **DO NOT** flag test fixtures or example code
+- **DO NOT** ignore intentionally dependency-free code
+- **DO NOT** recommend unmaintained or low-download libraries
+- **DO NOT** create churn with unnecessary library adoptions
