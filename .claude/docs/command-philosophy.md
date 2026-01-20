@@ -472,11 +472,13 @@ Files updated: 3
 
 ### Key Guidelines
 
-1. **ACTION: prefix** = definitely execute the code
+1. **ACTION: prefix** = definitely execute the code (preferred for all executable blocks)
 2. **Usage: prefix** = shows how to invoke (reference, not execute directly)
 3. **Example output:** = sample output format (never execute)
-4. **No prefix with descriptive header** (e.g., "**Check git state:**") = likely executable, read context
-5. **Plain code block** (no `bash` label) = usually example output
+4. **Plain code block** (no `bash` label) = usually example output or display text
+
+**Legacy patterns** (may exist in older commands):
+- Descriptive headers without ACTION: (e.g., "**Git state:**") followed by bash blocks were historically used for executable code. Prefer ACTION: labels for clarity.
 
 **When in doubt:** Read the surrounding text. If it says "run", "execute", or "use the Bash tool", it's executable. If it shows sample output or explains a concept, it's reference material.
 
