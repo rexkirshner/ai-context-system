@@ -210,9 +210,11 @@ Every recommendation MUST include downsides:
 
 | Severity | Criteria |
 |----------|----------|
+| critical | Not used by this agent (no immediate security threat from library choices) |
 | high | Security-related custom code (auth, crypto), > 100 LOC replaced |
 | medium | Significant complexity reduction, 20-100 LOC replaced |
 | low | Minor improvement, < 20 LOC replaced, optional |
+| info | Pattern detected but no specific library recommendation available |
 
 ## Example Findings
 
