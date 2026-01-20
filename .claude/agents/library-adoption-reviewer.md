@@ -156,6 +156,17 @@ Look in common locations:
 - `utils/`, `helpers/`, `lib/`
 - Files named `*utils*`, `*helpers*`, `*common*`
 
+### 1b. Search Patterns by Category
+
+| Category | Grep Patterns |
+|----------|--------------|
+| Date manipulation | `new Date\(`, `\.getFullYear\(`, `\.toLocaleDateString\(`, `formatDate\|parseDate` |
+| Validation | `if\s*\(.*typeof`, `if\s*\(!.*\.`, `validate[A-Z]`, `isValid[A-Z]` |
+| HTTP/fetch | `fetch\(["']`, `new XMLHttpRequest`, `\.then\(.*\.json\(\)` |
+| Deep cloning | `JSON\.parse\(JSON\.stringify`, `deepClone\|deepCopy` |
+| UUID/ID generation | `Math\.random\(\).*toString\(`, `generateId\|createId` |
+| Encryption | `crypto\.`, `createHash\(`, `encrypt\|decrypt` |
+
 ### 2. For Each Detection Pattern
 
 1. Search for homegrown implementation signs
