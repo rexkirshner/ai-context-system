@@ -773,7 +773,7 @@ echo ""
 
 Analyze actual project state:
 
-**Git state:**
+**ACTION:** Check git state:
 ```bash
 git status
 git log --oneline -5
@@ -781,13 +781,13 @@ git branch --show-current
 git diff HEAD
 ```
 
-**File system:**
+**ACTION:** Check file system:
 ```bash
 ls -la
 # Check key directories exist as documented
 ```
 
-**Project info:**
+**ACTION:** Verify project info:
 - Read package.json (or equivalent)
 - Verify tech stack matches documentation
 - Check dependencies match ARCHITECTURE.md
