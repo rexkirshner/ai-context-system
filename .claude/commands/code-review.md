@@ -30,6 +30,7 @@ Run comprehensive code review using the agent-based system. This command delegat
 | `--infrastructure` | Just infrastructure specialist |
 | `--typescript` | Just TypeScript specialist |
 | `--testing` | Just testing specialist |
+| `--libraries` | Just library adoption advisor (identifies homegrown code to replace with battle-tested libraries) |
 | `--incremental` | Only review files changed since last audit |
 
 Multiple specific flags can be combined: `/code-review --security --database`
@@ -65,12 +66,13 @@ The review system uses **self-declaring agents**. Each specialist declares when 
 
 **Adding a new specialist = creating one file.** No central registry to update.
 
-## Available Specialists (8)
+## Available Specialists (9)
 
 | Specialist | ID | Focus | Auto-runs when |
 |------------|----|----|----------------|
 | security-reviewer | security | Vulnerabilities, auth, injection | Always |
 | test-coverage-reviewer | testing | Untested code paths | Always |
+| library-advisor | libraries | Homegrown code → battle-tested libraries | Always (with --all) |
 | performance-reviewer | performance | Core Web Vitals, blocking ops | hasUI = true |
 | accessibility-reviewer | accessibility | WCAG compliance | hasUI = true |
 | seo-reviewer | seo | Meta tags, Open Graph | hasUI = true, webapp/monorepo |
@@ -104,7 +106,10 @@ The number NN increments automatically (01, 02, ...).
 # Specific combination
 /code-review --security --database --testing
 
-# All specialists
+# Library adoption recommendations
+/code-review --libraries
+
+# All specialists (includes library advisor)
 /code-review --all
 ```
 

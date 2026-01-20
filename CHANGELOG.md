@@ -5,6 +5,52 @@ All notable changes to the AI Context System will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.1.4] - 2026-01-20
+
+**PATCH RELEASE** - Library Adoption Advisor Agent
+
+This patch release adds a new code review specialist that identifies opportunities to replace homegrown implementations with battle-tested libraries.
+
+### Added
+
+- **Library adoption advisor agent** (`.claude/agents/library-advisor.md`): New code review specialist that scans for homegrown implementations that could be replaced with well-maintained libraries. For each finding, provides:
+  - **Current approach analysis**: Lines of code, complexity assessment
+  - **Recommended library**: With version, documentation link, and alternatives
+  - **Impact analysis**: Code reduction, reliability improvements, maintenance benefits
+  - **Honest downsides**: Bundle size increase, learning curve, migration effort
+  - **Difficulty rating**: Easy (< 2 hours), Medium (2-8 hours), Hard (> 1 day)
+  - **Priority level**: Recommended, Consider, or Optional
+
+- **`/code-review --libraries` flag**: Run the library advisor independently to get modernization recommendations
+
+- **Detection patterns** for common reinvented wheels:
+  - Date manipulation → date-fns, dayjs, luxon
+  - Schema validation → zod, yup, joi, valibot
+  - HTTP clients → axios, ky, got
+  - Deep cloning → structuredClone (native)
+  - UUID generation → uuid, nanoid
+  - State management → zustand, jotai
+  - Retry logic → p-retry, async-retry
+  - And more...
+
+### Changed
+
+- **Available specialists**: Increased from 8 to 9 (added library-advisor)
+- **`--all` preset**: Now includes library-advisor
+
+### Documentation
+
+- Updated code-review.md with --libraries flag and examples
+- Library advisor included in Available Specialists table
+
+### Technical Notes
+
+- Library advisor uses `LIB-` prefix for finding IDs
+- Runs with `--all` but NOT with `--prelaunch`, `--frontend`, or `--backend` (deliberate modernization choice)
+- Skips recommendations when library is already installed in package.json
+
+---
+
 ## [5.1.3] - 2026-01-19
 
 **PATCH RELEASE** - Bug Fixes & Documentation Clarity
