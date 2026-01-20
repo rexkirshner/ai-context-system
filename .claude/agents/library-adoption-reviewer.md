@@ -1,4 +1,4 @@
-# Library Adoption Advisor Agent
+# Library Adoption Reviewer Agent
 
 Identifies opportunities to replace homegrown implementations with battle-tested libraries.
 
@@ -6,9 +6,9 @@ Identifies opportunities to replace homegrown implementations with battle-tested
 
 ```json
 {
-  "id": "library-advisor",
+  "id": "libraries",
   "prefix": "LIB",
-  "category": "modernization",
+  "category": "library-adoption",
   "applicability": {
     "always": true,
     "requires": {},
