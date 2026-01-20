@@ -733,11 +733,21 @@ STATUS_PHASE=$(grep -E "^Phase:|^\*\*Phase:\*\*" "$CONTEXT_DIR/STATUS.md" 2>/dev
 echo "  STATUS.md:  ${STATUS_PHASE:-not found}"
 echo ""
 
-# 3. Session Count
+# 3. Session Statistics
 echo "📊 Session Statistics:"
 if [ -f "$CONTEXT_DIR/SESSIONS.md" ]; then
+  # Count how many session entries exist in the file
   SESSION_COUNT=$(grep -cE "^## Session [0-9]+" "$CONTEXT_DIR/SESSIONS.md" 2>/dev/null || echo "0")
-  echo "  Total sessions documented: $SESSION_COUNT"
+
+  # Get the highest session number using common function (handles gaps from archiving)
+  MAX_SESSION=$(get_max_session_number "$CONTEXT_DIR" 2>/dev/null || echo "0")
+
+  echo "  Sessions in file: $SESSION_COUNT"
+
+  # Show max session number when it differs from count (indicates gaps from archiving)
+  if [ "$SESSION_COUNT" != "$MAX_SESSION" ] && [ "$MAX_SESSION" != "0" ] && [ "$SESSION_COUNT" != "0" ]; then
+    echo "  Latest session: #$MAX_SESSION (some sessions may be archived)"
+  fi
 else
   echo "  SESSIONS.md not found"
 fi
@@ -747,7 +757,7 @@ echo ""
 **What this checks:**
 - **Date alignment**: Ensures documentation is updated together
 - **Phase consistency**: Catches phase drift between files
-- **Session tracking**: Validates session count is accurate
+- **Session tracking**: Shows session count and detects gaps from archiving
 
 **Why this matters:**
 - Manual cross-file comparison is error-prone
