@@ -5,6 +5,39 @@ All notable changes to the AI Context System will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.1.3] - 2026-01-19
+
+**PATCH RELEASE** - Bug Fixes & Documentation Clarity
+
+This patch release fixes confirmed bugs and improves documentation clarity for AI agents executing commands.
+
+### Fixed
+
+- **Session statistics**: `/review-context` now uses `get_max_session_number()` from common-functions.sh instead of raw `grep -c`. Shows both count and max session number when they differ, correctly handling gaps from archived sessions.
+
+- **CHANGELOG reference**: `install.sh` now links to the GitHub CHANGELOG instead of referencing a local file that wasn't downloaded during installation.
+
+### Documentation
+
+- **Bash block labeling standard**: Documented the existing `**ACTION:**` convention in command-philosophy.md to clarify which bash blocks should be executed vs treated as reference. Key guideline: if a block has `ACTION:` before it, execute it.
+
+- **ACTION labels added**: Added explicit `ACTION:` labels to unlabeled executable bash blocks in `/review-context` Step 3 (git status, file system checks).
+
+### Technical Notes
+
+- Several originally-reported issues were verified as already fixed during codebase audit:
+  - Version reading already uses VERSION file dynamically (not hardcoded)
+  - v4→v5 migration notes already exist in /update-context-system
+  - CHANGELOG URLs already point to GitHub in update-context-system.md
+  - Cross-platform stat handling already exists in `days_since_file_modified()`
+
+### Testing
+
+- All 80 unit tests pass
+- Session numbering tests (12/12) verify gap handling works correctly
+
+---
+
 ## [5.1.2] - 2026-01-18
 
 **PATCH RELEASE** - Claude Code Settings Conflict Fix + Nested Repo Detection
