@@ -470,12 +470,15 @@ Files updated: 3
 ```
 ```
 
-### Key Guideline
+### Key Guidelines
 
-If a bash block has `**ACTION:**` before it, execute the code.
-If it doesn't have `**ACTION:**`, treat it as documentation/reference.
+1. **ACTION: prefix** = definitely execute the code
+2. **Usage: prefix** = shows how to invoke (reference, not execute directly)
+3. **Example output:** = sample output format (never execute)
+4. **No prefix with descriptive header** (e.g., "**Check git state:**") = likely executable, read context
+5. **Plain code block** (no `bash` label) = usually example output
 
-When in doubt, read the surrounding context to understand intent.
+**When in doubt:** Read the surrounding text. If it says "run", "execute", or "use the Bash tool", it's executable. If it shows sample output or explains a concept, it's reference material.
 
 ---
 
