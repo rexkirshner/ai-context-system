@@ -63,6 +63,12 @@ Array of `AuditFinding` objects:
     "line": 15,
     "snippet": "function formatDate(date) { ... }"
   },
+  "verified": {
+    "vulnPatternSearched": "function formatDate|date formatting|strftime",
+    "mitigationPatternSearched": "\"date-fns\"|\"dayjs\"|\"luxon\" in package.json",
+    "mitigationFound": false,
+    "verificationNotes": "No date library installed; custom implementation found"
+  },
   "currentApproach": {
     "description": "Custom date formatting using string manipulation",
     "linesOfCode": 47,
@@ -223,6 +229,12 @@ Every recommendation MUST include downsides:
     "line": 1,
     "snippet": "export function formatDate(date: Date, format: string) { ... }"
   },
+  "verified": {
+    "vulnPatternSearched": "formatDate|date formatting|manual date",
+    "mitigationPatternSearched": "date-fns|dayjs|luxon in dependencies",
+    "mitigationFound": false,
+    "verificationNotes": "Custom 47-line implementation; no date library in package.json"
+  },
   "currentApproach": {
     "description": "47-line custom date formatter handling multiple formats",
     "linesOfCode": 47,
@@ -264,6 +276,12 @@ Every recommendation MUST include downsides:
     "line": 23,
     "snippet": "const clone = JSON.parse(JSON.stringify(obj))"
   },
+  "verified": {
+    "vulnPatternSearched": "JSON.parse\\(JSON.stringify",
+    "mitigationPatternSearched": "structuredClone|cloneDeep",
+    "mitigationFound": false,
+    "verificationNotes": "Using JSON serialization pattern; structuredClone not used"
+  },
   "currentApproach": {
     "description": "JSON serialization for deep cloning",
     "linesOfCode": 1,
@@ -304,6 +322,12 @@ Every recommendation MUST include downsides:
     "file": "src/utils/validate.ts",
     "line": 1,
     "snippet": "export function validateUser(data: unknown) { if (!data.email || ...) }"
+  },
+  "verified": {
+    "vulnPatternSearched": "if.*!data\\.|validateUser|manual validation",
+    "mitigationPatternSearched": "zod|yup|joi|valibot in dependencies",
+    "mitigationFound": false,
+    "verificationNotes": "156-line manual validation; no schema validation library installed"
   },
   "currentApproach": {
     "description": "Manual if/else validation chains for 5 entity types",

@@ -105,5 +105,6 @@
       "additionalProperties": false
     }
   },
-  "additionalProperties": false
+  "additionalProperties": true,
+  "x-extensibility-note": "Agents may add domain-specific fields (e.g., library-adoption-reviewer adds currentApproach, recommendation, impact, downsides). Core required fields ensure consistency across all agents."
 }
