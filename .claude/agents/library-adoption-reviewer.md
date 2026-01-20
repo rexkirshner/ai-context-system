@@ -106,6 +106,8 @@ Array of `AuditFinding` objects:
 }
 ```
 
+**Note on field naming:** The `verified.vulnPatternSearched` field refers to the homegrown implementation pattern searched for (not a security vulnerability). This field name is inherited from the shared AuditFinding schema used by all reviewer agents.
+
 ## Detection Patterns
 
 ### High-Value Replacements (Recommended)
