@@ -19,7 +19,7 @@ Identifies opportunities to replace homegrown implementations with battle-tested
 
 ## Scope Boundaries
 
-**This agent owns:**
+**This agent owns (do not duplicate in other agents):**
 - Detection of reinvented-wheel patterns
 - Library recommendations with impact analysis
 - Migration difficulty assessment
