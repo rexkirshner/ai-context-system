@@ -736,16 +736,24 @@ echo ""
 # 3. Session Statistics
 echo "📊 Session Statistics:"
 if [ -f "$CONTEXT_DIR/SESSIONS.md" ]; then
-  # Count how many session entries exist in the file
-  SESSION_COUNT=$(grep -cE "^## Session [0-9]+" "$CONTEXT_DIR/SESSIONS.md" 2>/dev/null || echo "0")
+  # Count how many session entries exist in the file (sanitize output for clean integer)
+  SESSION_COUNT=$(grep -cE "^## Session [0-9]+" "$CONTEXT_DIR/SESSIONS.md" 2>/dev/null | tr -d ' \n' || echo "0")
+  SESSION_COUNT=${SESSION_COUNT:-0}
 
   # Get the highest session number using common function (handles gaps from archiving)
-  MAX_SESSION=$(get_max_session_number "$CONTEXT_DIR" 2>/dev/null || echo "0")
+  if type get_max_session_number &>/dev/null; then
+    MAX_SESSION=$(get_max_session_number "$CONTEXT_DIR" 2>/dev/null || echo "0")
+  else
+    # Fallback if function not available
+    MAX_SESSION="$SESSION_COUNT"
+  fi
+  MAX_SESSION=${MAX_SESSION:-0}
 
   echo "  Sessions in file: $SESSION_COUNT"
 
   # Show max session number when it differs from count (indicates gaps from archiving)
-  if [ "$SESSION_COUNT" != "$MAX_SESSION" ] && [ "$MAX_SESSION" != "0" ] && [ "$SESSION_COUNT" != "0" ]; then
+  # Use numeric comparison for robustness
+  if [ "$SESSION_COUNT" -ne "$MAX_SESSION" ] 2>/dev/null && [ "$MAX_SESSION" -gt 0 ] 2>/dev/null && [ "$SESSION_COUNT" -gt 0 ] 2>/dev/null; then
     echo "  Latest session: #$MAX_SESSION (some sessions may be archived)"
   fi
 else
