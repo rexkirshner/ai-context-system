@@ -426,6 +426,59 @@ Don't let perfect be the enemy of good:
 - ❌ Broken promises (JSON artifacts)
 - ❌ Files that claim to be enforced but aren't
 
+## Bash Block Standards in Commands
+
+Command files contain code blocks that AI agents need to understand and execute correctly.
+
+### Labeling Convention
+
+**Executable Code** - Code that should be run:
+- Preceded by `**ACTION:**` label
+- Contains actual shell commands
+- AI should execute these blocks sequentially
+
+```markdown
+**ACTION:** Source the common functions library:
+
+```bash
+source scripts/common-functions.sh
+```
+```
+
+**Example Output** - Shows expected output format:
+- Uses plain code block (no `bash` label) or preceded by "Example output:"
+- Contains sample text the user will see
+- AI should NOT execute these
+
+```markdown
+**Example output:**
+```
+Session 12 created successfully
+Files updated: 3
+```
+```
+
+**Usage Examples** - Shows how to invoke commands:
+- Preceded by `**Usage:**` label
+- Shows the command invocation syntax
+- AI uses these to understand command options
+
+```markdown
+**Usage:**
+```bash
+/review-context --quick
+```
+```
+
+### Key Guideline
+
+If a bash block has `**ACTION:**` before it, execute the code.
+If it doesn't have `**ACTION:**`, treat it as documentation/reference.
+
+When in doubt, read the surrounding context to understand intent.
+
+---
+
 ## Evolution
 
 This system evolves based on real usage:
