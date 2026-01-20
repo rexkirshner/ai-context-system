@@ -30,7 +30,7 @@ Run comprehensive code review using the agent-based system. This command delegat
 | `--infrastructure` | Just infrastructure specialist |
 | `--typescript` | Just TypeScript specialist |
 | `--testing` | Just testing specialist |
-| `--libraries` | Just library adoption advisor (identifies homegrown code to replace with battle-tested libraries) |
+| `--libraries` | Just library adoption reviewer (identifies homegrown code to replace with battle-tested libraries) |
 | `--incremental` | Only review files changed since last audit |
 
 Multiple specific flags can be combined: `/code-review --security --database`
@@ -109,7 +109,7 @@ The number NN increments automatically (01, 02, ...).
 # Library adoption recommendations
 /code-review --libraries
 
-# All specialists (includes library advisor)
+# All specialists (includes library adoption reviewer)
 /code-review --all
 ```
 
