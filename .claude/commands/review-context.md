@@ -862,6 +862,72 @@ fi
 
 ---
 
+### Step 2.9: Configuration Health Check ✨ v5.2.0
+
+Check `.context-config.json` for stale or placeholder values:
+
+```bash
+CONFIG_FILE="$CONTEXT_DIR/.context-config.json"
+
+if [ -f "$CONFIG_FILE" ]; then
+  echo ""
+  echo "🔧 Configuration Health"
+  echo "━━━━━━━━━━━━━━━━━━━━━━━"
+
+  # Count TBD values
+  TBD_COUNT=$(grep -c '"TBD"' "$CONFIG_FILE" 2>/dev/null || echo "0")
+
+  # Count empty strings (but not empty arrays [])
+  EMPTY_COUNT=$(grep -cE '": ""' "$CONFIG_FILE" 2>/dev/null || echo "0")
+
+  # Check for placeholder URLs
+  PLACEHOLDER_COUNT=$(grep -cE 'example\.com|placeholder|your-|YOUR_' "$CONFIG_FILE" 2>/dev/null || echo "0")
+
+  TOTAL_ISSUES=$((TBD_COUNT + EMPTY_COUNT + PLACEHOLDER_COUNT))
+
+  if [ "$TOTAL_ISSUES" -gt 0 ]; then
+    echo "⚠️  Configuration has $TOTAL_ISSUES unconfigured fields:"
+    echo ""
+
+    if [ "$TBD_COUNT" -gt 0 ]; then
+      echo "   • $TBD_COUNT fields set to 'TBD'"
+    fi
+    if [ "$EMPTY_COUNT" -gt 0 ]; then
+      echo "   • $EMPTY_COUNT empty fields"
+    fi
+    if [ "$PLACEHOLDER_COUNT" -gt 0 ]; then
+      echo "   • $PLACEHOLDER_COUNT placeholder values"
+    fi
+
+    echo ""
+    echo "   To see details:"
+    echo "   grep -E '\"TBD\"|: \"\"|example\\.com|placeholder' $CONFIG_FILE"
+    echo ""
+    echo "   Consider updating with actual values for better AI context."
+  else
+    echo "   ✅ All configuration fields populated"
+  fi
+else
+  echo "⚠️  .context-config.json not found"
+fi
+echo ""
+```
+
+**What this checks:**
+- TBD placeholder values (lazy initialization)
+- Empty string fields (incomplete setup)
+- Placeholder URLs (example.com, your-project)
+- Common placeholder patterns (YOUR_, placeholder)
+
+**Why this matters:**
+- Accurate config improves Quick Reference generation
+- AI agents use config for project understanding
+- Stale placeholders cause confusion in handoffs
+
+**Non-blocking:** Informational only - helps identify incomplete setup.
+
+---
+
 ### Step 3: Check Current Code State
 
 Analyze actual project state:
