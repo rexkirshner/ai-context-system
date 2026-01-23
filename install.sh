@@ -431,6 +431,27 @@ if [ -d ".claude/commands" ] && [ -f ".claude/commands/init-context.md" ]; then
   echo "   New version: ${VERSION}"
   echo ""
 
+  # =============================================================================
+  # Same-version early exit (v5.1.5)
+  # Skip unnecessary reinstall if already at target version
+  # =============================================================================
+  if [ "$EXISTING_VERSION" = "$VERSION" ] && [ -n "$EXISTING_VERSION" ] && [ "$EXISTING_VERSION" != "unknown" ]; then
+    color_echo "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    color_echo "${GREEN}✅ Already at latest version (v${VERSION})${NC}"
+    color_echo "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo ""
+    echo "Your AI Context System is already up to date."
+    echo ""
+    echo "No changes were made."
+    echo ""
+    color_echo "${BLUE}Options:${NC}"
+    echo "   - To force reinstall: rm VERSION && /update-context-system"
+    echo "   - To verify installation: /validate-context"
+    echo "   - To check for issues: /review-context"
+    echo ""
+    exit 0
+  fi
+
   if [ "$NON_INTERACTIVE" = true ]; then
     echo "   Non-interactive mode: Proceeding with installation"
     REPLY="y"
