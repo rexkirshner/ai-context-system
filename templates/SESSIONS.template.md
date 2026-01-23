@@ -9,145 +9,77 @@
 
 ---
 
-## Session [N] | [YYYY-MM-DD] | [Phase Name]
+## Session Index
 
-> **📋 Header Format (v5.0.1):** The **pipe-delimited format** above is canonical.
-> Scripts recognize both `## Session N | YYYY-MM-DD | Phase` (preferred) and legacy `## Session N - YYYY-MM-DD` formats, but new sessions should use pipe format for consistency.
+<!-- Quick navigation to all sessions. Oldest sessions may be archived. -->
 
-**Duration:** [X]h | **Focus:** [Brief description] | **Status:** ✅ Complete / ⏳ In Progress
-
-### TL;DR
-**MANDATORY - 2-3 sentences summarizing what was accomplished this session**
-
-[2-3 sentences: what was accomplished, key decisions made, current state]
-
-### Accomplishments
-
-- ✅ [Key accomplishment 1 with context]
-- ✅ [Key accomplishment 2 with context]
-- ✅ [Key accomplishment 3 with context]
-
-### Problem Solved
-
-**Issue:** [What problem did this session address?]
-
-**Constraints:** [What limitations existed?]
-- [Constraint 1]
-- [Constraint 2]
-
-**Approach:** [How did you solve it? What was your thinking?]
-
-**Why this approach:** [Rationale for the chosen solution]
-
-### Decisions
-
-- **[Decision topic]:** [What and why] → See DECISIONS.md [ID]
-- **[Decision topic]:** [What and why]
-
-### Files
-
-**NEW:**
-- `path/to/file.ts:1-150` - [Purpose and key contents]
-
-**MOD:**
-- `path/to/file.tsx:123-145` - [What changed and why]
-- `path/to/config.json` - [What changed]
-
-**DEL:**
-- `path/to/old-file.ts` - [Why removed and what replaced it]
-
-### Mental Models
-
-**Current understanding:**
-[Explain your mental model of the system/feature you're working on]
-
-**Key insights:**
-- [Insight 1 that AI agents should know]
-- [Insight 2]
-
-**Gotchas discovered:**
-- [Gotcha 1 - thing that wasn't obvious]
-- [Gotcha 2]
-
-### Work In Progress
-
-**Task:** [What's incomplete - be specific]
-**Location:** `file.ts:145` in `functionName()`
-**Current approach:** [Detailed mental model of what you're doing]
-**Why this approach:** [Rationale]
-**Next specific action:** [Exact next step]
-**Context needed:** [What you need to remember to resume]
-
-### TodoWrite State
-
-**Captured from TodoWrite:**
-- [Completed todo 1]
-- [Completed todo 2]
-- [ ] [Incomplete todo - in WIP]
-
-### Open Loops
-
-**Unresolved questions and uncertainties that need attention:**
-
-- [Question/uncertainty 1 - e.g., "Why does auth middleware sometimes return 401 on valid tokens?"]
-- [Question/uncertainty 2 - e.g., "Should we consolidate the two user tables?"]
-- [Risk/concern - e.g., "Performance degrades with >1000 items - haven't profiled yet"]
-
-> **Why this section matters:** Open loops are often what kills continuity. Forgetting *what you were uncertain about* is as damaging as forgetting what you did.
-
-### Next Session
-
-**Priority:** [Most important next action]
-**Blockers:** [None / List blockers with details]
-**Questions:** [Open questions for next session]
-
-### Git Operations
-**MANDATORY - Auto-logged from conversation**
-
-- **Commits:** [N] commits
-- **Pushed:** [YES | NO | USER WILL PUSH]
-- **Approval:** ["Exact user quote approving push" | "Not pushed"]
-
-### Tests & Build
-
-- **Tests:** [X/Y passing | All passing | Not run]
-- **Build:** [Success | Failure | Not run]
-- **Coverage:** [N% | Not measured]
+| # | Date | Phase | Focus | Key Decisions |
+|---|------|-------|-------|---------------|
+<!-- Index rows added automatically by /save-full -->
 
 ---
 
-## Example: Initial Session
+## Recent Sessions
 
-Here's what your first session entry might look like after running `/init-context` and `/save`:
+<!-- Full session content below. Your sessions start here. -->
 
-## Session 1 | 2025-10-09 | Project Initialization
+<!--
+================================================================================
+TEMPLATE EXAMPLES - DELETE THIS ENTIRE BLOCK AFTER YOUR FIRST REAL SESSION
+================================================================================
+
+Below are examples showing the expected format. Delete everything between
+the "TEMPLATE EXAMPLES" markers after you create your first real session.
+
+## [EXAMPLE] Session 1 | 2025-10-09 | Project Initialization
 
 **Duration:** 0.5h | **Focus:** Setup AI Context System | **Status:** ✅ Complete
 
 ### TL;DR
 
-Initialized AI Context System with CLAUDE.md at project root + 5 core files in context/. System ready for minimal-overhead documentation during development with comprehensive save points before breaks.
+Initialized AI Context System with CLAUDE.md at project root + 5 core files in context/. System ready for minimal-overhead documentation during development.
 
-### Changed
+### Accomplishments
 
 - ✅ Initialized AI Context System
-- ✅ Created CLAUDE.md at project root + 5 core files in context/ (CONTEXT, STATUS, DECISIONS, SESSIONS)
+- ✅ Created CLAUDE.md at project root + 5 core files in context/
 - ✅ Configured .context-config.json
 
 ### Decisions
 
 - **Documentation System:** Chose AI Context System for session continuity and AI agent handoffs
-- **File Structure:** Using STATUS.md as single source of truth (includes auto-generated Quick Reference)
 
 ### Files
 
 **NEW:**
-- `CLAUDE.md` - AI entry point (auto-loaded by Claude Code, at project root)
-- `context/CONTEXT.md` - Project orientation (platform-neutral)
-- `context/STATUS.md` - Single source of truth with auto-generated Quick Reference section
-- `context/DECISIONS.md` - Decision log with rationale
-- `context/SESSIONS.md` - This file (structured session history)
-- `context/.context-config.json` - System configuration v2.1.0
+- `CLAUDE.md` - AI entry point (auto-loaded by Claude Code)
+- `context/CONTEXT.md` - Project orientation
+- `context/STATUS.md` - Single source of truth with Quick Reference
+- `context/DECISIONS.md` - Decision log
+- `context/SESSIONS.md` - This file
+- `context/.context-config.json` - System configuration
+
+### Mental Models
+
+**Current understanding:**
+AI Context System provides structured documentation for maintaining context across sessions and enabling AI agent handoffs.
+
+**Key insights:**
+- STATUS.md is the single source of truth for current state
+- SESSIONS.md is append-only history for AI review
+
+### Context Restoration
+
+**To resume this work, read:**
+1. `context/STATUS.md` - Current state and priorities
+2. `context/CONTEXT.md` - Project overview
+
+**Key concepts to understand:**
+- Four core files: CONTEXT, STATUS, DECISIONS, SESSIONS
+- Quick Reference auto-generated from STATUS.md
+
+**Ready to continue with:**
+- [ ] Begin development work with context system in place
 
 ### Next Session
 
@@ -155,9 +87,108 @@ Initialized AI Context System with CLAUDE.md at project root + 5 core files in c
 **Blockers:** None
 **Questions:** None - system ready to use
 
+### Git Operations
+
+- **Commits:** 1 commit (initial ACS setup)
+- **Pushed:** YES
+- **Approval:** "Push initial setup"
+
+### Tests & Build
+
+- **Tests:** Not run (documentation only)
+- **Build:** Not run
+
+================================================================================
+END TEMPLATE EXAMPLES - DELETE EVERYTHING ABOVE THIS LINE (keep the --- below)
+================================================================================
+-->
+
 ---
 
-## Session Template
+## Session 1 | YYYY-MM-DD | [Your First Session Focus]
+
+<!-- Copy the format from examples above. Key sections: -->
+
+**Duration:** Xh | **Focus:** [Brief description] | **Status:** ✅ Complete / ⏳ In Progress
+
+### TL;DR
+
+**MANDATORY - 2-3 sentences summarizing what was accomplished this session**
+
+### Accomplishments
+
+- ✅ [Key accomplishment 1]
+- ✅ [Key accomplishment 2]
+
+### Decisions
+
+- **[Decision topic]:** [What and why] → See DECISIONS.md [ID]
+
+### Files
+
+**NEW:** `path/to/file.ts` - [Purpose]
+**MOD:** `path/to/file.tsx:123-145` - [What changed]
+
+### Mental Models
+
+**Current understanding:** [Your mental model of the system/feature]
+
+**Key insights:**
+- [Insight 1]
+
+### Context Restoration
+
+**To resume this work, read:**
+1. `context/STATUS.md` - Current state
+2. [Other key file]
+
+**Key concepts to understand:**
+- [Mental model 1]
+
+**Ready to continue with:**
+- [ ] [Next task]
+
+### Next Session
+
+**Priority:** [Most important next action]
+**Blockers:** [None / List blockers]
+
+### Git Operations
+
+- **Commits:** [N] commits
+- **Pushed:** [YES | NO | USER WILL PUSH]
+- **Approval:** ["User quote" | "Not pushed"]
+
+### Tests & Build
+
+- **Tests:** [Status]
+- **Build:** [Status]
+
+---
+
+## Tips for Writing Sessions
+
+**For AI Agent Review & Takeover:**
+- **Mental models are critical** - AI needs to understand your thinking
+- **Capture constraints** - AI should know what limitations existed
+- **Explain rationale** - WHY you chose this approach
+- **Document gotchas** - Save AI from discovering the same issues
+
+**Be structured AND comprehensive:**
+- Use structured format (scannable sections)
+- But include depth (mental models, rationale, constraints)
+- 40-60 lines per session is appropriate for AI understanding
+
+**Key sections for AI:**
+1. **TL;DR** - Quick summary for scanning
+2. **Mental Models** - Your understanding of the system
+3. **Context Restoration** - How to resume work (new in v5.2.0)
+4. **Decisions** - Link to DECISIONS.md for full rationale
+5. **Git Operations** - Track what was committed
+
+---
+
+## Session Template (Copy/Paste)
 
 ```markdown
 ## Session [N] | [YYYY-MM-DD] | [Phase Name]
@@ -175,26 +206,30 @@ Initialized AI Context System with CLAUDE.md at project root + 5 core files in c
 - **[Topic]:** [Decision and why] → See DECISIONS.md [ID]
 
 ### Files
-**NEW:** `file` (+N lines) - [Purpose]
-**MOD:** `file:lines` (+N, -M) - [What changed]
+**NEW:** `file` - [Purpose]
+**MOD:** `file:lines` - [What changed]
 **DEL:** `file` - [Why removed]
 
-### Work In Progress
-**Task:** [What's incomplete]
-**Location:** `file:line`
-**Approach:** [How you're solving it]
-**Next:** [Exact action to resume]
+### Mental Models
+**Current understanding:** [Your model]
+**Key insights:** [What you learned]
 
-### Open Loops
-- [Unresolved question/uncertainty]
-- [Risk or concern to investigate]
+### Context Restoration
+**To resume this work, read:**
+1. `context/STATUS.md`
+2. [Key file for this work]
+
+**Key concepts to understand:**
+- [Important concept]
+
+**Ready to continue with:**
+- [ ] [Next task]
 
 ### Next Session
 **Priority:** [Most important next]
 **Blockers:** [None / List]
 
 ### Git Operations
-**MANDATORY - Auto-logged**
 - **Commits:** [N] commits
 - **Pushed:** [YES | NO | USER WILL PUSH]
 - **Approval:** ["User quote" | "Not pushed"]
@@ -203,40 +238,3 @@ Initialized AI Context System with CLAUDE.md at project root + 5 core files in c
 - **Tests:** [Status]
 - **Build:** [Status]
 ```
-
----
-
-## Session Index
-
-Quick navigation to specific work.
-
-| # | Date | Phase | Focus | Status |
-|---|------|-------|-------|--------|
-| 1 | YYYY-MM-DD | Phase | [Brief] | ✅ |
-| 2 | YYYY-MM-DD | Phase | [Brief] | ✅ |
-| N | YYYY-MM-DD | Phase | [Brief] | ⏳ |
-
----
-
-## Tips
-
-**For AI Agent Review & Takeover:**
-- **Mental models are critical** - AI needs to understand your thinking
-- **Capture constraints** - AI should know what limitations existed
-- **Explain rationale** - WHY you chose this approach
-- **Document gotchas** - Save AI from discovering the same issues
-- **Show problem-solving** - AI learns from your approach
-
-**Be structured AND comprehensive:**
-- Use structured format (scannable sections)
-- But include depth (mental models, rationale, constraints)
-- 40-60 lines per session is appropriate for AI understanding
-- Structured ≠ minimal. AI needs context.
-
-**Key sections for AI:**
-1. **Problem Solved** - What issue existed, constraints, approach
-2. **Mental Models** - Your understanding of the system
-3. **Decisions** - Link to DECISIONS.md for full rationale
-4. **Work In Progress** - Detailed enough for takeover
-5. **Open Loops** - Unresolved questions, uncertainties, risks
-6. **TodoWrite State** - What was accomplished vs. pending

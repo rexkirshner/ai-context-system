@@ -1535,15 +1535,16 @@ get_next_session_number() {
   fi
 
   # Find the MAXIMUM session number (not COUNT)
-  # 1. Stop before "## Example" sections (template content)
-  # 2. Match "## Session N" where N is a number
-  # 3. Exclude template references
+  # 1. Match "## Session N" where N is a number
+  # 2. Exclude [EXAMPLE] sessions (template examples)
+  # 3. Exclude "Example" and "Template" references
   # 4. Extract just the number
   # 5. Sort numerically and take the largest
   local max_session
   max_session=$(
-    sed -n '1,/^## Example/p' "$sessions_file" 2>/dev/null | \
-    grep -E "^## Session [0-9]+" | \
+    grep -E "^## Session [0-9]+" "$sessions_file" 2>/dev/null | \
+    grep -v "\[EXAMPLE\]" | \
+    grep -v -i "Example" | \
     grep -v -i "Template" | \
     sed -E 's/^## Session ([0-9]+).*/\1/' | \
     sort -n | \
