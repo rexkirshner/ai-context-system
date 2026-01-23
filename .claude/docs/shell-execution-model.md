@@ -171,7 +171,7 @@ This is often the cleanest approach - it's idempotent and doesn't require file c
 
 ### Recommended Structure
 
-```markdown
+````markdown
 # /command-name Command
 
 > **Execution Model:** Each bash block runs in an isolated shell.
@@ -194,7 +194,7 @@ source scripts/common-functions.sh || exit 1
 PROJECT_ROOT=$(find_project_root)
 # ... step logic ...
 ```
-```
+````
 
 ### Header Note
 
@@ -247,5 +247,5 @@ echo "Project root: $PROJECT_ROOT"
 
 ## Related Documentation
 
-- [common-functions.sh](/scripts/common-functions.sh) - Shared shell functions
-- [Command Philosophy](/docs/command-philosophy.md) - Design principles
+- [common-functions.sh](../../scripts/common-functions.sh) - Shared shell functions
+- [Command Philosophy](./command-philosophy.md) - Design principles
