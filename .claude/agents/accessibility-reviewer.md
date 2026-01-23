@@ -103,7 +103,60 @@ Array of `AuditFinding` objects with `category: "accessibility"` and `id` prefix
 | medium | AA - Usability issue |
 | low | AAA - Enhancement |
 
-### 4. Skip False Positives
+### 4. Focus Indicator Detection
+
+**Severity:** High (H) when no alternative, Low (L) when alternative exists
+
+#### No Alternative (Flag as A11Y-H{N})
+
+```css
+/* BAD: Removes focus with no replacement */
+.button:focus {
+    outline: none;
+}
+
+/* BAD: Outline 0 is same as none */
+.link:focus {
+    outline: 0;
+}
+```
+
+#### Has Alternative (Flag as A11Y-L{N} or Ignore)
+
+```css
+/* ACCEPTABLE: Box-shadow provides visible focus */
+.button:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--focus-color);
+}
+
+/* ACCEPTABLE: Border change provides visible focus */
+.card:focus {
+    outline: none;
+    border-color: var(--focus-color);
+}
+
+/* ACCEPTABLE: Background change provides visible focus */
+.tab:focus {
+    outline: none;
+    background-color: var(--focus-bg);
+}
+
+/* ACCEPTABLE: Tailwind focus ring */
+.button {
+    @apply focus:ring-2 focus:ring-blue-500 focus:outline-none;
+}
+```
+
+**Detection Rule:**
+Within same CSS rule block containing `outline: none` or `outline: 0`:
+- If `box-shadow` present → Ignore or Low severity
+- If `border` or `border-color` present → Ignore or Low severity
+- If `background` or `background-color` present → Ignore or Low severity
+- If Tailwind `focus:ring` class nearby → Ignore
+- Otherwise → High severity
+
+### 5. Skip False Positives
 
 **DO NOT flag:**
 - Decorative images (`role="presentation"`, empty alt)

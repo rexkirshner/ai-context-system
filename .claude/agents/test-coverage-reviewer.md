@@ -116,9 +116,51 @@ Search for exports matching critical patterns (auth, payment, mutations) without
 ## Test Quality Checks
 
 Also flag:
-- Skipped tests (`test.skip`, `it.skip`)
+- Skipped tests (see detection rules below)
 - Empty assertions (`expect(true).toBe(true)`)
 - Console.log in tests
+
+### Skipped Test Detection
+
+**Severity:** Medium (M) for unconditional skips, Info (I) for conditional
+
+#### Unconditional Skip (Flag as TEST-M{N})
+
+```typescript
+// BAD: Test permanently disabled
+test.skip('should handle edge case', async () => { ... })
+
+// BAD: Describe block permanently disabled
+describe.skip('EdgeCases', () => { ... })
+
+// BAD: it.skip variant
+it.skip('should validate input', () => { ... })
+```
+
+#### Conditional Skip (Flag as TEST-I{N} or Ignore)
+
+```typescript
+// GOOD: Skip based on environment capability
+if (!hasServiceWorker) {
+    test.skip();  // Intentional - capability not available
+    return;
+}
+
+// GOOD: Skip based on platform
+const isCI = process.env.CI === 'true';
+if (!isCI) test.skip();  // Only run in CI
+
+// GOOD: Skip based on feature flag
+beforeEach(() => {
+  if (!featureEnabled) {
+    test.skip();
+  }
+});
+```
+
+**Detection Rule:**
+- Flag `test.skip('...')`, `it.skip('...')`, or `describe.skip('...')` as unconditional (Medium)
+- Ignore `test.skip()` (no string argument) when preceded by `if` statement within 3 lines (conditional)
 
 ## Handling Intentional Decisions
 
