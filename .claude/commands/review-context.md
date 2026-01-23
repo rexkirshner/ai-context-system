@@ -449,6 +449,28 @@ fi
 - Prevents token limit crashes on large files
 - Clear instructions, not mixed bash/tool calls
 
+#### Archived Sessions Check ✨ v5.2.0
+
+Check if older sessions have been archived:
+
+```bash
+# Check for archived sessions
+if [ -f "$CONTEXT_DIR/sessions-archive.md" ]; then
+  ARCHIVE_SESSIONS=$(grep -c "^## Session [0-9]" "$CONTEXT_DIR/sessions-archive.md" 2>/dev/null || echo "0")
+  if [ "$ARCHIVE_SESSIONS" -gt 0 ]; then
+    echo ""
+    echo "📦 Archived Sessions: $ARCHIVE_SESSIONS sessions in sessions-archive.md"
+    echo "   Session Index in SESSIONS.md still references these"
+    echo "   To search: grep -A50 \"## Session N\" $CONTEXT_DIR/sessions-archive.md"
+  fi
+fi
+```
+
+**Why this matters:**
+- Users know older sessions exist but are archived
+- Session Index provides navigation to all sessions
+- Clear instructions for accessing archived content
+
 #### DECISIONS.md Smart Loading (v5.0.1)
 
 **IMPORTANT:** DECISIONS.md files can grow very large in mature projects. The Read tool has a default limit of 2,000 lines. Since DECISIONS.md is append-only, the most recent (and often most relevant) decisions are at the bottom of the file. Without smart loading, recent decisions may be truncated.
