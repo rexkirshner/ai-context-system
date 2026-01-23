@@ -183,7 +183,7 @@ Explicit flags always run the specified specialist, regardless of scanner detect
 ```
 Scanner detects: hasUI=true, hasDatabase=true, hasCI=true, primaryLanguage=typescript
 
-Auto-selected (7):
+Auto-selected (8):
   ✓ security-reviewer (always)
   ✓ test-coverage-reviewer (always)
   ✓ performance-reviewer (hasUI)
