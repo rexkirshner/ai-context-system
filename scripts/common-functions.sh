@@ -2403,7 +2403,7 @@ detect_tech_stack() {
     fi
 
     # Turso (database)
-    if grep -qE '"@libsql/client"|"@tursodatabase' "$pkg" 2>/dev/null; then
+    if grep -qE '"@libsql/client"|"@tursodatabase/' "$pkg" 2>/dev/null; then
       stack+=("Turso")
     fi
 
