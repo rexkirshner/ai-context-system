@@ -555,12 +555,16 @@ if [ "$IS_UPDATE" = "true" ] && [ -f ".claude/.install-manifest.json" ]; then
         echo "$MODIFIED_FILES" | while read -r file; do
           if [ -n "$file" ]; then
             # Add file-specific context notes (v5.1.5)
+            # Note: Pattern order matters - more specific patterns first
             case "$file" in
-              *.json)
+              *settings*.json|*config*.json)
+                echo "   - $file  (your preferences - check backup if needed)"
+                ;;
+              *cache*.json|*context*.json)
                 echo "   - $file  (auto-regenerates on next scan)"
                 ;;
-              *settings*)
-                echo "   - $file  (your preferences - check backup if needed)"
+              *.json)
+                echo "   - $file  (JSON data)"
                 ;;
               *.md)
                 echo "   - $file  (documentation - review new version)"
