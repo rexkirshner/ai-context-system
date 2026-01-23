@@ -31,19 +31,49 @@ Generate a comprehensive export package combining all context documentation in b
 
 ## Execution Steps
 
-### Step 0.5: Find Context Folder
+### Step 0: Find Project Root and Load Functions
 
-**ACTION:** Source the context folder detection script and find the context directory:
+**ACTION:** Find the ACS project root (works from any subdirectory up to 5 levels deep):
 
 ```bash
-# Load context folder detection (v3.5.0+ - fixes BUG-6)
-source "$(dirname "${BASH_SOURCE[0]}")/../scripts/find-context-folder.sh" || exit 1
-CONTEXT_DIR=$(find_context_folder) || exit 1
+# Source common functions with inline fallback (v5.2.0+)
+source scripts/common-functions.sh 2>/dev/null || {
+  # Inline fallback if script not available
+  find_project_root() {
+    local search_dir="$PWD"
+    for i in 1 2 3 4 5; do
+      if [ -f "$search_dir/context/.context-config.json" ]; then
+        cd "$search_dir" && pwd
+        return 0
+      fi
+      search_dir=$(dirname "$search_dir")
+    done
+    echo "Error: No ACS project found" >&2
+    return 1
+  }
+}
 
-echo "✅ Found context at: $CONTEXT_DIR"
+# Find project root (allows running from subdirectories)
+PROJECT_ROOT=$(find_project_root) || {
+  echo "❌ Not in an ACS project"
+  echo "Current directory: $(pwd)"
+  echo "Run /init-context to set up the AI Context System."
+  exit 1
+}
+
+# Change to project root so scripts work correctly
+cd "$PROJECT_ROOT"
+echo "📁 Project root: $PROJECT_ROOT"
+
+# Re-source now that we're in project root
+source scripts/common-functions.sh 2>/dev/null
+
+CONTEXT_DIR="context"
+echo "✅ Context directory: $CONTEXT_DIR"
+echo ""
 ```
 
-**Why this matters:** Allows command to work from subdirectories (backend/, src/, etc.) by searching up to 2 parent directories.
+**Why this matters:** Allows command to work from subdirectories (up to 5 levels deep) by finding and cd'ing to project root before running scripts.
 
 ---
 

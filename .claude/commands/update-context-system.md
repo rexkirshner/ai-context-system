@@ -49,68 +49,57 @@ Each bash code block in this file should be run using the Bash tool. This is an 
 
 ## Execution Steps
 
-### Step 0: Load Shared Functions
+### Step 0: Find Project Root and Load Functions
 
-**ACTION:** Source the common functions library:
-
-```bash
-# Load shared utilities (v2.3.0+)
-if [ -f "scripts/common-functions.sh" ]; then
-  source scripts/common-functions.sh
-else
-  echo "⚠️  Warning: common-functions.sh not found (using legacy mode)"
-fi
-
-# v4.2.1: Suppress "Run /update-context-system" notice during update
-# This prevents confusing output when user is already running the update
-export ACS_UPDATING=true
-```
-
-**Why this matters:** Provides access to `download_with_retry()` for robust network operations and `get_system_version()` for version checking. The `ACS_UPDATING` export prevents confusing update notices during the update process itself.
-
----
-
-### Step 0.5: Verify Working Directory
-
-**CRITICAL:** Ensure we're in the correct project directory before proceeding.
+**ACTION:** Find the ACS project root (works from any subdirectory up to 5 levels deep):
 
 ```bash
-# Check if context/.context-config.json exists
-if [ ! -f "context/.context-config.json" ]; then
+# Source common functions with inline fallback (v5.2.0+)
+source scripts/common-functions.sh 2>/dev/null || {
+  # Inline fallback if script not available (e.g., first-time update)
+  find_project_root() {
+    local search_dir="$PWD"
+    for i in 1 2 3 4 5; do
+      if [ -f "$search_dir/context/.context-config.json" ]; then
+        cd "$search_dir" && pwd
+        return 0
+      fi
+      search_dir=$(dirname "$search_dir")
+    done
+    echo "Error: No ACS project found" >&2
+    return 1
+  }
+}
+
+# Find project root (allows running from subdirectories)
+PROJECT_ROOT=$(find_project_root) || {
   echo ""
-  echo "❌ ERROR: Not in correct project directory"
+  echo "❌ Not in an ACS project"
   echo ""
   echo "Current directory: $(pwd)"
   echo ""
-  echo "This command must be run from the project root directory that contains:"
-  echo "  - context/.context-config.json"
-  echo "  - .claude/commands/"
+  echo "This command must be run from a project with AI Context System installed."
+  echo "Expected: context/.context-config.json in project root"
   echo ""
-  echo "Common issues:"
-  echo "  1. Running from parent folder instead of project folder"
-  echo "  2. Running from nested subdirectory"
-  echo ""
-
-  # Try to detect if we're in a parent folder
-  # Look for any subdirectory that has context/.context-config.json
-  SUBPROJECT=$(find . -maxdepth 2 -name ".context-config.json" -path "*/context/*" 2>/dev/null | head -1 | sed 's|/context/.*||' | sed 's|^\./||')
-  if [ -n "$SUBPROJECT" ]; then
-    echo "💡 Detected project in subdirectory: $SUBPROJECT"
-    echo ""
-    echo "Try:"
-    echo "  cd $SUBPROJECT"
-    echo "  /update-context-system"
-  fi
-
-  echo ""
-  echo "Cancelled. Please cd to the project directory and try again."
+  echo "If this is a new project, run /init-context first."
   exit 1
+}
+
+# Change to project root
+cd "$PROJECT_ROOT"
+echo "📁 Project root: $PROJECT_ROOT"
+
+# Re-source now that we're in project root (to get full functions)
+if [ -f "scripts/common-functions.sh" ]; then
+  source scripts/common-functions.sh
 fi
 
-echo "✅ Working directory verified"
-echo "Project: $(pwd)"
+# v4.2.1: Suppress "Run /update-context-system" notice during update
+export ACS_UPDATING=true
 echo ""
 ```
+
+**Why this matters:** The `find_project_root()` function searches up to 5 parent directories for the ACS marker file, allowing the command to work from any subdirectory. This provides access to `download_with_retry()` for robust network operations and `get_system_version()` for version checking.
 
 ### Step 1: Check Current Version
 

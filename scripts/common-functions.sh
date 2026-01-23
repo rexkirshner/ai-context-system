@@ -96,6 +96,52 @@ get_repo_root() {
   git rev-parse --show-toplevel 2>/dev/null || pwd
 }
 
+# Find ACS project root by searching for context/.context-config.json
+# Searches current directory and up to 5 parent directories
+#
+# This differs from get_repo_root() because:
+# - It looks for ACS-specific marker file, not git root
+# - Works even if called from outside git repository
+# - Returns error if not in an ACS project
+#
+# Usage:
+#   PROJECT_ROOT=$(find_project_root)
+#   if [ $? -ne 0 ]; then
+#     echo "Not in an ACS project"
+#     exit 1
+#   fi
+#
+# Returns: Absolute path to project root, or exits with error message
+find_project_root() {
+  local search_dir="$PWD"
+  local max_depth=5
+  local depth=0
+
+  while [ $depth -le $max_depth ]; do
+    if [ -f "$search_dir/context/.context-config.json" ]; then
+      # Return absolute path
+      cd "$search_dir" && pwd
+      return 0
+    fi
+
+    # Move to parent
+    local parent=$(dirname "$search_dir")
+
+    # Check if we've hit filesystem root
+    if [ "$parent" = "$search_dir" ]; then
+      break
+    fi
+
+    search_dir="$parent"
+    depth=$((depth + 1))
+  done
+
+  # Not found
+  echo "Error: No ACS project found (searched $max_depth levels up from $PWD)" >&2
+  echo "Expected: context/.context-config.json in project root" >&2
+  return 1
+}
+
 # =============================================================================
 # Context Directory Management
 # =============================================================================
@@ -2216,21 +2262,29 @@ check_ancestor_claude() {
 detect_project_description() {
   local desc=""
 
-  # Try package.json
+  # Try package.json description first (most reliable)
   if [ -f "package.json" ]; then
-    desc=$(grep -m1 '"description"' package.json 2>/dev/null | sed 's/.*"description"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/')
+    # Use jq if available (more reliable), fall back to grep/sed
+    if command -v jq > /dev/null 2>&1; then
+      desc=$(jq -r '.description // empty' package.json 2>/dev/null)
+    else
+      desc=$(grep -m1 '"description"' package.json 2>/dev/null | sed 's/.*"description"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/')
+    fi
+    # Check we got a valid description (not null/empty)
+    if [ -n "$desc" ] && [ "$desc" != "null" ]; then
+      echo "$desc"
+      return 0
+    fi
   fi
 
-  # Try README first meaningful line
-  if [ -z "$desc" ]; then
-    for readme in README.md README.rst README.txt README; do
-      if [ -f "$readme" ]; then
-        # Get first non-empty, non-header line
-        desc=$(grep -vE '^#|^$|^==|^--' "$readme" 2>/dev/null | head -1 | cut -c1-200)
-        [ -n "$desc" ] && break
-      fi
-    done
-  fi
+  # Fall back to README first paragraph
+  for readme in README.md README.rst README.txt README; do
+    if [ -f "$readme" ]; then
+      # Get first non-empty, non-header line
+      desc=$(grep -vE '^#|^$|^==|^--' "$readme" 2>/dev/null | head -1 | cut -c1-200)
+      [ -n "$desc" ] && break
+    fi
+  done
 
   echo "$desc"
 }
@@ -2336,6 +2390,44 @@ detect_tech_stack() {
     stack+=("Fly.io")
   elif [ -f "railway.json" ]; then
     stack+=("Railway")
+  fi
+
+  # === Additional patterns (v5.2.0) ===
+
+  if [ -f "package.json" ]; then
+    local pkg="package.json"
+
+    # Tailwind CSS
+    if grep -qE '"tailwindcss"' "$pkg" 2>/dev/null; then
+      stack+=("Tailwind CSS")
+    fi
+
+    # Turso (database)
+    if grep -qE '"@libsql/client"|"@tursodatabase' "$pkg" 2>/dev/null; then
+      stack+=("Turso")
+    fi
+
+    # NextAuth.js / Auth.js
+    if grep -qE '"next-auth"' "$pkg" 2>/dev/null; then
+      stack+=("NextAuth.js")
+    elif grep -qE '"@auth/core"|"@auth/sveltekit"' "$pkg" 2>/dev/null; then
+      stack+=("Auth.js")
+    fi
+
+    # TanStack Query
+    if grep -qE '"@tanstack/react-query"|"@tanstack/vue-query"|"@tanstack/svelte-query"' "$pkg" 2>/dev/null; then
+      stack+=("TanStack Query")
+    fi
+
+    # tRPC
+    if grep -qE '"@trpc/server"|"@trpc/client"' "$pkg" 2>/dev/null; then
+      stack+=("tRPC")
+    fi
+
+    # Zod
+    if grep -qE '"zod"' "$pkg" 2>/dev/null; then
+      stack+=("Zod")
+    fi
   fi
 
   # Return comma-separated list
