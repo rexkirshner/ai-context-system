@@ -1182,7 +1182,7 @@ Assess ability to resume work seamlessly:
 
 - **Session Continuity (v5.2.0):** 0 or -15 points
   - All referenced sessions documented: 0
-  - Session gap detected (see Step 2.5): -15
+  - Session gap detected (see Step 2.8): -15
 
 **Total score:** 0-100 (minimum 0)
 
