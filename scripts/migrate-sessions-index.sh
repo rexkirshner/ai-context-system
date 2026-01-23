@@ -41,8 +41,9 @@ echo "Analyzing: $SESSIONS_FILE"
 echo ""
 
 # Count existing sessions (excluding [EXAMPLE] sessions)
-SESSION_COUNT=$(grep -c "^## Session [0-9]" "$SESSIONS_FILE" 2>/dev/null | tr -d ' ' || echo "0")
-EXAMPLE_COUNT=$(grep -c "^\[EXAMPLE\]" "$SESSIONS_FILE" 2>/dev/null | tr -d ' ' || echo "0")
+# Note: Example sessions use format "## [EXAMPLE] Session N"
+SESSION_COUNT=$(grep -c "^## Session [0-9]\|^## \[EXAMPLE\] Session [0-9]" "$SESSIONS_FILE" 2>/dev/null | tr -d ' ' || echo "0")
+EXAMPLE_COUNT=$(grep -c "^## \[EXAMPLE\] Session [0-9]" "$SESSIONS_FILE" 2>/dev/null | tr -d ' ' || echo "0")
 REAL_COUNT=$((SESSION_COUNT - EXAMPLE_COUNT))
 
 echo "Found: $REAL_COUNT real sessions (+ $EXAMPLE_COUNT examples)"
@@ -98,7 +99,7 @@ grep "^## Session [0-9]" "$SESSIONS_FILE" | grep -v "\[EXAMPLE\]" | while read -
   fi
 
   echo "| $NUM | $DATE | - | $FOCUS | - |"
-done | sort -t'|' -k2 -rn  # Sort by session number descending
+done | sort -t'|' -k2 -rn  # Sort by field 2 (session number) descending
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
