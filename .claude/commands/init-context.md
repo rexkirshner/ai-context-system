@@ -7,6 +7,9 @@ description: Initialize AI Context System for this project
 
 Initialize a **minimal overhead** context system for this project. Creates 5 core files (CONTEXT.md, STATUS.md, DECISIONS.md, SESSIONS.md, context-feedback.md) plus CLAUDE.md at project root (auto-loaded by Claude Code), with optional files (CODE_MAP.md, other AI headers) suggested when complexity demands.
 
+> **Execution Model:** Each bash block runs in an isolated shell.
+> Variables do not persist between blocks. See `.claude/docs/shell-execution-model.md`.
+
 **Philosophy:** Minimal overhead during work. Good-enough recovery when needed. Single source of truth. Platform-neutral core with tool-specific entry points.
 
 **See also:**

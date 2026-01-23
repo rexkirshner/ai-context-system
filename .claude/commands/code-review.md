@@ -7,6 +7,9 @@ description: Run comprehensive code review using the agent-based system
 
 Run comprehensive code review using the agent-based system. This command delegates to the `code-reviewer` orchestrator agent which dynamically discovers and runs specialist reviewers.
 
+> **Execution Model:** Each bash block runs in an isolated shell.
+> Variables do not persist between blocks. See `.claude/docs/shell-execution-model.md`.
+
 ## Usage
 
 ```bash

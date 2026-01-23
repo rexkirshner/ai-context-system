@@ -7,6 +7,9 @@ description: Quick session save - updates current state only (2-3 minutes)
 
 **Quick session save** - Updates current state without comprehensive documentation. Use this for most sessions during continuous work.
 
+> **Execution Model:** Each bash block runs in an isolated shell.
+> Variables do not persist between blocks. See `.claude/docs/shell-execution-model.md`.
+
 **For comprehensive documentation before breaks/handoffs, use `/save-full`**
 
 ## When to Use This Command

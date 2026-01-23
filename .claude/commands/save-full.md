@@ -7,6 +7,9 @@ description: Comprehensive session documentation for breaks and handoffs (10-15 
 
 **Comprehensive session documentation** - Creates detailed SESSIONS.md entry with mental models and decision rationale. Use before breaks, handoffs, or milestones.
 
+> **Execution Model:** Each bash block runs in an isolated shell.
+> Variables do not persist between blocks. See `.claude/docs/shell-execution-model.md`.
+
 **For regular session updates, use `/save` (2-3 minutes)**
 
 **⏱️ Estimated time:** 10-15 minutes

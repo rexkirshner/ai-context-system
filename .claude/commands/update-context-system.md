@@ -7,6 +7,9 @@ description: Update AI Context System to latest version from GitHub
 
 Update your project's AI Context System to the latest version from GitHub using the automated installer script.
 
+> **Execution Model:** Each bash block runs in an isolated shell.
+> Variables do not persist between blocks. See `.claude/docs/shell-execution-model.md`.
+
 ## When to Use This Command
 
 - Periodically (monthly) to get latest improvements

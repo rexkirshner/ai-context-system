@@ -7,6 +7,9 @@ description: Verify context documentation accuracy and session continuity readin
 
 Verify that all context documentation is accurate, consistent, and complete enough to resume work seamlessly. This is your session start ritual and continuity checkpoint.
 
+> **Execution Model:** Each bash block runs in an isolated shell.
+> Variables do not persist between blocks. See `.claude/docs/shell-execution-model.md`.
+
 **Full guide:** `.claude/docs/review-context-guide.md`
 
 ## When to Use This Command
