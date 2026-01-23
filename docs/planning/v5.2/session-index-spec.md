@@ -12,7 +12,7 @@ SESSIONS.md grows unbounded as projects progress. At 50+ sessions (~500 tokens e
 ## Solution
 
 1. **Session Index** - Compact table at top for quick navigation
-2. **Archival** - Move old session content to `sessions-archive.md`
+2. **Archival** - Move old session content to `.sessions-archive/` directory
 3. **Token Budget** - Keep SESSIONS.md under 20,000 tokens
 
 ---
@@ -121,7 +121,7 @@ After creating session entry:
 3. **Archive If Needed**
    - Identify oldest 10 sessions
    - Extract full content
-   - Append to sessions-archive.md
+   - Create new timestamped file in `.sessions-archive/`
    - Remove from SESSIONS.md (keep index rows)
 
 ### /review-context Updates
