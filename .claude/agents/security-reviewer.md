@@ -42,7 +42,12 @@ Identify security vulnerabilities with **verification**. Every finding must incl
 
 Codebase context from `.claude/cache/codebase-context.json`. Prioritize files in `securityRelevant` list; fall back to repo-wide scan if empty.
 
-## Output
+## Output Requirements
+
+Your output MUST conform to `specialist-output.schema.json`.
+
+**Finding ID Prefix:** `SEC`
+**Category:** `security`
 
 Array of `AuditFinding` objects:
 

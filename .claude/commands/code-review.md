@@ -223,6 +223,58 @@ Reports are saved to `docs/audits/`:
 
 The number NN increments automatically (01, 02, ...).
 
+## Phase 3: Synthesis (v5.2.0)
+
+After all specialists complete, the synthesis-agent combines their outputs:
+
+### Step 1: Collect Outputs
+
+Gather output from each specialist that ran. Each outputs data conforming to `specialist-output.schema.json`.
+
+### Step 2: Run Synthesis
+
+Apply synthesis-agent logic (see `.claude/agents/synthesis-agent.md`):
+- Deduplicate across specialists (same file + location within 5 lines)
+- Calculate grade using weighted formula with caps
+- Generate combined report
+
+### Step 3: Save Report
+
+```bash
+# Determine next audit number
+LAST_AUDIT=$(ls docs/audits/audit-*.md 2>/dev/null | grep -oE '[0-9]+' | sort -rn | head -1)
+NEXT_AUDIT=$((${LAST_AUDIT:-0} + 1))
+
+# Save report
+# audit-{N}.md - human readable
+# audit-{N}.json - machine readable
+```
+
+### Step 4: Display Summary
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📊 CODE REVIEW COMPLETE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Grade: B (82/100)
+
+Findings: 23 total
+  🔴 Critical: 0
+  🟠 High: 3
+  🟡 Medium: 12
+  🟢 Low: 8
+
+Duplicates merged: 2
+
+Report saved: docs/audits/audit-5.md
+
+Top 3 priorities:
+1. SEC-001: Add security headers
+2. TEST-002: Increase test coverage
+3. PERF-001: Optimize image loading
+```
+
 ## Examples
 
 ```bash

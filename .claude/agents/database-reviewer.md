@@ -46,9 +46,14 @@ Supports common ORMs: Prisma, Drizzle, TypeORM, Mongoose, Sequelize.
 
 Codebase context from `.claude/cache/codebase-context.json`. Prioritize `databaseFiles` list. Detect ORM from dependencies and apply ORM-specific patterns.
 
-## Output
+## Output Requirements
 
-Array of `AuditFinding` objects with `category: "database"` and `id` prefix `DB-`.
+Your output MUST conform to `specialist-output.schema.json`.
+
+**Finding ID Prefix:** `DB`
+**Category:** `database`
+
+Array of `AuditFinding` objects:
 
 ## Database Patterns
 

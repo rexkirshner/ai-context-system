@@ -44,9 +44,14 @@ Identify accessibility barriers with **verification**. Every finding must includ
 
 Codebase context from `.claude/cache/codebase-context.json`. Prioritize `uiComponents` list, focusing on `.tsx` and `.jsx` files.
 
-## Output
+## Output Requirements
 
-Array of `AuditFinding` objects with `category: "accessibility"` and `id` prefix `A11Y-`.
+Your output MUST conform to `specialist-output.schema.json`.
+
+**Finding ID Prefix:** `A11Y`
+**Category:** `accessibility`
+
+Array of `AuditFinding` objects:
 
 ## Accessibility Patterns
 

@@ -56,7 +56,12 @@ For other languages:
 - Skip library recommendations if language-appropriate alternatives aren't known
 - Use `severity: info` with note: "Custom implementation detected; no language-specific library recommendation available"
 
-## Output
+## Output Requirements
+
+Your output MUST conform to `specialist-output.schema.json`.
+
+**Finding ID Prefix:** `LIB`
+**Category:** `libraries`
 
 Array of `AuditFinding` objects:
 

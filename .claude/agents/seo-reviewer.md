@@ -47,9 +47,14 @@ Framework-aware: adjusts patterns for Next.js Metadata API, etc.
 
 Codebase context from `.claude/cache/codebase-context.json`. Prioritize `uiComponents` (pages, layouts). Also check for sitemap.xml and robots.txt.
 
-## Output
+## Output Requirements
 
-Array of `AuditFinding` objects with `category: "seo"` and `id` prefix `SEO-`.
+Your output MUST conform to `specialist-output.schema.json`.
+
+**Finding ID Prefix:** `SEO`
+**Category:** `seo`
+
+Array of `AuditFinding` objects:
 
 ## SEO Patterns
 

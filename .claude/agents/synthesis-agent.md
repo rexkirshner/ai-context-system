@@ -12,20 +12,23 @@ Merges findings from specialist agents into unified report.
 
 ## Input
 
-Findings from all specialist agents:
+Specialist outputs conforming to `specialist-output.schema.json`:
 
 ```json
 {
-  "security": [AuditFinding, ...],
-  "performance": [AuditFinding, ...],
-  "accessibility": [AuditFinding, ...],
-  "seo": [AuditFinding, ...],
-  "typescript": [AuditFinding, ...],
-  "testing": [AuditFinding, ...],
-  "database": [AuditFinding, ...],
-  "infrastructure": [AuditFinding, ...]
+  "security": { "specialist": "security", "findings": [...], "positives": [...], "summary": {...} },
+  "performance": { "specialist": "performance", "findings": [...], "positives": [...], "summary": {...} },
+  "accessibility": { "specialist": "accessibility", "findings": [...], "positives": [...], "summary": {...} },
+  "seo": { "specialist": "seo", "findings": [...], "positives": [...], "summary": {...} },
+  "typescript": { "specialist": "typescript", "findings": [...], "positives": [...], "summary": {...} },
+  "testing": { "specialist": "testing", "findings": [...], "positives": [...], "summary": {...} },
+  "database": { "specialist": "database", "findings": [...], "positives": [...], "summary": {...} },
+  "infrastructure": { "specialist": "infrastructure", "findings": [...], "positives": [...], "summary": {...} },
+  "libraries": { "specialist": "libraries", "findings": [...], "positives": [...], "summary": {...} }
 }
 ```
+
+Each specialist's `findings` array contains `AuditFinding` objects per `audit-finding.json` schema.
 
 ## Output
 
@@ -104,18 +107,44 @@ SEC-001 (high) + INFRA-001 (medium) at api.ts:15
 
 ### 3. Calculate Grade
 
-| Condition | Grade |
-|-----------|-------|
-| Any critical | F |
-| >3 high | D |
-| >1 high | C |
-| 1 high | C+ |
-| >5 medium | B- |
-| >2 medium | B |
-| >0 medium | B+ |
-| >5 low | A- |
-| >0 low | A |
-| 0 issues | A+ |
+Use the weighted formula with caps (see `docs/planning/v5.2/grade-calculation.md`):
+
+```javascript
+function calculateGrade(findings) {
+  let score = 100;
+
+  const counts = {
+    critical: findings.filter(f => f.severity === 'critical').length,
+    high: findings.filter(f => f.severity === 'high').length,
+    medium: findings.filter(f => f.severity === 'medium').length,
+    low: findings.filter(f => f.severity === 'low').length
+  };
+
+  // Apply deductions with caps
+  score -= Math.min(counts.critical * 25, 50);  // max -50
+  score -= Math.min(counts.high * 10, 30);      // max -30
+  score -= Math.min(counts.medium * 3, 20);     // max -20
+  score -= Math.min(counts.low * 1, 10);        // max -10
+
+  score = Math.max(0, score);
+
+  const grade =
+    score >= 90 ? 'A' :
+    score >= 80 ? 'B' :
+    score >= 70 ? 'C' :
+    score >= 60 ? 'D' : 'F';
+
+  return { score, grade };
+}
+```
+
+| Grade | Score Range | Interpretation |
+|-------|-------------|----------------|
+| A | 90-100 | Excellent - minor issues only |
+| B | 80-89 | Good - some improvements needed |
+| C | 70-79 | Acceptable - significant work needed |
+| D | 60-69 | Poor - major issues to address |
+| F | 0-59 | Failing - critical problems |
 
 ### 4. Identify Positives
 

@@ -42,9 +42,14 @@ Identify type safety weaknesses with **verification**. Every finding must includ
 
 Codebase context from `.claude/cache/codebase-context.json`. Only runs if `primaryLanguage === "typescript"`. Checks `.ts`/`.tsx` files and reads `tsconfig.json` for strictness settings.
 
-## Output
+## Output Requirements
 
-Array of `AuditFinding` objects with `category: "typescript"` and `id` prefix `TS-`.
+Your output MUST conform to `specialist-output.schema.json`.
+
+**Finding ID Prefix:** `TS`
+**Category:** `typescript`
+
+Array of `AuditFinding` objects:
 
 ## Type Safety Patterns
 

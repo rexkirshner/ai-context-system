@@ -43,9 +43,14 @@ Identify performance bottlenecks with **verification**. Every finding must inclu
 
 Codebase context from `.claude/cache/codebase-context.json`. Prioritize `uiComponents` list for UI performance; also check `files` for general inefficiencies.
 
-## Output
+## Output Requirements
 
-Array of `AuditFinding` objects with `category: "performance"` and `id` prefix `PERF-`.
+Your output MUST conform to `specialist-output.schema.json`.
+
+**Finding ID Prefix:** `PERF`
+**Category:** `performance`
+
+Array of `AuditFinding` objects:
 
 ## Performance Patterns
 

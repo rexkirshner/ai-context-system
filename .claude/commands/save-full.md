@@ -321,6 +321,20 @@ Examples: "2h", "30min", "3h", "45min"
 **Key insights:** [Insights AI agents should know]
 **Gotchas discovered:** [Things that weren't obvious]
 
+### Context Restoration (v5.2.0)
+**To resume this work, read:**
+1. `context/STATUS.md` - Current state and priorities
+2. [Other key file from this session - be specific]
+3. [Another key file if relevant]
+
+**Key concepts to understand:**
+- [Mental model 1 - e.g., "Auth flow uses JWT with refresh tokens"]
+- [Mental model 2 - e.g., "Database uses soft deletes"]
+
+**Ready to continue with:**
+- [ ] [Next task 1 - specific and actionable]
+- [ ] [Next task 2 - if applicable]
+
 ### Work In Progress
 **Task:** [What's incomplete - be specific]
 **Location:** `file.ts:145` in `functionName()`
@@ -348,6 +362,7 @@ Examples: "2h", "30min", "3h", "45min"
 - TL;DR section - Quick scan of key points
 - Problem Solved section - Shows your thinking process
 - Mental Models section - AI understands your approach
+- Context Restoration section - Files to read and concepts to understand (v5.2.0)
 - Decisions linked to DECISIONS.md - Full rationale available
 - Structured but comprehensive (40-60 lines, not 10 or 190)
 

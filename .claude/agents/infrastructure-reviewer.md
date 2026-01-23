@@ -45,9 +45,14 @@ Covers CI/CD, deployment, observability, and operational concerns.
 
 Codebase context from `.claude/cache/codebase-context.json`. Prioritize `ciWorkflows` list; also check for Dockerfiles, K8s configs, Terraform, and observability setup (Sentry, DataDog).
 
-## Output
+## Output Requirements
 
-Array of `AuditFinding` objects with `category: "infrastructure"` and `id` prefix `INFRA-`.
+Your output MUST conform to `specialist-output.schema.json`.
+
+**Finding ID Prefix:** `INFRA`
+**Category:** `infrastructure`
+
+Array of `AuditFinding` objects:
 
 ## Infrastructure Patterns
 

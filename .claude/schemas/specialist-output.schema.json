@@ -1,0 +1,113 @@
+{
+  "$id": "https://acs.rexkirshner.com/schemas/specialist-output.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "schemaVersion": "1.0.0",
+  "title": "SpecialistOutput",
+  "description": "Standard output format for all code review specialist agents. Used by synthesis-agent to combine findings.",
+  "type": "object",
+  "required": ["specialist", "timestamp", "findings", "summary"],
+  "properties": {
+    "specialist": {
+      "type": "string",
+      "description": "Agent identifier matching the agent contract id",
+      "examples": ["security", "performance", "accessibility"]
+    },
+    "prefix": {
+      "type": "string",
+      "pattern": "^[A-Z]+$",
+      "description": "Finding ID prefix for this specialist",
+      "examples": ["SEC", "PERF", "A11Y"]
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the review was performed"
+    },
+    "filesReviewed": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of files reviewed by this specialist"
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "$ref": "audit-finding.json"
+      },
+      "description": "Array of findings from this specialist"
+    },
+    "positives": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "title"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Z]+-POS[0-9]+$",
+            "description": "Positive finding ID (e.g., SEC-POS1)",
+            "examples": ["SEC-POS1", "PERF-POS2"]
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 100,
+            "description": "Brief description of the positive observation"
+          },
+          "description": {
+            "type": "string",
+            "description": "Detailed explanation of why this is positive"
+          },
+          "file": {
+            "type": "string",
+            "description": "File where the positive was observed (optional)"
+          }
+        },
+        "additionalProperties": false
+      },
+      "description": "Positive observations about the codebase"
+    },
+    "summary": {
+      "type": "object",
+      "required": ["total"],
+      "properties": {
+        "total": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total number of findings"
+        },
+        "critical": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of critical severity findings"
+        },
+        "high": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of high severity findings"
+        },
+        "medium": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of medium severity findings"
+        },
+        "low": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of low severity findings"
+        },
+        "info": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of info severity findings"
+        },
+        "positives": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of positive observations"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Summary counts for this specialist's findings"
+    }
+  },
+  "additionalProperties": false
+}

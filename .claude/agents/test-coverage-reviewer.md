@@ -40,9 +40,14 @@ Identify untested code with **verification**. Every finding must include:
 
 Codebase context from `.claude/cache/codebase-context.json`. Maps source files to tests using: `[name].test.ts`, `[name].spec.ts`, `test/[name].test.ts`, `__tests__/[name].test.ts`. Uses coverage reports if available.
 
-## Output
+## Output Requirements
 
-Array of `AuditFinding` objects with `category: "testing"` and `id` prefix `TEST-`.
+Your output MUST conform to `specialist-output.schema.json`.
+
+**Finding ID Prefix:** `TEST`
+**Category:** `testing`
+
+Array of `AuditFinding` objects:
 
 ## Coverage Patterns
 
