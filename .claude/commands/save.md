@@ -25,6 +25,23 @@ description: Quick session save - updates current state only (2-3 minutes)
 3. Auto-generates Quick Reference section in STATUS.md (dashboard)
 4. Reports what changed
 
+## What /save Updates
+
+### STATUS.md Sections Updated
+
+1. **Quick Reference** - Auto-regenerated from:
+   - `.context-config.json` (project name, tech stack, URLs)
+   - STATUS.md sections (current phase, active tasks)
+   - SESSIONS.md (last session reference)
+
+2. **Active Tasks** - Updated based on session work
+
+3. **Blockers & Decisions** - Updated if blockers encountered
+
+4. **Last Updated** timestamp - Always refreshed
+
+### What Is NOT Updated
+
 **Does NOT:**
 - Create SESSIONS.md entry (use /save-full for that)
 - Update DECISIONS.md (add manually when needed)
