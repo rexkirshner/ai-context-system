@@ -695,9 +695,6 @@ fi
 
 **Tip:** Focus on the "every session" fields for efficiency. The other fields only need attention when something actually changed.
 
-```bash
-```
-
 ---
 
 ### Step 7: Optional Files
