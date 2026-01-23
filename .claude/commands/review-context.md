@@ -382,7 +382,14 @@ if [ -f "$CONTEXT_DIR/SESSIONS.md" ]; then
   if [ "$FILE_SIZE" -eq 0 ]; then
     echo "⚠️  SESSIONS.md is empty"
   else
-    echo "📖 SESSIONS.md size: $FILE_SIZE lines"
+    # v5.1.5: Show loading strategy for transparency
+    if [ "$FILE_SIZE" -lt 1000 ]; then
+      echo "📖 SESSIONS.md size: $FILE_SIZE lines (small - loading full file)"
+    elif [ "$FILE_SIZE" -lt 5000 ]; then
+      echo "📖 SESSIONS.md size: $FILE_SIZE lines (medium - loading index + recent 500)"
+    else
+      echo "📖 SESSIONS.md size: $FILE_SIZE lines (large - loading header + index + recent 300)"
+    fi
   fi
 else
   echo "⚠️  SESSIONS.md not found"
@@ -457,7 +464,14 @@ if [ -f "$CONTEXT_DIR/DECISIONS.md" ]; then
   if [ "$DECISIONS_SIZE" -eq 0 ]; then
     echo "⚠️  DECISIONS.md is empty"
   else
-    echo "📖 DECISIONS.md size: $DECISIONS_SIZE lines"
+    # v5.1.5: Show loading strategy for transparency
+    if [ "$DECISIONS_SIZE" -lt 1500 ]; then
+      echo "📖 DECISIONS.md size: $DECISIONS_SIZE lines (small - loading full file)"
+    elif [ "$DECISIONS_SIZE" -lt 3000 ]; then
+      echo "📖 DECISIONS.md size: $DECISIONS_SIZE lines (medium - loading header + index + recent 800)"
+    else
+      echo "📖 DECISIONS.md size: $DECISIONS_SIZE lines (large - loading header + index + recent 500)"
+    fi
   fi
 else
   echo "⚠️  DECISIONS.md not found"
@@ -528,12 +542,32 @@ echo ""
 THRESHOLD_GREEN=7
 THRESHOLD_YELLOW=14
 
+# v5.1.5: Read noThreshold files from config (files that shouldn't trigger staleness warnings)
+NO_THRESHOLD_FILES=""
+if [ -f "$CONTEXT_DIR/.context-config.json" ]; then
+  # Extract files with noThreshold: true
+  NO_THRESHOLD_FILES=$(grep -B5 '"noThreshold": *true' "$CONTEXT_DIR/.context-config.json" 2>/dev/null | \
+    grep -oE '"[A-Z_]+\.md"' | tr -d '"' || echo "")
+fi
+
 # Check all context/*.md files
 for file in "$CONTEXT_DIR"/*.md; do
   # Skip if no files found
   [ -e "$file" ] || continue
 
   FILENAME=$(basename "$file")
+
+  # v5.1.5: Skip archive files (they're frozen by design)
+  if [[ "$FILENAME" == *-archive-* ]] || [[ "$FILENAME" == *archive*.md ]]; then
+    echo "  ℹ️  $FILENAME - Archive (frozen at archival)"
+    continue
+  fi
+
+  # v5.1.5: Skip files with noThreshold config (e.g., DECISIONS.md is append-only)
+  if echo "$NO_THRESHOLD_FILES" | grep -qF "$FILENAME" 2>/dev/null; then
+    echo "  ℹ️  $FILENAME - Append-only (no staleness threshold per config)"
+    continue
+  fi
 
   # Calculate days since last modification
   DAYS_OLD=$(days_since_file_modified "$file" 2>/dev/null || echo "-1")
@@ -757,6 +791,23 @@ if [ -f "$CONTEXT_DIR/SESSIONS.md" ]; then
   # Show max session number when it differs from count (indicates gaps from archiving)
   if [ "$SESSION_COUNT" -gt 0 ] && [ "$MAX_SESSION" -gt "$SESSION_COUNT" ]; then
     echo "  Latest session: #$MAX_SESSION (some sessions may be archived)"
+  fi
+
+  # v5.1.5: Show time since last session (SUGG-006)
+  LAST_SESSION_DATE=$(grep -E "^## Session [0-9]+ \|" "$CONTEXT_DIR/SESSIONS.md" | tail -1 | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}' | head -1)
+  if [ -n "$LAST_SESSION_DATE" ]; then
+    # Cross-platform date diff calculation
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+      LAST_EPOCH=$(date -j -f "%Y-%m-%d" "$LAST_SESSION_DATE" "+%s" 2>/dev/null || echo "0")
+    else
+      LAST_EPOCH=$(date -d "$LAST_SESSION_DATE" "+%s" 2>/dev/null || echo "0")
+    fi
+    TODAY_EPOCH=$(date "+%s")
+
+    if [ "$LAST_EPOCH" != "0" ]; then
+      DAYS_AGO=$(( (TODAY_EPOCH - LAST_EPOCH) / 86400 ))
+      echo "  Last session: $LAST_SESSION_DATE ($DAYS_AGO days ago)"
+    fi
   fi
 else
   echo "  SESSIONS.md not found"
