@@ -135,6 +135,83 @@ ls .claude/agents/*-reviewer.md | sed 's|.*/||' | sort
 
 **If count differs:** Check for missing or renamed agent files. All specialists must be present for `--all` to work correctly
 
+## Specialist Selection Logic
+
+### How Specialists Are Selected
+
+When running `/code-review` without explicit specialist flags:
+
+1. **Codebase Scanner** runs first, producing `codebase-context.json` with detected features
+2. **Each specialist checks** its `applicability` contract against scanner output
+3. **Applicable specialists** are launched in parallel
+
+### Selection Rules by Specialist
+
+| Specialist | Selection Rule | Scanner Field |
+|------------|----------------|---------------|
+| security-reviewer | Always runs | `always: true` |
+| test-coverage-reviewer | Always runs | `always: true` |
+| performance-reviewer | Has UI/frontend | `structure.hasUI: true` |
+| accessibility-reviewer | Has UI/frontend | `structure.hasUI: true` |
+| seo-reviewer | Has UI + webapp/monorepo | `structure.hasUI: true` |
+| type-safety-reviewer | TypeScript project | `structure.primaryLanguage: "typescript"` |
+| database-reviewer | Has database/ORM | `structure.hasDatabase: true` |
+| infrastructure-reviewer | Has CI configuration | `structure.hasCI: true` |
+| library-adoption-reviewer | Manual only | Requires `--all` or `--libraries` flag |
+
+### Manual Override
+
+Explicit flags always run the specified specialist, regardless of scanner detection:
+
+```bash
+# Force infrastructure review even without CI detected
+/code-review --infrastructure
+
+# Force database review even without ORM detected
+/code-review --database
+
+# Run library adoption (never auto-selected)
+/code-review --libraries
+```
+
+### Selection Examples
+
+**SvelteKit app with Prisma + GitHub Actions:**
+```
+Scanner detects: hasUI=true, hasDatabase=true, hasCI=true, primaryLanguage=typescript
+
+Auto-selected (7):
+  ✓ security-reviewer (always)
+  ✓ test-coverage-reviewer (always)
+  ✓ performance-reviewer (hasUI)
+  ✓ accessibility-reviewer (hasUI)
+  ✓ seo-reviewer (hasUI)
+  ✓ type-safety-reviewer (typescript)
+  ✓ database-reviewer (hasDatabase)
+  ✓ infrastructure-reviewer (hasCI)
+
+Not selected:
+  ✗ library-adoption-reviewer (requires --all or --libraries)
+```
+
+**Express.js API (no UI):**
+```
+Scanner detects: hasUI=false, hasDatabase=true, hasCI=false, primaryLanguage=javascript
+
+Auto-selected (3):
+  ✓ security-reviewer (always)
+  ✓ test-coverage-reviewer (always)
+  ✓ database-reviewer (hasDatabase)
+
+Not selected:
+  ✗ performance-reviewer (no UI)
+  ✗ accessibility-reviewer (no UI)
+  ✗ seo-reviewer (no UI)
+  ✗ type-safety-reviewer (not typescript)
+  ✗ infrastructure-reviewer (no CI)
+  ✗ library-adoption-reviewer (requires flag)
+```
+
 ## Output
 
 Reports are saved to `docs/audits/`:
