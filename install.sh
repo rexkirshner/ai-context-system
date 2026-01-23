@@ -550,10 +550,35 @@ if [ "$IS_UPDATE" = "true" ] && [ -f ".claude/.install-manifest.json" ]; then
 
       if [ -n "$MODIFIED_FILES" ]; then
         echo ""
-        color_echo "${YELLOW}⚠️  Modified files detected:${NC}"
+        color_echo "${YELLOW}⚠️  Modified files detected (will be overwritten):${NC}"
+        echo ""
         echo "$MODIFIED_FILES" | while read -r file; do
-          [ -n "$file" ] && echo "   - $file"
+          if [ -n "$file" ]; then
+            # Add file-specific context notes (v5.1.5)
+            case "$file" in
+              *.json)
+                echo "   - $file  (auto-regenerates on next scan)"
+                ;;
+              *settings*)
+                echo "   - $file  (your preferences - check backup if needed)"
+                ;;
+              *.md)
+                echo "   - $file  (documentation - review new version)"
+                ;;
+              *.sh)
+                echo "   - $file  (script updates - check backup for custom logic)"
+                ;;
+              *)
+                echo "   - $file"
+                ;;
+            esac
+          fi
         done
+        echo ""
+        if [ -n "$BACKUP_DIR" ]; then
+          color_echo "${BLUE}📁 Backup location: ${BACKUP_DIR}/${NC}"
+          echo "   Tip: To preserve custom settings, copy them from backup after upgrade."
+        fi
         echo ""
 
         if [ "$NON_INTERACTIVE" = "true" ]; then
