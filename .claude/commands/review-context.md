@@ -546,8 +546,9 @@ THRESHOLD_YELLOW=14
 NO_THRESHOLD_FILES=""
 if [ -f "$CONTEXT_DIR/.context-config.json" ]; then
   # Extract files with noThreshold: true
+  # Pattern matches "FILENAME.md" (any case) within 5 lines before noThreshold setting
   NO_THRESHOLD_FILES=$(grep -B5 '"noThreshold": *true' "$CONTEXT_DIR/.context-config.json" 2>/dev/null | \
-    grep -oE '"[A-Z_]+\.md"' | tr -d '"' || echo "")
+    grep -oE '"[A-Za-z_-]+\.md"' | tr -d '"' || echo "")
 fi
 
 # Check all context/*.md files
