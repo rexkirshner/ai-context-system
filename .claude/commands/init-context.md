@@ -109,50 +109,49 @@ if [ "${SKIP_MATURITY:-false}" != "true" ]; then
   [ -f "PRD.md" ] && EXISTING_DOCS+=("PRD.md")
   [ -f "ROADMAP.md" ] && EXISTING_DOCS+=("ROADMAP.md")
 
-# If project has 2+ significant docs, suggest migration
-if [ ${#EXISTING_DOCS[@]} -ge 2 ]; then
-  echo "⚠️  Detected existing documentation:"
-  for doc in "${EXISTING_DOCS[@]}"; do
-    echo "   📄 $doc"
-  done
-  echo ""
-  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-  echo "🔀 WRONG COMMAND DETECTED"
-  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-  echo ""
-  echo "This project has existing documentation."
-  echo "You should use /migrate-context instead of /init-context"
-  echo ""
-  echo "📌 Difference:"
-  echo "   /init-context    - Creates fresh templates (for NEW projects)"
-  echo "   /migrate-context - Preserves existing docs (for MATURE projects)"
-  echo ""
-  echo "Options:"
-  echo "  [Y] Switch to /migrate-context (recommended)"
-  echo "  [n] Continue with /init-context (will ignore existing docs)"
-  echo ""
-  read -p "Switch to /migrate-context? [Y/n] " -r
-  echo ""
-
-  if [[ ! $REPLY =~ ^[Nn]$ ]]; then
-    echo "✅ Switching to /migrate-context..."
+  # If project has 2+ significant docs, suggest migration
+  if [ ${#EXISTING_DOCS[@]} -ge 2 ]; then
+    echo "⚠️  Detected existing documentation:"
+    for doc in "${EXISTING_DOCS[@]}"; do
+      echo "   📄 $doc"
+    done
     echo ""
-    # Note: In actual execution, use: claude /migrate-context
-    exit 0
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "🔀 WRONG COMMAND DETECTED"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+    echo "This project has existing documentation."
+    echo "You should use /migrate-context instead of /init-context"
+    echo ""
+    echo "📌 Difference:"
+    echo "   /init-context    - Creates fresh templates (for NEW projects)"
+    echo "   /migrate-context - Preserves existing docs (for MATURE projects)"
+    echo ""
+    echo "Options:"
+    echo "  [Y] Switch to /migrate-context (recommended)"
+    echo "  [n] Continue with /init-context (will ignore existing docs)"
+    echo ""
+    read -p "Switch to /migrate-context? [Y/n] " -r
+    echo ""
+
+    if [[ ! $REPLY =~ ^[Nn]$ ]]; then
+      echo "✅ Switching to /migrate-context..."
+      echo ""
+      # Note: In actual execution, use: claude /migrate-context
+      exit 0
+    else
+      echo "⚠️  Continuing with /init-context (existing docs will be ignored)"
+      echo ""
+    fi
+  elif [ ${#EXISTING_DOCS[@]} -eq 1 ]; then
+    echo "ℹ️  Found 1 documentation file: ${EXISTING_DOCS[0]}"
+    echo "   Proceeding with /init-context (you can manually migrate later)"
+    echo ""
   else
-    echo "⚠️  Continuing with /init-context (existing docs will be ignored)"
+    echo "✅ No existing documentation detected"
+    echo "   /init-context is the correct command"
     echo ""
   fi
-elif [ ${#EXISTING_DOCS[@]} -eq 1 ]; then
-  echo "ℹ️  Found 1 documentation file: ${EXISTING_DOCS[0]}"
-  echo "   Proceeding with /init-context (you can manually migrate later)"
-  echo ""
-else
-  echo "✅ No existing documentation detected"
-  echo "   /init-context is the correct command"
-  echo ""
-fi
-
 fi  # End SKIP_MATURITY check
 ```
 
