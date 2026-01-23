@@ -814,20 +814,51 @@ else
   echo "  SESSIONS.md not found"
 fi
 echo ""
+
+# v5.2.0: Session Continuity Check - verify referenced session is documented
+CONTINUITY_DEDUCTION=0
+if [ -f "$CONTEXT_DIR/STATUS.md" ] && [ -f "$CONTEXT_DIR/SESSIONS.md" ]; then
+  # Extract session number from STATUS.md
+  CURRENT_SESSION=$(grep -oE "Session [0-9]+" "$CONTEXT_DIR/STATUS.md" | head -1 | grep -oE "[0-9]+" || echo "")
+
+  if [ -n "$CURRENT_SESSION" ]; then
+    # Check if that session exists in SESSIONS.md (excluding [EXAMPLE] sessions)
+    SESSION_EXISTS=$(grep -c "^## Session $CURRENT_SESSION |" "$CONTEXT_DIR/SESSIONS.md" 2>/dev/null || echo "0")
+
+    if [ "$SESSION_EXISTS" -eq 0 ]; then
+      echo ""
+      echo "🔴 CRITICAL: Session Continuity Gap Detected"
+      echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+      echo "   Session $CURRENT_SESSION referenced in STATUS.md"
+      echo "   but NOT documented in SESSIONS.md"
+      echo ""
+      echo "   Impact: Context continuity broken"
+      echo "   AI agents cannot review what happened in Session $CURRENT_SESSION"
+      echo ""
+      echo "   Action Required:"
+      echo "   → Run /save-full to document Session $CURRENT_SESSION"
+      echo "   → Do this BEFORE starting new work"
+      echo ""
+      CONTINUITY_DEDUCTION=15
+    fi
+  fi
+fi
 ```
 
 **What this checks:**
 - **Date alignment**: Ensures documentation is updated together
 - **Phase consistency**: Catches phase drift between files
 - **Session tracking**: Shows session count and detects gaps from archiving
+- **Session continuity (v5.2.0)**: Verifies referenced session is documented
 
 **Why this matters:**
 - Manual cross-file comparison is error-prone
 - Catches inconsistencies early
 - Specific, actionable warnings
 - Maintains context quality automatically
+- **Session continuity is critical** - undocumented sessions break AI handoffs
 
-**Non-blocking:** This is informational only - won't prevent review from completing.
+**Non-blocking:** Informational only, except session continuity gap which deducts 15 points from confidence score.
 
 ---
 
@@ -1080,7 +1111,11 @@ Assess ability to resume work seamlessly:
   - Last update 3-7 days: 10
   - Last update >7 days: 0
 
-**Total score:** 0-100
+- **Session Continuity (v5.2.0):** 0 or -15 points
+  - All referenced sessions documented: 0
+  - Session gap detected (see Step 2.5): -15
+
+**Total score:** 0-100 (minimum 0)
 
 **Confidence levels:**
 - 90-100: **Perfect** - Resume immediately with full confidence
