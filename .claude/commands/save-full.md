@@ -282,6 +282,17 @@ echo ""
 
 **Duration:** [X]h | **Focus:** [Brief description] | **Status:** ✅/⏳
 
+<!-- v5.1.5: Duration Estimation Guide
+How to estimate session duration:
+- Check timestamps of first and last messages in conversation
+- Or estimate: ~15 min per major feature, ~5 min per bug fix
+- Round to nearest 30 minutes for sessions > 1 hour
+- For very short sessions: "30min" or "1h" is fine
+
+Note: This is informational only; rough estimate is acceptable.
+Examples: "2h", "30min", "3h", "45min"
+-->
+
 ### TL;DR
 - [Key accomplishment 1]
 - [Key accomplishment 2]
@@ -434,6 +445,35 @@ fi
 ```
 
 This ensures the Session Index table at the top of SESSIONS.md stays current without manual updates.
+
+#### Session Index Format (v5.1.5)
+
+If SESSIONS.md has a Session Index table at the top, the entry is automatically added when you regenerate it.
+
+**Location:** After file header, before first session entry
+
+**Format:**
+```markdown
+## Session Index
+
+| # | Date | Phase | Focus | Status |
+|---|------|-------|-------|--------|
+| 50 | 2026-01-23 | Production | Member Onboarding | Complete |
+| 49 | 2026-01-22 | Production | Client Feedback | Complete |
+| 48 | 2026-01-20 | Production | Bug Fixes | Complete |
+```
+
+**When to use Session Index:**
+- Recommended for projects with 20+ sessions
+- Helps AI quickly locate relevant sessions
+- Provides overview without reading full file
+
+**When to create Session Index:**
+- If SESSIONS.md exceeds 1500 lines
+- If session navigation is becoming difficult
+- User explicitly requests one
+
+**If Session Index is absent:** Skip this step. Don't create unless sessions exceed the guidance above. The Session Index is optional for small-to-medium projects.
 
 ---
 
@@ -632,6 +672,30 @@ else
   echo "✅ Use Edit tool to update Quick Reference"
   echo ""
 fi
+```
+
+#### Quick Reference Update Checklist (v5.1.5)
+
+**Fields to update after EVERY session:**
+- [ ] **Last Updated**: Current date (Session N)
+- [ ] **Last Session**: Number and brief description
+- [ ] **Resume Point**: Action verb + location for next session
+
+**Fields to update WHEN CHANGED:**
+- [ ] **Current Focus**: If project focus shifted this session
+- [ ] **Recent Features**: Add significant features completed (keep last 3-5)
+- [ ] **Phase**: If project entered a new phase
+- [ ] **Health Score**: If /review-context was run this session
+
+**Fields that RARELY change:**
+- Production/Staging URLs (unless deployed new environment)
+- Repository URL (essentially never changes)
+- Tech stack summary (unless added major technology)
+- Standard commands (unless added new scripts)
+
+**Tip:** Focus on the "every session" fields for efficiency. The other fields only need attention when something actually changed.
+
+```bash
 ```
 
 ---
