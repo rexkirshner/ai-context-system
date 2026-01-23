@@ -904,7 +904,7 @@ if [ -f "$CONFIG_FILE" ]; then
 
     echo ""
     echo "   To see details:"
-    echo "   grep -E '\"TBD\"|: \"\"|example\\.com|placeholder' $CONFIG_FILE"
+    echo "   grep -E '\"TBD\"|: \"\"|example\\.com|placeholder|your-|YOUR_' $CONFIG_FILE"
     echo ""
     echo "   Consider updating with actual values for better AI context."
   else
