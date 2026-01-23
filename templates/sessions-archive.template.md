@@ -1,19 +1,21 @@
 # Archived Sessions
 
 > Sessions archived from SESSIONS.md to manage file size.
+> Archived: [TIMESTAMP]
 > The Session Index in SESSIONS.md still references these sessions.
 
-**To search archived sessions:**
+**To search all archived sessions:**
 ```bash
-grep -A50 "## Session N" context/sessions-archive.md
+grep -rA50 "## Session N" context/.sessions-archive/
 ```
 
 **To restore a session to SESSIONS.md:**
-1. Copy the session content from this file
-2. Insert at appropriate position in SESSIONS.md
-3. Remove from this file
+1. Find the session in the archive file
+2. Copy the full session content
+3. Insert at appropriate position in SESSIONS.md
+4. Optionally remove from archive (or leave for history)
 
 ---
 
-<!-- Archived sessions appended below by /save-full -->
-<!-- Format: Oldest sessions first, newest last -->
+<!-- Sessions archived in this batch follow -->
+<!-- Format: Sessions in ascending order (oldest first) -->

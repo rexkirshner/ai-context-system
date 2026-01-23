@@ -54,7 +54,10 @@ Move oldest 10 sessions at a time to minimize churn.
 
 ### Archive Location
 
-`context/sessions-archive.md`
+`context/.sessions-archive/` directory with timestamped files:
+- `sessions-archive-YYYY-MM-DD-HHMMSS.md`
+
+This matches the existing v5.1.0 archival pattern from `archive-sessions-helper.sh`.
 
 ### Archive Format
 
@@ -62,7 +65,9 @@ Move oldest 10 sessions at a time to minimize churn.
 # Archived Sessions
 
 Sessions archived from SESSIONS.md to manage file size.
-Search: `grep -A50 "## Session N" context/sessions-archive.md`
+Archived: YYYY-MM-DD HH:MM:SS
+
+Search all archives: `grep -rA50 "## Session N" context/.sessions-archive/`
 
 ---
 

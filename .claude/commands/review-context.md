@@ -454,14 +454,16 @@ fi
 Check if older sessions have been archived:
 
 ```bash
-# Check for archived sessions
-if [ -f "$CONTEXT_DIR/sessions-archive.md" ]; then
-  ARCHIVE_SESSIONS=$(grep -c "^## Session [0-9]" "$CONTEXT_DIR/sessions-archive.md" 2>/dev/null || echo "0")
-  if [ "$ARCHIVE_SESSIONS" -gt 0 ]; then
+# Check for archived sessions (v5.1.0+: uses .sessions-archive/ directory)
+ARCHIVE_DIR="$CONTEXT_DIR/.sessions-archive"
+if [ -d "$ARCHIVE_DIR" ]; then
+  ARCHIVE_FILES=$(find "$ARCHIVE_DIR" -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
+  if [ "$ARCHIVE_FILES" -gt 0 ]; then
+    ARCHIVE_SESSIONS=$(grep -rh "^## Session [0-9]" "$ARCHIVE_DIR" 2>/dev/null | wc -l | tr -d ' ')
     echo ""
-    echo "📦 Archived Sessions: $ARCHIVE_SESSIONS sessions in sessions-archive.md"
+    echo "📦 Archived Sessions: $ARCHIVE_SESSIONS sessions in $ARCHIVE_FILES archive file(s)"
     echo "   Session Index in SESSIONS.md still references these"
-    echo "   To search: grep -A50 \"## Session N\" $CONTEXT_DIR/sessions-archive.md"
+    echo "   To search: grep -rA50 \"## Session N\" $ARCHIVE_DIR/"
   fi
 fi
 ```
