@@ -323,6 +323,8 @@ This ensures no corrupt files if the process is interrupted.
 
 ### 7. Display Summary
 
+**Include specialist selection reasoning (v5.1.5):**
+
 ```
 ╔════════════════════════════════════════════════════════════════╗
 ║                    Code Review Complete                         ║
@@ -330,8 +332,23 @@ This ensures no corrupt files if the process is interrupted.
 
 Grade: B+
 
-Agents Run: security, testing, performance, seo
-Agents Skipped: database (no database detected)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Specialist Selection
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+| Specialist | Status | Reason |
+|------------|--------|--------|
+| security-reviewer | ✓ RUN | always=true |
+| test-coverage-reviewer | ✓ RUN | always=true |
+| performance-reviewer | ✓ RUN | hasUI=true (detected) |
+| accessibility-reviewer | ✓ RUN | hasUI=true (detected) |
+| seo-reviewer | ✓ RUN | hasUI=true (detected) |
+| database-reviewer | SKIPPED | hasDatabase=false |
+| infrastructure-reviewer | SKIPPED | hasCI=false |
+| type-safety-reviewer | ✓ RUN | primaryLanguage=typescript |
+| library-adoption-reviewer | SKIPPED | not in preset (use --all or --libraries) |
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Findings: 0 critical, 1 high, 3 medium, 5 low
 Deduplication: 67% reduction (from 136 raw findings)
@@ -340,6 +357,13 @@ Reports: docs/audits/audit-2026-01-16.{md,json}
 
 Top priority: SEC-001 - Hardcoded API key
 ```
+
+**Selection reasoning shows:**
+- Which specialists ran and WHY (condition that matched)
+- Which specialists were skipped and WHY (condition that failed)
+- Detection source where applicable (what scanner detected)
+
+This helps users understand agent behavior and debug selection issues.
 
 ## Specialist Agents (9 total)
 
