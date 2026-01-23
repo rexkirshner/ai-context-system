@@ -73,25 +73,38 @@ fi
 echo "🔍 Checking project maturity..."
 echo ""
 
-# Detect existing documentation files
-EXISTING_DOCS=()
-
-# Common documentation files
-[ -f "README.md" ] && [ -s "README.md" ] && EXISTING_DOCS+=("README.md")
-[ -f "ARCHITECTURE.md" ] && EXISTING_DOCS+=("ARCHITECTURE.md")
-[ -f "CONTRIBUTING.md" ] && EXISTING_DOCS+=("CONTRIBUTING.md")
-[ -f "docs/architecture.md" ] && EXISTING_DOCS+=("docs/architecture.md")
-[ -f "docs/README.md" ] && EXISTING_DOCS+=("docs/README.md")
-
-# Check for docs directory with content
-if [ -d "docs/" ] && [ "$(find docs/ -type f -name '*.md' 2>/dev/null | head -1)" ]; then
-  EXISTING_DOCS+=("docs/ directory (with markdown files)")
+# Skip maturity check if ACS is already initialized
+if [ -f "context/.context-config.json" ]; then
+  echo "ℹ️  ACS already initialized - skipping maturity check"
+  echo "   Use /update-context-system to upgrade if needed"
+  echo ""
+  SKIP_MATURITY=true
 fi
 
-# Check for existing architecture/design docs
-[ -f "DESIGN.md" ] && EXISTING_DOCS+=("DESIGN.md")
-[ -f "PRD.md" ] && EXISTING_DOCS+=("PRD.md")
-[ -f "ROADMAP.md" ] && EXISTING_DOCS+=("ROADMAP.md")
+if [ "${SKIP_MATURITY:-false}" != "true" ]; then
+  # Detect existing documentation files
+  EXISTING_DOCS=()
+
+  # Common documentation files
+  [ -f "README.md" ] && [ -s "README.md" ] && EXISTING_DOCS+=("README.md")
+  [ -f "ARCHITECTURE.md" ] && EXISTING_DOCS+=("ARCHITECTURE.md")
+  [ -f "CONTRIBUTING.md" ] && EXISTING_DOCS+=("CONTRIBUTING.md")
+  [ -f "docs/architecture.md" ] && EXISTING_DOCS+=("docs/architecture.md")
+  [ -f "docs/README.md" ] && EXISTING_DOCS+=("docs/README.md")
+
+  # Check for docs directory with USER content (excluding ACS-created directories)
+  # ACS creates: docs/audits/, artifacts/, context/
+  USER_DOCS_COUNT=$(find docs/ -type f -name '*.md' \
+    -not -path "docs/audits/*" \
+    2>/dev/null | wc -l | tr -d ' ')
+  if [ -d "docs/" ] && [ "$USER_DOCS_COUNT" -gt 0 ]; then
+    EXISTING_DOCS+=("docs/ directory ($USER_DOCS_COUNT user markdown files)")
+  fi
+
+  # Check for existing architecture/design docs
+  [ -f "DESIGN.md" ] && EXISTING_DOCS+=("DESIGN.md")
+  [ -f "PRD.md" ] && EXISTING_DOCS+=("PRD.md")
+  [ -f "ROADMAP.md" ] && EXISTING_DOCS+=("ROADMAP.md")
 
 # If project has 2+ significant docs, suggest migration
 if [ ${#EXISTING_DOCS[@]} -ge 2 ]; then
@@ -136,6 +149,8 @@ else
   echo "   /init-context is the correct command"
   echo ""
 fi
+
+fi  # End SKIP_MATURITY check
 ```
 
 **Why this matters:** Prevents users from accidentally choosing the wrong command. /init-context creates fresh templates and ignores existing docs, while /migrate-context preserves and organizes them.
