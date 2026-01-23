@@ -69,11 +69,9 @@ function calculateGrade(findings) {
 | 2 critical | 50 | F | 100 - 50 (capped) = 50 |
 | 3 high | 70 | C | 100 - 30 = 70 |
 | 5 high | 70 | C | 100 - 30 (capped) = 70 |
-| 10 medium | 70 | C | 100 - 20 (capped) = 80... wait |
+| 10 medium | 80 | B | 100 - 20 (capped) = 80 |
 | 10 low | 90 | A | 100 - 10 (capped) = 90 |
 | 1H + 5M + 10L | 65 | D | 100 - 10 - 15 - 10 = 65 |
-
-**Note:** 10 medium = 30 deduction, capped at 20, so score = 80 (B grade).
 
 ## Deduplication Rules
 
