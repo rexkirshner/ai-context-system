@@ -5,6 +5,44 @@ All notable changes to the AI Context System will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.1.5] - 2026-01-23
+
+**PATCH RELEASE** - Documentation & UX Polish
+
+This patch release addresses documentation gaps, minor bugs, and UX improvements identified during v5.1.4 real-world testing across three projects (NCL, Journal Website, Kex Financial Tracker).
+
+### Fixed
+
+- **Same-version update early exit**: `/update-context-system` now exits immediately if already at latest version, avoiding unnecessary downloads and backups
+- **Archive file staleness**: `/review-context` no longer flags archive files as stale (shows "Archive - frozen at archival" instead)
+- **noThreshold config respect**: `/review-context` now respects `noThreshold: true` in config for append-only files like DECISIONS.md
+
+### Improved
+
+- **Modified files warning**: Enhanced with file-specific context notes (what each file type does, backup location, recovery tip)
+- **Restart instructions**: Clarified "restart Claude Code" with platform-specific steps (terminal vs VS Code) and explanation that existing session still works
+- **Commit guidance**: Expanded to include all commonly modified paths (docs/audits, reference, CLAUDE.md, config)
+- **Loading strategy visibility**: Shows which loading strategy is used for large files (small/medium/large with line thresholds)
+- **Last session display**: Added "X days ago" to session statistics for quick context on recency
+
+### Documentation
+
+- **/save-full**: Added duration estimation guidance (timestamps vs per-feature estimates)
+- **/save-full**: Documented Session Index format and when to use/create it
+- **/save-full**: Added Quick Reference update checklist (every session / when changed / rarely)
+- **/code-review**: Added "How to Execute" section with Task tool invocation pattern
+- **/code-review**: Complete specialist agent checklist with file names and prefixes
+- **/code-review**: Documented `--verbose` flag behavior with example output
+- **/code-review**: Added specialist selection reasoning to orchestrator output
+
+### Technical Notes
+
+- All changes are backward compatible
+- Based on real feedback from v5.1.4 testing (BUG-025, BUG-031, SUGG-006, SUGG-008, SUGG-009, SUGG-011, SUGG-012, SUGG-014, SUGG-015, SUGG-016, CONF-002, CONF-003)
+- Detailed planning document: `docs/planning/v5.1/v5.1.5-planning.md`
+
+---
+
 ## [5.1.4] - 2026-01-20
 
 **PATCH RELEASE** - Library Adoption Reviewer Agent
