@@ -232,6 +232,7 @@ Build: `npm run build`
 - Don't refactor unrelated code
 - Keep PRs focused (<300 lines when possible)
 - Do not edit files outside Working Set unless Scope explicitly allows it
+- Never write secrets (API keys, tokens, passwords, PII) into context files
 
 ## Context
 
@@ -257,6 +258,7 @@ Schema-first design. Fixed key block at top for reliable parsing. **Strict secti
 ```markdown
 # Status
 
+SchemaVersion: 1
 LastUpdated: 2026-01-24
 HeadCommit: a1b2c3d
 Objective: Implement user authentication
@@ -285,6 +287,8 @@ Scope: WorkingSetOnly
 - 2026-01-18: No TypeScript for MVP
 ```
 
+**SchemaVersion:** APIs version. `SchemaVersion: 1` lets us evolve keys later without breaking agents or old repos. Agents can check this to handle older formats gracefully.
+
 **Key additions from feedback:**
 
 1. **Working Set** (3-7 paths) - What files/modules we're touching right now. Massively reduces "agent wandering."
@@ -300,11 +304,26 @@ Scope: WorkingSetOnly
    - `WorkingSetPlusDeps` - May follow imports one level deep
    - `Unrestricted` - Full codebase access (use sparingly)
 
+**Scope Expansion Protocol:** If work requires touching a file outside Working Set:
+1. Agent must **propose** the change (explain why it's needed)
+2. Agent must **update STATUS first** (add path to Working Set, adjust Scope if needed)
+3. Then proceed with the edit
+
+This turns containment into a mechanical process, not a judgment call.
+
 6. **Constraints** - Active limitations for this work phase.
 
 7. **Relevant Decisions** (optional, ≤3 entries) - Quick reference to decisions that matter for current work. Just date + title — full details in DECISIONS.md. Makes "why are we doing it this way?" fast without searching a long file.
 
-**Staleness rule:** Staleness = repo moved since STATUS was written. On session start, if `git rev-parse HEAD` differs from `HeadCommit`, STATUS is stale → agent should refresh before acting. This aligns with the principle that git is the truth for what changed.
+**Staleness rule (diff-aware):** Staleness = repo moved in ways that affect current work.
+
+On session start:
+1. If `git rev-parse HEAD` == `HeadCommit`, STATUS is current. Proceed.
+2. If HEAD differs, compute: `ChangedFiles = git diff --name-only HeadCommit..HEAD`
+3. Only require refresh if `ChangedFiles` intersects Working Set (or touches files referenced by Next Actions)
+4. If no intersection, STATUS is still valid — just update `HeadCommit` on next `/save`
+
+**Why diff-aware:** The naive "HEAD changed = stale" rule incorrectly flags STATUS after any commit (e.g., updating README while working on auth). Diff-aware staleness keeps the "git is truth" principle without making agents constantly re-write STATUS.
 
 **Verbosity limits:**
 - Working Set: 3-7 items
@@ -316,41 +335,38 @@ Scope: WorkingSetOnly
 
 ### DECISIONS.md (Actionable Format)
 
-Minimal but structured for agent utility:
+Minimal but structured for agent utility. **Key: Value format** (no markdown bold) for consistency with STATUS and easier machine parsing:
 
 ```markdown
 # Decisions
 
-Append-only log. Format: Date, Title, Why, Tradeoff, Revisit trigger.
+Append-only log. Format: Date, Title, Why, Tradeoff, RevisitWhen.
 
 ---
 
-## 2025-01-24: Chose SQLite over Postgres
+## 2026-01-24: Chose SQLite over Postgres
 
-**Why:** Local-only tool, no server component. Ships as single file.
-
-**Tradeoff:** No concurrent writes, limited scaling.
-
-**Revisit when:** Multi-user mode or hosted deployment.
+Why: Local-only tool, no server component. Ships as single file.
+Tradeoff: No concurrent writes, limited scaling.
+RevisitWhen: Multi-user mode or hosted deployment.
 
 ---
 
-## 2025-01-20: REST API, not GraphQL
+## 2026-01-20: REST API, not GraphQL
 
-**Why:** Team has REST experience. GraphQL learning curve not worth it.
-
-**Tradeoff:** Over-fetching on some endpoints.
-
-**Revisit when:** Mobile client needs arise (bandwidth matters more).
+Why: Team has REST experience. GraphQL learning curve not worth it.
+Tradeoff: Over-fetching on some endpoints.
+RevisitWhen: Mobile client needs arise (bandwidth matters more).
 
 ---
 ```
 
 **Key additions from feedback:**
+- **Why** - Brief rationale
 - **Tradeoff** - What we gave up
-- **Revisit when** - Trigger condition for reconsidering
+- **RevisitWhen** - Trigger condition for reconsidering
 
-Still tiny (≤6 lines per entry), but way more actionable for future agents.
+Still tiny (≤5 lines per entry), but way more actionable for future agents. Using `Key: Value` (no bold, no colons in keys) reduces formatting drift and makes entries more consistently machine-writable.
 
 **Git/branch conflict guidance:** DECISIONS is append-only. Never delete prior entries. Merge conflicts resolve by keeping all entries, sorted by date.
 
@@ -391,9 +407,10 @@ Still tiny (≤6 lines per entry), but way more actionable for future agents.
    - Enforce caps (≤15 bullets, ≤3 next actions, 3-7 working set, ≤3 relevant decisions)
    - Normalize bullets (same prefix, no nested lists, no paragraphs)
    - Remove empty sections or mark as `(None)`
-5. Prompt: "Any non-obvious decisions made this session?"
-6. If yes, append to DECISIONS.md with structured format (Why/Tradeoff/Revisit)
-7. If Relevant Decisions in STATUS references new decision, add it there too
+5. **Security check:** Warn if STATUS or DECISIONS would contain secrets (API keys, tokens, passwords, PII)
+6. Prompt: "Any non-obvious decisions made this session?"
+7. If yes, append to DECISIONS.md with structured format (Why/Tradeoff/RevisitWhen)
+8. If Relevant Decisions in STATUS references new decision, add it there too
 
 **Why /save is deterministic:** This is the difference between "docs you might update" and "a tiny API you can rely on." Agents trust that STATUS always has the same shape. The tool maintains invariants automatically — agents don't have to remember formatting discipline.
 
@@ -505,20 +522,21 @@ scripts/ → (deleted, no backup needed - it's in git)
 
 Extract and restructure:
 - Project description → One paragraph at top
-- Tech stack → Agent Contract table
+- Tech stack → Agent Contract block (Key: Value format)
 - Run/test/build commands → Agent Contract
 - Constraints → Agent Contract Constraints section
 - Project conventions → Notes section
 
 Add if missing:
+- Session Loop at top
 - Agent Contract with working agreement
 
 **Step 3: Transform STATUS.md**
 
 Convert to structured handoff format:
-- Add key-value table header
+- Add key block header (SchemaVersion, LastUpdated, HeadCommit, Objective, Success, Scope)
 - Extract or create Working Set from recent git activity
-- Consolidate to ≤12 bullets total
+- Consolidate to ≤15 bullets total
 - Add Objective (inferred from current focus)
 
 Discard:
@@ -889,14 +907,16 @@ The AI Context System tried to solve real problems but grew too complex. v6.0 ap
 
 **v6.0 adds agent-native design:**
 - Session Loop at top of CLAUDE.md (unavoidable directive)
-- Key: Value format instead of markdown tables (simpler, more robust)
+- Key: Value format everywhere (STATUS, CLAUDE, DECISIONS entries)
+- SchemaVersion for future-proofing
 - Schema-first files (structured data at top, strict section order)
 - Predictable API (fixed keys, consistent format, deterministic output)
 - Success criteria (machine-legible "done" state)
-- Scope boundary (`WorkingSetOnly` / `WorkingSetPlusDeps` / `Unrestricted`)
+- Scope boundary + Scope Expansion Protocol (mechanical, not judgment)
 - Relevant Decisions in STATUS (fast lookup without searching)
 - /save normalizes deterministically (prunes, orders, enforces caps)
-- Commit-based staleness (`HeadCommit` comparison, not time-based)
+- Diff-aware staleness (`HeadCommit` + Working Set intersection check)
+- Security guardrail (never write secrets to context files)
 - Git conflict guidance (simple merge rules)
 - Scope-aware reviews
 - Usability tests as acceptance criteria (including no-wandering test)
@@ -930,6 +950,7 @@ Build: `command here`
 - [e.g., Don't refactor unrelated code]
 - [e.g., Keep PRs under 300 lines when possible]
 - Do not edit files outside Working Set unless Scope explicitly allows it
+- Never write secrets (API keys, tokens, passwords, PII) into context files
 
 ## Context
 
@@ -946,6 +967,7 @@ Decisions: `context/DECISIONS.md`
 ```markdown
 # Status
 
+SchemaVersion: 1
 LastUpdated: YYYY-MM-DD
 HeadCommit: [git SHA]
 Objective: [One sentence: what we're trying to accomplish]
@@ -976,7 +998,7 @@ Scope: WorkingSetOnly
 ```markdown
 # Decisions
 
-Append-only log. Each entry: Date, Title, Why, Tradeoff, Revisit trigger.
+Append-only log. Each entry: Date, Title, Why, Tradeoff, RevisitWhen.
 
 ---
 
@@ -988,9 +1010,7 @@ Append-only log. Each entry: Date, Title, Why, Tradeoff, Revisit trigger.
 ```markdown
 ## YYYY-MM-DD: [Decision Title]
 
-**Why:** [Brief rationale - 1-2 sentences]
-
-**Tradeoff:** [What we gave up]
-
-**Revisit when:** [Trigger condition for reconsidering]
+Why: [Brief rationale - 1-2 sentences]
+Tradeoff: [What we gave up]
+RevisitWhen: [Trigger condition for reconsidering]
 ```
