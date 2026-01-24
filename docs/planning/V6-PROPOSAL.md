@@ -178,8 +178,8 @@ To prevent v6 from becoming v7-bloat, we codify these rules:
 2. **Core command cap:** Core stays at 2 commands; new commands must replace existing ones
 3. **Library, not workflow:** Anything requiring orchestration/multi-step becomes an optional prompt, not core
 4. **Verbosity limits:**
-   - STATUS.md: ≤15 total bullets, Success criteria = 1 line, Relevant Decisions ≤3
-   - DECISIONS.md: ≤6 lines per entry
+   - STATUS.md: ≤18 total bullets, Constraints ≤5, Next Actions ≤3, Relevant Decisions ≤3
+   - DECISIONS.md: ≤5 lines per entry (Title + Why + Tradeoff + RevisitWhen)
    - CLAUDE.md: Session Loop + Agent Contract + project notes only, no long descriptions
 
 ### File Structure
@@ -213,8 +213,8 @@ The key change: make CLAUDE.md explicitly **agent-operational**, not just a proj
 
 ```markdown
 > **Session Loop**
-> 1. Start → Read `context/STATUS.md`, follow Next Actions
-> 2. End → Run `/save`
+> 1. Start → MUST read `context/STATUS.md`, follow Next Actions
+> 2. End → MUST run `/save`
 
 # Project Name
 
@@ -289,6 +289,26 @@ Scope: WorkingSetOnly
 
 **SchemaVersion:** APIs version. `SchemaVersion: 1` lets us evolve keys later without breaking agents or old repos. Agents can check this to handle older formats gracefully.
 
+**Schema Contract (explicit API spec):**
+
+```
+Header keys in this exact order:
+  SchemaVersion, LastUpdated, HeadCommit, Objective, Success, Scope
+
+Scope enum: WorkingSetOnly | WorkingSetPlusDeps | Unrestricted
+
+Date format: ISO YYYY-MM-DD
+
+HeadCommit format: 7-character git SHA (short form)
+
+Empty values: Use (None) not blank
+
+Sections in this exact order:
+  Working Set, Constraints, Next Actions, Blocked On, Relevant Decisions
+```
+
+This gives `/save` something concrete to enforce and agents something reliable to parse.
+
 **Key additions from feedback:**
 
 1. **Working Set** (3-7 paths) - What files/modules we're touching right now. Massively reduces "agent wandering."
@@ -315,21 +335,29 @@ This turns containment into a mechanical process, not a judgment call.
 
 7. **Relevant Decisions** (optional, ≤3 entries) - Quick reference to decisions that matter for current work. Just date + title — full details in DECISIONS.md. Makes "why are we doing it this way?" fast without searching a long file.
 
-**Staleness rule (diff-aware):** Staleness = repo moved in ways that affect current work.
+**Staleness rule (diff-aware, includes uncommitted changes):** Staleness = repo moved in ways that affect current work.
 
-On session start:
-1. If `git rev-parse HEAD` == `HeadCommit`, STATUS is current. Proceed.
-2. If HEAD differs, compute: `ChangedFiles = git diff --name-only HeadCommit..HEAD`
-3. Only require refresh if `ChangedFiles` intersects Working Set (or touches files referenced by Next Actions)
-4. If no intersection, STATUS is still valid — just update `HeadCommit` on next `/save`
+On session start, compute all changed files:
+```
+CommittedChanges = git diff --name-only HeadCommit..HEAD
+StagedChanges = git diff --name-only --cached
+UnstagedChanges = git diff --name-only
+AllChangedFiles = CommittedChanges ∪ StagedChanges ∪ UnstagedChanges
+```
 
-**Why diff-aware:** The naive "HEAD changed = stale" rule incorrectly flags STATUS after any commit (e.g., updating README while working on auth). Diff-aware staleness keeps the "git is truth" principle without making agents constantly re-write STATUS.
+Then:
+1. If `AllChangedFiles` is empty and HEAD == HeadCommit, STATUS is current. Proceed.
+2. If `AllChangedFiles` intersects Working Set (or files referenced by Next Actions), STATUS is stale → refresh before acting.
+3. If no intersection with Working Set, STATUS is still valid — just update `HeadCommit` on next `/save`.
+
+**Why include uncommitted changes:** The most common scenario is: agent ends session with uncommitted edits, new session starts with same HEAD but dirty working tree. Checking only committed changes misses this entirely.
 
 **Verbosity limits:**
 - Working Set: 3-7 items
+- Constraints: ≤5 items
 - Next Actions: ≤3 items
 - Relevant Decisions: ≤3 items
-- Total bullets: ≤15
+- Total bullets: ≤18
 
 **Git/branch conflict guidance:** STATUS will conflict across branches. Simple rule: keep the block with the most recent `LastUpdated`, merge Next Actions. STATUS is allowed to be slightly wrong — keep it short, resolve quickly.
 
@@ -378,7 +406,7 @@ Still tiny (≤5 lines per entry), but way more actionable for future agents. Us
 
 | Command | Purpose | Time |
 |---------|---------|------|
-| `/init-context` | Create CLAUDE.md + context/ folder with templates | 30 sec |
+| `/init-context` | Create CLAUDE.md + context/ folder with templates (safe, never overwrites) | 30 sec |
 | `/save` | Update STATUS.md, prompt for decisions, enforce staleness | 1 min |
 
 **Migration (one-time):**
@@ -398,28 +426,45 @@ Still tiny (≤5 lines per entry), but way more actionable for future agents. Us
 
 **Key insight:** `/save` is the only "end session" action. It includes the decision prompt. Agents shouldn't have to remember multiple commands.
 
+**`/init-context` overwrite behavior (safe by default):**
+
+If CLAUDE.md or context/ already exist, `/init-context` does NOT overwrite. Instead:
+- Creates `CLAUDE.md.v6.new` (or `CONTEXT.md.v6.new`, etc.)
+- Prints warning: "Existing files found. Review .v6.new files and merge manually, or run with --force to overwrite."
+- `--force` flag available but discouraged
+
+This prevents accidental clobbering and makes the system feel trustworthy.
+
 **`/save` behavior:**
 1. Update STATUS.md (working set, objective, success criteria, next actions, blockers, relevant decisions)
-2. Update `HeadCommit` to current `git rev-parse HEAD`
-3. Update `LastUpdated` to current date
+2. Update `HeadCommit` to current `git rev-parse HEAD` (short form, 7 chars)
+3. Update `LastUpdated` to current date (YYYY-MM-DD)
 4. **Normalize deterministically:**
-   - Rewrite STATUS in canonical section order (even if user free-typed)
-   - Enforce caps (≤15 bullets, ≤3 next actions, 3-7 working set, ≤3 relevant decisions)
-   - Normalize bullets (same prefix, no nested lists, no paragraphs)
-   - Remove empty sections or mark as `(None)`
+   - Rewrite STATUS in canonical section order (per Schema Contract)
+   - Enforce caps (≤18 bullets total, ≤3 next actions, 3-7 working set, ≤5 constraints, ≤3 relevant decisions)
+   - Normalize bullets (same prefix `- `, no nested lists, no paragraphs)
+   - Empty sections get `(None)` not blank
 5. **Security check:** Warn if STATUS or DECISIONS would contain secrets (API keys, tokens, passwords, PII)
-6. Prompt: "Any non-obvious decisions made this session?"
-7. If yes, append to DECISIONS.md with structured format (Why/Tradeoff/RevisitWhen)
-8. If Relevant Decisions in STATUS references new decision, add it there too
+6. **Decision prompt (form-like):**
+   - Ask: "Any non-obvious decisions made this session? (Yes/No)"
+   - If yes, collect exactly: Title (≤10 words), Why (1-2 sentences), Tradeoff (1 sentence), RevisitWhen (1 sentence)
+   - Append to DECISIONS.md in structured format
+7. If new decision is relevant to current work, add to Relevant Decisions in STATUS
+
+**Why form-like prompts:** "Any decisions?" invites essays. Form-like collection (Yes/No → specific fields with length limits) keeps output deterministic and aligns with verbosity caps.
 
 **Why /save is deterministic:** This is the difference between "docs you might update" and "a tiny API you can rely on." Agents trust that STATUS always has the same shape. The tool maintains invariants automatically — agents don't have to remember formatting discipline.
 
-**Scope-aware reviews:** Each review prompt starts by asking the agent to limit scope to:
-- The Working Set paths in STATUS.md
-- The git diff / recent commits
-- Or a user-provided target
+**Review prompts = report only:**
 
-This keeps reviews fast and relevant (no "audit the whole world").
+`/review-*` commands produce a **report only** — no code edits. This prevents surprise refactors and keeps reviews "library, not workflow."
+
+Each review prompt:
+1. Asks agent to limit scope to Working Set, git diff, or user-provided target
+2. Produces findings as a structured report
+3. Does NOT make changes unless user explicitly requests follow-up edits
+
+This keeps reviews fast, relevant, and predictable.
 
 ### What Gets Cut
 
@@ -697,6 +742,25 @@ These are the acceptance criteria for v6.0. If these tests fail, the system isn'
 
 **Why this matters:** This directly validates the "Working Set reduces wandering" claim. If agents ignore Scope, the system isn't agent-native enough.
 
+### Test 6: Dirty Resume
+
+**Scenario:** Agent ends session with uncommitted changes in Working Set, then a new session starts.
+
+**Pass criteria:** Agent detects dirty working tree intersecting Working Set and either refreshes STATUS or warns and requests refresh.
+
+**How to verify:**
+1. End session with uncommitted edits in files within Working Set
+2. Run `/save` (STATUS updated, HeadCommit set)
+3. Make additional uncommitted edits (same HEAD, dirty tree)
+4. Start new session
+5. Agent should:
+   - Detect that unstaged/staged changes intersect Working Set
+   - Warn that STATUS may be stale
+   - Request refresh or auto-refresh before proceeding
+6. Agent should NOT proceed blindly with stale context
+
+**Why this matters:** This is the most common real-world scenario. The staleness check must include uncommitted changes, not just committed diffs.
+
 ---
 
 ## Part 6: Documentation
@@ -906,20 +970,22 @@ The AI Context System tried to solve real problems but grew too complex. v6.0 ap
 - 22 commands → 2 commands
 
 **v6.0 adds agent-native design:**
-- Session Loop at top of CLAUDE.md (unavoidable directive)
+- Session Loop at top of CLAUDE.md with "MUST" directives
 - Key: Value format everywhere (STATUS, CLAUDE, DECISIONS entries)
-- SchemaVersion for future-proofing
+- SchemaVersion + explicit Schema Contract (key order, enums, formats)
 - Schema-first files (structured data at top, strict section order)
 - Predictable API (fixed keys, consistent format, deterministic output)
 - Success criteria (machine-legible "done" state)
 - Scope boundary + Scope Expansion Protocol (mechanical, not judgment)
 - Relevant Decisions in STATUS (fast lookup without searching)
 - /save normalizes deterministically (prunes, orders, enforces caps)
-- Diff-aware staleness (`HeadCommit` + Working Set intersection check)
+- /save prompts are form-like (Yes/No + specific fields, not open-ended)
+- /init-context is safe by default (never overwrites, creates .v6.new)
+- Diff-aware staleness including uncommitted changes
+- Review prompts = report only (no surprise refactors)
 - Security guardrail (never write secrets to context files)
 - Git conflict guidance (simple merge rules)
-- Scope-aware reviews
-- Usability tests as acceptance criteria (including no-wandering test)
+- 6 usability tests including dirty resume scenario
 
 The result: a system that agents can reliably parse and act on, simple enough that people will actually use it.
 
@@ -931,8 +997,8 @@ The result: a system that agents can reliably parse and act on, simple enough th
 
 ```markdown
 > **Session Loop**
-> 1. Start → Read `context/STATUS.md`, follow Next Actions
-> 2. End → Run `/save`
+> 1. Start → MUST read `context/STATUS.md`, follow Next Actions
+> 2. End → MUST run `/save`
 
 # [Project Name]
 
