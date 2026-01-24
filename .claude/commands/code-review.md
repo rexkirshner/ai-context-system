@@ -60,7 +60,7 @@ Task(
 4. Selects specialists based on flags and project type
 5. Spawns selected specialists in parallel (using Task tool)
 6. Runs `synthesis-agent` to deduplicate and grade findings
-7. Generates report to `docs/audits/audit-NN.{md,json}`
+7. Generates report to `docs/audits/audit-YYYY-MM-DD.{md,json}`
 
 **Alternative - manual orchestration:**
 If you prefer to run agents manually:
@@ -78,7 +78,7 @@ This command invokes the `code-reviewer` agent, which will:
 4. **Select specialists** - Based on flags, presets, or auto-detection from scanner output
 5. **Run specialists in parallel** - Each uses scanner's specialized file lists
 6. **Synthesize findings** - Deduplicate, calculate grade, identify positives
-7. **Generate report** - Output to `docs/audits/audit-NN.{json,md}`
+7. **Generate report** - Output to `docs/audits/audit-YYYY-MM-DD.{json,md}`
 
 ## Agent-Based Architecture
 
@@ -218,10 +218,10 @@ Not selected:
 ## Output
 
 Reports are saved to `docs/audits/`:
-- `audit-NN.md` - Human-readable report
-- `audit-NN.json` - Machine-readable (AuditReport schema)
+- `audit-YYYY-MM-DD.md` - Human-readable report
+- `audit-YYYY-MM-DD.json` - Machine-readable (AuditReport schema)
 
-The number NN increments automatically (01, 02, ...).
+Filename uses current date. Multiple audits per day get suffix: `-002`, `-003`, etc.
 
 ## Phase 3: Synthesis (v5.2.0)
 
@@ -241,13 +241,14 @@ Apply synthesis-agent logic (see `.claude/agents/synthesis-agent.md`):
 ### Step 3: Save Report
 
 ```bash
-# Determine next audit number
-LAST_AUDIT=$(ls docs/audits/audit-*.md 2>/dev/null | grep -oE '[0-9]+' | sort -rn | head -1)
-NEXT_AUDIT=$((${LAST_AUDIT:-0} + 1))
+# Determine filename using date-based naming
+TODAY=$(date +%Y-%m-%d)
+# First audit of day: audit-YYYY-MM-DD
+# Subsequent audits: audit-YYYY-MM-DD-002, audit-YYYY-MM-DD-003, etc.
 
 # Save report
-# audit-{N}.md - human readable
-# audit-{N}.json - machine readable
+# audit-{DATE}.md - human readable
+# audit-{DATE}.json - machine readable
 ```
 
 ### Step 4: Display Summary
@@ -267,7 +268,7 @@ Findings: 23 total
 
 Duplicates merged: 2
 
-Report saved: docs/audits/audit-5.md
+Report saved: docs/audits/audit-2025-01-23.md
 
 Top 3 priorities:
 1. SEC-001: Add security headers
