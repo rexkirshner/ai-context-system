@@ -5,6 +5,76 @@ All notable changes to the AI Context System will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.2.0] - 2026-01-23
+
+**MINOR RELEASE** - Code Review Synthesis, Session Index, Architectural Improvements
+
+This release adds the flagship code review synthesis feature, improves SESSIONS.md scalability, enables commands to work from subdirectories, and includes numerous architectural improvements and bug fixes.
+
+### Added
+
+- **Code review synthesis** (`synthesis-agent.md`): Automatically combines findings from all specialist agents with:
+  - Two-layer deduplication (location-based + pattern grouping)
+  - Weighted grade calculation with severity caps (A-F scale)
+  - Merged findings preserve highest severity and track all detecting agents
+  - Combined report output to `docs/audits/audit-YYYY-MM-DD.{md,json}`
+
+- **Session Index** for SESSIONS.md scalability:
+  - Quick navigation table at top of SESSIONS.md
+  - Auto-archival prompt when file exceeds 2000 lines
+  - Keeps SESSIONS.md under 20,000 tokens for AI context limits
+  - Migration script for existing projects (`scripts/migrate-sessions-index.sh`)
+
+- **Working directory detection** (`find_project_root()`):
+  - All commands now work from any subdirectory (up to 5 levels deep)
+  - Searches for `context/.context-config.json` to identify project root
+  - Clear error message when not in an ACS project
+
+- **Context Restoration section** for AI handoffs:
+  - New session template section with files to read, key concepts, and next tasks
+  - Helps AI agents resume work effectively across sessions
+
+- **Expanded tech stack detection** (+7 technologies):
+  - Tailwind CSS, Turso, NextAuth.js, Auth.js, TanStack Query, tRPC, Zod
+
+- **Config drift detection** in `/review-context`:
+  - Detects TBD placeholder values in `.context-config.json`
+  - Detects empty strings and placeholder URLs (example.com)
+
+- **Shell execution model documentation** (`.claude/docs/shell-execution-model.md`):
+  - Documents isolated shell behavior for command bash blocks
+  - Self-contained block pattern with inline fallbacks
+
+### Changed
+
+- **Specialist output format**: All 9 specialists now output consistent JSON format conforming to `specialist-output.schema.json`
+- **Finding ID format**: Standardized to `{PREFIX}-{NUMBER}` (e.g., SEC-001, PERF-003)
+- **Audit report naming**: Changed from numeric (`audit-01.md`) to date-based (`audit-YYYY-MM-DD.md`)
+- **Missing session severity**: Elevated from informational to CRITICAL with 15-point confidence deduction
+- **Session examples**: Template examples now wrapped in `[EXAMPLE]` prefix, ignored by session counting
+
+### Fixed
+
+- **Maturity check timing**: Now excludes ACS-created directories (`docs/audits/`, `context/`, `artifacts/`) from document count
+- **Quick Reference instructions**: Clarified as auto-generated (removed conflicting "Edit" instructions)
+- **Code review false positives**: Improved detection for conditional `test.skip()` and `outline:none` with focus alternatives
+- **Turso detection pattern**: Fixed missing closing quote in package.json detection
+
+### Documentation
+
+- **Specialist selection logic**: Documented how specialists are auto-selected based on codebase scanner output
+- **Grade calculation specification**: Full formula with test cases in `docs/planning/v5.2/grade-calculation.md`
+- **Finding ID format**: Documented all prefixes and severity codes in `.claude/docs/finding-id-format.md`
+
+### Technical Notes
+
+- All changes are backward compatible
+- Unit tests added for `find_project_root()`, tech stack detection, session index, and synthesis deduplication
+- Phase-based implementation: A (quick fixes) → B (architecture) → C (working directory) → D (synthesis) → E (release)
+- Planning document: `docs/planning/v5.2/v5.2.0-planning-final.md`
+
+---
+
 ## [5.1.5] - 2026-01-23
 
 **PATCH RELEASE** - Documentation & UX Polish
