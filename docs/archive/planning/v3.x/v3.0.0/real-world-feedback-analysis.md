@@ -1,6 +1,6 @@
 # v3.0.0 Real-World Feedback Analysis
 
-**Source:** portfolio-tracker/context/claude-context-feedback.md
+**Source:** project-gamma/context/claude-context-feedback.md
 **Sessions Analyzed:** 6 sessions (2025-10-11 through 2025-10-21)
 **Analysis Date:** 2025-10-21
 
@@ -443,7 +443,7 @@ echo "Content" >> "$CONTEXT_DIR/SESSIONS.md"
   - Add bash logic to /review-context.md Step 2.2
   - Check line count, use head/tail if > 1000 lines
   - Clear messaging about what was loaded
-  - Test with portfolio-tracker (28K tokens)
+  - Test with project-gamma (28K tokens)
 
 **3. Context Folder Location Detection** 🟡 MEDIUM
 - **What:** Find context/ in current dir or up to 2 parent dirs
@@ -523,7 +523,7 @@ echo "Content" >> "$CONTEXT_DIR/SESSIONS.md"
 
 **2. Smart SESSIONS.md Loading** (1 hour)
 - [ ] Create smart loading logic for /review-context.md
-- [ ] Test with portfolio-tracker SESSIONS.md (28K tokens)
+- [ ] Test with project-gamma SESSIONS.md (28K tokens)
 - [ ] Update review-context-guide.md with explanation
 - [ ] Add archiving suggestion when file > 1000 lines
 

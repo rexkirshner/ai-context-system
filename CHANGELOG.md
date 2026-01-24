@@ -79,7 +79,7 @@ This release adds the flagship code review synthesis feature, improves SESSIONS.
 
 **PATCH RELEASE** - Documentation & UX Polish
 
-This patch release addresses documentation gaps, minor bugs, and UX improvements identified during v5.1.4 real-world testing across three projects (NCL, Journal Website, Kex Financial Tracker).
+This patch release addresses documentation gaps, minor bugs, and UX improvements identified during v5.1.4 real-world testing across three projects (Project Epsilon, Project Zeta, Project Eta).
 
 ### Fixed
 
@@ -1971,7 +1971,7 @@ git remote -v  # Verify change
 - Redundant setup guide (covered in README.md)
 
 **Preserved (10 valuable files in planning/v3.0.0/):**
-- Real-world feedback analysis (portfolio-tracker, project-zebra)
+- Real-world feedback analysis (project-gamma, project-zebra)
 - Critical upgrade failure documentation
 - Codex evaluation reasoning
 - Feature feedback responses (/organize-docs, /save-full)
@@ -1985,7 +1985,7 @@ git remote -v  # Verify change
 
 **MAJOR IMPROVEMENT RELEASE** - Comprehensive fixes to /save-full based on real-world user feedback
 
-Based on detailed user feedback from portfolio-tracker project Session 012 (Grade: B+), implemented complete rewrite of /save-full command to fix all critical execution issues while preserving the excellent design philosophy.
+Based on detailed user feedback from project-gamma Session 012 (Grade: B+), implemented complete rewrite of /save-full command to fix all critical execution issues while preserving the excellent design philosophy.
 
 **User's Assessment:**
 > "The /save-full command represents the GOLD STANDARD for AI-first documentation philosophy... However, execution doesn't match the vision."
@@ -2226,7 +2226,7 @@ Added copy-paste prompt to `/review-context` and `/update-context-system` comman
 
 **Improved /organize-docs Usability**
 
-Based on real-world user feedback from portfolio-tracker project (Session 012), implemented three critical usability improvements:
+Based on real-world user feedback from project-gamma project (Session 012), implemented three critical usability improvements:
 
 1. **Missing Directory Creation**
    - Added `safe_move()` function with `mkdir -p` before all file moves
@@ -2265,7 +2265,7 @@ Based on real-world user feedback from portfolio-tracker project (Session 012), 
 
 **Critical Upgrade System Fixes**
 
-Based on real-world upgrade failures from portfolio-tracker project:
+Based on real-world upgrade failures from project-gamma project:
 
 1. **Repository URL Mismatch** (CRITICAL)
    - Fixed: All URLs now point to correct repository (claude-context-system)
@@ -2341,7 +2341,7 @@ This is a major version bump reflecting the system's evolution from Claude-speci
 Based on production usage across multiple projects, three critical improvements have been implemented:
 
 1. **Enhanced Git Push Protection**
-   - **Issue**: AI assistants pushed to GitHub without explicit approval (Session 3 violation in portfolio-tracker)
+   - **Issue**: AI assistants pushed to GitHub without explicit approval (Session 3 violation in project-gamma)
    - **Fix**: Multi-layer protection added to `command-philosophy.md` and `claude.md.template`
    - **Key principle**: "Commit ≠ Push" - permission NEVER carries forward
    - **Impact**: Prevents unauthorized repository publication
@@ -2358,9 +2358,9 @@ Based on production usage across multiple projects, three critical improvements 
    - **Commands updated**: `/save`, `/save-full`, `/review-context`, `/init-context`
    - **Impact**: System works seamlessly from any project subdirectory
 
-**Validation**: `/organize-docs` command (v2.2.1) independently validated by user feedback - 90% match with user's independent proposal from portfolio-tracker Session 2.
+**Validation**: `/organize-docs` command (v2.2.1) independently validated by user feedback - 90% match with user's independent proposal from project-gamma Session 2.
 
-**Source**: Analysis of real-world feedback from portfolio-tracker (6 sessions, 10 days) and project-zebra (first multi-developer project).
+**Source**: Analysis of real-world feedback from project-gamma (6 sessions, 10 days) and project-zebra (first multi-developer project).
 
 ### Changed
 
