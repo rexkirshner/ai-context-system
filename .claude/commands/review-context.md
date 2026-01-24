@@ -630,8 +630,9 @@ for file in "$CONTEXT_DIR"/*.md; do
   if [ -f "$CONFIG_FILE" ] && command -v jq &>/dev/null; then
     FILE_GREEN=$(jq -r ".validation.stalenessThresholds[\"$FILENAME\"].green // empty" "$CONFIG_FILE" 2>/dev/null)
     FILE_YELLOW=$(jq -r ".validation.stalenessThresholds[\"$FILENAME\"].yellow // empty" "$CONFIG_FILE" 2>/dev/null)
-    [ -n "$FILE_GREEN" ] && THRESHOLD_GREEN="$FILE_GREEN"
-    [ -n "$FILE_YELLOW" ] && THRESHOLD_YELLOW="$FILE_YELLOW"
+    # Only use config values if they're valid integers
+    [[ "$FILE_GREEN" =~ ^[0-9]+$ ]] && THRESHOLD_GREEN="$FILE_GREEN"
+    [[ "$FILE_YELLOW" =~ ^[0-9]+$ ]] && THRESHOLD_YELLOW="$FILE_YELLOW"
   fi
 
   # Calculate days since last modification
