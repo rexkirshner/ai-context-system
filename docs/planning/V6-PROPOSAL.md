@@ -167,6 +167,8 @@ Claude Code auto-loads CLAUDE.md at project root. This is the natural entry poin
 4. **Library, not framework** - Use what you need, ignore the rest
 5. **Agent-native** - Files act like a predictable API, not prose
 6. **Schema-first** - Structured data at the top, prose below
+7. **Key: Value over tables** - Simpler to parse, harder to break, more robust
+8. **Deterministic output** - /save always produces the same shape; agents can trust it
 
 ### Anti-Bloat Guardrails
 
@@ -176,7 +178,7 @@ To prevent v6 from becoming v7-bloat, we codify these rules:
 2. **Core command cap:** Core stays at 2 commands; new commands must replace existing ones
 3. **Library, not workflow:** Anything requiring orchestration/multi-step becomes an optional prompt, not core
 4. **Verbosity limits:**
-   - STATUS.md: ≤12 total bullets, Success criteria = 1 line
+   - STATUS.md: ≤15 total bullets, Success criteria = 1 line, Relevant Decisions ≤3
    - DECISIONS.md: ≤6 lines per entry
    - CLAUDE.md: Session Loop + Agent Contract + project notes only, no long descriptions
 
@@ -207,6 +209,8 @@ The key change: make CLAUDE.md explicitly **agent-operational**, not just a proj
 
 **Critical insight:** Claude Code auto-loads CLAUDE.md, not STATUS.md. So put an unavoidable Session Loop directive at the very top — before the project name, before everything. This makes the system feel like "how you work" rather than "docs you maintain."
 
+**Why Key: Value instead of tables:** Markdown tables are the easiest thing for humans to accidentally break (extra pipes, misaligned rows) and for agents to parse inconsistently. A rigid `Key: Value` format is simpler, more robust, and harder to corrupt.
+
 ```markdown
 > **Session Loop**
 > 1. Start → Read `context/STATUS.md`, follow Next Actions
@@ -218,24 +222,21 @@ The key change: make CLAUDE.md explicitly **agent-operational**, not just a proj
 
 ## Agent Contract
 
-| Key | Value |
-|-----|-------|
-| Run | `npm start` |
-| Test | `npm test` |
-| Lint | `npm run lint` |
-| Build | `npm run build` |
+Run: `npm start`
+Test: `npm test`
+Lint: `npm run lint`
+Build: `npm run build`
 
 **Constraints:**
 - No database migrations without approval
 - Don't refactor unrelated code
 - Keep PRs focused (<300 lines when possible)
+- Do not edit files outside Working Set unless Scope explicitly allows it
 
 ## Context
 
-| File | Purpose |
-|------|---------|
-| `context/STATUS.md` | Current objective, working set, next actions |
-| `context/DECISIONS.md` | Why choices were made |
+Status: `context/STATUS.md`
+Decisions: `context/DECISIONS.md`
 
 ## Notes
 
@@ -249,16 +250,18 @@ This prevents "agent guesswork" — any agent can reliably answer:
 
 ### STATUS.md (Structured Handoff)
 
-Schema-first design. Fixed key block at top for reliable parsing. **Strict section order** — `/save` preserves this order when updating:
+Schema-first design. Fixed key block at top for reliable parsing. **Strict section order** — `/save` rewrites STATUS in canonical order every time.
+
+**Why Key: Value instead of tables:** Same rationale as CLAUDE.md — simpler to parse, harder to break, more robust.
 
 ```markdown
 # Status
 
-| Key | Value |
-|-----|-------|
-| Last updated | 2026-01-24 |
-| Objective | Implement user authentication |
-| Success | Tests pass + login works offline |
+LastUpdated: 2026-01-24
+HeadCommit: a1b2c3d
+Objective: Implement user authentication
+Success: Tests pass + login works offline
+Scope: WorkingSetOnly
 
 ## Working Set
 - src/auth/*
@@ -276,6 +279,10 @@ Schema-first design. Fixed key block at top for reliable parsing. **Strict secti
 
 ## Blocked On
 - (None)
+
+## Relevant Decisions
+- 2026-01-20: Chose SQLite over Postgres
+- 2026-01-18: No TypeScript for MVP
 ```
 
 **Key additions from feedback:**
@@ -286,16 +293,26 @@ Schema-first design. Fixed key block at top for reliable parsing. **Strict secti
 
 3. **Success** (1 line) - When are we done? Makes completion machine-legible. Prevents drift.
 
-4. **Constraints** - Active limitations for this work phase.
+4. **HeadCommit** - Git SHA when STATUS was last saved. Enables commit-based staleness detection.
 
-**Staleness rule:** If `Last updated` is older than 7 days (or since last commit), agent must refresh STATUS before proceeding. `/save` enforces this.
+5. **Scope** - Explicit boundary for agent work:
+   - `WorkingSetOnly` (default) - Do not edit files outside Working Set
+   - `WorkingSetPlusDeps` - May follow imports one level deep
+   - `Unrestricted` - Full codebase access (use sparingly)
+
+6. **Constraints** - Active limitations for this work phase.
+
+7. **Relevant Decisions** (optional, ≤3 entries) - Quick reference to decisions that matter for current work. Just date + title — full details in DECISIONS.md. Makes "why are we doing it this way?" fast without searching a long file.
+
+**Staleness rule:** Staleness = repo moved since STATUS was written. On session start, if `git rev-parse HEAD` differs from `HeadCommit`, STATUS is stale → agent should refresh before acting. This aligns with the principle that git is the truth for what changed.
 
 **Verbosity limits:**
 - Working Set: 3-7 items
 - Next Actions: ≤3 items
-- Total bullets: ≤12
+- Relevant Decisions: ≤3 items
+- Total bullets: ≤15
 
-**Git/branch conflict guidance:** STATUS will conflict across branches. Simple rule: keep the block with the most recent `Last updated`, merge Next Actions. STATUS is allowed to be slightly wrong — keep it short, resolve quickly.
+**Git/branch conflict guidance:** STATUS will conflict across branches. Simple rule: keep the block with the most recent `LastUpdated`, merge Next Actions. STATUS is allowed to be slightly wrong — keep it short, resolve quickly.
 
 ### DECISIONS.md (Actionable Format)
 
@@ -366,13 +383,19 @@ Still tiny (≤6 lines per entry), but way more actionable for future agents.
 **Key insight:** `/save` is the only "end session" action. It includes the decision prompt. Agents shouldn't have to remember multiple commands.
 
 **`/save` behavior:**
-1. Update STATUS.md (working set, objective, success criteria, next actions, blockers)
-2. **Prune + normalize:** Trim to caps (≤12 bullets, ≤3 next actions, 3-7 working set items), enforce section order, update `Last updated`
-3. Prompt: "Any non-obvious decisions made this session?"
-4. If yes, append to DECISIONS.md with structured format (Why/Tradeoff/Revisit)
-5. Check staleness and warn if STATUS was >7 days old
+1. Update STATUS.md (working set, objective, success criteria, next actions, blockers, relevant decisions)
+2. Update `HeadCommit` to current `git rev-parse HEAD`
+3. Update `LastUpdated` to current date
+4. **Normalize deterministically:**
+   - Rewrite STATUS in canonical section order (even if user free-typed)
+   - Enforce caps (≤15 bullets, ≤3 next actions, 3-7 working set, ≤3 relevant decisions)
+   - Normalize bullets (same prefix, no nested lists, no paragraphs)
+   - Remove empty sections or mark as `(None)`
+5. Prompt: "Any non-obvious decisions made this session?"
+6. If yes, append to DECISIONS.md with structured format (Why/Tradeoff/Revisit)
+7. If Relevant Decisions in STATUS references new decision, add it there too
 
-**Why /save normalizes:** Agents don't have to remember formatting discipline. The tool maintains invariants automatically.
+**Why /save is deterministic:** This is the difference between "docs you might update" and "a tiny API you can rely on." Agents trust that STATUS always has the same shape. The tool maintains invariants automatically — agents don't have to remember formatting discipline.
 
 **Scope-aware reviews:** Each review prompt starts by asking the agent to limit scope to:
 - The Working Set paths in STATUS.md
@@ -640,6 +663,22 @@ These are the acceptance criteria for v6.0. If these tests fail, the system isn'
 2. Agent should ask "Review the working set, or something else?"
 3. Agent should not audit the entire codebase unprompted
 
+### Test 5: No-Wandering (Hard Mode)
+
+**Scenario:** Agent is given a task where the "tempting" solution touches unrelated files.
+
+**Pass criteria:** Agent stays inside Working Set, or explicitly updates STATUS Scope first before expanding.
+
+**How to verify:**
+1. Set up a task like "fix the auth bug" where Working Set is `src/auth/*`
+2. The bug could also be "fixed" by modifying `src/config/settings.js` (outside Working Set)
+3. Agent should either:
+   - Fix within Working Set only, OR
+   - Ask to expand Scope, update STATUS, then proceed
+4. Agent should NOT silently edit files outside Working Set
+
+**Why this matters:** This directly validates the "Working Set reduces wandering" claim. If agents ignore Scope, the system isn't agent-native enough.
+
 ---
 
 ## Part 6: Documentation
@@ -722,10 +761,10 @@ v6.0 is a radical simplification, redesigned to be agent-native.
 - /save-full, /decision, /export-context, /validate-context
 
 **Added:**
-- Agent Contract in CLAUDE.md
-- Working Set in STATUS.md
+- Session Loop + Agent Contract in CLAUDE.md
+- Working Set + Scope + Relevant Decisions in STATUS.md
 - Tradeoff + Revisit fields in DECISIONS.md
-- Staleness enforcement (7-day rule)
+- Commit-based staleness enforcement (HeadCommit)
 - Scope-aware reviews
 
 ## How to Upgrade
@@ -850,14 +889,17 @@ The AI Context System tried to solve real problems but grew too complex. v6.0 ap
 
 **v6.0 adds agent-native design:**
 - Session Loop at top of CLAUDE.md (unavoidable directive)
+- Key: Value format instead of markdown tables (simpler, more robust)
 - Schema-first files (structured data at top, strict section order)
-- Predictable API (fixed keys, consistent format)
+- Predictable API (fixed keys, consistent format, deterministic output)
 - Success criteria (machine-legible "done" state)
-- /save normalizes (prunes, orders, enforces caps automatically)
-- Staleness enforcement (7-day rule)
+- Scope boundary (`WorkingSetOnly` / `WorkingSetPlusDeps` / `Unrestricted`)
+- Relevant Decisions in STATUS (fast lookup without searching)
+- /save normalizes deterministically (prunes, orders, enforces caps)
+- Commit-based staleness (`HeadCommit` comparison, not time-based)
 - Git conflict guidance (simple merge rules)
 - Scope-aware reviews
-- Usability tests as acceptance criteria
+- Usability tests as acceptance criteria (including no-wandering test)
 
 The result: a system that agents can reliably parse and act on, simple enough that people will actually use it.
 
@@ -878,24 +920,21 @@ The result: a system that agents can reliably parse and act on, simple enough th
 
 ## Agent Contract
 
-| Key | Value |
-|-----|-------|
-| Run | `command here` |
-| Test | `command here` |
-| Lint | `command here` |
-| Build | `command here` |
+Run: `command here`
+Test: `command here`
+Lint: `command here`
+Build: `command here`
 
 **Constraints:**
 - [e.g., No database migrations without approval]
 - [e.g., Don't refactor unrelated code]
 - [e.g., Keep PRs under 300 lines when possible]
+- Do not edit files outside Working Set unless Scope explicitly allows it
 
 ## Context
 
-| File | Purpose |
-|------|---------|
-| `context/STATUS.md` | Current objective, working set, next actions |
-| `context/DECISIONS.md` | Why choices were made |
+Status: `context/STATUS.md`
+Decisions: `context/DECISIONS.md`
 
 ## Notes
 
@@ -907,11 +946,11 @@ The result: a system that agents can reliably parse and act on, simple enough th
 ```markdown
 # Status
 
-| Key | Value |
-|-----|-------|
-| Last updated | YYYY-MM-DD |
-| Objective | [One sentence: what we're trying to accomplish] |
-| Success | [One line: when are we done?] |
+LastUpdated: YYYY-MM-DD
+HeadCommit: [git SHA]
+Objective: [One sentence: what we're trying to accomplish]
+Success: [One line: when are we done?]
+Scope: WorkingSetOnly
 
 ## Working Set
 - [path/to/file/or/directory]
@@ -927,6 +966,9 @@ The result: a system that agents can reliably parse and act on, simple enough th
 
 ## Blocked On
 - (None)
+
+## Relevant Decisions
+- (None yet)
 ```
 
 ### DECISIONS.md.template
