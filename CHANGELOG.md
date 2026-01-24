@@ -5,6 +5,33 @@ All notable changes to the AI Context System will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.2.1] - 2026-01-24
+
+**PATCH RELEASE** - Bug Fixes from Real-World Feedback
+
+This patch release addresses bugs discovered during v5.2.0 deployment across 3 projects (Project Alpha, Project Beta, Project Gamma). All fixes are low-risk, targeted improvements with full backward compatibility.
+
+### Fixed
+
+- **Session date regex** (BUG-001): `/review-context` now correctly parses session headers with both `|` and `-` separators
+- **zsh arithmetic compatibility** (BUG-002): Config health check no longer crashes on zsh due to whitespace in grep output
+- **CLAUDE.md case sensitivity** (BUG-003): `/update-context-system` now correctly checks for `context/CLAUDE.md` (uppercase) for Linux compatibility
+- **Duplicate checkmarks** (BUG-004): `log_success()` now strips leading checkmark if caller included one, preventing `✅ ✅` duplication
+- **Staleness threshold config** (BUG-005): `/review-context` now reads per-file thresholds from `.context-config.json` (e.g., CONTEXT.md green=90, yellow=180)
+- **Archive message accuracy** (BUG-006): Shows "gaps in numbering" instead of "archived" when no `.sessions-archive/` directory exists
+
+### Documentation
+
+- **--all flag clarification** (FIX-004): Updated code-review documentation to clarify `--all` runs "all applicable specialists" not literally all
+
+### Technical Notes
+
+- All changes are backward compatible
+- Fixes based on real-world feedback from v5.2.0 deployments
+- Planning document: `docs/planning/v5.2/v5.2.1-planning.md`
+
+---
+
 ## [5.2.0] - 2026-01-23
 
 **MINOR RELEASE** - Code Review Synthesis, Session Index, Architectural Improvements
