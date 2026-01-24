@@ -245,7 +245,7 @@ else
   # This excludes "## Session Index" headings and template placeholders like "## Session [N]"
   echo "Detecting next session number..."
   echo "Highest session found:"
-  grep -E "^## Session [0-9]+ \|" "$CONTEXT_DIR/SESSIONS.md" 2>/dev/null | grep -oE "Session [0-9]+" | grep -oE "[0-9]+" | sort -n | tail -1 | awk '{print} END {if (NR==0) print "0"}'
+  grep -E "^## Session [0-9]+ [|\-]" "$CONTEXT_DIR/SESSIONS.md" 2>/dev/null | grep -oE "Session [0-9]+" | grep -oE "[0-9]+" | sort -n | tail -1 | awk '{print} END {if (NR==0) print "0"}'
   echo ""
 
   # AI reads the highest number above and adds 1 for the next session
