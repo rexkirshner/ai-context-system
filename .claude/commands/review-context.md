@@ -591,16 +591,17 @@ echo ""
 echo "📅 Documentation Staleness Analysis"
 echo ""
 
-# Define thresholds (configurable from .context-config.json in future)
-THRESHOLD_GREEN=7
-THRESHOLD_YELLOW=14
+# Default thresholds (can be overridden per-file in .context-config.json)
+DEFAULT_GREEN=7
+DEFAULT_YELLOW=14
 
 # v5.1.5: Read noThreshold files from config (files that shouldn't trigger staleness warnings)
 NO_THRESHOLD_FILES=""
-if [ -f "$CONTEXT_DIR/.context-config.json" ]; then
+CONFIG_FILE="$CONTEXT_DIR/.context-config.json"
+if [ -f "$CONFIG_FILE" ]; then
   # Extract files with noThreshold: true
   # Pattern matches "FILENAME.md" (any case) within 5 lines before noThreshold setting
-  NO_THRESHOLD_FILES=$(grep -B5 '"noThreshold": *true' "$CONTEXT_DIR/.context-config.json" 2>/dev/null | \
+  NO_THRESHOLD_FILES=$(grep -B5 '"noThreshold": *true' "$CONFIG_FILE" 2>/dev/null | \
     grep -oE '"[A-Za-z_-]+\.md"' | tr -d '"' || echo "")
 fi
 
@@ -621,6 +622,16 @@ for file in "$CONTEXT_DIR"/*.md; do
   if echo "$NO_THRESHOLD_FILES" | grep -qF "$FILENAME" 2>/dev/null; then
     echo "  ℹ️  $FILENAME - Append-only (no staleness threshold per config)"
     continue
+  fi
+
+  # v5.2.1: Read per-file thresholds from config, fallback to defaults
+  THRESHOLD_GREEN=$DEFAULT_GREEN
+  THRESHOLD_YELLOW=$DEFAULT_YELLOW
+  if [ -f "$CONFIG_FILE" ] && command -v jq &>/dev/null; then
+    FILE_GREEN=$(jq -r ".validation.stalenessThresholds[\"$FILENAME\"].green // empty" "$CONFIG_FILE" 2>/dev/null)
+    FILE_YELLOW=$(jq -r ".validation.stalenessThresholds[\"$FILENAME\"].yellow // empty" "$CONFIG_FILE" 2>/dev/null)
+    [ -n "$FILE_GREEN" ] && THRESHOLD_GREEN="$FILE_GREEN"
+    [ -n "$FILE_YELLOW" ] && THRESHOLD_YELLOW="$FILE_YELLOW"
   fi
 
   # Calculate days since last modification
@@ -842,9 +853,14 @@ if [ -f "$CONTEXT_DIR/SESSIONS.md" ]; then
 
   echo "  Sessions in file: $SESSION_COUNT"
 
-  # Show max session number when it differs from count (indicates gaps from archiving)
+  # Show max session number when it differs from count (indicates gaps)
+  # v5.2.1: Check if archive directory exists before suggesting sessions are archived
   if [ "$SESSION_COUNT" -gt 0 ] && [ "$MAX_SESSION" -gt "$SESSION_COUNT" ]; then
-    echo "  Latest session: #$MAX_SESSION (some sessions may be archived)"
+    if [ -d "$CONTEXT_DIR/.sessions-archive" ] && [ "$(ls -A "$CONTEXT_DIR/.sessions-archive" 2>/dev/null)" ]; then
+      echo "  Latest session: #$MAX_SESSION (some sessions archived)"
+    else
+      echo "  Latest session: #$MAX_SESSION (gaps in numbering)"
+    fi
   fi
 
   # v5.1.5: Show time since last session (SUGG-006)

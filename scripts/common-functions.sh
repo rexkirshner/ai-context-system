@@ -1091,9 +1091,12 @@ log_debug() {
   fi
 }
 
-# Log success message
+# Log success message (strips leading checkmark if caller included one)
 log_success() {
-  [ "$VERBOSITY" != "quiet" ] && echo "✅ $1"
+  local msg="$1"
+  # Strip leading checkmark if present to prevent ✅ ✅ duplication
+  msg="${msg#✅ }"
+  [ "$VERBOSITY" != "quiet" ] && echo "✅ $msg"
 }
 
 # Log warning message

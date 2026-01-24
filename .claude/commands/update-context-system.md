@@ -464,7 +464,7 @@ echo "🔍 CLAUDE.md Location Check (v3.6.1)"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 
-OLD_CLAUDE="context/claude.md"
+OLD_CLAUDE="context/CLAUDE.md"
 NEW_CLAUDE="CLAUDE.md"
 
 # Case 1: Old location exists, new doesn't - AUTO-MIGRATE (no prompt)
