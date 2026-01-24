@@ -1998,7 +1998,7 @@ git remote -v  # Verify change
 - Redundant setup guide (covered in README.md)
 
 **Preserved (10 valuable files in planning/v3.0.0/):**
-- Real-world feedback analysis (project-gamma, project-zebra)
+- Real-world feedback analysis (project-gamma, Project Theta)
 - Critical upgrade failure documentation
 - Codex evaluation reasoning
 - Feature feedback responses (/organize-docs, /save-full)
@@ -2387,7 +2387,7 @@ Based on production usage across multiple projects, three critical improvements 
 
 **Validation**: `/organize-docs` command (v2.2.1) independently validated by user feedback - 90% match with user's independent proposal from project-gamma Session 2.
 
-**Source**: Analysis of real-world feedback from project-gamma (6 sessions, 10 days) and project-zebra (first multi-developer project).
+**Source**: Analysis of real-world feedback from project-gamma (6 sessions, 10 days) and Project Theta (first multi-developer project).
 
 ### Changed
 
@@ -2618,7 +2618,7 @@ Each command includes existence checks to prevent overwriting on re-init.
 **Files Changed:**
 - `.claude/commands/init-context.md` - Added 50-line ACTION block with explicit file creation
 
-**Reported by:** Real-world user testing in project-zebra
+**Reported by:** Real-world user testing in Project Theta
 
 ## [2.3.1] - 2025-10-21
 
