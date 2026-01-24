@@ -20,7 +20,7 @@ Run comprehensive code review using the agent-based system. This command delegat
 
 | Flag | Effect |
 |------|--------|
-| `--all` | Run all discovered specialists |
+| `--all` | Run all **applicable** specialists (skips those with unmet requirements) |
 | `--prelaunch` | Pre-deployment check (security, testing, performance, accessibility, seo) |
 | `--frontend` | UI-focused review (security, performance, accessibility, seo) |
 | `--backend` | API-focused review (security, testing, database, infrastructure) |
