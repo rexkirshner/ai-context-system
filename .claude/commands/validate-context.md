@@ -7,6 +7,9 @@ description: Validate context documentation structure and completeness
 
 Verify that all context documentation follows the expected structure, flag missing required sections, and check for incomplete placeholders. Perfect for ensuring documentation quality before sharing or deployment.
 
+> **Execution Model:** Each bash block runs in an isolated shell.
+> Variables do not persist between blocks. See `.claude/docs/shell-execution-model.md`.
+
 **See also:** `.claude/docs/command-philosophy.md` for quality standards
 
 ## When to Use This Command

@@ -7,6 +7,9 @@ description: Export all context documentation to single markdown file
 
 Generate a comprehensive export package combining all context documentation in both Markdown and JSON formats. Perfect for sharing, backup, multi-agent workflows, or offline reference.
 
+> **Execution Model:** Each bash block runs in an isolated shell.
+> Variables do not persist between blocks. See `.claude/docs/shell-execution-model.md`.
+
 ## When to Use This Command
 
 - Sharing project context with team members
