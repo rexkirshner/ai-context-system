@@ -2,7 +2,7 @@
 
 ## The Radical Simplification
 
-**Date:** January 2025
+**Date:** January 2026
 **Status:** Proposal (Updated with Agent-Native Feedback)
 **Author:** Rex Kirshner + Claude (Opus 4.5)
 
@@ -176,9 +176,9 @@ To prevent v6 from becoming v7-bloat, we codify these rules:
 2. **Core command cap:** Core stays at 2 commands; new commands must replace existing ones
 3. **Library, not workflow:** Anything requiring orchestration/multi-step becomes an optional prompt, not core
 4. **Verbosity limits:**
-   - STATUS.md: ≤12 total bullets
+   - STATUS.md: ≤12 total bullets, Success criteria = 1 line
    - DECISIONS.md: ≤6 lines per entry
-   - CLAUDE.md: Agent Contract + project notes only, no long descriptions
+   - CLAUDE.md: Session Loop + Agent Contract + project notes only, no long descriptions
 
 ### File Structure
 
@@ -205,7 +205,13 @@ That's it. Three files.
 
 The key change: make CLAUDE.md explicitly **agent-operational**, not just a project overview.
 
+**Critical insight:** Claude Code auto-loads CLAUDE.md, not STATUS.md. So put an unavoidable Session Loop directive at the very top — before the project name, before everything. This makes the system feel like "how you work" rather than "docs you maintain."
+
 ```markdown
+> **Session Loop**
+> 1. Start → Read `context/STATUS.md`, follow Next Actions
+> 2. End → Run `/save`
+
 # Project Name
 
 [One paragraph: what this is, who it's for]
@@ -224,14 +230,12 @@ The key change: make CLAUDE.md explicitly **agent-operational**, not just a proj
 - Don't refactor unrelated code
 - Keep PRs focused (<300 lines when possible)
 
-**Working Agreement:**
-- Update STATUS.md on session end (run `/save`)
-- Log non-obvious decisions to DECISIONS.md
-
 ## Context
 
-- **Decisions:** `context/DECISIONS.md`
-- **Status:** `context/STATUS.md`
+| File | Purpose |
+|------|---------|
+| `context/STATUS.md` | Current objective, working set, next actions |
+| `context/DECISIONS.md` | Why choices were made |
 
 ## Notes
 
@@ -245,15 +249,16 @@ This prevents "agent guesswork" — any agent can reliably answer:
 
 ### STATUS.md (Structured Handoff)
 
-Schema-first design. Fixed key block at top for reliable parsing:
+Schema-first design. Fixed key block at top for reliable parsing. **Strict section order** — `/save` preserves this order when updating:
 
 ```markdown
 # Status
 
 | Key | Value |
 |-----|-------|
-| Last updated | 2025-01-24 |
+| Last updated | 2026-01-24 |
 | Objective | Implement user authentication |
+| Success | Tests pass + login works offline |
 
 ## Working Set
 - src/auth/*
@@ -279,7 +284,9 @@ Schema-first design. Fixed key block at top for reliable parsing:
 
 2. **Objective** - One sentence. What are we trying to accomplish?
 
-3. **Constraints** - Active limitations for this work phase.
+3. **Success** (1 line) - When are we done? Makes completion machine-legible. Prevents drift.
+
+4. **Constraints** - Active limitations for this work phase.
 
 **Staleness rule:** If `Last updated` is older than 7 days (or since last commit), agent must refresh STATUS before proceeding. `/save` enforces this.
 
@@ -287,6 +294,8 @@ Schema-first design. Fixed key block at top for reliable parsing:
 - Working Set: 3-7 items
 - Next Actions: ≤3 items
 - Total bullets: ≤12
+
+**Git/branch conflict guidance:** STATUS will conflict across branches. Simple rule: keep the block with the most recent `Last updated`, merge Next Actions. STATUS is allowed to be slightly wrong — keep it short, resolve quickly.
 
 ### DECISIONS.md (Actionable Format)
 
@@ -326,24 +335,26 @@ Append-only log. Format: Date, Title, Why, Tradeoff, Revisit trigger.
 
 Still tiny (≤6 lines per entry), but way more actionable for future agents.
 
+**Git/branch conflict guidance:** DECISIONS is append-only. Never delete prior entries. Merge conflicts resolve by keeping all entries, sorted by date.
+
 ### Commands
 
-**Core (2 commands):**
+**Command categories:** The "2 core commands" principle means the daily workflow uses only 2 commands. Migration and library prompts exist but are separate concerns.
+
+**Core workflow (2 commands):**
 
 | Command | Purpose | Time |
 |---------|---------|------|
 | `/init-context` | Create CLAUDE.md + context/ folder with templates | 30 sec |
 | `/save` | Update STATUS.md, prompt for decisions, enforce staleness | 1 min |
 
-**Key insight:** `/save` is the only "end session" action. It includes the decision prompt. Agents shouldn't have to remember multiple commands.
+**Migration (one-time):**
 
-**`/save` behavior:**
-1. Update STATUS.md (working set, next actions, blockers)
-2. Prompt: "Any non-obvious decisions made this session?"
-3. If yes, append to DECISIONS.md with structured format
-4. Check staleness and warn if STATUS was >7 days old
+| Command | Purpose |
+|---------|---------|
+| `/upgrade-to-v6` | Migrate from v5.x (run once, then delete) |
 
-**Review Library (optional, à la carte):**
+**Optional library (à la carte):**
 
 | Command | When to Use |
 |---------|-------------|
@@ -351,6 +362,17 @@ Still tiny (≤6 lines per entry), but way more actionable for future agents.
 | `/review-performance` | Before launch, or when things feel slow |
 | `/review-accessibility` | Web projects |
 | `/review-seo` | Public web projects |
+
+**Key insight:** `/save` is the only "end session" action. It includes the decision prompt. Agents shouldn't have to remember multiple commands.
+
+**`/save` behavior:**
+1. Update STATUS.md (working set, objective, success criteria, next actions, blockers)
+2. **Prune + normalize:** Trim to caps (≤12 bullets, ≤3 next actions, 3-7 working set items), enforce section order, update `Last updated`
+3. Prompt: "Any non-obvious decisions made this session?"
+4. If yes, append to DECISIONS.md with structured format (Why/Tradeoff/Revisit)
+5. Check staleness and warn if STATUS was >7 days old
+
+**Why /save normalizes:** Agents don't have to remember formatting discipline. The tool maintains invariants automatically.
 
 **Scope-aware reviews:** Each review prompt starts by asking the agent to limit scope to:
 - The Working Set paths in STATUS.md
@@ -592,8 +614,9 @@ These are the acceptance criteria for v6.0. If these tests fail, the system isn'
 **How to verify:**
 1. End session with `/save`
 2. Start new session
-3. Agent should immediately know: objective, working set, next actions
-4. No clarification questions needed
+3. Agent sees Session Loop at top of CLAUDE.md, reads STATUS.md
+4. Agent should immediately know: objective, working set, success criteria, next actions
+5. No clarification questions needed
 
 ### Test 3: Decision Retrieval (<30 seconds)
 
@@ -815,8 +838,8 @@ The AI Context System tried to solve real problems but grew too complex. v6.0 ap
 
 **v6.0 keeps what works:**
 - DECISIONS.md for capturing rationale (enhanced with Tradeoff + Revisit)
-- STATUS.md for session continuity (enhanced with Working Set + Objective)
-- CLAUDE.md as the entry point (enhanced with Agent Contract)
+- STATUS.md for session continuity (enhanced with Working Set + Objective + Success)
+- CLAUDE.md as the entry point (enhanced with Session Loop + Agent Contract)
 - Focused review prompts as a library (enhanced with scope-awareness)
 
 **v6.0 cuts everything else:**
@@ -826,9 +849,13 @@ The AI Context System tried to solve real problems but grew too complex. v6.0 ap
 - 22 commands → 2 commands
 
 **v6.0 adds agent-native design:**
-- Schema-first files (structured data at top)
+- Session Loop at top of CLAUDE.md (unavoidable directive)
+- Schema-first files (structured data at top, strict section order)
 - Predictable API (fixed keys, consistent format)
-- Staleness enforcement
+- Success criteria (machine-legible "done" state)
+- /save normalizes (prunes, orders, enforces caps automatically)
+- Staleness enforcement (7-day rule)
+- Git conflict guidance (simple merge rules)
 - Scope-aware reviews
 - Usability tests as acceptance criteria
 
@@ -841,6 +868,10 @@ The result: a system that agents can reliably parse and act on, simple enough th
 ### CLAUDE.md.template
 
 ```markdown
+> **Session Loop**
+> 1. Start → Read `context/STATUS.md`, follow Next Actions
+> 2. End → Run `/save`
+
 # [Project Name]
 
 [One paragraph: what this is, who it's for, what problem it solves]
@@ -858,10 +889,6 @@ The result: a system that agents can reliably parse and act on, simple enough th
 - [e.g., No database migrations without approval]
 - [e.g., Don't refactor unrelated code]
 - [e.g., Keep PRs under 300 lines when possible]
-
-**Working Agreement:**
-- Run `/save` at session end
-- Log non-obvious decisions to DECISIONS.md
 
 ## Context
 
@@ -884,6 +911,7 @@ The result: a system that agents can reliably parse and act on, simple enough th
 |-----|-------|
 | Last updated | YYYY-MM-DD |
 | Objective | [One sentence: what we're trying to accomplish] |
+| Success | [One line: when are we done?] |
 
 ## Working Set
 - [path/to/file/or/directory]
