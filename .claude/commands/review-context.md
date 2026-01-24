@@ -848,7 +848,7 @@ if [ -f "$CONTEXT_DIR/SESSIONS.md" ]; then
   fi
 
   # v5.1.5: Show time since last session (SUGG-006)
-  LAST_SESSION_DATE=$(grep -E "^## Session [0-9]+ \|" "$CONTEXT_DIR/SESSIONS.md" | tail -1 | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}' | head -1)
+  LAST_SESSION_DATE=$(grep -E "^## Session [0-9]+ [|\-]" "$CONTEXT_DIR/SESSIONS.md" | tail -1 | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}' | head -1)
   if [ -n "$LAST_SESSION_DATE" ]; then
     # Cross-platform date diff calculation
     if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -927,14 +927,17 @@ if [ -f "$CONFIG_FILE" ]; then
   echo "🔧 Configuration Health"
   echo "━━━━━━━━━━━━━━━━━━━━━━━"
 
-  # Count TBD values
-  TBD_COUNT=$(grep -c '"TBD"' "$CONFIG_FILE" 2>/dev/null || echo "0")
+  # Count TBD values (sanitize for zsh arithmetic)
+  TBD_COUNT=$(grep -c '"TBD"' "$CONFIG_FILE" 2>/dev/null | tr -d '[:space:]')
+  TBD_COUNT=${TBD_COUNT:-0}
 
   # Count empty strings (but not empty arrays [])
-  EMPTY_COUNT=$(grep -cE '": ""' "$CONFIG_FILE" 2>/dev/null || echo "0")
+  EMPTY_COUNT=$(grep -cE '": ""' "$CONFIG_FILE" 2>/dev/null | tr -d '[:space:]')
+  EMPTY_COUNT=${EMPTY_COUNT:-0}
 
   # Check for placeholder URLs
-  PLACEHOLDER_COUNT=$(grep -cE 'example\.com|placeholder|your-|YOUR_' "$CONFIG_FILE" 2>/dev/null || echo "0")
+  PLACEHOLDER_COUNT=$(grep -cE 'example\.com|placeholder|your-|YOUR_' "$CONFIG_FILE" 2>/dev/null | tr -d '[:space:]')
+  PLACEHOLDER_COUNT=${PLACEHOLDER_COUNT:-0}
 
   TOTAL_ISSUES=$((TBD_COUNT + EMPTY_COUNT + PLACEHOLDER_COUNT))
 
