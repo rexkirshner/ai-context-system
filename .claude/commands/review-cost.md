@@ -17,7 +17,7 @@ If the Working Set lacks infrastructure files, expand to include:
 - `**/vercel.json`, `**/netlify.toml`, `**/serverless.*`
 - `**/prisma/**`, `**/drizzle/**`, `**/*database*`
 - `**/next.config.*`, `**/vite.config.*`
-- `package.json` (for dependency costs)
+- `**/package.json` (for dependency costs)
 - `**/api/**` routes (for API call patterns)
 
 Consider running: Cloud provider cost dashboards, database query analyzers, or bundle size analyzers.
