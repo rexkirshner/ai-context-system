@@ -52,7 +52,7 @@ your-project/
 ### CLAUDE.md
 
 Your project's entry point. Contains:
-- Session Loop instructions (read STATUS.md at start, run `/save` at end)
+- **Session Loop**: The core pattern—read STATUS.md at session start to resume context, run `/save` at end to persist it. This enables continuity across sessions and AI-to-AI handoffs.
 - Project description
 - Commands (run, test, build)
 - Constraints
