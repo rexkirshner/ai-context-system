@@ -5,6 +5,20 @@ All notable changes to the AI Context System will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.0.1] - 2026-01-25
+
+### Fixed
+
+- **Working Set scope limitation for review commands** - Added "Scope Expansion" sections to all review commands with critical paths to include when Working Set lacks review-relevant files
+
+### Added
+
+- Scope expansion guidance for `/review-security` (auth, API, middleware, config files)
+- Scope expansion guidance for `/review-accessibility` (components, pages, styles)
+- Scope expansion guidance for `/review-cost` (infrastructure, database, API routes)
+- Scope expansion guidance for `/review-performance` (API, lib, components, database)
+- Automated tool suggestions: `npm audit` for security, Lighthouse/axe-core for accessibility, bundle analyzer for performance
+
 ## [6.0.0] - 2026-01-24
 
 **MAJOR RELEASE** - Radical Simplification

@@ -11,6 +11,16 @@ Perform a performance review of the codebase.
 
 Review the files in the Working Set (from `context/STATUS.md`), or if specified, a particular file/directory.
 
+### Scope Expansion
+
+If the Working Set lacks performance-critical files, expand to include:
+- `**/api/**`, `**/lib/**`, `**/utils/**`
+- `**/components/**` (for render performance)
+- `**/prisma/**`, `**/*database*` (for query patterns)
+- `next.config.*`, `vite.config.*` (for build config)
+
+Consider running: Bundle analyzer, React DevTools Profiler, or Lighthouse performance audit.
+
 ## What to Check
 
 ### Database & Queries

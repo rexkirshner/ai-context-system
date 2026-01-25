@@ -11,6 +11,16 @@ Perform an accessibility (a11y) review of the codebase.
 
 Review the files in the Working Set (from `context/STATUS.md`), or if specified, a particular file/directory. Focus on UI components and templates.
 
+### Scope Expansion
+
+If the Working Set lacks UI files, expand to include:
+- `**/components/**/*.tsx`, `**/components/**/*.jsx`
+- `**/app/**/page.tsx`, `**/app/**/layout.tsx`
+- `**/pages/**/*.tsx`, `**/pages/**/*.jsx`
+- `**/*.css`, `**/*.scss`, `**/styles/**`
+
+Consider running: Lighthouse accessibility audit, axe-core, or pa11y.
+
 ## What to Check
 
 ### Semantic HTML

@@ -11,6 +11,15 @@ Perform a cost optimization review of the codebase.
 
 Review the files in the Working Set (from `context/STATUS.md`), or if specified, a particular file/directory.
 
+### Scope Expansion
+
+If the Working Set lacks infrastructure files, expand to include:
+- `**/vercel.json`, `**/netlify.toml`, `**/serverless.*`
+- `**/prisma/**`, `**/drizzle/**`, `**/*database*`
+- `**/next.config.*`, `**/vite.config.*`
+- `package.json` (for dependency costs)
+- `**/api/**` routes (for API call patterns)
+
 ## What to Check
 
 ### Cloud Resources

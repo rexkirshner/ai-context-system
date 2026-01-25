@@ -11,6 +11,15 @@ Perform a security review of the codebase.
 
 Review the files in the Working Set (from `context/STATUS.md`), or if specified, a particular file/directory.
 
+### Scope Expansion
+
+If the Working Set lacks security-relevant files, expand to include:
+- `**/auth/**`, `**/api/**`, `**/middleware/**`
+- `**/lib/auth*`, `**/lib/session*`, `**/lib/validation*`
+- `**/*.config.*`, `**/env*`
+
+Also run: `npm audit` (or equivalent) to check dependencies.
+
 ## What to Check
 
 ### Authentication & Authorization
