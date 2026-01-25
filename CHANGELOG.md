@@ -5,6 +5,69 @@ All notable changes to the AI Context System will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.0.0] - 2026-01-24
+
+**MAJOR RELEASE** - Radical Simplification
+
+v6.0 is a complete redesign. v5.x had 22 commands, 14 agents, and 150KB of shell scripts. v6.0 has **3 files** and **7 commands**. The value is in the subtraction.
+
+### Philosophy
+
+- **Advisory, not mechanical** - Guidelines agents should follow, not enforcement machinery
+- **Pure prompts, no scripts** - Claude handles logic, not shell scripts
+- **Working Set as boundary** - Simple list of 3-7 items you're touching
+
+### Changed (BREAKING)
+
+- **3 context files** instead of 8:
+  - `CLAUDE.md` - Entry point with Session Loop (absorbs CONTEXT.md)
+  - `context/STATUS.md` - Current state (simplified format)
+  - `context/DECISIONS.md` - Decision log (unchanged format)
+
+- **7 commands** instead of 22:
+  - `/init-context` - Creates context files (safe, never overwrites)
+  - `/save` - End of session (replaces both `/save` and `/save-full`)
+  - `/update-context-system` - Updates from repo with migrations
+  - `/review-security` - Security audit
+  - `/review-performance` - Performance check
+  - `/review-accessibility` - Accessibility review
+  - `/review-seo` - SEO review
+
+- **Simple installation** - `git clone` + `cp`, no install script
+
+### Removed
+
+- All shell scripts (150KB → 0)
+- All agents (14 files) - reviews are now simple prompts
+- SESSIONS.md - Git history is enough
+- CONTEXT.md - Merged into CLAUDE.md
+- `/save-full` - Just use `/save`
+- `/review-context`, `/validate-context`, `/export-context`
+- `/migrate-context`, `/organize-docs`, `/update-templates`
+- All JSON schemas, hooks, skills
+- Config files (`.context-config.json`, `acs-settings.json`)
+- Complex validation and staleness detection machinery
+
+### Added
+
+- `MIGRATIONS.md` - Version migration instructions
+- `.claude/VERSION` - Tracks installed version
+- Non-git repo support - HeadCommit can be "N/A"
+- Error handling guidance in `/update-context-system`
+
+### Migration
+
+See [MIGRATIONS.md](./MIGRATIONS.md) for step-by-step upgrade from v5.x.
+
+Quick summary:
+1. Backup existing files
+2. Delete v5.x artifacts
+3. Copy new commands
+4. Transform CLAUDE.md (add Session Loop)
+5. Transform STATUS.md (new format)
+
+---
+
 ## [5.2.1] - 2026-01-24
 
 **PATCH RELEASE** - Bug Fixes from Real-World Feedback
