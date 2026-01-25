@@ -51,14 +51,16 @@ Ask the user for project name and fill in the bracketed sections based on:
 
 ### 2. context/STATUS.md
 
-If context/STATUS.md doesn't exist, create the context directory and file:
+If context/STATUS.md doesn't exist:
+1. Create the context directory: `mkdir -p context/`
+2. Create the file with this content:
 
 ```markdown
 # Status
 
 SchemaVersion: 1
 LastUpdated: [today's date YYYY-MM-DD]
-HeadCommit: [run: git rev-parse --short HEAD]
+HeadCommit: [run: git rev-parse --short HEAD, or "N/A" if not a git repo]
 Objective: [ask user or leave as "TBD"]
 
 ## Working Set
@@ -88,11 +90,13 @@ Append-only log.
 
 ## Behavior
 
-1. Check which files exist
-2. Only create missing files
-3. For existing files, report "Already exists: [filename]"
-4. For created files, report "Created: [filename]"
-5. If CLAUDE.md is created, ask user to review and customize it
+1. Check which files exist (CLAUDE.md, context/STATUS.md, context/DECISIONS.md)
+2. Create `context/` directory if it doesn't exist
+3. Only create missing files (never overwrite)
+4. For existing files, report "Already exists: [filename]"
+5. For created files, report "Created: [filename]"
+6. If CLAUDE.md is created, ask user to review and customize it
+7. If not a git repo, use "N/A" for HeadCommit
 
 ## Done
 
