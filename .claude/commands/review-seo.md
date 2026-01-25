@@ -11,6 +11,17 @@ Perform an SEO review of the codebase.
 
 Review the files in the Working Set (from `context/STATUS.md`), or if specified, a particular file/directory. Focus on pages, templates, and routing.
 
+### Scope Expansion
+
+If the Working Set lacks SEO-relevant files, expand to include:
+- `**/app/**/page.tsx`, `**/app/**/layout.tsx`
+- `**/pages/**/*.tsx`, `**/pages/**/*.jsx`
+- `**/components/**/Head*`, `**/components/**/Meta*`
+- `**/public/robots.txt`, `**/public/sitemap*`
+- `next.config.*`, `next-sitemap.config.*`
+
+Consider running: Lighthouse SEO audit, Google Search Console, or screaming frog.
+
 ## What to Check
 
 ### Meta Tags
