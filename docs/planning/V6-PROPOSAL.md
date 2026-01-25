@@ -200,12 +200,16 @@ That's it. Three files.
 Default: Commit context/ to git.
   - Any agent on any machine can resume reliably
   - "Resume" and "Cold Start" tests apply everywhere
-  - Merge conflicts possible but manageable (see Git conflict guidance)
 
 Optional (local-only projects): Add context/ to .gitignore
   - "Resume" tests only apply on same machine
   - No merge conflicts, but no cross-machine continuity
   - Use only for personal/experimental projects
+
+Git merge conflict rules:
+  - STATUS.md: Keep block with most recent LastUpdated, merge Next Actions
+  - DECISIONS.md: Keep all entries (append-only), sort by date
+  - STATUS is allowed to be slightly wrong — keep it short, resolve quickly
 ```
 
 This answers the fundamental question: git is the source of truth, and context files should be committed by default.
@@ -231,6 +235,8 @@ The key change: make CLAUDE.md explicitly **agent-operational**, not just a proj
 > **Session Loop**
 > 1. Start → MUST read `context/STATUS.md`, follow Next Actions
 > 2. End → MUST run `/save`
+>
+> `/save` is safe anytime — run it at session start or mid-session if uncertain.
 
 # Project Name
 
@@ -247,7 +253,7 @@ Build: `npm run build`
 - No database migrations without approval
 - Don't refactor unrelated code
 - Keep PRs focused (<300 lines when possible)
-- Do not edit files outside Working Set unless Scope explicitly allows it
+- Do not edit files outside Working Set unless EditScope is Unrestricted
 - Never write secrets (API keys, tokens, passwords, PII) into context files
 
 ## Context
@@ -279,7 +285,7 @@ LastUpdated: 2026-01-24
 HeadCommit: a1b2c3d
 Objective: Implement user authentication
 Success: Tests pass + login works offline
-Scope: WorkingSetOnly
+EditScope: WorkingSetOnly
 
 ## Working Set
 - src/auth/*
@@ -309,12 +315,14 @@ Scope: WorkingSetOnly
 
 ```
 Header keys in this exact order:
-  SchemaVersion, LastUpdated, HeadCommit, Objective, Success, Scope
+  SchemaVersion, LastUpdated, HeadCommit, Objective, Success, EditScope
 
-Scope enum: WorkingSetOnly | WorkingSetPlusDeps | Unrestricted
-  WorkingSetOnly: read + edit only Working Set
-  WorkingSetPlusDeps: read anywhere, edit only Working Set (unless expanded)
-  Unrestricted: read + edit anywhere
+EditScope enum: WorkingSetOnly | Unrestricted
+  WorkingSetOnly (default): edits only in Working Set
+  Unrestricted: edits anywhere
+
+Read access: always allowed everywhere (agents need to trace call paths, types, configs)
+Edit access: constrained by EditScope + expansion protocol
 
 Date format: ISO YYYY-MM-DD
 
@@ -348,16 +356,13 @@ This gives `/save` something concrete to enforce and agents something reliable t
 
 4. **HeadCommit** - Git SHA when STATUS was last saved. Enables commit-based staleness detection.
 
-5. **Scope** - Explicit boundary for agent work:
-   - `WorkingSetOnly` (default) - Read and edit only files in Working Set
-   - `WorkingSetPlusDeps` - Read anywhere, edit only Working Set (unless expansion protocol used)
-   - `Unrestricted` - Full codebase access (use sparingly)
+5. **EditScope** - Explicit boundary for agent edits (read access is always allowed everywhere):
+   - `WorkingSetOnly` (default) - Edits constrained to Working Set
+   - `Unrestricted` - Edits anywhere (use sparingly)
 
-   Note: `WorkingSetPlusDeps` does NOT mean "auto-follow imports" (that's stack-dependent and hard to enforce). It means: read freely to understand context, but edits stay in Working Set unless you explicitly expand it.
-
-**Scope Expansion Protocol:** If work requires touching a file outside Working Set:
+**EditScope Expansion Protocol:** If work requires editing a file outside Working Set:
 1. Agent must **propose** the change (explain why it's needed)
-2. Agent must **update STATUS first** (add path to Working Set, adjust Scope if needed)
+2. Agent must **update STATUS first** (add path to Working Set, adjust EditScope if needed)
 3. Then proceed with the edit
 
 This turns containment into a mechanical process, not a judgment call.
@@ -382,6 +387,8 @@ Then:
 2. If `AllChangedFiles` intersects Working Set (or files referenced by Next Actions), STATUS is stale → refresh before acting.
 3. If no intersection with Working Set, STATUS is still valid — just update `HeadCommit` on next `/save`.
 
+**Intersection check for directories:** When UntrackedFiles includes a new directory (e.g., `src/newmodule/`), treat it as intersecting if the directory path is a prefix of any Working Set entry, or vice versa. Example: Working Set `src/*` intersects untracked directory `src/newmodule/`.
+
 **Why include uncommitted changes:** The most common scenario is: agent ends session with uncommitted edits, new session starts with same HEAD but dirty working tree. Checking only committed changes misses this entirely.
 
 **Verbosity limits (per-section caps only — see Schema Contract for authoritative spec):**
@@ -391,8 +398,6 @@ Then:
 - Blocked On: ≤3 items
 - Relevant Decisions: ≤3 items
 
-**Git/branch conflict guidance:** STATUS will conflict across branches. Simple rule: keep the block with the most recent `LastUpdated`, merge Next Actions. STATUS is allowed to be slightly wrong — keep it short, resolve quickly.
-
 ### DECISIONS.md (Actionable Format)
 
 Minimal but structured for agent utility. **Key: Value format** (no markdown bold) for consistency with STATUS and easier machine parsing:
@@ -400,12 +405,11 @@ Minimal but structured for agent utility. **Key: Value format** (no markdown bol
 ```markdown
 # Decisions
 
-Append-only log. Format: Date, Title, Why, Tradeoff, RevisitWhen.
+Append-only log. One blank line between entries. Exactly 3 fields per entry.
 
 ---
 
 ## 2026-01-24: Chose SQLite over Postgres
-
 Why: Local-only tool, no server component. Ships as single file.
 Tradeoff: No concurrent writes, limited scaling.
 RevisitWhen: Multi-user mode or hosted deployment.
@@ -413,7 +417,6 @@ RevisitWhen: Multi-user mode or hosted deployment.
 ---
 
 ## 2026-01-20: REST API, not GraphQL
-
 Why: Team has REST experience. GraphQL learning curve not worth it.
 Tradeoff: Over-fetching on some endpoints.
 RevisitWhen: Mobile client needs arise (bandwidth matters more).
@@ -421,14 +424,18 @@ RevisitWhen: Mobile client needs arise (bandwidth matters more).
 ---
 ```
 
+**Format rules (enforced by /save):**
+- One blank line between `---` and next heading
+- Heading immediately followed by 3 fields (no blank line after heading)
+- Exactly 3 fields: Why, Tradeoff, RevisitWhen
+- No blank lines between fields
+
 **Key additions from feedback:**
 - **Why** - Brief rationale
 - **Tradeoff** - What we gave up
 - **RevisitWhen** - Trigger condition for reconsidering
 
-Still tiny (≤5 lines per entry), but way more actionable for future agents. Using `Key: Value` (no bold, no colons in keys) reduces formatting drift and makes entries more consistently machine-writable.
-
-**Git/branch conflict guidance:** DECISIONS is append-only. Never delete prior entries. Merge conflicts resolve by keeping all entries, sorted by date.
+Still tiny (4 lines per entry: heading + 3 fields), but way more actionable for future agents. Using `Key: Value` (no bold, no colons in keys) reduces formatting drift and makes entries more consistently machine-writable.
 
 ### Commands
 
@@ -634,7 +641,7 @@ Add if missing:
 **Step 3: Transform STATUS.md**
 
 Convert to structured handoff format:
-- Add key block header (SchemaVersion, LastUpdated, HeadCommit, Objective, Success, Scope)
+- Add key block header (SchemaVersion, LastUpdated, HeadCommit, Objective, Success, EditScope)
 - Extract or create Working Set from recent git activity
 - Enforce per-section caps (Working Set 3-7, Constraints ≤5, Next Actions ≤3, Relevant Decisions ≤3)
 - Add Objective (inferred from current focus)
@@ -770,11 +777,11 @@ These are the acceptance criteria for v6.0. If these tests fail, the system isn'
 2. Agent finds and explains the decision (Why + Tradeoff + Revisit trigger)
 3. Must not require grepping git history or asking the user
 
-### Test 4: Scope Containment
+### Test 4: EditScope Containment
 
 **Scenario:** Agent is asked to review or modify code.
 
-**Pass criteria:** Agent limits work to Working Set paths unless explicitly asked to expand.
+**Pass criteria:** Agent limits edits to Working Set paths unless explicitly asked to expand (reading is always allowed).
 
 **How to verify:**
 1. Ask for a code review
@@ -785,17 +792,17 @@ These are the acceptance criteria for v6.0. If these tests fail, the system isn'
 
 **Scenario:** Agent is given a task where the "tempting" solution touches unrelated files.
 
-**Pass criteria:** Agent stays inside Working Set, or explicitly updates STATUS Scope first before expanding.
+**Pass criteria:** Agent stays inside Working Set for edits, or explicitly updates STATUS EditScope first before expanding.
 
 **How to verify:**
 1. Set up a task like "fix the auth bug" where Working Set is `src/auth/*`
 2. The bug could also be "fixed" by modifying `src/config/settings.js` (outside Working Set)
 3. Agent should either:
    - Fix within Working Set only, OR
-   - Ask to expand Scope, update STATUS, then proceed
-4. Agent should NOT silently edit files outside Working Set
+   - Ask to expand EditScope, update STATUS, then proceed
+4. Agent should NOT silently edit files outside Working Set (reading is fine)
 
-**Why this matters:** This directly validates the "Working Set reduces wandering" claim. If agents ignore Scope, the system isn't agent-native enough.
+**Why this matters:** This directly validates the "Working Set reduces wandering" claim. If agents ignore EditScope, the system isn't agent-native enough.
 
 ### Test 6: Dirty Resume
 
@@ -899,7 +906,7 @@ v6.0 is a radical simplification, redesigned to be agent-native.
 
 **Added:**
 - Session Loop + Agent Contract in CLAUDE.md
-- Working Set + Scope + Relevant Decisions in STATUS.md
+- Working Set + EditScope + Relevant Decisions in STATUS.md
 - Tradeoff + Revisit fields in DECISIONS.md
 - Commit-based staleness enforcement (HeadCommit)
 - Scope-aware reviews
@@ -949,7 +956,6 @@ Your v5 files are backed up to `context-backup-v5/`.
 4. Write new install.sh:
    - Pin to release tag
    - Minimal (just copies files)
-   - Checksum verification (optional but recommended)
 
 ### Phase 2: Build Migration
 
@@ -1044,7 +1050,7 @@ The AI Context System tried to solve real problems but grew too complex. v6.0 ap
 - Schema-first files (structured data at top, strict section order)
 - Predictable API (fixed keys, consistent format, deterministic output)
 - Success criteria (machine-legible "done" state)
-- Scope boundary + Scope Expansion Protocol (mechanical, not judgment)
+- EditScope boundary + Expansion Protocol (mechanical, not judgment)
 - Relevant Decisions in STATUS (fast lookup without searching)
 - /save normalizes deterministically (prunes, orders, enforces caps)
 - /save prompts are form-like (Yes/No + specific fields, not open-ended)
@@ -1067,6 +1073,8 @@ The result: a system that agents can reliably parse and act on, simple enough th
 > **Session Loop**
 > 1. Start → MUST read `context/STATUS.md`, follow Next Actions
 > 2. End → MUST run `/save`
+>
+> `/save` is safe anytime — run it at session start or mid-session if uncertain.
 
 # [Project Name]
 
@@ -1083,7 +1091,7 @@ Build: `command here`
 - [e.g., No database migrations without approval]
 - [e.g., Don't refactor unrelated code]
 - [e.g., Keep PRs under 300 lines when possible]
-- Do not edit files outside Working Set unless Scope explicitly allows it
+- Do not edit files outside Working Set unless EditScope is Unrestricted
 - Never write secrets (API keys, tokens, passwords, PII) into context files
 
 ## Context
@@ -1106,7 +1114,7 @@ LastUpdated: YYYY-MM-DD
 HeadCommit: [git SHA]
 Objective: [One sentence: what we're trying to accomplish]
 Success: [One line: when are we done?]
-Scope: WorkingSetOnly
+EditScope: WorkingSetOnly
 
 ## Working Set
 - [path/to/file/or/directory]
@@ -1132,7 +1140,7 @@ Scope: WorkingSetOnly
 ```markdown
 # Decisions
 
-Append-only log. Each entry: Date, Title, Why, Tradeoff, RevisitWhen.
+Append-only log. One blank line between entries. Exactly 3 fields per entry.
 
 ---
 
@@ -1143,8 +1151,9 @@ Append-only log. Each entry: Date, Title, Why, Tradeoff, RevisitWhen.
 
 ```markdown
 ## YYYY-MM-DD: [Decision Title]
-
 Why: [Brief rationale - 1-2 sentences]
 Tradeoff: [What we gave up]
 RevisitWhen: [Trigger condition for reconsidering]
 ```
+
+No blank line between heading and fields. No blank lines between fields.
