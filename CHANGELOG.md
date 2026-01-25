@@ -57,14 +57,15 @@ v6.0 is a complete redesign. v5.x had 22 commands, 14 agents, and 150KB of shell
 
 ### Migration
 
-See [MIGRATIONS.md](./MIGRATIONS.md) for step-by-step upgrade from v5.x.
+See [MIGRATIONS.md](./MIGRATIONS.md) for step-by-step upgrade from any pre-v6 version.
 
 Quick summary:
 1. Backup existing files
-2. Delete v5.x artifacts
+2. Delete legacy artifacts
 3. Copy new commands
-4. Transform CLAUDE.md (add Session Loop)
-5. Transform STATUS.md (new format)
+4. Create CLAUDE.md if missing (synthesize from CONTEXT.md)
+5. Add Session Loop to existing CLAUDE.md
+6. Transform STATUS.md (new format)
 
 ---
 
