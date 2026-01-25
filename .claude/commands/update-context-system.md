@@ -27,10 +27,15 @@ Read the version from `/tmp/acs-update/.claude/VERSION`.
 
 ### 3. Compare Versions
 
+Compare as semantic version strings (e.g., "6.0.0" vs "6.1.0").
+
 If current version equals latest version:
 - Report "Already up to date (v[version])"
 - Clean up: `rm -rf /tmp/acs-update`
 - Exit
+
+If current version is higher than latest (shouldn't happen in normal use):
+- Warn user and ask if they want to proceed (possible downgrade)
 
 ### 4. Backup Current Files
 
