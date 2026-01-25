@@ -72,6 +72,15 @@ rm -rf /tmp/acs-update
 - Show new version from `.claude/VERSION`
 - Confirm migration completed
 
+## Error Handling
+
+- **Git clone fails**: Check network connection, suggest trying again later
+- **Repo not found**: Verify the repository URL is correct
+- **Permission denied**: Check write permissions on .claude/ directory
+- **Migration step fails**: Stop, report error, suggest manual intervention
+
+If any step fails, clean up `/tmp/acs-update` before exiting.
+
 ## Done
 
 Report:
