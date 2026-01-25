@@ -47,7 +47,7 @@ Objective: [current goal - update if changed during session]
 
 **Field guidance:**
 - **LastUpdated**: Always today's date
-- **HeadCommit**: Current git SHA (run `git rev-parse --short HEAD`), or "N/A" if not a git repo
+- **HeadCommit**: Current git SHA (run `git rev-parse --short HEAD`); if not a git repo, keep existing value
 - **Objective**: Update if focus shifted during session
 - **Working Set**: 3-7 items, reflect what was actually touched
 - **Next Actions**: Actionable items for next session
