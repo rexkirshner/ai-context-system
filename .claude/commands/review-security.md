@@ -18,7 +18,7 @@ If the Working Set lacks security-relevant files, expand to include:
 - `**/lib/auth*`, `**/lib/session*`, `**/lib/validation*`
 - `**/*.config.*`, `**/env*`
 
-Also run: `npm audit` (or equivalent) to check dependencies.
+Consider running: `npm audit` (or equivalent) to check dependencies.
 
 ## What to Check
 
