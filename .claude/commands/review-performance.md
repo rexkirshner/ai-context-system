@@ -17,7 +17,7 @@ If the Working Set lacks performance-critical files, expand to include:
 - `**/api/**`, `**/lib/**`, `**/utils/**`
 - `**/components/**` (for render performance)
 - `**/prisma/**`, `**/*database*` (for query patterns)
-- `next.config.*`, `vite.config.*` (for build config)
+- `**/next.config.*`, `**/vite.config.*` (for build config)
 
 Consider running: Bundle analyzer, React DevTools Profiler, or Lighthouse performance audit.
 

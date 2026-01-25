@@ -18,7 +18,7 @@ If the Working Set lacks SEO-relevant files, expand to include:
 - `**/pages/**/*.tsx`, `**/pages/**/*.jsx`
 - `**/components/**/Head*`, `**/components/**/Meta*`
 - `**/public/robots.txt`, `**/public/sitemap*`
-- `next.config.*`, `next-sitemap.config.*`
+- `**/next.config.*`, `**/next-sitemap.config.*`
 
 Consider running: Lighthouse SEO audit, Google Search Console, or screaming frog.
 
