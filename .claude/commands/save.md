@@ -26,7 +26,7 @@ Update all fields while preserving the exact format:
 
 SchemaVersion: 1
 LastUpdated: [today's date YYYY-MM-DD]
-HeadCommit: [run: git rev-parse --short HEAD]
+HeadCommit: [run: git rev-parse --short HEAD, or keep existing value if not a git repo]
 Objective: [current goal - update if changed during session]
 
 ## Working Set
@@ -47,7 +47,7 @@ Objective: [current goal - update if changed during session]
 
 **Field guidance:**
 - **LastUpdated**: Always today's date
-- **HeadCommit**: Current git SHA (run `git rev-parse --short HEAD`)
+- **HeadCommit**: Current git SHA (run `git rev-parse --short HEAD`), or "N/A" if not a git repo
 - **Objective**: Update if focus shifted during session
 - **Working Set**: 3-7 items, reflect what was actually touched
 - **Next Actions**: Actionable items for next session
