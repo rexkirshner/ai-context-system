@@ -318,4 +318,16 @@ The migration will delete `artifacts/` since v6.0 doesn't use it.
 
 ---
 
-Future migrations (v6.0 → v6.1, etc.) will be added below as needed.
+## Schema Versioning
+
+STATUS.md includes `SchemaVersion: 1` to enable future format changes.
+
+**Current schema (v1):** Introduced in v6.0. If we change the STATUS.md format in a future release (e.g., adding fields, restructuring), we'll increment to SchemaVersion 2 and document the transformation here.
+
+**Philosophy:** Schema changes should be rare and backward-compatible when possible. The `/update-context-system` command will handle schema migrations automatically.
+
+---
+
+## Future Migrations
+
+Space reserved for v6.x → v6.y migrations as needed.
