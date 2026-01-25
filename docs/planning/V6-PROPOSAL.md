@@ -177,8 +177,8 @@ To prevent v6 from becoming v7-bloat, we codify these rules:
 1. **30-second rule:** If a feature can't be used in <30 seconds, it doesn't ship
 2. **Core command cap:** Core stays at 2 commands; new commands must replace existing ones
 3. **Library, not workflow:** Anything requiring orchestration/multi-step becomes an optional prompt, not core
-4. **Verbosity limits:**
-   - STATUS.md: ≤18 total bullets, Constraints ≤5, Next Actions ≤3, Relevant Decisions ≤3
+4. **Verbosity limits (per-section caps, no "total bullets" rule):**
+   - STATUS.md: Working Set 3-7, Constraints ≤5, Next Actions ≤3, Blocked On ≤3, Relevant Decisions ≤3
    - DECISIONS.md: ≤5 lines per entry (Title + Why + Tradeoff + RevisitWhen)
    - CLAUDE.md: Session Loop + Agent Contract + project notes only, no long descriptions
 
@@ -305,6 +305,16 @@ Empty values: Use (None) not blank
 
 Sections in this exact order:
   Working Set, Constraints, Next Actions, Blocked On, Relevant Decisions
+
+Working Set entries: file paths, directories, or globs
+  Treat as git pathspecs for intersection checks (e.g., src/auth/*)
+
+Per-section caps (no "total bullets" rule):
+  Working Set: 3-7 items
+  Constraints: ≤5 items
+  Next Actions: ≤3 items
+  Blocked On: ≤3 items
+  Relevant Decisions: ≤3 items
 ```
 
 This gives `/save` something concrete to enforce and agents something reliable to parse.
@@ -342,7 +352,8 @@ On session start, compute all changed files:
 CommittedChanges = git diff --name-only HeadCommit..HEAD
 StagedChanges = git diff --name-only --cached
 UnstagedChanges = git diff --name-only
-AllChangedFiles = CommittedChanges ∪ StagedChanges ∪ UnstagedChanges
+UntrackedFiles = git ls-files --others --exclude-standard
+AllChangedFiles = CommittedChanges ∪ StagedChanges ∪ UnstagedChanges ∪ UntrackedFiles
 ```
 
 Then:
@@ -352,12 +363,12 @@ Then:
 
 **Why include uncommitted changes:** The most common scenario is: agent ends session with uncommitted edits, new session starts with same HEAD but dirty working tree. Checking only committed changes misses this entirely.
 
-**Verbosity limits:**
+**Verbosity limits (per-section caps only — see Schema Contract for authoritative spec):**
 - Working Set: 3-7 items
 - Constraints: ≤5 items
 - Next Actions: ≤3 items
+- Blocked On: ≤3 items
 - Relevant Decisions: ≤3 items
-- Total bullets: ≤18
 
 **Git/branch conflict guidance:** STATUS will conflict across branches. Simple rule: keep the block with the most recent `LastUpdated`, merge Next Actions. STATUS is allowed to be slightly wrong — keep it short, resolve quickly.
 
@@ -441,7 +452,7 @@ This prevents accidental clobbering and makes the system feel trustworthy.
 3. Update `LastUpdated` to current date (YYYY-MM-DD)
 4. **Normalize deterministically:**
    - Rewrite STATUS in canonical section order (per Schema Contract)
-   - Enforce caps (≤18 bullets total, ≤3 next actions, 3-7 working set, ≤5 constraints, ≤3 relevant decisions)
+   - Enforce per-section caps (3-7 working set, ≤5 constraints, ≤3 next actions, ≤3 blocked on, ≤3 relevant decisions)
    - Normalize bullets (same prefix `- `, no nested lists, no paragraphs)
    - Empty sections get `(None)` not blank
 5. **Security check:** Warn if STATUS or DECISIONS would contain secrets (API keys, tokens, passwords, PII)
@@ -461,10 +472,26 @@ This prevents accidental clobbering and makes the system feel trustworthy.
 
 Each review prompt:
 1. Asks agent to limit scope to Working Set, git diff, or user-provided target
-2. Produces findings as a structured report
+2. Produces findings as a structured report (see template below)
 3. Does NOT make changes unless user explicitly requests follow-up edits
 
-This keeps reviews fast, relevant, and predictable.
+**Review output template:**
+```
+## Scope
+[Working Set | git diff | user-specified target]
+
+## Findings
+| Severity | File | Issue | Suggested Fix |
+|----------|------|-------|---------------|
+| High/Med/Low | path/to/file | What's wrong | How to fix |
+
+## Top 3 Next Steps (optional)
+1. ...
+2. ...
+3. ...
+```
+
+This keeps reviews fast, relevant, predictable, and actionable.
 
 ### What Gets Cut
 
@@ -581,7 +608,7 @@ Add if missing:
 Convert to structured handoff format:
 - Add key block header (SchemaVersion, LastUpdated, HeadCommit, Objective, Success, Scope)
 - Extract or create Working Set from recent git activity
-- Consolidate to ≤15 bullets total
+- Enforce per-section caps (Working Set 3-7, Constraints ≤5, Next Actions ≤3, Relevant Decisions ≤3)
 - Add Objective (inferred from current focus)
 
 Discard:
