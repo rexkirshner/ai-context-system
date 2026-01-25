@@ -75,6 +75,8 @@ cp ai-context-system/.claude/VERSION .claude/VERSION
 rm -rf ai-context-system
 ```
 
+**Alternative if git clone fails:** Download the release zip from GitHub releases, extract it, and copy the files manually.
+
 ### Step 4: Create or Transform CLAUDE.md
 
 **If CLAUDE.md does NOT exist**, create it by synthesizing from available sources:
