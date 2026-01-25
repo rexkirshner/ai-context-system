@@ -1,9 +1,0 @@
-{
-  "name": "single-project-fixture",
-  "version": "1.0.0",
-  "private": true,
-  "scripts": {
-    "build": "tsc",
-    "test": "jest"
-  }
-}

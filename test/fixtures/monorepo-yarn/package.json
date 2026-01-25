@@ -1,5 +1,0 @@
-{
-  "name": "yarn-workspaces-fixture",
-  "private": true,
-  "workspaces": ["apps/*", "packages/*"]
-}

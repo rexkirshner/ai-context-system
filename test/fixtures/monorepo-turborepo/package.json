@@ -1,5 +1,0 @@
-{
-  "name": "turborepo-fixture",
-  "private": true,
-  "workspaces": ["apps/*", "packages/*"]
-}
