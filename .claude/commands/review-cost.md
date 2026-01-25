@@ -20,6 +20,8 @@ If the Working Set lacks infrastructure files, expand to include:
 - `package.json` (for dependency costs)
 - `**/api/**` routes (for API call patterns)
 
+Consider running: Cloud provider cost dashboards, database query analyzers, or bundle size analyzers.
+
 ## What to Check
 
 ### Cloud Resources
