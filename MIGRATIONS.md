@@ -88,7 +88,7 @@ Rewrite in new format:
 
 SchemaVersion: 1
 LastUpdated: [today's date]
-HeadCommit: [run: git rev-parse --short HEAD]
+HeadCommit: [run: git rev-parse --short HEAD, or "N/A" if not a git repo]
 Objective: [from old STATUS.md current focus]
 
 ## Working Set
