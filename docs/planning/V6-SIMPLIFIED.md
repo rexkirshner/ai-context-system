@@ -45,7 +45,7 @@ Build: `npm run build`
 
 - Don't refactor unrelated code
 - Keep PRs under 300 lines
-- Stay within the Working Set unless you have a good reason to expand
+- If you need to touch files outside Working Set, pause, propose, update Working Set, then proceed
 
 ## Context
 
@@ -139,6 +139,8 @@ Creates the three files if they don't exist. Safe to run — never overwrites.
 2. Updates HeadCommit to current git HEAD
 3. Asks: "Any decisions worth recording?" → If yes, appends to DECISIONS.md
 
+`/save` keeps section headers and field names exactly as specified; content changes, structure doesn't.
+
 That's it. One command to remember at end of session.
 
 ---
@@ -150,9 +152,9 @@ When you start a session:
 1. Read STATUS.md
 2. If `HeadCommit` doesn't match current HEAD, STATUS might be out of date
 3. If `git status` shows uncommitted changes, STATUS might be out of date
-4. Use your judgment — refresh if the changes look relevant to your work
+4. **If either is true:** Update Objective, Working Set, and Next Actions before coding
 
-No auto-refresh. No complex intersection checks. Just: "does this look current?"
+No auto-refresh. No complex intersection checks. Just: "does this look current? If not, fix it first."
 
 ---
 
