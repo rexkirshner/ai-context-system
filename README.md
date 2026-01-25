@@ -10,7 +10,7 @@
 
 v5.x had 22 commands, 14 agents, and 150KB of shell scripts. It was overengineered.
 
-v6.0 has **3 files** and **3 commands** (+ 4 optional review prompts). That's it.
+v6.0 has **3 files** and **7 commands** (3 core + 4 optional reviews). That's it.
 
 ---
 
