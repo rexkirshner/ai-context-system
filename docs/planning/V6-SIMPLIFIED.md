@@ -66,7 +66,6 @@ SchemaVersion: 1
 LastUpdated: 2026-01-24
 HeadCommit: a1b2c3d
 Objective: Implement user authentication
-EditScope: WorkingSetOnly
 
 ## Working Set
 
@@ -88,7 +87,6 @@ EditScope: WorkingSetOnly
 **That's the whole format.** A few notes:
 
 - **Working Set** (3-7 items): What files/directories you're touching. Keeps agents from wandering.
-- **EditScope**: Either `WorkingSetOnly` (default) or `Unrestricted`. Advisory — agents should respect it, but it's not enforced mechanically.
 - **HeadCommit**: Git SHA when STATUS was last saved. If it doesn't match current HEAD, STATUS might be stale.
 - **SchemaVersion**: For future compatibility. Ignore it for now.
 
@@ -242,7 +240,7 @@ To prevent v6 from becoming v7:
 
 **Cut:**
 - Staleness detection machinery
-- EditScope expansion protocol
+- EditScope (Working Set is the containment boundary)
 - Secret scanning
 - Idempotent save guarantees
 - Auto-refresh
