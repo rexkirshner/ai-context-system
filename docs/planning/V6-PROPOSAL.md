@@ -177,10 +177,8 @@ To prevent v6 from becoming v7-bloat, we codify these rules:
 1. **30-second rule:** If a feature can't be used in <30 seconds, it doesn't ship
 2. **Core command cap:** Core stays at 2 commands; new commands must replace existing ones
 3. **Library, not workflow:** Anything requiring orchestration/multi-step becomes an optional prompt, not core
-4. **Verbosity limits (per-section caps, no "total bullets" rule):**
-   - STATUS.md: Working Set 3-7, Constraints ≤5, Next Actions ≤3, Blocked On ≤3, Relevant Decisions ≤3
-   - DECISIONS.md: ≤4 lines per entry (Title + Why + Tradeoff + RevisitWhen)
-   - CLAUDE.md: Session Loop + Agent Contract + Notes (≤10 bullets, no paragraphs)
+4. **Verbosity limits:** Per-section caps only, no "total bullets" rule. See Schema Contract for authoritative spec.
+5. **Feature folding:** If a feature requires the agent to remember another step, it must be folded into `/save` or removed.
 
 ### File Structure
 
@@ -312,9 +310,11 @@ EditScope: WorkingSetOnly
 
 **SchemaVersion:** APIs version. `SchemaVersion: 1` lets us evolve keys later without breaking agents or old repos. Agents can check this to handle older formats gracefully.
 
-**Schema Contract (explicit API spec):**
+**Schema Contract (single source of truth for all format rules):**
 
 ```
+=== STATUS.md ===
+
 Header keys in this exact order:
   SchemaVersion, LastUpdated, HeadCommit, Objective, Success, EditScope
 
@@ -326,9 +326,7 @@ Read access: always allowed everywhere (agents need to trace call paths, types, 
 Edit access: constrained by EditScope + expansion protocol
 
 Date format: ISO YYYY-MM-DD
-
 HeadCommit format: 7-character git SHA (short form), or (None) if git unavailable
-
 Empty values: Use (None) not blank
 
 Sections in this exact order:
@@ -337,15 +335,31 @@ Sections in this exact order:
 Working Set entries: file paths, directories, or globs
   Treat as git pathspecs for intersection checks (e.g., src/auth/*)
 
-Per-section caps (no "total bullets" rule):
+STATUS caps:
   Working Set: 3-7 items
   Constraints: ≤5 items
   Next Actions: ≤3 items
   Blocked On: ≤3 items
   Relevant Decisions: ≤3 items
+
+=== DECISIONS.md ===
+
+Entry format (exactly 4 lines, no blanks between):
+  ## YYYY-MM-DD: [Area] Title
+  Why: [1-2 sentences]
+  Tradeoff: [1 sentence]
+  RevisitWhen: [1 sentence]
+
+Title convention: [Area] prefix for grep (e.g., [Auth] SQLite over Postgres)
+Separator: one blank line + --- between entries
+
+=== CLAUDE.md ===
+
+Required sections: Session Loop (blockquote at top), Agent Contract, Context, Notes
+Notes cap: ≤10 bullets, no paragraphs
 ```
 
-This gives `/save` something concrete to enforce and agents something reliable to parse.
+This is the authoritative spec. All other references in this document defer to Schema Contract.
 
 **Key additions from feedback:**
 
@@ -401,12 +415,7 @@ Then:
 
 **Why include uncommitted changes:** The most common scenario is: agent ends session with uncommitted edits, new session starts with same HEAD but dirty working tree. Checking only committed changes misses this entirely.
 
-**Verbosity limits (per-section caps only — see Schema Contract for authoritative spec):**
-- Working Set: 3-7 items
-- Constraints: ≤5 items
-- Next Actions: ≤3 items
-- Blocked On: ≤3 items
-- Relevant Decisions: ≤3 items
+**Verbosity limits:** See Schema Contract above for authoritative caps.
 
 ### DECISIONS.md (Actionable Format)
 
@@ -419,14 +428,14 @@ Append-only log. One blank line between entries. Exactly 3 fields per entry.
 
 ---
 
-## 2026-01-24: Chose SQLite over Postgres
+## 2026-01-24: [DB] SQLite over Postgres
 Why: Local-only tool, no server component. Ships as single file.
 Tradeoff: No concurrent writes, limited scaling.
 RevisitWhen: Multi-user mode or hosted deployment.
 
 ---
 
-## 2026-01-20: REST API, not GraphQL
+## 2026-01-20: [API] REST over GraphQL
 Why: Team has REST experience. GraphQL learning curve not worth it.
 Tradeoff: Over-fetching on some endpoints.
 RevisitWhen: Mobile client needs arise (bandwidth matters more).
@@ -849,6 +858,21 @@ These are the acceptance criteria for v6.0. If these tests fail, the system isn'
 
 **Why this matters:** This validates the original vision — "agent-to-agent continuity" — using the v6 harness. If B can't seamlessly continue A's work, the system isn't truly agent-native.
 
+### Test 8: Idempotent Save
+
+**Scenario:** Run `/save` twice with no working tree changes between runs.
+
+**Pass criteria:** STATUS.md and DECISIONS.md are byte-identical after the second `/save`.
+
+**How to verify:**
+1. Run `/save` to normalize STATUS and DECISIONS
+2. Copy STATUS.md and DECISIONS.md to temp files
+3. Run `/save` again (no edits between)
+4. Diff against temp files
+5. Pass only if zero diff
+
+**Why this matters:** This prevents slow drift (extra whitespace, reordered bullets, timestamp jitter) from creeping in. If `/save` is truly deterministic, running it twice produces identical output.
+
 ---
 
 ## Part 6: Documentation
@@ -1009,7 +1033,7 @@ Your v5 files are backed up to `context-backup-v5/`.
    - Commands installed (init-context, save, review-*)
    - Templates in place
    - A small working codebase (e.g., a CLI tool or simple web app)
-   - All 7 acceptance tests demonstrated and passing
+   - All 8 acceptance tests demonstrated and passing
 
 2. This is the best anti-vanity move: if we can't demonstrate the tests passing on a real repo, the spec is theater.
 
@@ -1079,7 +1103,7 @@ The AI Context System tried to solve real problems but grew too complex. v6.0 ap
 - Review prompts = report only (no surprise refactors)
 - Security guardrail (never write secrets to context files)
 - Git conflict guidance (simple merge rules)
-- 7 usability tests including dirty resume + multi-agent handoff
+- 8 usability tests including dirty resume, multi-agent handoff, idempotent save
 
 The result: a system that agents can reliably parse and act on, simple enough that people will actually use it.
 
@@ -1171,10 +1195,11 @@ Append-only log. One blank line between entries. Exactly 3 fields per entry.
 ### Decision Entry Format
 
 ```markdown
-## YYYY-MM-DD: [Decision Title]
+## YYYY-MM-DD: [Area] Decision Title
 Why: [Brief rationale - 1-2 sentences]
 Tradeoff: [What we gave up]
 RevisitWhen: [Trigger condition for reconsidering]
 ```
 
+Title convention: `[Area]` prefix enables grep (e.g., `[Auth]`, `[DB]`, `[API]`).
 No blank line between heading and fields. No blank lines between fields.
