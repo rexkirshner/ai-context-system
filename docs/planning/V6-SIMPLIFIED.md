@@ -10,7 +10,7 @@
 
 v5.x had 22 commands, 14 agents, and 150KB of shell scripts. It was overengineered.
 
-v6.0 has **3 files** and **2 commands**. That's it.
+v6.0 has **3 files** and **3 commands** (2 daily + 1 maintenance). That's it.
 
 ---
 
@@ -163,8 +163,8 @@ No auto-refresh. No complex intersection checks. Just: "does this look current? 
 |------|------|
 | SESSIONS.md | Gone. Git history is enough. |
 | CONTEXT.md | Merged into CLAUDE.md |
-| 22 commands | 2 commands |
-| 14 agents | 4 optional review prompts |
+| 22 commands | 3 commands (+4 optional reviews) |
+| 14 agents | Gone (reviews are just prompts now) |
 | 150KB scripts | 0 scripts |
 | `/save-full` (10-15 min) | Just `/save` |
 | Complex validation | Visual inspection |
@@ -190,7 +190,9 @@ They produce reports. They don't edit code. Use them when relevant.
 
 ```bash
 git clone --branch v6.0.0 --depth 1 https://github.com/rexkirshner/ai-context-system.git
+mkdir -p /path/to/your/project/.claude
 cp -r ai-context-system/.claude/commands /path/to/your/project/.claude/
+cp ai-context-system/.claude/VERSION /path/to/your/project/.claude/
 rm -rf ai-context-system
 ```
 
@@ -312,7 +314,7 @@ Objective: [from old STATUS.md current focus]
 ### Verify
 ```bash
 # Check structure
-ls -la .claude/commands/  # Should have 6 files
+ls -la .claude/commands/  # Should have 7 files
 ls -la context/           # Should have STATUS.md and DECISIONS.md only
 
 # Test the system
@@ -378,7 +380,7 @@ Agent A does work + `/save`. Agent B resumes without clarifying questions.
 To prevent v6 from becoming v7:
 
 1. **30-second rule**: If a feature can't be used in <30 seconds, it doesn't ship
-2. **2 commands max**: New commands must replace existing ones
+2. **Minimal commands**: Daily workflow stays at 2 commands; new features fold into `/save` or don't ship
 3. **No scripts**: Claude handles logic, not shell scripts
 4. **Advisory, not mechanical**: Guidelines agents should follow, not enforcement machinery
 
@@ -388,7 +390,7 @@ To prevent v6 from becoming v7:
 
 **Keep:**
 - 3 files (CLAUDE.md, STATUS.md, DECISIONS.md)
-- 2 commands (/init-context, /save)
+- 3 commands (/init-context, /save, /update-context-system)
 - Working Set as containment boundary
 - DECISIONS.md with structured format (Why/Tradeoff/RevisitWhen)
 - HeadCommit for simple staleness check
