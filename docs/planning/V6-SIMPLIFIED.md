@@ -92,6 +92,8 @@ EditScope: WorkingSetOnly
 - **HeadCommit**: Git SHA when STATUS was last saved. If it doesn't match current HEAD, STATUS might be stale.
 - **SchemaVersion**: For future compatibility. Ignore it for now.
 
+**Working Set expansion rule:** If you need to edit outside Working Set, first add the path(s) to Working Set and note why (one sentence) in Next Actions.
+
 ### DECISIONS.md
 
 ```markdown
@@ -125,6 +127,8 @@ This is the only file that captures *why* decisions were made. Git shows what ch
 
 ## The Commands
 
+These are Claude Code slash commands — prompt files in `.claude/commands/`, not shell scripts.
+
 ### `/init-context`
 
 Creates the three files if they don't exist. Safe to run — never overwrites.
@@ -145,7 +149,8 @@ When you start a session:
 
 1. Read STATUS.md
 2. If `HeadCommit` doesn't match current HEAD, STATUS might be out of date
-3. Use your judgment — refresh if the changes look relevant to your work
+3. If `git status` shows uncommitted changes, STATUS might be out of date
+4. Use your judgment — refresh if the changes look relevant to your work
 
 No auto-refresh. No complex intersection checks. Just: "does this look current?"
 
@@ -206,7 +211,7 @@ Agent picks up after previous `/save`. No "what were we doing?" questions.
 Agent can explain why a decision was made by searching DECISIONS.md.
 
 ### 4. Working Set Respect
-Agent limits edits to Working Set unless there's a good reason to expand.
+Agent does not edit outside Working Set without explicitly stating why and updating Working Set first.
 
 ### 5. Multi-Agent Handoff
 Agent A does work + `/save`. Agent B resumes without clarifying questions.
