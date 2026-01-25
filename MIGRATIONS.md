@@ -10,6 +10,8 @@ Version-specific migration instructions for the AI Context System.
 
 This migration handles upgrades from ANY pre-v6 version (v3.x, v4.x, v5.x).
 
+**Note:** If `context/` doesn't exist at all, that's fine—skip the context-related cleanup steps and let `/init-context` create it fresh after migration.
+
 ### Step 1: Backup
 
 ```bash
