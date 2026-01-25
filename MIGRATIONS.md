@@ -47,8 +47,8 @@ rm -rf docs/skills/
 rm -rf docs/migration/
 rm -rf docs/archive/
 
-# === Artifacts cleanup (optional - may contain user data) ===
-# rm -rf artifacts/
+# === Artifacts cleanup ===
+rm -rf artifacts/
 
 # === .claude directory cleanup ===
 rm -rf .claude/agents/
@@ -291,12 +291,15 @@ Create CLAUDE.md manually using the template in Step 4. Fill in:
 
 The v6.0 format is simpler. Extract key information (objective, current work, next steps, blockers) and reformat. Don't worry about losing v5.x fields like Quick Reference - they're no longer needed.
 
-### "I have files in artifacts/"
+### "I want to keep my artifacts/"
 
-The `artifacts/` directory may contain generated reports from v5.x code reviews. You can:
-- Keep them for reference (won't affect v6.0)
-- Archive them elsewhere
-- Delete them if not needed
+If you have v5.x audit reports in `artifacts/` that you want to preserve, back them up before running the migration:
+
+```bash
+cp -r artifacts/ artifacts-backup/
+```
+
+The migration will delete `artifacts/` since v6.0 doesn't use it.
 
 ---
 
