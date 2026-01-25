@@ -194,6 +194,22 @@ project/
 
 That's it. Three files.
 
+**Source of truth policy:**
+
+```
+Default: Commit context/ to git.
+  - Any agent on any machine can resume reliably
+  - "Resume" and "Cold Start" tests apply everywhere
+  - Merge conflicts possible but manageable (see Git conflict guidance)
+
+Optional (local-only projects): Add context/ to .gitignore
+  - "Resume" tests only apply on same machine
+  - No merge conflicts, but no cross-machine continuity
+  - Use only for personal/experimental projects
+```
+
+This answers the fundamental question: git is the source of truth, and context files should be committed by default.
+
 **Optional additions for larger projects:**
 ```
 └── context/
@@ -296,6 +312,9 @@ Header keys in this exact order:
   SchemaVersion, LastUpdated, HeadCommit, Objective, Success, Scope
 
 Scope enum: WorkingSetOnly | WorkingSetPlusDeps | Unrestricted
+  WorkingSetOnly: read + edit only Working Set
+  WorkingSetPlusDeps: read anywhere, edit only Working Set (unless expanded)
+  Unrestricted: read + edit anywhere
 
 Date format: ISO YYYY-MM-DD
 
@@ -330,9 +349,11 @@ This gives `/save` something concrete to enforce and agents something reliable t
 4. **HeadCommit** - Git SHA when STATUS was last saved. Enables commit-based staleness detection.
 
 5. **Scope** - Explicit boundary for agent work:
-   - `WorkingSetOnly` (default) - Do not edit files outside Working Set
-   - `WorkingSetPlusDeps` - May follow imports one level deep
+   - `WorkingSetOnly` (default) - Read and edit only files in Working Set
+   - `WorkingSetPlusDeps` - Read anywhere, edit only Working Set (unless expansion protocol used)
    - `Unrestricted` - Full codebase access (use sparingly)
+
+   Note: `WorkingSetPlusDeps` does NOT mean "auto-follow imports" (that's stack-dependent and hard to enforce). It means: read freely to understand context, but edits stay in Working Set unless you explicitly expand it.
 
 **Scope Expansion Protocol:** If work requires touching a file outside Working Set:
 1. Agent must **propose** the change (explain why it's needed)
@@ -466,6 +487,13 @@ This prevents accidental clobbering and makes the system feel trustworthy.
 
 **Why /save is deterministic:** This is the difference between "docs you might update" and "a tiny API you can rely on." Agents trust that STATUS always has the same shape. The tool maintains invariants automatically — agents don't have to remember formatting discipline.
 
+**Commit-after-save tip:** If the working tree is clean after `/save`, print:
+```
+Tip: If you commit after /save, run /save again to refresh HeadCommit.
+     Otherwise the next session may flag STATUS as stale (even if accurate).
+```
+This keeps staleness logic strict without trying to "guess correctness."
+
 **Review prompts = report only:**
 
 `/review-*` commands produce a **report only** — no code edits. This prevents surprise refactors and keeps reviews "library, not workflow."
@@ -528,8 +556,8 @@ curl -sL https://github.com/rexkirshner/ai-context-system/releases/download/v6.0
 
 **Option B: Manual install (primary, recommended)**
 ```bash
-# Clone and copy only what you need
-git clone --depth 1 https://github.com/rexkirshner/ai-context-system.git
+# Clone pinned release and copy only what you need
+git clone --branch v6.0.0 --depth 1 https://github.com/rexkirshner/ai-context-system.git
 cp -r ai-context-system/.claude/commands /path/to/your/project/.claude/
 rm -rf ai-context-system
 
@@ -813,7 +841,7 @@ Three files that enable session continuity:
 
 **Manual (recommended):**
 \`\`\`bash
-git clone --depth 1 https://github.com/rexkirshner/ai-context-system.git
+git clone --branch v6.0.0 --depth 1 https://github.com/rexkirshner/ai-context-system.git
 cp -r ai-context-system/.claude/commands /path/to/your/project/.claude/
 rm -rf ai-context-system
 \`\`\`
@@ -947,12 +975,25 @@ Your v5 files are backed up to `context-backup-v5/`.
 2. Time each test, must meet thresholds
 3. Iterate if tests fail
 
-### Phase 5: Release
+### Phase 5: Reference Implementation
+
+**Definition of done beyond docs:** Ship a reference implementation repo that proves the system works.
+
+1. Create `ai-context-system-example` repo with:
+   - Commands installed (init-context, save, review-*)
+   - Templates in place
+   - A small working codebase (e.g., a CLI tool or simple web app)
+   - All 6 acceptance tests demonstrated and passing
+
+2. This is the best anti-vanity move: if we can't demonstrate the tests passing on a real repo, the spec is theater.
+
+### Phase 6: Release
 
 1. Tag v6.0.0
 2. Create GitHub release with install.sh
 3. Update install URL
-4. Announce breaking changes clearly
+4. Link to reference implementation repo
+5. Announce breaking changes clearly
 
 ---
 
