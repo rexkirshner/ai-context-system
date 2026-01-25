@@ -130,7 +130,12 @@ Build: `[detect from package.json scripts, Makefile, etc.]`
    - Decisions: `context/DECISIONS.md`
    ```
 
-3. Merge any useful content from `context/CONTEXT.md` into CLAUDE.md
+3. Review `context/CONTEXT.md` and merge useful content into CLAUDE.md:
+   - **Project description** → Add to the paragraph after the title
+   - **Tech stack/dependencies** → Add to the Notes section
+   - **Development conventions** → Add to the Notes section
+   - **Architecture notes** → Add to the Notes section
+   - Skip anything redundant or obsolete
 
 4. **After CLAUDE.md is created/updated**, delete CONTEXT.md:
    ```bash
