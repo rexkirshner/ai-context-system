@@ -127,19 +127,20 @@ This is the only file that captures *why* decisions were made. Git shows what ch
 
 These are Claude Code slash commands — prompt files in `.claude/commands/`, not shell scripts.
 
-### `/init-context`
+### Daily workflow (2 commands)
 
-Creates the three files if they don't exist. Safe to run — never overwrites.
+**`/init-context`** — Creates the three files if they don't exist. Safe to run — never overwrites.
 
-### `/save`
-
+**`/save`** — End of session:
 1. Updates STATUS.md (Working Set, Next Actions, Blocked On)
 2. Updates HeadCommit to current git HEAD
 3. Asks: "Any decisions worth recording?" → If yes, appends to DECISIONS.md
 
 `/save` keeps section headers and field names exactly as specified; content changes, structure doesn't.
 
-That's it. One command to remember at end of session.
+### Maintenance (1 command)
+
+**`/update-context-system`** — Updates prompt files and runs migrations. See "Updates & Migration" section.
 
 ---
 
@@ -194,6 +195,66 @@ rm -rf ai-context-system
 ```
 
 Then run: `/init-context`
+
+---
+
+## Updates & Migration
+
+### Version Tracking
+
+Each project has `.claude/VERSION` containing the installed version (e.g., `6.0.0`).
+
+### `/update-context-system`
+
+A prompt (not a script) that:
+
+1. Reads current version from `.claude/VERSION`
+2. Copies latest prompt files from repo
+3. Reads `MIGRATIONS.md` from repo
+4. Shows relevant migration steps for your version jump
+5. Walks through them interactively
+
+### `MIGRATIONS.md`
+
+Lives in the repo. Contains version-specific migration instructions:
+
+```markdown
+# Migrations
+
+## v5.x → v6.0
+
+### Backup
+- Copy `context/` to `context-backup-v5/`
+- Copy `.claude/` to `.claude-backup-v5/`
+
+### Transform
+- Merge CONTEXT.md content into CLAUDE.md (use new template)
+- Rewrite STATUS.md in new format (4 header fields, 3 sections)
+- Add [Area] prefixes to DECISIONS.md titles (optional)
+
+### Delete
+- context/SESSIONS.md
+- context/CONTEXT.md
+- context/.context-config.json
+- scripts/ (entire directory)
+- templates/ (entire directory)
+- .claude/skills/, agents/, schemas/, hooks/, docs/
+
+### Verify
+- Run `/save` to confirm new format works
+- Check that Session Loop is at top of CLAUDE.md
+
+## v6.0 → v6.1
+
+- [Future migration steps go here]
+```
+
+### Why This Design
+
+- **Full control**: Any future change can be documented in MIGRATIONS.md
+- **No machinery**: Claude just reads the markdown and acts on it
+- **Extensible**: Works for small tweaks and big migrations
+- **Prompt, not script**: Follows the "0 scripts" philosophy
 
 ---
 
