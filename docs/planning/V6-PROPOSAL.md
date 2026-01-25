@@ -351,7 +351,14 @@ Entry format (exactly 4 lines, no blanks between):
   RevisitWhen: [1 sentence]
 
 Title convention: [Area] prefix for grep (e.g., [Auth] SQLite over Postgres)
-Separator: one blank line + --- between entries
+
+Separator (exactly):
+  [blank line]
+  ---
+  [blank line]
+  ## next entry...
+
+No trailing --- at EOF. File ends after last RevisitWhen line.
 
 === CLAUDE.md ===
 
@@ -390,14 +397,17 @@ This turns containment into a mechanical process, not a judgment call.
 
 On session start, compute all changed files using two commands:
 ```bash
-# Staged + unstaged + untracked (one command)
-DirtyFiles = git status --porcelain | cut -c4-
+# Staged + unstaged + untracked (NUL-separated for robust parsing)
+DirtyFiles = git status --porcelain=v1 -z | parse NUL-separated entries
+# For renames (R status), take the NEW path (after the NUL separator)
 
 # Committed since last save
-CommittedChanges = git diff --name-only HeadCommit..HEAD
+CommittedChanges = git diff --name-only -z HeadCommit..HEAD | parse NUL-separated
 
 AllChangedFiles = DirtyFiles ∪ CommittedChanges
 ```
+
+**Why NUL-separated:** Paths with spaces, renames (`old -> new`), and special characters break line-based parsing. Using `-z` and parsing NUL-separated entries is robust.
 
 Then:
 1. If `AllChangedFiles` is empty and HEAD == HeadCommit, STATUS is current. Proceed.
@@ -405,9 +415,11 @@ Then:
 3. If no intersection with Working Set, STATUS is still valid — just update `HeadCommit` on next `/save`.
 
 **Staleness enforcement:** When `/save` detects stale STATUS intersecting Working Set:
-- Auto-refresh STATUS (rewrite deterministically with current state)
+- Auto-refresh STATUS: rewrite in canonical order, re-derive Working Set / Next Actions / Blocked On from the agent's current understanding (not from git), update HeadCommit
 - Print warning: "STATUS was stale. Auto-refreshed. Review changes before continuing."
 - Do NOT block or require manual intervention (keeps workflow natural)
+
+**What auto-refresh is NOT:** Simply bumping HeadCommit. The agent must actually update the semantic content (Working Set, Next Actions, Blocked On) to reflect current reality.
 
 **Intersection check for directories:** When untracked files include a new directory (e.g., `src/newmodule/`), treat it as intersecting if the directory path is a prefix of any Working Set entry, or vice versa. Example: Working Set `src/*` intersects untracked directory `src/newmodule/`.
 
@@ -424,7 +436,7 @@ Minimal but structured for agent utility. **Key: Value format** (no markdown bol
 ```markdown
 # Decisions
 
-Append-only log. One blank line between entries. Exactly 3 fields per entry.
+Append-only log. See Schema Contract for format rules.
 
 ---
 
@@ -439,15 +451,11 @@ RevisitWhen: Multi-user mode or hosted deployment.
 Why: Team has REST experience. GraphQL learning curve not worth it.
 Tradeoff: Over-fetching on some endpoints.
 RevisitWhen: Mobile client needs arise (bandwidth matters more).
-
----
 ```
 
-**Format rules (enforced by /save):**
-- One blank line between `---` and next heading
-- Heading immediately followed by 3 fields (no blank line after heading)
-- Exactly 3 fields: Why, Tradeoff, RevisitWhen
-- No blank lines between fields
+**Format rules:** See Schema Contract. Key points:
+- Separator: blank line, `---`, blank line (no trailing `---` at EOF)
+- Entry: 4 lines (heading + 3 fields), no blanks between
 
 **Key additions from feedback:**
 - **Why** - Brief rationale
@@ -521,6 +529,8 @@ This prevents accidental clobbering and avoids re-introducing removed files (e.g
 
 **Invariant: /save is the only canonical writer.** Humans can edit STATUS manually, but `/save` is the canonical formatter. Any deviations (extra whitespace, reordered sections, non-standard bullets) will be normalized on next `/save`. This prevents bikeshedding and keeps the API shape stable.
 
+**Invariant: /save never widens EditScope.** `/save` may prune items, enforce caps, and reorder sections — but it must NOT change EditScope from `WorkingSetOnly` to `Unrestricted`. Only the user or agent (via the expansion protocol) can widen the boundary. This preserves trust in the constraint.
+
 **Commit-after-save tip:** If the working tree is clean after `/save`, print:
 ```
 Tip: If you commit after /save, run /save again to refresh HeadCommit.
@@ -584,14 +594,11 @@ This keeps reviews fast, relevant, predictable, and actionable.
 git clone --branch v6.0.0 --depth 1 https://github.com/rexkirshner/ai-context-system.git
 cp -r ai-context-system/.claude/commands /path/to/your/project/.claude/
 rm -rf ai-context-system
-
-# Initialize
-/init-context
 ```
 
-**Why manual is recommended:** You see exactly what's being added. No curl-to-bash trust required. Pinning to a release tag ensures reproducibility.
+Then run: `/init-context`
 
-Creates three files. Done.
+**Why manual is recommended:** You see exactly what's being added. No curl-to-bash trust required. Pinning to a release tag ensures reproducibility. Creates three files. Done.
 
 ### For Existing Users (v5.x → v6.0)
 
@@ -997,9 +1004,10 @@ Your v5 files are backed up to `context-backup-v5/`.
    - `DECISIONS.md.template` (Why/Tradeoff/Revisit)
    - `STATUS.md.template` (structured handoff)
 
-4. Write new install.sh:
+4. Write new install.sh (optional, for convenience only):
    - Pin to release tag
-   - Minimal (just copies files)
+   - Minimal (just copies files, no runtime dependencies)
+   - Manual install remains the primary documented path
 
 ### Phase 2: Build Migration
 
@@ -1177,7 +1185,7 @@ EditScope: WorkingSetOnly
 - (None)
 
 ## Relevant Decisions
-- (None yet)
+- (None)
 ```
 
 ### DECISIONS.md.template
@@ -1185,12 +1193,10 @@ EditScope: WorkingSetOnly
 ```markdown
 # Decisions
 
-Append-only log. One blank line between entries. Exactly 3 fields per entry.
-
----
-
-<!-- Add new decisions below -->
+Append-only log. See Schema Contract for format rules.
 ```
+
+(Empty file has no `---` — first entry adds the separator.)
 
 ### Decision Entry Format
 
