@@ -223,26 +223,120 @@ Lives in the repo. Contains version-specific migration instructions:
 
 ## v5.x → v6.0
 
-### Backup
-- Copy `context/` to `context-backup-v5/`
-- Copy `.claude/` to `.claude-backup-v5/`
+### Backup first
+```bash
+cp -r context/ context-backup-v5/
+cp -r .claude/ .claude-backup-v5/
+```
 
-### Transform
-- Merge CONTEXT.md content into CLAUDE.md (use new template)
-- Rewrite STATUS.md in new format (4 header fields, 3 sections)
-- Add [Area] prefixes to DECISIONS.md titles (optional)
+### Delete v5.x artifacts
+```bash
+# Context files we're removing
+rm -f context/SESSIONS.md
+rm -f context/CONTEXT.md
+rm -f context/.context-config.json
 
-### Delete
-- context/SESSIONS.md
-- context/CONTEXT.md
-- context/.context-config.json
-- scripts/ (entire directory)
-- templates/ (entire directory)
-- .claude/skills/, agents/, schemas/, hooks/, docs/
+# Entire directories
+rm -rf scripts/
+rm -rf templates/
+
+# .claude subdirectories (keep commands/)
+rm -rf .claude/agents/
+rm -rf .claude/skills/
+rm -rf .claude/schemas/
+rm -rf .claude/hooks/
+rm -rf .claude/docs/
+rm -f .claude/acs-settings.json
+rm -f .claude/.last-update-check
+
+# Old commands (will be replaced)
+rm -rf .claude/commands/
+```
+
+### Install v6.0 commands
+```bash
+git clone --branch v6.0.0 --depth 1 https://github.com/rexkirshner/ai-context-system.git
+cp -r ai-context-system/.claude/commands .claude/
+cp ai-context-system/.claude/VERSION .claude/
+rm -rf ai-context-system
+```
+
+### Transform files
+
+**CLAUDE.md** — Add Session Loop at top, merge content from CONTEXT.md:
+```markdown
+> **Session Loop**
+> 1. Start → Read `context/STATUS.md`
+> 2. End → Run `/save`
+
+# Project Name
+[content from CONTEXT.md goes here]
+
+## Commands
+[extract from CONTEXT.md]
+
+## Constraints
+- If you need to touch files outside Working Set, pause, propose, update Working Set, then proceed
+[add project-specific constraints]
+
+## Context
+- Status: `context/STATUS.md`
+- Decisions: `context/DECISIONS.md`
+
+## Notes
+[project conventions from CONTEXT.md]
+```
+
+**STATUS.md** — Rewrite in new format:
+```markdown
+# Status
+
+SchemaVersion: 1
+LastUpdated: [today's date]
+HeadCommit: [run: git rev-parse --short HEAD]
+Objective: [from old STATUS.md current focus]
+
+## Working Set
+- [3-7 files/directories you're currently touching]
+
+## Next Actions
+- [up to 3 items from old STATUS.md]
+
+## Blocked On
+- (None)
+```
+
+**DECISIONS.md** — Add [Area] prefixes (optional but recommended):
+- Change `## 2026-01-24: Chose SQLite` to `## 2026-01-24: [DB] Chose SQLite`
 
 ### Verify
-- Run `/save` to confirm new format works
-- Check that Session Loop is at top of CLAUDE.md
+```bash
+# Check structure
+ls -la .claude/commands/  # Should have 6 files
+ls -la context/           # Should have STATUS.md and DECISIONS.md only
+
+# Test the system
+# Run /save to confirm new format works
+```
+
+### What you should have after migration
+```
+project/
+├── CLAUDE.md                    # With Session Loop at top
+├── .claude/
+│   ├── VERSION                  # Contains "6.0.0"
+│   └── commands/
+│       ├── init-context.md
+│       ├── save.md
+│       ├── update-context-system.md
+│       ├── review-security.md
+│       ├── review-performance.md
+│       ├── review-accessibility.md
+│       └── review-seo.md
+└── context/
+    ├── STATUS.md                # New format
+    └── DECISIONS.md             # With [Area] prefixes
+```
 
 ## v6.0 → v6.1
 
