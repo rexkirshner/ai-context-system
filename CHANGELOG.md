@@ -17,7 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Scope expansion guidance for `/review-accessibility` (components, pages, styles)
 - Scope expansion guidance for `/review-cost` (infrastructure, database, API routes)
 - Scope expansion guidance for `/review-performance` (API, lib, components, database)
-- Automated tool suggestions: `npm audit` for security, Lighthouse/axe-core for accessibility, bundle analyzer for performance
+- Scope expansion guidance for `/review-seo` (pages, meta components, sitemap, robots.txt)
+- Automated tool suggestions for all review commands
 
 ## [6.0.0] - 2026-01-24
 
