@@ -82,7 +82,7 @@ This is the only file that captures *why* decisions were made.
 
 ### Daily Workflow (2 commands)
 
-**`/init-context`** — Creates the three files if they don't exist. Safe to run—never overwrites.
+**`/init-context`** — Creates the three files. Asks before overwriting existing files.
 
 **`/save`** — End of session:
 1. Updates STATUS.md (all fields)
