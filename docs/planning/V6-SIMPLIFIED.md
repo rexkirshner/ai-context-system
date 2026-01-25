@@ -180,6 +180,7 @@ If you want focused code reviews, these are available as a library:
 - `/review-performance` — Performance check
 - `/review-accessibility` — Accessibility review
 - `/review-seo` — SEO review
+- `/review-cost` — Cost optimization review
 
 They produce reports. They don't edit code. Use them when relevant.
 
@@ -336,7 +337,8 @@ project/
 │       ├── review-security.md
 │       ├── review-performance.md
 │       ├── review-accessibility.md
-│       └── review-seo.md
+│       ├── review-seo.md
+│       └── review-cost.md
 └── context/
     ├── STATUS.md                # New format
     └── DECISIONS.md             # With [Area] prefixes
