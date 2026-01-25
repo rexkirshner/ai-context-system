@@ -79,11 +79,6 @@ Replace `YYYY-MM-DD` with today's actual date (e.g., 2026-01-24).
 - [DB], [API], [UI], [Auth], [Infra], [Deps], [Arch], [Test], [Perf], etc.
 - Use the area most affected by the decision, or [Arch] for cross-cutting choices
 
-**Only record decisions that:**
-- Affect future development choices
-- Have meaningful tradeoffs
-- Someone might ask "why did we do it this way?"
-
 ## Behavior
 
 1. Read current STATUS.md
