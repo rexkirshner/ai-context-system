@@ -54,21 +54,34 @@ cp -r "$TEMP_DIR/.claude/commands" .claude/
 cp "$TEMP_DIR/.claude/VERSION" .claude/
 
 echo "   ✅ Installed 8 command files"
-echo "   ✅ Updated VERSION to $NEW_VERSION"
+echo "   ✅ Updated .claude/VERSION to $NEW_VERSION"
+
+# Remove root VERSION file if it exists (v6.0 only uses .claude/VERSION)
+if [ -f "VERSION" ]; then
+    rm -f VERSION
+    echo "   ✅ Removed root VERSION file (v6.0 uses .claude/VERSION)"
+fi
 
 # Clean up legacy v5.x artifacts if they exist
-if [ -d ".claude/agents" ] || [ -d ".claude/schemas" ] || [ -d "scripts" ]; then
+if [ -d ".claude/agents" ] || [ -d ".claude/schemas" ] || [ -d "scripts" ] || [ -d "templates" ]; then
     echo ""
     echo "🧹 Detected v5.x artifacts. Cleaning up..."
+
+    # Clean .claude/ subdirectories
     rm -rf .claude/agents .claude/docs .claude/schemas .claude/hooks 2>/dev/null || true
     rm -f .claude/acs-settings.json .claude/.last-update-check 2>/dev/null || true
-    echo "   ✅ Removed legacy directories"
+
+    # Clean root-level v5.x directories
+    rm -rf scripts templates 2>/dev/null || true
+
+    # Clean v5.x context files
+    rm -f context/SESSIONS.md context/CONTEXT.md context/.context-config.json 2>/dev/null || true
+
+    echo "   ✅ Removed legacy v5.x directories and files"
     echo ""
-    echo "⚠️  Manual steps needed for v5.x → v6.0 migration:"
-    echo "   1. Delete: scripts/, templates/ (if they exist)"
-    echo "   2. Delete: context/SESSIONS.md, context/CONTEXT.md (if they exist)"
-    echo "   3. Update STATUS.md to new format (see MIGRATIONS.md)"
-    echo "   4. Add Session Loop to top of CLAUDE.md"
+    echo "⚠️  Manual steps still needed for v5.x → v6.0 migration:"
+    echo "   1. Update STATUS.md to new format (see MIGRATIONS.md)"
+    echo "   2. Add Session Loop to top of CLAUDE.md"
     echo ""
     echo "   See: https://github.com/rexkirshner/ai-context-system/blob/main/MIGRATIONS.md"
 fi
