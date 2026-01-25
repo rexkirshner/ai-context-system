@@ -174,6 +174,7 @@ Quick summary:
 - Claude Code CLI (for slash commands)
 - Any project (language/framework agnostic)
 - Git (optional - enables HeadCommit staleness detection; works without it)
+- macOS, Linux, or Windows with WSL/Git Bash (commands use `/tmp/` for temp files)
 
 Works with any AI tool that can read markdown files.
 
