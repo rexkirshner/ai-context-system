@@ -190,7 +190,7 @@ To prevent v6 from becoming v7:
 
 ## License
 
-Use freely for personal or commercial projects.
+MIT License. See [LICENSE](./LICENSE) for details.
 
 ---
 
