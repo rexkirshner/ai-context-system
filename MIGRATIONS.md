@@ -186,7 +186,7 @@ Objective: [extracted from old STATUS.md]
 # Status
 
 SchemaVersion: 1
-LastUpdated: [today's date]
+LastUpdated: [today's date YYYY-MM-DD]
 HeadCommit: [run: git rev-parse --short HEAD, or "N/A"]
 Objective: TBD
 
