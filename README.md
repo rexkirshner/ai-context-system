@@ -135,7 +135,7 @@ They produce reports. They don't edit code.
 - "Use your judgment" over auto-refresh
 
 ### Working Set as Boundary
-- 3-7 items you're actively touching
+- 3-7 items you're actively touching (enough to be useful, few enough to review at a glance)
 - If you need to edit outside, add to Working Set first
 - No EditScope machinery—just a simple list
 
