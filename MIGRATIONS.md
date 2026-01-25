@@ -285,6 +285,12 @@ mv .claude-backup-pre-v6/ .claude/
 mv CLAUDE.md.backup-pre-v6 CLAUDE.md
 ```
 
+**After successful migration:** Verify everything works by running `/save`, then delete the backup directories:
+
+```bash
+rm -rf context-backup-pre-v6/ .claude-backup-pre-v6/ CLAUDE.md.backup-pre-v6
+```
+
 ---
 
 ## Troubleshooting
