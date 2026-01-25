@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - **Working Set scope limitation for review commands** - Added "Scope Expansion" sections to all review commands with critical paths to include when Working Set lacks review-relevant files
+- **`/save` decision recording now autonomous** - AI evaluates session and records decisions without prompting user, reducing friction
 
 ### Added
 

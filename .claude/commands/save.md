@@ -1,6 +1,6 @@
 ---
 name: save
-description: End of session - updates STATUS.md and optionally DECISIONS.md
+description: End of session - updates STATUS.md, records decisions autonomously
 ---
 
 # /save
@@ -55,9 +55,14 @@ Objective: [current goal - update if changed during session]
 
 ### context/DECISIONS.md (if applicable)
 
-Ask: "Any decisions worth recording from this session?"
+Autonomously determine if any decisions from this session should be recorded. You have full session context—use your judgment.
 
-If yes, append a new entry:
+**Record a decision if it:**
+- Explains why something is implemented a certain way
+- Involves tradeoffs that future developers might question
+- Affects how future work should be approached
+
+If a decision is worth recording, append a new entry:
 
 ```markdown
 ---
@@ -84,8 +89,8 @@ Replace `YYYY-MM-DD` with today's actual date (e.g., 2026-01-24).
 1. Read current STATUS.md
 2. Update all fields based on session work
 3. Write updated STATUS.md (preserve exact format)
-4. Ask about decisions
-5. If decision to record, append to DECISIONS.md
+4. Evaluate session for recordable decisions (autonomously, do not ask)
+5. If decision worth recording, append to DECISIONS.md
 6. Report what was updated
 
 ## Done
