@@ -28,6 +28,8 @@ rm -rf ai-context-system
 /init-context
 ```
 
+This creates three files: `CLAUDE.md` (project entry point), `context/STATUS.md` (current state), and `context/DECISIONS.md` (decision log).
+
 ---
 
 ## The Files
