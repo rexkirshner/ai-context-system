@@ -17,7 +17,7 @@ If `.claude/VERSION` doesn't exist, assume pre-v6 (v5.x or earlier).
 
 ### 2. Get Latest Version
 
-Clone the latest release:
+Clone the repository (main branch contains the latest stable version):
 
 ```bash
 git clone --depth 1 https://github.com/rexkirshner/ai-context-system.git /tmp/acs-update
