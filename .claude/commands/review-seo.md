@@ -20,7 +20,7 @@ If the Working Set lacks SEO-relevant files, expand to include:
 - `**/public/robots.txt`, `**/public/sitemap*`
 - `**/next.config.*`, `**/next-sitemap.config.*`
 
-Consider running: Lighthouse SEO audit, Google Search Console, or screaming frog.
+Consider running: Lighthouse SEO audit, Google Search Console, or Screaming Frog.
 
 ## What to Check
 
