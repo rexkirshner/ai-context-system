@@ -179,8 +179,8 @@ To prevent v6 from becoming v7-bloat, we codify these rules:
 3. **Library, not workflow:** Anything requiring orchestration/multi-step becomes an optional prompt, not core
 4. **Verbosity limits (per-section caps, no "total bullets" rule):**
    - STATUS.md: Working Set 3-7, Constraints ≤5, Next Actions ≤3, Blocked On ≤3, Relevant Decisions ≤3
-   - DECISIONS.md: ≤5 lines per entry (Title + Why + Tradeoff + RevisitWhen)
-   - CLAUDE.md: Session Loop + Agent Contract + project notes only, no long descriptions
+   - DECISIONS.md: ≤4 lines per entry (Title + Why + Tradeoff + RevisitWhen)
+   - CLAUDE.md: Session Loop + Agent Contract + Notes (≤10 bullets, no paragraphs)
 
 ### File Structure
 
@@ -263,7 +263,8 @@ Decisions: `context/DECISIONS.md`
 
 ## Notes
 
-[Project-specific conventions, gotchas, or preferences]
+<!-- ≤10 bullets, no paragraphs -->
+- [Project-specific conventions, gotchas, or preferences]
 ```
 
 This prevents "agent guesswork" — any agent can reliably answer:
@@ -373,13 +374,15 @@ This turns containment into a mechanical process, not a judgment call.
 
 **Staleness rule (diff-aware, includes uncommitted changes):** Staleness = repo moved in ways that affect current work.
 
-On session start, compute all changed files:
-```
+On session start, compute all changed files using two commands:
+```bash
+# Staged + unstaged + untracked (one command)
+DirtyFiles = git status --porcelain | cut -c4-
+
+# Committed since last save
 CommittedChanges = git diff --name-only HeadCommit..HEAD
-StagedChanges = git diff --name-only --cached
-UnstagedChanges = git diff --name-only
-UntrackedFiles = git ls-files --others --exclude-standard
-AllChangedFiles = CommittedChanges ∪ StagedChanges ∪ UnstagedChanges ∪ UntrackedFiles
+
+AllChangedFiles = DirtyFiles ∪ CommittedChanges
 ```
 
 Then:
@@ -387,7 +390,9 @@ Then:
 2. If `AllChangedFiles` intersects Working Set (or files referenced by Next Actions), STATUS is stale → refresh before acting.
 3. If no intersection with Working Set, STATUS is still valid — just update `HeadCommit` on next `/save`.
 
-**Intersection check for directories:** When UntrackedFiles includes a new directory (e.g., `src/newmodule/`), treat it as intersecting if the directory path is a prefix of any Working Set entry, or vice versa. Example: Working Set `src/*` intersects untracked directory `src/newmodule/`.
+**Intersection check for directories:** When untracked files include a new directory (e.g., `src/newmodule/`), treat it as intersecting if the directory path is a prefix of any Working Set entry, or vice versa. Example: Working Set `src/*` intersects untracked directory `src/newmodule/`.
+
+**No-git fallback:** If git commands fail (not a repo, git not installed, zip drop, vendor dir), treat STATUS as stale. Agent must manually refresh Working Set, Next Actions, and Blocked On before proceeding.
 
 **Why include uncommitted changes:** The most common scenario is: agent ends session with uncommitted edits, new session starts with same HEAD but dirty working tree. Checking only committed changes misses this entirely.
 
@@ -468,11 +473,14 @@ Still tiny (4 lines per entry: heading + 3 fields), but way more actionable for 
 **`/init-context` overwrite behavior (safe by default):**
 
 If CLAUDE.md or context/ already exist, `/init-context` does NOT overwrite. Instead:
-- Creates `CLAUDE.md.v6.new` (or `CONTEXT.md.v6.new`, etc.)
+- Creates only these `.v6.new` files:
+  - `CLAUDE.md.v6.new`
+  - `context/STATUS.md.v6.new`
+  - `context/DECISIONS.md.v6.new`
 - Prints warning: "Existing files found. Review .v6.new files and merge manually, or run with --force to overwrite."
 - `--force` flag available but discouraged
 
-This prevents accidental clobbering and makes the system feel trustworthy.
+This prevents accidental clobbering and avoids re-introducing removed files (e.g., CONTEXT.md).
 
 **`/save` behavior:**
 1. Update STATUS.md (working set, objective, success criteria, next actions, blockers, relevant decisions)
@@ -483,7 +491,10 @@ This prevents accidental clobbering and makes the system feel trustworthy.
    - Enforce per-section caps (3-7 working set, ≤5 constraints, ≤3 next actions, ≤3 blocked on, ≤3 relevant decisions)
    - Normalize bullets (same prefix `- `, no nested lists, no paragraphs)
    - Empty sections get `(None)` not blank
-5. **Security check:** Warn if STATUS or DECISIONS would contain secrets (API keys, tokens, passwords, PII)
+5. **Security check:** Scan newly written lines for common secret patterns:
+   - Token prefixes: `sk-`, `AIza`, `xoxb-`, `ghp_`, `Bearer `
+   - Key markers: `-----BEGIN`, `password=`, `secret=`
+   - If detected: replace the value with `[REDACTED]` and warn the user
 6. **Decision prompt (form-like):**
    - Ask: "Any non-obvious decisions made this session? (Yes/No)"
    - If yes, collect exactly: Title (≤10 words), Why (1-2 sentences), Tradeoff (1 sentence), RevisitWhen (1 sentence)
@@ -1101,7 +1112,8 @@ Decisions: `context/DECISIONS.md`
 
 ## Notes
 
-[Project-specific conventions, gotchas, or preferences]
+<!-- ≤10 bullets, no paragraphs -->
+- [Project-specific conventions, gotchas, or preferences]
 ```
 
 ### STATUS.md.template
