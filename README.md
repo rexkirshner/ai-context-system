@@ -122,7 +122,7 @@ They produce reports. They don't edit code.
 
 ### Keep It Simple
 - **3 files** instead of 8
-- **3 commands** instead of 22
+- **7 commands** instead of 22 (3 core + 4 optional reviews)
 - **0 scripts** — Claude handles logic, not shell scripts
 
 ### Advisory, Not Mechanical
@@ -143,7 +143,7 @@ They produce reports. They don't edit code.
 |------|------|
 | SESSIONS.md | Gone. Git history is enough. |
 | CONTEXT.md | Merged into CLAUDE.md |
-| 22 commands | 3 commands (+4 optional reviews) |
+| 22 commands | 7 commands (3 core + 4 optional reviews) |
 | 14 agents | Gone (reviews are just prompts now) |
 | 150KB scripts | 0 scripts |
 | `/save-full` (10-15 min) | Just `/save` |

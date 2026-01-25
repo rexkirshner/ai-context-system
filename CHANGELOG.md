@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 **MAJOR RELEASE** - Radical Simplification
 
-v6.0 is a complete redesign. v5.x had 22 commands, 14 agents, and 150KB of shell scripts. v6.0 has **3 files** and **7 commands**. The value is in the subtraction.
+v6.0 is a complete redesign. v5.x had 22 commands, 14 agents, and 150KB of shell scripts. v6.0 has **3 files** and **7 commands** (3 core + 4 optional reviews). The value is in the subtraction.
 
 ### Philosophy
 
