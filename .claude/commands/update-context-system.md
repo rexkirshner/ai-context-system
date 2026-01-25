@@ -31,8 +31,11 @@ Compare as semantic version strings (e.g., "6.0.0" vs "6.1.0").
 
 If current version equals latest version:
 - Report "Already up to date (v[version])"
+- BUT still check for v5.x artifacts that may not have been cleaned up:
+  - Check for: `scripts/`, `templates/`, `.claude/agents/`, `.claude/skills/`, `context/SESSIONS.md`
+  - If any exist, offer to run cleanup (see Step 6 migration steps)
 - Clean up: `rm -rf /tmp/acs-update`
-- Exit
+- Exit if no cleanup needed
 
 If current version is higher than latest (shouldn't happen in normal use):
 - Warn user and ask if they want to proceed (possible downgrade)

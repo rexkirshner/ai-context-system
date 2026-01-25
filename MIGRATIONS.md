@@ -33,6 +33,8 @@ rm -f context/cursor.md
 rm -f context/aider.md
 rm -f context/codex.md
 rm -f context/generic-ai-header.md
+rm -f context/ai-context-system-feedback.md
+rm -f context/context-feedback.md
 # NOTE: Keep context/CONTEXT.md until after Step 4
 
 # === Root directory cleanup ===
@@ -233,6 +235,7 @@ Remove any stragglers that might have been missed:
 rm -f context/SESSIONS.md context/CONTEXT.md context/.context-config.json 2>/dev/null
 rm -f context/cursor.md context/aider.md context/codex.md 2>/dev/null
 rm -f context/generic-ai-header.md 2>/dev/null
+rm -f context/ai-context-system-feedback.md context/context-feedback.md 2>/dev/null
 ```
 
 ### Step 8: Verify

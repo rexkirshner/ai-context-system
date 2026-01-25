@@ -63,12 +63,12 @@ if [ -f "VERSION" ]; then
 fi
 
 # Clean up legacy v5.x artifacts if they exist
-if [ -d ".claude/agents" ] || [ -d ".claude/schemas" ] || [ -d "scripts" ] || [ -d "templates" ]; then
+if [ -d ".claude/agents" ] || [ -d ".claude/schemas" ] || [ -d ".claude/skills" ] || [ -d "scripts" ] || [ -d "templates" ]; then
     echo ""
     echo "🧹 Detected v5.x artifacts. Cleaning up..."
 
     # Clean .claude/ subdirectories
-    rm -rf .claude/agents .claude/docs .claude/schemas .claude/hooks 2>/dev/null || true
+    rm -rf .claude/agents .claude/docs .claude/schemas .claude/hooks .claude/skills 2>/dev/null || true
     rm -f .claude/acs-settings.json .claude/.last-update-check 2>/dev/null || true
 
     # Clean root-level v5.x directories
@@ -76,6 +76,8 @@ if [ -d ".claude/agents" ] || [ -d ".claude/schemas" ] || [ -d "scripts" ] || [ 
 
     # Clean v5.x context files
     rm -f context/SESSIONS.md context/CONTEXT.md context/.context-config.json 2>/dev/null || true
+    rm -f context/ai-context-system-feedback.md context/context-feedback.md 2>/dev/null || true
+    rm -f context/cursor.md context/aider.md context/codex.md context/generic-ai-header.md 2>/dev/null || true
 
     echo "   ✅ Removed legacy v5.x directories and files"
     echo ""
