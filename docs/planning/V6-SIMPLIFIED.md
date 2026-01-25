@@ -317,7 +317,7 @@ Add [Area] prefixes for easier grep:
 
 **Step 7: Verify**
 ```bash
-ls -la .claude/commands/  # Should have 7 files
+ls -la .claude/commands/  # Should have 8 files
 ls -la context/           # Should have STATUS.md and DECISIONS.md only
 ```
 
