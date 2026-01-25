@@ -162,7 +162,7 @@ No auto-refresh. No complex intersection checks. Just: "does this look current? 
 |------|------|
 | SESSIONS.md | Gone. Git history is enough. |
 | CONTEXT.md | Merged into CLAUDE.md |
-| 22 commands | 3 commands (+4 optional reviews) |
+| 22 commands | 3 commands (+5 optional reviews) |
 | 14 agents | Gone (reviews are just prompts now) |
 | 150KB scripts | 0 scripts |
 | `/save-full` (10-15 min) | Just `/save` |
