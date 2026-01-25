@@ -152,17 +152,18 @@ They produce reports. They don't edit code.
 
 ---
 
-## Upgrading from v5.x
+## Upgrading from v5.x (or earlier)
 
 See [MIGRATIONS.md](./MIGRATIONS.md) for step-by-step migration instructions.
 
 Quick summary:
 1. Backup existing files
-2. Delete v5.x artifacts (scripts/, templates/, .claude/agents/, etc.)
+2. Delete legacy artifacts (scripts/, templates/, .claude/agents/, etc.)
 3. Copy new v6.0 commands
-4. Transform CLAUDE.md (add Session Loop, merge CONTEXT.md)
-5. Transform STATUS.md (new simpler format)
-6. Optional: Add [Area] prefixes to DECISIONS.md
+4. Create CLAUDE.md if missing (synthesize from CONTEXT.md, README, package.json)
+5. Add Session Loop to existing CLAUDE.md
+6. Transform STATUS.md (new simpler format)
+7. Optional: Add [Area] prefixes to DECISIONS.md
 
 ---
 
@@ -170,7 +171,7 @@ Quick summary:
 
 - Claude Code CLI (for slash commands)
 - Any project (language/framework agnostic)
-- Git (for HeadCommit staleness detection)
+- Git (optional - enables HeadCommit staleness detection; works without it)
 
 Works with any AI tool that can read markdown files.
 
