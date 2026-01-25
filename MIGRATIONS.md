@@ -6,7 +6,7 @@ Version-specific migration instructions for the AI Context System.
 
 ## v5.x → v6.0 (or any pre-v6 version)
 
-**Overview:** v6.0 is a radical simplification - from 22 commands, 14 agents, and 150KB of scripts to 3 files and 7 commands.
+**Overview:** v6.0 is a radical simplification - from 22 commands, 14 agents, and 150KB of scripts to 3 files and 8 commands.
 
 This migration handles upgrades from ANY pre-v6 version (v3.x, v4.x, v5.x).
 
@@ -238,7 +238,7 @@ rm -f context/generic-ai-header.md 2>/dev/null
 ### Step 8: Verify
 
 ```bash
-# Should have 7 files
+# Should have 8 files
 ls -la .claude/commands/
 
 # Should have only STATUS.md and DECISIONS.md
@@ -268,7 +268,8 @@ project/
 │       ├── review-security.md
 │       ├── review-performance.md
 │       ├── review-accessibility.md
-│       └── review-seo.md
+│       ├── review-seo.md
+│       └── review-cost.md
 └── context/
     ├── STATUS.md                # New format
     └── DECISIONS.md             # With optional [Area] prefixes

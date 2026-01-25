@@ -10,7 +10,7 @@
 
 v5.x had 22 commands, 14 agents, and 150KB of shell scripts. It was overengineered.
 
-v6.0 has **3 files** and **7 commands** (3 core + 4 optional reviews). That's it.
+v6.0 has **3 files** and **8 commands** (3 core + 5 optional reviews). That's it.
 
 ---
 
@@ -40,7 +40,7 @@ After installation and running `/init-context`:
 your-project/
 ├── .claude/
 │   ├── VERSION            # Tracks installed version for /update-context-system
-│   └── commands/          # 7 slash command prompts
+│   └── commands/          # 8 slash command prompts
 ├── CLAUDE.md              # Entry point (auto-loaded by Claude Code)
 └── context/
     ├── STATUS.md          # Where we are now
@@ -92,13 +92,14 @@ This is the only file that captures *why* decisions were made.
 
 **`/update-context-system`** — Updates prompt files from repo and runs migrations.
 
-### Optional Reviews (4 commands)
+### Optional Reviews (5 commands)
 
 Use when relevant:
 - `/review-security` — Security audit
 - `/review-performance` — Performance check
 - `/review-accessibility` — Accessibility review
 - `/review-seo` — SEO review
+- `/review-cost` — Cost optimization review
 
 They produce reports. They don't edit code.
 
@@ -126,7 +127,7 @@ They produce reports. They don't edit code.
 
 ### Keep It Simple
 - **3 files** instead of 8
-- **7 commands** instead of 22 (3 core + 4 optional reviews)
+- **8 commands** instead of 22 (3 core + 5 optional reviews)
 - **0 scripts** — Claude handles logic, not shell scripts
 
 ### Advisory, Not Mechanical
@@ -147,7 +148,7 @@ They produce reports. They don't edit code.
 |------|------|
 | SESSIONS.md | Gone. Git history is enough. |
 | CONTEXT.md | Merged into CLAUDE.md |
-| 22 commands | 7 commands (3 core + 4 optional reviews) |
+| 22 commands | 8 commands (3 core + 5 optional reviews) |
 | 14 agents | Gone (reviews are just prompts now) |
 | 150KB scripts | 0 scripts |
 | `/save-full` (10-15 min) | Just `/save` |

@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 **MAJOR RELEASE** - Radical Simplification
 
-v6.0 is a complete redesign. v5.x had 22 commands, 14 agents, and 150KB of shell scripts. v6.0 has **3 files** and **7 commands** (3 core + 4 optional reviews). The value is in the subtraction.
+v6.0 is a complete redesign. v5.x had 22 commands, 14 agents, and 150KB of shell scripts. v6.0 has **3 files** and **8 commands** (3 core + 5 optional reviews). The value is in the subtraction.
 
 ### Philosophy
 
@@ -24,7 +24,7 @@ v6.0 is a complete redesign. v5.x had 22 commands, 14 agents, and 150KB of shell
   - `context/STATUS.md` - Current state (simplified format)
   - `context/DECISIONS.md` - Decision log (unchanged format)
 
-- **7 commands** instead of 22:
+- **8 commands** instead of 22:
   - `/init-context` - Creates context files (safe, never overwrites)
   - `/save` - End of session (replaces both `/save` and `/save-full`)
   - `/update-context-system` - Updates from repo with migrations
@@ -32,6 +32,7 @@ v6.0 is a complete redesign. v5.x had 22 commands, 14 agents, and 150KB of shell
   - `/review-performance` - Performance check
   - `/review-accessibility` - Accessibility review
   - `/review-seo` - SEO review
+  - `/review-cost` - Cost optimization review
 
 - **Simple installation** - `git clone` + `cp`, no install script
 

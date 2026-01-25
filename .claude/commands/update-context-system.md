@@ -91,7 +91,7 @@ rm -rf /tmp/acs-update
 ### 8. Verify
 
 Run these checks:
-- `ls -la .claude/commands/` - Should have 7 files
+- `ls -la .claude/commands/` - Should have 8 files
 - `cat .claude/VERSION` - Should show new version
 - `ls -la context/` - Should have only STATUS.md and DECISIONS.md
 - `head -5 CLAUDE.md` - Should show Session Loop at top

@@ -18,7 +18,7 @@ Before proposing changes, understand v6's core principles:
 
 ## What We Don't Accept
 
-- New commands (we have 7, we want 7)
+- New commands (we have 8, that's enough)
 - Shell scripts or automation
 - Features that add complexity without proportional value
 - "Nice to have" additions
