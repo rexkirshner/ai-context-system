@@ -37,13 +37,15 @@ After installation and running `/init-context`:
 ```
 your-project/
 ├── .claude/
-│   ├── VERSION            # Installed version (6.0.0)
+│   ├── VERSION            # Tracks installed version for /update-context-system
 │   └── commands/          # 7 slash command prompts
 ├── CLAUDE.md              # Entry point (auto-loaded by Claude Code)
 └── context/
     ├── STATUS.md          # Where we are now
     └── DECISIONS.md       # Why we made choices
 ```
+
+**Note:** The repo also has a root `VERSION` file for release tagging. Only `.claude/VERSION` is copied to your project.
 
 ### CLAUDE.md
 
