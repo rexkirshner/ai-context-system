@@ -327,7 +327,7 @@ Edit access: constrained by EditScope + expansion protocol
 
 Date format: ISO YYYY-MM-DD
 
-HeadCommit format: 7-character git SHA (short form)
+HeadCommit format: 7-character git SHA (short form), or (None) if git unavailable
 
 Empty values: Use (None) not blank
 
@@ -387,8 +387,13 @@ AllChangedFiles = DirtyFiles ∪ CommittedChanges
 
 Then:
 1. If `AllChangedFiles` is empty and HEAD == HeadCommit, STATUS is current. Proceed.
-2. If `AllChangedFiles` intersects Working Set (or files referenced by Next Actions), STATUS is stale → refresh before acting.
+2. If `AllChangedFiles` intersects Working Set (or files referenced by Next Actions), STATUS is stale → auto-refresh before proceeding (see enforcement rule below).
 3. If no intersection with Working Set, STATUS is still valid — just update `HeadCommit` on next `/save`.
+
+**Staleness enforcement:** When `/save` detects stale STATUS intersecting Working Set:
+- Auto-refresh STATUS (rewrite deterministically with current state)
+- Print warning: "STATUS was stale. Auto-refreshed. Review changes before continuing."
+- Do NOT block or require manual intervention (keeps workflow natural)
 
 **Intersection check for directories:** When untracked files include a new directory (e.g., `src/newmodule/`), treat it as intersecting if the directory path is a prefix of any Working Set entry, or vice versa. Example: Working Set `src/*` intersects untracked directory `src/newmodule/`.
 
@@ -505,6 +510,8 @@ This prevents accidental clobbering and avoids re-introducing removed files (e.g
 
 **Why /save is deterministic:** This is the difference between "docs you might update" and "a tiny API you can rely on." Agents trust that STATUS always has the same shape. The tool maintains invariants automatically — agents don't have to remember formatting discipline.
 
+**Invariant: /save is the only canonical writer.** Humans can edit STATUS manually, but `/save` is the canonical formatter. Any deviations (extra whitespace, reordered sections, non-standard bullets) will be normalized on next `/save`. This prevents bikeshedding and keeps the API shape stable.
+
 **Commit-after-save tip:** If the working tree is clean after `/save`, print:
 ```
 Tip: If you commit after /save, run /save again to refresh HeadCommit.
@@ -527,14 +534,13 @@ Each review prompt:
 [Working Set | git diff | user-specified target]
 
 ## Findings
-| Severity | File | Issue | Suggested Fix |
-|----------|------|-------|---------------|
-| High/Med/Low | path/to/file | What's wrong | How to fix |
+- [High/Med/Low] path/to/file: Issue description → Suggested fix
+- [Med] src/auth.ts: Missing input validation → Add zod schema
+- [Low] src/utils.ts: Unused import → Remove line 3
 
-## Top 3 Next Steps (optional)
-1. ...
-2. ...
-3. ...
+## Next Steps (optional, ≤3)
+- [Action 1]
+- [Action 2]
 ```
 
 This keeps reviews fast, relevant, predictable, and actionable.
@@ -563,16 +569,7 @@ This keeps reviews fast, relevant, predictable, and actionable.
 
 ### For New Users
 
-**Option A: One-command install (convenience)**
-```bash
-# Pin to release tag for reproducibility
-curl -sL https://github.com/rexkirshner/ai-context-system/releases/download/v6.0.0/install.sh | bash
-
-# Initialize
-/init-context
-```
-
-**Option B: Manual install (primary, recommended)**
+**Manual install (recommended):**
 ```bash
 # Clone pinned release and copy only what you need
 git clone --branch v6.0.0 --depth 1 https://github.com/rexkirshner/ai-context-system.git
@@ -583,9 +580,7 @@ rm -rf ai-context-system
 /init-context
 ```
 
-**Note on install.sh:** We say "no in-repo script framework" but ship an installer. The distinction:
-- ❌ No 150KB utility libraries running during normal use
-- ✅ One tiny installer for setup convenience (optional)
+**Why manual is recommended:** You see exactly what's being added. No curl-to-bash trust required. Pinning to a release tag ensures reproducibility.
 
 Creates three files. Done.
 
@@ -834,6 +829,26 @@ These are the acceptance criteria for v6.0. If these tests fail, the system isn'
 
 **Why this matters:** This is the most common real-world scenario. The staleness check must include uncommitted changes, not just committed diffs.
 
+### Test 7: Multi-Agent Handoff
+
+**Scenario:** Agent A does work and runs `/save`. Agent B (completely fresh session, different context) picks up where A left off.
+
+**Pass criteria:** Agent B makes progress without asking clarifying questions, stays within EditScope, and doesn't re-open decisions that Agent A already settled.
+
+**How to verify:**
+1. Agent A works on a task (e.g., "implement auth middleware")
+2. Agent A makes a decision (e.g., "chose JWT over sessions") and records it
+3. Agent A runs `/save`, ending session
+4. Agent B starts fresh (no shared memory with A)
+5. Agent B should:
+   - Read STATUS and immediately understand objective + next actions
+   - Not ask "What were we doing?" or "Why JWT?"
+   - Continue work within the same EditScope
+   - Not revisit the JWT decision unless new information surfaces
+6. Agent B makes progress and runs `/save`
+
+**Why this matters:** This validates the original vision — "agent-to-agent continuity" — using the v6 harness. If B can't seamlessly continue A's work, the system isn't truly agent-native.
+
 ---
 
 ## Part 6: Documentation
@@ -857,16 +872,10 @@ Three files that enable session continuity:
 
 ## Install
 
-**Manual (recommended):**
 \`\`\`bash
 git clone --branch v6.0.0 --depth 1 https://github.com/rexkirshner/ai-context-system.git
 cp -r ai-context-system/.claude/commands /path/to/your/project/.claude/
 rm -rf ai-context-system
-\`\`\`
-
-**One-command:**
-\`\`\`bash
-curl -sL https://github.com/.../releases/download/v6.0.0/install.sh | bash
 \`\`\`
 
 Then: `/init-context`
@@ -1000,7 +1009,7 @@ Your v5 files are backed up to `context-backup-v5/`.
    - Commands installed (init-context, save, review-*)
    - Templates in place
    - A small working codebase (e.g., a CLI tool or simple web app)
-   - All 6 acceptance tests demonstrated and passing
+   - All 7 acceptance tests demonstrated and passing
 
 2. This is the best anti-vanity move: if we can't demonstrate the tests passing on a real repo, the spec is theater.
 
@@ -1070,7 +1079,7 @@ The AI Context System tried to solve real problems but grew too complex. v6.0 ap
 - Review prompts = report only (no surprise refactors)
 - Security guardrail (never write secrets to context files)
 - Git conflict guidance (simple merge rules)
-- 6 usability tests including dirty resume scenario
+- 7 usability tests including dirty resume + multi-agent handoff
 
 The result: a system that agents can reliably parse and act on, simple enough that people will actually use it.
 
