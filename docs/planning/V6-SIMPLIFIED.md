@@ -115,9 +115,9 @@ RevisitWhen: Mobile client needs arise.
 ```
 
 **Format:**
+- `---` after header and between entries
 - Title with `[Area]` prefix for grep
 - Three fields: Why, Tradeoff, RevisitWhen
-- Separator: blank line + `---` + blank line
 
 This is the only file that captures *why* decisions were made. Git shows what changed. Code shows what exists. DECISIONS.md captures reasoning.
 
@@ -132,9 +132,8 @@ These are Claude Code slash commands — prompt files in `.claude/commands/`, no
 **`/init-context`** — Creates the three files if they don't exist. Safe to run — never overwrites.
 
 **`/save`** — End of session:
-1. Updates STATUS.md (Working Set, Next Actions, Blocked On)
-2. Updates HeadCommit to current git HEAD
-3. Asks: "Any decisions worth recording?" → If yes, appends to DECISIONS.md
+1. Updates STATUS.md (all fields: Objective, Working Set, Next Actions, Blocked On, HeadCommit, LastUpdated)
+2. Asks: "Any decisions worth recording?" → If yes, appends to DECISIONS.md
 
 `/save` keeps section headers and field names exactly as specified; content changes, structure doesn't.
 
@@ -218,20 +217,19 @@ A prompt (not a script) that:
 
 ### `MIGRATIONS.md`
 
-Lives in the repo. Contains version-specific migration instructions:
+Lives in the repo. Contains version-specific migration instructions. Here's the v5.x → v6.0 migration:
 
-```markdown
-# Migrations
+---
 
-## v5.x → v6.0
+#### v5.x → v6.0 Migration
 
-### Backup first
+**Step 1: Backup**
 ```bash
 cp -r context/ context-backup-v5/
 cp -r .claude/ .claude-backup-v5/
 ```
 
-### Delete v5.x artifacts
+**Step 2: Delete v5.x artifacts**
 ```bash
 # Context files we're removing
 rm -f context/SESSIONS.md
@@ -242,7 +240,7 @@ rm -f context/.context-config.json
 rm -rf scripts/
 rm -rf templates/
 
-# .claude subdirectories (keep commands/)
+# .claude subdirectories
 rm -rf .claude/agents/
 rm -rf .claude/skills/
 rm -rf .claude/schemas/
@@ -255,7 +253,7 @@ rm -f .claude/.last-update-check
 rm -rf .claude/commands/
 ```
 
-### Install v6.0 commands
+**Step 3: Install v6.0 commands**
 ```bash
 git clone --branch v6.0.0 --depth 1 https://github.com/rexkirshner/ai-context-system.git
 cp -r ai-context-system/.claude/commands .claude/
@@ -263,9 +261,10 @@ cp ai-context-system/.claude/VERSION .claude/
 rm -rf ai-context-system
 ```
 
-### Transform files
+**Step 4: Transform CLAUDE.md**
 
-**CLAUDE.md** — Add Session Loop at top, merge content from CONTEXT.md:
+Add Session Loop at top, merge content from CONTEXT.md:
+
 ```markdown
 > **Session Loop**
 > 1. Start → Read `context/STATUS.md`
@@ -289,7 +288,10 @@ rm -rf ai-context-system
 [project conventions from CONTEXT.md]
 ```
 
-**STATUS.md** — Rewrite in new format:
+**Step 5: Transform STATUS.md**
+
+Rewrite in new format:
+
 ```markdown
 # Status
 
@@ -302,26 +304,26 @@ Objective: [from old STATUS.md current focus]
 - [3-7 files/directories you're currently touching]
 
 ## Next Actions
-- [up to 3 items from old STATUS.md]
+- [items from old STATUS.md]
 
 ## Blocked On
 - (None)
 ```
 
-**DECISIONS.md** — Add [Area] prefixes (optional but recommended):
+**Step 6: Update DECISIONS.md** (optional)
+
+Add [Area] prefixes for easier grep:
 - Change `## 2026-01-24: Chose SQLite` to `## 2026-01-24: [DB] Chose SQLite`
 
-### Verify
+**Step 7: Verify**
 ```bash
-# Check structure
 ls -la .claude/commands/  # Should have 7 files
 ls -la context/           # Should have STATUS.md and DECISIONS.md only
-
-# Test the system
-# Run /save to confirm new format works
 ```
 
-### What you should have after migration
+Then run `/save` to confirm the new format works.
+
+**Final structure after migration:**
 ```
 project/
 ├── CLAUDE.md                    # With Session Loop at top
@@ -340,10 +342,9 @@ project/
     └── DECISIONS.md             # With [Area] prefixes
 ```
 
-## v6.0 → v6.1
+---
 
-- [Future migration steps go here]
-```
+Future migrations (v6.0 → v6.1, etc.) will be added to MIGRATIONS.md as needed.
 
 ### Why This Design
 
