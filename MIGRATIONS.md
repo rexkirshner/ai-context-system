@@ -19,17 +19,19 @@ cp -r .claude/ .claude-backup-pre-v6/ 2>/dev/null || true
 cp CLAUDE.md CLAUDE.md.backup-pre-v6 2>/dev/null || true
 ```
 
-### Step 2: Delete ALL legacy artifacts
+### Step 2: Delete legacy artifacts (except files needed for synthesis)
+
+**Important:** Keep `context/CONTEXT.md` for now - we need it in Step 4 to create CLAUDE.md.
 
 ```bash
-# === Context directory cleanup ===
+# === Context directory cleanup (keep CONTEXT.md for now) ===
 rm -f context/SESSIONS.md
-rm -f context/CONTEXT.md
 rm -f context/.context-config.json
 rm -f context/cursor.md
 rm -f context/aider.md
 rm -f context/codex.md
 rm -f context/generic-ai-header.md
+# NOTE: Keep context/CONTEXT.md until after Step 4
 
 # === Root directory cleanup ===
 rm -rf scripts/
@@ -128,7 +130,12 @@ Build: `[detect from package.json scripts, Makefile, etc.]`
    - Decisions: `context/DECISIONS.md`
    ```
 
-3. Merge any useful content from `context/CONTEXT.md` into CLAUDE.md, then delete CONTEXT.md
+3. Merge any useful content from `context/CONTEXT.md` into CLAUDE.md
+
+4. **After CLAUDE.md is created/updated**, delete CONTEXT.md:
+   ```bash
+   rm -f context/CONTEXT.md
+   ```
 
 ### Step 5: Transform STATUS.md
 
@@ -202,17 +209,21 @@ Append-only log.
 If it exists, optionally add [Area] prefixes for easier grep:
 - Change `## 2026-01-24: Chose SQLite` to `## 2026-01-24: [DB] Chose SQLite`
 
-### Step 7: Final cleanup
+### Step 7: Final cleanup and verification
 
-Remove any remaining v5.x artifacts:
+Verify context/ only has the required files:
 
 ```bash
-# Verify context/ only has STATUS.md and DECISIONS.md
 ls context/
+# Should show only: STATUS.md, DECISIONS.md
+```
 
-# Remove any stragglers
+Remove any stragglers that might have been missed:
+
+```bash
 rm -f context/SESSIONS.md context/CONTEXT.md context/.context-config.json 2>/dev/null
 rm -f context/cursor.md context/aider.md context/codex.md 2>/dev/null
+rm -f context/generic-ai-header.md 2>/dev/null
 ```
 
 ### Step 8: Verify
