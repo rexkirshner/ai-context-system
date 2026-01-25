@@ -70,8 +70,9 @@ RevisitWhen: [trigger condition to reconsider]
 
 Replace `YYYY-MM-DD` with today's actual date (e.g., 2026-01-24).
 
-**Area prefixes** (for grep-ability):
+**Area prefixes** (for grep-ability—choose the most relevant area):
 - [DB], [API], [UI], [Auth], [Infra], [Deps], [Arch], [Test], [Perf], etc.
+- Use the area most affected by the decision, or [Arch] for cross-cutting choices
 
 **Only record decisions that:**
 - Affect future development choices
