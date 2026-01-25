@@ -44,10 +44,15 @@ Build: `[command]`
 - [Project-specific conventions]
 ```
 
-Ask the user for project name and fill in the bracketed sections based on:
-- Package.json (if exists)
-- Build files (Makefile, build.gradle, etc.)
-- Existing README.md
+**Detecting project info:**
+1. Check `package.json` for `name` field → use as project name
+2. Check `README.md` for title (first `#` heading) → use as project name
+3. If neither exists, use the directory name or ask the user
+
+Fill in bracketed sections by reading:
+- `package.json` scripts for run/test/build commands
+- `Makefile`, `build.gradle`, `Cargo.toml`, etc. for build commands
+- `README.md` for project description
 
 ### 2. context/STATUS.md
 
