@@ -76,7 +76,7 @@ Review the files in the Working Set (from `context/STATUS.md`), or if specified,
 
 ## Behavior
 
-1. Read STATUS.md to understand current context
+1. Read STATUS.md to understand current context (if it doesn't exist, suggest running `/init-context` first or ask user to specify scope)
 2. Review UI files in Working Set (or specified scope)
 3. Check against accessibility criteria above
 4. Produce report in specified format
