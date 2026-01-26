@@ -67,10 +67,11 @@ Compare as semantic version strings (e.g., "6.0.1" vs "6.0.2").
 - Warn user (possible downgrade)
 - Ask if they want to proceed
 
-### 5. Backup Current Commands
+### 5. Backup Current State
 
 ```bash
 cp -r .claude/commands/ .claude/commands-backup-[current-version]/
+cp .claude/VERSION .claude/VERSION.backup-[current-version]
 ```
 
 ### 6. Copy New Command Files
@@ -107,6 +108,7 @@ If update fails and user wants to restore:
 ```bash
 rm -rf .claude/commands/
 mv .claude/commands-backup-[version]/ .claude/commands/
+mv .claude/VERSION.backup-[version] .claude/VERSION
 ```
 
 ## Done
