@@ -23,38 +23,38 @@ Consider running: `npm audit` (or equivalent) to check dependencies.
 ## What to Check
 
 ### Authentication & Authorization
-- Proper authentication on protected routes
-- Authorization checks before sensitive operations
-- Session management security
-- Token handling and storage
+- **Unprotected routes**: Sensitive pages/APIs accessible without auth
+- **Missing authorization**: Auth present but no role/permission check
+- **Weak session management**: Long-lived sessions, no rotation on login
+- **Insecure token storage**: JWTs in localStorage, tokens in URLs
 
 ### Input Validation
-- User input sanitization
-- SQL injection prevention
-- Command injection prevention
-- Path traversal prevention
+- **Unsanitized user input**: Raw input used in queries or output
+- **SQL injection**: String concatenation in queries instead of parameterized
+- **Command injection**: User input passed to shell commands
+- **Path traversal**: User-controlled paths without validation (../)
 
 ### Data Protection
-- Sensitive data exposure in logs
-- Secrets in code or config files
-- Proper encryption for sensitive data
-- Secure password handling
+- **Secrets in logs**: Passwords, tokens, PII written to log output
+- **Hardcoded secrets**: API keys, passwords in source code or config
+- **Missing encryption**: Sensitive data stored or transmitted in plain text
+- **Weak password handling**: Plain text storage, weak hashing (MD5, SHA1)
 
 ### API Security
-- Rate limiting
-- CORS configuration
-- Input validation on endpoints
-- Error message information leakage
+- **No rate limiting**: Endpoints vulnerable to brute force or DoS
+- **Permissive CORS**: Wildcard origins or credentials with broad access
+- **Unvalidated input**: API accepts malformed or unexpected data
+- **Verbose errors**: Stack traces or internal details exposed to clients
 
 ### Dependencies
-- Known vulnerabilities in dependencies
-- Outdated packages with security issues
+- **Known CVEs**: Packages with published security vulnerabilities
+- **Outdated packages**: Old versions missing security patches
 
 ### Common Vulnerabilities
-- XSS (Cross-Site Scripting)
-- CSRF (Cross-Site Request Forgery)
-- Insecure direct object references
-- Security misconfiguration
+- **XSS**: User content rendered without escaping (dangerouslySetInnerHTML)
+- **CSRF**: State-changing requests without token validation
+- **IDOR**: Direct object access without ownership verification
+- **Misconfiguration**: Debug mode in prod, default credentials, open ports
 
 ## Output Format
 
