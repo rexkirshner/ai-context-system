@@ -15,6 +15,39 @@ Verify these files exist:
 
 If missing, suggest running `/init-context` first.
 
+## Format Check
+
+Before updating, verify `context/STATUS.md` is in v6.0 format.
+
+**v6.0 format indicators (required):**
+- Contains `SchemaVersion: 1`
+- Has `## Working Set` section
+- Has `## Next Actions` section
+
+**v5.x format indicators (migration needed):**
+- Contains `## Quick Reference`
+- Contains `## Current Phase` or `## Work In Progress`
+- Has URL fields, Tech Stack sections
+- Missing `SchemaVersion`
+
+**If v5.x format detected, stop and report:**
+
+```
+STATUS.md is in v5.x format and cannot be updated.
+
+This project needs migration to v6.0. Download and run the migration script:
+
+curl -O https://raw.githubusercontent.com/rexkirshner/ai-context-system/main/migrate-to-v6.sh
+chmod +x migrate-to-v6.sh
+./migrate-to-v6.sh
+
+Do NOT run /update-context-system - that command is for v6.x to v6.y upgrades only.
+
+See: https://github.com/rexkirshner/ai-context-system/blob/main/MIGRATIONS.md
+```
+
+Do NOT attempt to update a v5.x format file.
+
 ## What to Update
 
 ### context/STATUS.md
@@ -82,11 +115,12 @@ Replace `YYYY-MM-DD` with today's actual date (e.g., 2026-01-24).
 ## Behavior
 
 1. Read current STATUS.md
-2. Update all fields based on session work
-3. Write updated STATUS.md (preserve exact format)
-4. Evaluate session for recordable decisions (autonomously, do not ask)
-5. If decision worth recording, append to DECISIONS.md
-6. Report what was updated
+2. Check for v5.x format — if detected, stop with migration instructions
+3. Update all fields based on session work
+4. Write updated STATUS.md (preserve exact format)
+5. Evaluate session for recordable decisions (autonomously, do not ask)
+6. If decision worth recording, append to DECISIONS.md
+7. Report what was updated
 
 ## Done
 
