@@ -107,8 +107,8 @@ If update fails and user wants to restore:
 
 ```bash
 rm -rf .claude/commands/
-mv .claude/commands-backup-[version]/ .claude/commands/
-mv .claude/VERSION.backup-[version] .claude/VERSION
+mv .claude/commands-backup-[current-version]/ .claude/commands/
+mv .claude/VERSION.backup-[current-version] .claude/VERSION
 ```
 
 ## Done
