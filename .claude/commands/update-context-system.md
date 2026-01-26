@@ -1,23 +1,52 @@
 ---
 name: update-context-system
-description: Updates context system prompt files from repo and runs migrations
+description: Updates context system from v6.x to v6.y (NOT for pre-v6 migrations)
 ---
 
 # /update-context-system
 
-Update the AI Context System to a newer version.
+Update the AI Context System from v6.x to a newer v6.y version.
+
+**This command is for v6.x → v6.y upgrades only.** For pre-v6 migrations, see the migration script section below.
 
 ## Steps
 
-### 1. Check Current Version
+### 1. Check for Pre-v6 Installation
 
-Read `.claude/VERSION` to get the current installed version.
+Before proceeding, verify this is a v6.0+ project.
 
-If `.claude/VERSION` doesn't exist, assume pre-v6 (v5.x or earlier).
+**Pre-v6 indicators (any of these):**
+- `scripts/` directory exists
+- `.claude/agents/` directory exists
+- `context/SESSIONS.md` exists
+- STATUS.md contains `## Quick Reference` or `## Current Phase`
+- No `.claude/VERSION` file AND any v5.x artifacts present
 
-### 2. Get Latest Version
+**If pre-v6 detected, stop and report:**
 
-Clone the repository (main branch contains the latest stable version):
+```
+This project is on a pre-v6 version.
+
+/update-context-system is for v6.x to v6.y upgrades only.
+
+For pre-v6 to v6.0 migration, download and run the migration script:
+
+curl -O https://raw.githubusercontent.com/rexkirshner/ai-context-system/main/migrate-to-v6.sh
+chmod +x migrate-to-v6.sh
+./migrate-to-v6.sh
+
+See: https://github.com/rexkirshner/ai-context-system/blob/main/MIGRATIONS.md
+```
+
+Do NOT proceed with update.
+
+### 2. Check Current Version
+
+Read `.claude/VERSION` to get the current installed version (e.g., "6.0.1").
+
+### 3. Get Latest Version
+
+Clone the repository:
 
 ```bash
 git clone --depth 1 https://github.com/rexkirshner/ai-context-system.git /tmp/acs-update
@@ -25,65 +54,32 @@ git clone --depth 1 https://github.com/rexkirshner/ai-context-system.git /tmp/ac
 
 Read the version from `/tmp/acs-update/.claude/VERSION`.
 
-### 3. Compare Versions
+### 4. Compare Versions
 
-Compare as semantic version strings (e.g., "6.0.0" vs "6.1.0").
+Compare as semantic version strings (e.g., "6.0.1" vs "6.0.2").
 
-If current version equals latest version:
+**If current version equals latest version:**
 - Report "Already up to date (v[version])"
-- BUT still check for v5.x artifacts that may not have been cleaned up:
-  - Check for: `scripts/`, `templates/`, `.claude/agents/`, `.claude/skills/`, `context/SESSIONS.md`
-  - If any exist, offer to run cleanup (see Step 6 migration steps)
 - Clean up: `rm -rf /tmp/acs-update`
-- Exit if no cleanup needed
+- Exit
 
-If current version is higher than latest (shouldn't happen in normal use):
-- Warn user and ask if they want to proceed (possible downgrade)
+**If current version is higher than latest:**
+- Warn user (possible downgrade)
+- Ask if they want to proceed
 
-### 4. Backup Current Files
+### 5. Backup Current Commands
 
 ```bash
-cp -r .claude/ .claude-backup-[current-version]/
-cp -r context/ context-backup-[current-version]/ 2>/dev/null || true
-cp CLAUDE.md CLAUDE.md.backup-[current-version] 2>/dev/null || true
+cp -r .claude/commands/ .claude/commands-backup-[current-version]/
 ```
 
-### 5. Copy New Command Files
-
-Remove old commands and copy new ones:
+### 6. Copy New Command Files
 
 ```bash
 rm -rf .claude/commands/
 cp -r /tmp/acs-update/.claude/commands/ .claude/commands/
 cp /tmp/acs-update/.claude/VERSION .claude/VERSION
 ```
-
-### 6. Run Migrations
-
-Read `/tmp/acs-update/MIGRATIONS.md` from the repo.
-
-Find the migration section for your version jump (e.g., "v5.x → v6.0").
-
-**For pre-v6 → v6.0 migrations, the key steps are:**
-
-1. **Delete legacy artifacts** (scripts/, templates/, .claude/agents/, etc.)
-2. **Create CLAUDE.md if missing** - synthesize from CONTEXT.md, README, package.json
-3. **Add Session Loop to CLAUDE.md** if it exists but doesn't have it
-4. **Transform STATUS.md** to new format
-5. **Ensure DECISIONS.md exists**
-6. **Clean up context/** - remove SESSIONS.md, CONTEXT.md, config files
-
-Walk through each step interactively:
-- Show what needs to be done
-- Ask for confirmation before destructive changes
-- Execute the step
-- Report result
-
-**Important:** If CLAUDE.md doesn't exist:
-- Check for `context/CONTEXT.md` and use it as a source
-- Check `package.json` for project name and scripts
-- Check `README.md` for project description
-- Create CLAUDE.md with Session Loop using the template from MIGRATIONS.md
 
 ### 7. Cleanup
 
@@ -94,37 +90,28 @@ rm -rf /tmp/acs-update
 ### 8. Verify
 
 Run these checks:
-- `ls -la .claude/commands/` - Should have 8 files
-- `cat .claude/VERSION` - Should show new version
-- `ls -la context/` - Should have only STATUS.md and DECISIONS.md
-- `head -5 CLAUDE.md` - Should show Session Loop at top
+- `ls .claude/commands/` — Should have 8 files
+- `cat .claude/VERSION` — Should show new version
 
 ## Error Handling
 
 - **Git clone fails**: Check network connection, suggest trying again later
-- **Repo not found**: Verify the repository URL is correct
 - **Permission denied**: Check write permissions on .claude/ directory
-- **CLAUDE.md missing and no CONTEXT.md**: Create from template, ask user for project details
-- **Migration step fails**: Stop, report error, offer to restore from backup
 
 If any step fails, clean up `/tmp/acs-update` before exiting.
 
 ## Rollback
 
-If migration fails and user wants to restore:
+If update fails and user wants to restore:
 
 ```bash
-rm -rf .claude/ context/ CLAUDE.md
-mv .claude-backup-[version]/ .claude/
-mv context-backup-[version]/ context/
-mv CLAUDE.md.backup-[version] CLAUDE.md
+rm -rf .claude/commands/
+mv .claude/commands-backup-[version]/ .claude/commands/
 ```
 
 ## Done
 
 Report:
-- Previous version (or "pre-v6" if no VERSION file)
+- Previous version
 - New version
-- Files created (especially if CLAUDE.md was created)
-- Migration steps performed
-- Any manual steps still needed
+- "Commands updated successfully"
