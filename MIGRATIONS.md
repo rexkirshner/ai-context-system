@@ -105,9 +105,10 @@ RevisitWhen: [trigger to revisit]
 Your backup is in `context-backup-YYYYMMDD-HHMMSS/`. To restore:
 
 ```bash
-# Restore from backup
-cp -r context-backup-YYYYMMDD-HHMMSS/context/* context/
-cp -r context-backup-YYYYMMDD-HHMMSS/.claude/* .claude/
+# Remove partially migrated state and restore from backup
+rm -rf context/ .claude/
+cp -r context-backup-YYYYMMDD-HHMMSS/context .
+cp -r context-backup-YYYYMMDD-HHMMSS/.claude .
 cp context-backup-YYYYMMDD-HHMMSS/CLAUDE.md .
 ```
 
