@@ -24,44 +24,44 @@ Consider running: Lighthouse accessibility audit, axe-core, or pa11y.
 ## What to Check
 
 ### Semantic HTML
-- Proper heading hierarchy (h1-h6)
-- Semantic elements (nav, main, article, section)
-- Lists for list content
-- Tables for tabular data
+- **Heading hierarchy**: Skipped levels (h1 → h3) or multiple h1s per page
+- **Missing landmarks**: Using div where nav, main, article, section applies
+- **Non-semantic lists**: Related items not wrapped in ul/ol
+- **Layout tables**: Using tables for layout instead of CSS grid/flex
 
 ### ARIA & Roles
-- ARIA labels on interactive elements
-- Proper role attributes
-- Live regions for dynamic content
-- ARIA states (expanded, selected, etc.)
+- **Missing labels**: Interactive elements without accessible names
+- **Incorrect roles**: Wrong role for element type (button with role="link")
+- **No live regions**: Dynamic content updates not announced to screen readers
+- **Missing states**: Expandable/selectable elements without aria-expanded/selected
 
 ### Keyboard Navigation
-- All interactive elements focusable
-- Logical focus order
-- Visible focus indicators
-- Skip links
+- **Unfocusable elements**: Clickable divs/spans without tabindex
+- **Illogical focus order**: Tab order doesn't match visual layout
+- **Invisible focus**: Focus indicator removed or hard to see
+- **No skip links**: Long navigation with no way to skip to main content
 
 ### Forms
-- Labels associated with inputs
-- Error messages accessible
-- Required fields indicated
-- Autocomplete attributes
+- **Unlabeled inputs**: Inputs without associated label elements
+- **Inaccessible errors**: Error messages not linked to inputs or announced
+- **Unclear required fields**: Required fields not indicated to screen readers
+- **Missing autocomplete**: No autocomplete on common fields (name, email, etc.)
 
 ### Images & Media
-- Alt text on images
-- Decorative images marked appropriately
-- Video captions/transcripts
-- Audio descriptions
+- **Missing alt text**: Images without alt attribute or meaningful description
+- **Decorative not marked**: Decorative images missing alt="" or role="presentation"
+- **No captions**: Videos without closed captions or transcripts
+- **No audio descriptions**: Complex visuals not described for blind users
 
 ### Color & Contrast
-- Sufficient color contrast
-- Information not conveyed by color alone
-- Focus indicators visible
+- **Low contrast**: Text/background combinations below 4.5:1 (AA) ratio
+- **Color-only information**: Status indicated only by color (red/green)
+- **Focus invisible**: Focus ring same color as background or too subtle
 
 ### Motion & Timing
-- Reduced motion support
-- No auto-playing media
-- Adequate time for interactions
+- **No reduced motion**: Animations ignore prefers-reduced-motion
+- **Auto-play media**: Video/audio starts without user action
+- **Time limits**: Timed interactions without extension options
 
 ## Output Format
 
