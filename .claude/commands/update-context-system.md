@@ -7,7 +7,7 @@ description: Updates context system from v6.x to v6.y (NOT for pre-v6 migrations
 
 Update the AI Context System from v6.x to a newer v6.y version.
 
-**This command is for v6.x → v6.y upgrades only.** For pre-v6 migrations, see the migration script section below.
+**This command is for v6.x → v6.y upgrades only.** For pre-v6 migrations, use the `migrate-to-v6.sh` script.
 
 ## Steps
 
