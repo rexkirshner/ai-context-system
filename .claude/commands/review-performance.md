@@ -24,40 +24,40 @@ Consider running: Bundle analyzer, React DevTools Profiler, or Lighthouse perfor
 ## What to Check
 
 ### Database & Queries
-- N+1 query patterns
-- Missing indexes
-- Inefficient queries
-- Connection pooling
+- **N+1 queries**: Loops making individual queries instead of batch/join
+- **Missing indexes**: Slow queries on frequently-filtered columns
+- **Inefficient queries**: SELECT * when only few fields needed, missing LIMIT
+- **Connection pooling**: New connections per request instead of pool reuse
 
 ### Memory & Resources
-- Memory leaks
-- Large object allocations
-- Resource cleanup
-- Caching opportunities
+- **Memory leaks**: Event listeners not removed, closures holding references
+- **Large allocations**: Creating big arrays/objects in hot paths
+- **Resource cleanup**: Streams, file handles, connections not closed
+- **Missing caching**: Recomputing expensive results that could be memoized
 
 ### Algorithms & Data Structures
-- Inefficient algorithms (O(n^2) when O(n) possible)
-- Inappropriate data structures
-- Unnecessary iterations
-- Redundant computations
+- **O(n²) algorithms**: Nested loops when O(n) or O(n log n) possible
+- **Wrong data structure**: Array lookups when Map/Set would be O(1)
+- **Unnecessary iterations**: Multiple passes when one would suffice
+- **Redundant computation**: Same calculation repeated without caching
 
 ### Network & I/O
-- Unnecessary API calls
-- Missing request batching
-- Large payload sizes
-- Blocking I/O in hot paths
+- **Unnecessary API calls**: Fetching data already available locally
+- **No request batching**: Multiple round-trips when one batch call works
+- **Large payloads**: Sending more data than client needs
+- **Blocking I/O**: Synchronous file/network ops in hot paths
 
 ### Frontend (if applicable)
-- Bundle size concerns
-- Render performance
-- Unnecessary re-renders
-- Image optimization
+- **Bundle size**: Large dependencies, missing code splitting
+- **Render performance**: Expensive computations during render
+- **Unnecessary re-renders**: Missing memo, unstable references in props
+- **Unoptimized images**: Large images, missing lazy loading, no srcset
 
 ### Async & Concurrency
-- Blocking operations
-- Parallelization opportunities
-- Race conditions
-- Deadlock potential
+- **Blocking operations**: Sync code where async would prevent blocking
+- **Sequential when parallel**: Awaiting independent operations one by one
+- **Race conditions**: Shared state modified without synchronization
+- **Deadlock potential**: Circular waits on locks or resources
 
 ## Output Format
 
