@@ -15,11 +15,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **`migrate-to-v6.sh`** - One-time bootstrap script for pre-v6 → v6.0 migration
+  - Checks for git availability before proceeding
   - Detects and refuses v6.0+ projects (directs to `/update-context-system`)
   - Detects and refuses fresh projects (directs to `/init-context`)
   - Creates timestamped backup before migration
   - Deletes all v5.x artifacts (scripts/, agents/, templates/, etc.)
-  - Downloads v6.0 commands from GitHub
+  - Downloads v6.0 commands from GitHub with clear error handling
   - Deletes itself after successful completion
 - **Format guard in `/save`** - Detects v5.x STATUS.md format and stops with clear migration instructions
 - **Pre-v6 detection in `/update-context-system`** - Refuses pre-v6 systems with migration script instructions
