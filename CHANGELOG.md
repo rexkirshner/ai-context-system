@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`/save` session history clarification** - Added note explaining STATUS.md is replaced each session (not appended). Session history preserved in git commits; persistent context goes in DECISIONS.md.
 - **`/save` mixed DECISIONS.md formats** - Clarified that new entries should always use v6.0 format even if file contains older v5.x entries.
 - **`/update-context-system` verification wording** - Changed "8 files" to "8 command files (*.md)" to avoid confusion.
+- **`/review-cost` formatting consistency** - All sections now use consistent bold formatting with brief explanations; removed duplicate N+1 queries entry.
 
 ## [6.0.2] - 2026-01-25
 
