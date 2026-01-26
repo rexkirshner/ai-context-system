@@ -16,6 +16,15 @@ echo "  AI Context System - Pre-v6 to v6.0 Migration"
 echo "==============================================================="
 echo ""
 
+# Check if git is available
+if ! command -v git &> /dev/null; then
+    echo "ERROR: git is not installed"
+    echo ""
+    echo "This script requires git to download v6.0 commands."
+    echo "Install git and try again."
+    exit 1
+fi
+
 # Check if already on v6.0
 if [ -f ".claude/VERSION" ]; then
     VERSION=$(cat .claude/VERSION)
