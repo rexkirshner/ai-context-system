@@ -114,6 +114,8 @@ Replace `YYYY-MM-DD` with today's actual date (e.g., 2026-01-24).
 - [DB], [API], [UI], [Auth], [Infra], [Deps], [Arch], [Test], [Perf], etc.
 - Use the area most affected by the decision, or [Arch] for cross-cutting choices
 
+**Mixed formats:** If DECISIONS.md contains older v5.x entries (Context/Decision/Rationale/Alternatives), always append new entries in v6.0 format. Old entries remain valid and readable; no migration needed.
+
 ## Behavior
 
 1. Read current STATUS.md
