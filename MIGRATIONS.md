@@ -25,8 +25,9 @@ You're on pre-v6 if you have any of:
 - `scripts/` directory
 - `.claude/agents/` directory
 - `context/SESSIONS.md` file
-- STATUS.md with `## Quick Reference` section
-- No `.claude/VERSION` file
+- STATUS.md with `## Quick Reference` or `## Current Phase` section
+
+Note: A missing `.claude/VERSION` file alone doesn't indicate pre-v6 (fresh projects also lack it). Look for the artifacts above.
 
 ### Migration Steps
 
