@@ -24,19 +24,25 @@ Consider running: Cloud provider cost dashboards, database query analyzers, or b
 
 ## What to Check
 
-### Cloud Resources
-- Over-provisioned instances or services
-- Unused resources still incurring costs
-- Reserved vs on-demand opportunities
-- Region selection inefficiencies
-- Auto-scaling configuration
+Skip sections that don't apply to your deployment model.
 
-### Database
-- Inefficient queries causing high read/write costs
-- Over-provisioned database tiers
-- Missing connection pooling
-- Unnecessary indexes consuming storage
-- Read replicas vs primary usage
+### Serverless & Edge Platforms (Vercel, Netlify, Cloudflare)
+- **Rendering strategy**: SSR on every request vs ISR/SSG (static is free, SSR costs per invocation)
+- **Edge vs Serverless runtime**: Edge is cheaper but has limitations
+- **Function duration**: Long-running functions cost more—optimize or move to background jobs
+- **Function memory**: Over-allocated memory increases cost per invocation
+- **Cold starts**: Patterns that prevent warm instances (too many routes, large bundles)
+- **Image optimization**: Excessive transformations (Vercel charges per optimization)
+- **Build minutes**: Slow builds consume CI/CD budget
+- **Bandwidth**: Large responses, missing compression, unoptimized assets
+
+### Database & ORM (Prisma, Drizzle, etc.)
+- **N+1 queries**: The #1 cost multiplier—use `include`/`select` or dataloaders
+- **Connection pooling**: Missing pooling exhausts connections (use PgBouncer or Prisma Accelerate)
+- **Query efficiency**: Fetching unused fields, missing pagination, full table scans
+- **Transaction overuse**: Wrapping reads in transactions unnecessarily
+- **Over-provisioned tiers**: Database tier larger than needed
+- **Read replicas**: Not using replicas for read-heavy workloads
 
 ### API Usage
 - Unnecessary calls to paid APIs
@@ -45,6 +51,27 @@ Consider running: Cloud provider cost dashboards, database query analyzers, or b
 - Rate limit handling (retries adding cost)
 - Cheaper API tier opportunities
 
+### Caching
+- Missing cache layers causing repeated expensive operations
+- Cache invalidation inefficiencies
+- In-memory vs external cache decisions
+- TTL optimization
+
+### Code Patterns
+- **N+1 queries**: Loops that make database/API calls (cost multiplier)
+- Polling vs webhooks
+- Synchronous vs async for expensive operations
+- Retry storms
+- Missing circuit breakers
+
+### Traditional Infrastructure (VMs, Containers, Kubernetes)
+Skip this section for serverless deployments.
+- Over-provisioned instances or services
+- Unused resources still incurring costs
+- Reserved vs on-demand opportunities
+- Region selection inefficiencies
+- Auto-scaling configuration
+
 ### Storage
 - Large files that could be compressed
 - Unused assets consuming storage
@@ -52,31 +79,11 @@ Consider running: Cloud provider cost dashboards, database query analyzers, or b
 - Storage tier optimization (hot vs cold)
 - Duplicate data
 
-### Serverless / Functions
-- Over-allocated memory
-- Long-running functions that should be services
-- Cold start patterns adding latency costs
-- Unnecessary invocations
-- Timeout configurations
-
-### Caching
-- Missing cache layers causing repeated expensive operations
-- Cache invalidation inefficiencies
-- In-memory vs external cache decisions
-- TTL optimization
-
 ### Third-Party Services
 - Unused paid features
 - Tier optimization opportunities
 - Alternative cheaper services
 - License optimization
-
-### Code Patterns
-- N+1 queries (cost multiplier)
-- Polling vs webhooks
-- Synchronous vs async for expensive operations
-- Retry storms
-- Missing circuit breakers
 
 ## Output Format
 
