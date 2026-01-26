@@ -4,210 +4,88 @@ Version-specific migration instructions for the AI Context System.
 
 ---
 
-## v5.x → v6.0 (or any pre-v6 version)
+## Two Upgrade Paths
 
-**Overview:** v6.0 is a radical simplification - from 22 commands, 14 agents, and 150KB of scripts to 3 files and 8 commands.
+| From | To | Method |
+|------|-----|--------|
+| Pre-v6 (v5.x, v4.x, etc.) | v6.0+ | Run `migrate-to-v6.sh` script |
+| v6.x | v6.y | Run `/update-context-system` command |
 
-This migration handles upgrades from ANY pre-v6 version (v3.x, v4.x, v5.x).
+**Important:** These paths are mutually exclusive. Use the correct one for your situation.
 
-**Note:** If `context/` doesn't exist at all, that's fine—skip the context-related cleanup steps and let `/init-context` create it fresh after migration.
+---
 
-### Step 1: Backup
+## Upgrading from Pre-v6 (v5.x, v4.x, etc.)
 
-```bash
-# Backup everything we might modify
-cp -r context/ context-backup-pre-v6/ 2>/dev/null || true
-cp -r .claude/ .claude-backup-pre-v6/ 2>/dev/null || true
-cp CLAUDE.md CLAUDE.md.backup-pre-v6 2>/dev/null || true
-```
+If you're on a pre-v6 version, you must use the migration script. The `/update-context-system` command will not work.
 
-### Step 2: Delete legacy artifacts (except files needed for synthesis)
+### How to Identify Pre-v6
 
-**Important:** Keep `context/CONTEXT.md` for now - we need it in Step 4 to create CLAUDE.md.
+You're on pre-v6 if you have any of:
+- `scripts/` directory
+- `.claude/agents/` directory
+- `context/SESSIONS.md` file
+- STATUS.md with `## Quick Reference` section
+- No `.claude/VERSION` file
 
-```bash
-# === Context directory cleanup (keep CONTEXT.md for now) ===
-rm -f context/SESSIONS.md
-rm -f context/.context-config.json
-rm -f context/cursor.md
-rm -f context/aider.md
-rm -f context/codex.md
-rm -f context/generic-ai-header.md
-rm -f context/ai-context-system-feedback.md
-rm -f context/context-feedback.md
-# NOTE: Keep context/CONTEXT.md until after Step 4
+### Migration Steps
 
-# === Root directory cleanup ===
-rm -rf scripts/
-rm -rf templates/
-rm -rf config/
-rm -rf test/
-rm -rf reference/
-rm -f install.sh
-
-# === Docs directory cleanup (keep docs/planning/ if desired) ===
-rm -rf docs/audits/
-rm -rf docs/skills/
-rm -rf docs/migration/
-rm -rf docs/archive/
-
-# === Artifacts cleanup ===
-rm -rf artifacts/
-
-# === .claude directory cleanup ===
-rm -rf .claude/agents/
-rm -rf .claude/skills/
-rm -rf .claude/schemas/
-rm -rf .claude/hooks/
-rm -rf .claude/docs/
-rm -f .claude/acs-settings.json
-rm -f .claude/.last-update-check
-
-# === Old commands (will be replaced) ===
-rm -rf .claude/commands/
-```
-
-### Step 3: Install v6.0 commands
+**1. Download and run the migration script:**
 
 ```bash
-git clone --branch v6.0.0 --depth 1 https://github.com/rexkirshner/ai-context-system.git
-mkdir -p .claude/commands
-cp -r ai-context-system/.claude/commands/ .claude/commands/
-cp ai-context-system/.claude/VERSION .claude/VERSION
-rm -rf ai-context-system
+curl -O https://raw.githubusercontent.com/rexkirshner/ai-context-system/main/migrate-to-v6.sh
+chmod +x migrate-to-v6.sh
+./migrate-to-v6.sh
 ```
 
-**Alternative if git clone fails:** Download the release zip from GitHub releases, extract it, and copy the files manually.
+**2. Restart Claude Code** (exit and reopen)
 
-### Step 4: Create or Transform CLAUDE.md
+**3. Ask Claude to migrate your context files:**
 
-**If CLAUDE.md does NOT exist**, create it by synthesizing from available sources:
+The script installs v6.0 commands and deletes v5.x artifacts, but leaves context file migration to Claude. Ask:
 
-1. Read `context/CONTEXT.md` (if it exists) for project info
-2. Read `package.json`, `README.md`, or other project files for context
-3. Create CLAUDE.md using this template:
+> "Please migrate context/STATUS.md and context/DECISIONS.md to v6.0 format. Backup is in context-backup-YYYYMMDD/"
 
-```markdown
-> **Session Loop**
-> 1. Start → Read `context/STATUS.md`
-> 2. End → Run `/save`
+**4. Verify with `/save`**
 
-# [Project Name]
+### What the Script Does
 
-[One paragraph describing the project - synthesize from CONTEXT.md, README.md, or package.json]
+1. **Verifies pre-v6 installation** — Refuses to run on fresh or v6.0+ projects
+2. **Creates backup** in `context-backup-YYYYMMDD-HHMMSS/`
+3. **Deletes all v5.x artifacts:**
+   - `scripts/`, `templates/`, `config/`, `test/`, `reference/`, `artifacts/`
+   - `.claude/agents/`, `.claude/skills/`, `.claude/schemas/`, `.claude/hooks/`, `.claude/docs/`
+   - `context/SESSIONS.md`, `context/CONTEXT.md`, and other legacy files
+   - `install.sh`, `VERSION` (root level)
+4. **Downloads v6.0 commands** from GitHub
+5. **Deletes itself** — The script is no longer needed after migration
 
-## Commands
+### Context File Formats
 
-Run: `[detect from package.json scripts, Makefile, etc.]`
-Test: `[detect from package.json scripts, Makefile, etc.]`
-Build: `[detect from package.json scripts, Makefile, etc.]`
-
-## Constraints
-
-- Don't refactor unrelated code
-- Keep PRs under 300 lines
-- If you need to touch files outside Working Set, pause, propose, update Working Set, then proceed
-
-## Context
-
-- Status: `context/STATUS.md`
-- Decisions: `context/DECISIONS.md`
-
-## Notes
-
-- [Extract any project conventions from CONTEXT.md or existing docs]
-```
-
-**If CLAUDE.md DOES exist**, prepend the Session Loop and add the Context section:
-
-1. Add at the very top:
-   ```markdown
-   > **Session Loop**
-   > 1. Start → Read `context/STATUS.md`
-   > 2. End → Run `/save`
-
-   ```
-
-2. Add the Context section (if not present):
-   ```markdown
-   ## Context
-
-   - Status: `context/STATUS.md`
-   - Decisions: `context/DECISIONS.md`
-   ```
-
-3. Review `context/CONTEXT.md` and merge useful content into CLAUDE.md:
-   - **Project description** → Add to the paragraph after the title
-   - **Tech stack/dependencies** → Add to the Notes section
-   - **Development conventions** → Add to the Notes section
-   - **Architecture notes** → Add to the Notes section
-   - Skip anything redundant or obsolete
-
-4. **After CLAUDE.md is created/updated**, delete CONTEXT.md:
-   ```bash
-   rm -f context/CONTEXT.md
-   ```
-
-### Step 5: Transform STATUS.md
-
-If `context/STATUS.md` exists, rewrite it in the new format.
-
-**Extract from old STATUS.md:**
-- Current objective/focus
-- Any work in progress items
-- Next steps / action items
-- Blockers
-
-**Create new format:**
+**STATUS.md v6.0 format:**
 
 ```markdown
 # Status
 
 SchemaVersion: 1
-LastUpdated: [today's date YYYY-MM-DD]
-HeadCommit: [run: git rev-parse --short HEAD, or "N/A" if not a git repo]
-Objective: [extracted from old STATUS.md]
+LastUpdated: YYYY-MM-DD
+HeadCommit: [git SHA or N/A]
+Objective: [current goal]
 
 ## Working Set
 
-- [3-7 files/directories currently being worked on]
-- [Extract from old STATUS.md work in progress]
+- [3-7 files/directories being touched]
 
 ## Next Actions
 
-- [Extract from old STATUS.md next steps]
-
-## Blocked On
-
-- [Extract blockers, or "(None)" if clear]
-```
-
-**If STATUS.md doesn't exist**, create it with placeholder values:
-
-```markdown
-# Status
-
-SchemaVersion: 1
-LastUpdated: [today's date YYYY-MM-DD]
-HeadCommit: [run: git rev-parse --short HEAD, or "N/A"]
-Objective: TBD
-
-## Working Set
-
-- TBD
-
-## Next Actions
-
-- TBD
+- [concrete next steps]
 
 ## Blocked On
 
 - (None)
 ```
 
-### Step 6: Ensure DECISIONS.md exists
-
-If `context/DECISIONS.md` doesn't exist, create it:
+**DECISIONS.md v6.0 format:**
 
 ```markdown
 # Decisions
@@ -215,54 +93,100 @@ If `context/DECISIONS.md` doesn't exist, create it:
 Append-only log.
 
 ---
+
+## YYYY-MM-DD: [Area] Decision Title
+Why: [reason for the decision]
+Tradeoff: [what we gave up]
+RevisitWhen: [trigger to revisit]
 ```
 
-If it exists, optionally add [Area] prefixes for easier grep:
-- Change `## 2026-01-24: Chose SQLite` to `## 2026-01-24: [DB] Chose SQLite`
+### If Something Goes Wrong
 
-### Step 7: Final cleanup and verification
-
-Verify context/ only has the required files:
+Your backup is in `context-backup-YYYYMMDD-HHMMSS/`. To restore:
 
 ```bash
-ls context/
-# Should show only: STATUS.md, DECISIONS.md
+# Restore from backup
+cp -r context-backup-YYYYMMDD-HHMMSS/context/* context/
+cp -r context-backup-YYYYMMDD-HHMMSS/.claude/* .claude/
+cp context-backup-YYYYMMDD-HHMMSS/CLAUDE.md .
 ```
 
-Remove any stragglers that might have been missed:
+---
+
+## Upgrading from v6.x to v6.y
+
+For projects already on v6.0+, use the built-in command:
 
 ```bash
-rm -f context/SESSIONS.md context/CONTEXT.md context/.context-config.json 2>/dev/null
-rm -f context/cursor.md context/aider.md context/codex.md 2>/dev/null
-rm -f context/generic-ai-header.md 2>/dev/null
-rm -f context/ai-context-system-feedback.md context/context-feedback.md 2>/dev/null
+/update-context-system
 ```
 
-### Step 8: Verify
+That's it. The command:
+1. Checks current version
+2. Downloads latest v6.x commands
+3. Updates `.claude/commands/` and `.claude/VERSION`
+4. Reports success
+
+No migration steps needed for v6.x → v6.y upgrades.
+
+---
+
+## Schema Versioning
+
+STATUS.md includes `SchemaVersion: 1` to enable future format changes.
+
+**Current schema (v1):** Introduced in v6.0. If we change the STATUS.md format in a future release, we'll increment to SchemaVersion 2 and document the transformation here.
+
+**Philosophy:** Schema changes should be rare. The v6.x → v6.y upgrade path handles command updates; schema migrations (if ever needed) would be documented here.
+
+---
+
+## Troubleshooting
+
+### "/update-context-system says I'm on pre-v6"
+
+This is correct. The command only handles v6.x → v6.y upgrades. Use the migration script instead:
 
 ```bash
-# Should have 8 files
-ls -la .claude/commands/
-
-# Should have only STATUS.md and DECISIONS.md
-ls -la context/
-
-# Should be 6.0.0
-cat .claude/VERSION
-
-# CLAUDE.md should exist with Session Loop at top
-head -5 CLAUDE.md
+curl -O https://raw.githubusercontent.com/rexkirshner/ai-context-system/main/migrate-to-v6.sh
+chmod +x migrate-to-v6.sh
+./migrate-to-v6.sh
 ```
 
-Then run `/save` to confirm everything works.
+### "/save says STATUS.md is in v5.x format"
 
-### Final structure after migration
+Your context files need migration. Either:
+
+1. **Run the migration script** (if you haven't yet)
+2. **Manually update STATUS.md** to v6.0 format (see format above)
+
+### "migrate-to-v6.sh says I'm already on v6.x"
+
+Correct. You don't need the migration script. Use `/update-context-system` for v6.x → v6.y upgrades.
+
+### "migrate-to-v6.sh says no v5.x installation detected"
+
+This means you don't have any v5.x artifacts. Either:
+- This is a fresh project — use `/init-context` to set up
+- You already migrated — use `/update-context-system` for future upgrades
+
+### "I want to migrate context files manually"
+
+After running the migration script (or if you manually installed v6.0 commands), transform your context files:
+
+**STATUS.md:** Extract objective, working files, next steps, and blockers from old format. Create new format with SchemaVersion: 1.
+
+**DECISIONS.md:** If using verbose v5.x format (Context, Decision, Rationale, Alternatives, etc.), condense each entry to the simple format (Why, Tradeoff, RevisitWhen). Add [Area] prefixes for searchability.
+
+---
+
+## Final Structure After Migration
 
 ```
 project/
 ├── CLAUDE.md                    # With Session Loop at top
 ├── .claude/
-│   ├── VERSION                  # Contains "6.0.0"
+│   ├── VERSION                  # Contains "6.0.x"
 │   ├── settings.local.json      # (if exists - user settings, preserved)
 │   └── commands/
 │       ├── init-context.md
@@ -274,64 +198,6 @@ project/
 │       ├── review-seo.md
 │       └── review-cost.md
 └── context/
-    ├── STATUS.md                # New format
-    └── DECISIONS.md             # With optional [Area] prefixes
+    ├── STATUS.md                # v6.0 format
+    └── DECISIONS.md             # v6.0 format
 ```
-
-### Rollback (if needed)
-
-If migration fails, restore from backups:
-
-```bash
-rm -rf context/ .claude/ CLAUDE.md
-mv context-backup-pre-v6/ context/
-mv .claude-backup-pre-v6/ .claude/
-mv CLAUDE.md.backup-pre-v6 CLAUDE.md
-```
-
-**After successful migration:** Verify everything works by running `/save`, then delete the backup directories:
-
-```bash
-rm -rf context-backup-pre-v6/ .claude-backup-pre-v6/ CLAUDE.md.backup-pre-v6
-```
-
----
-
-## Troubleshooting
-
-### "CLAUDE.md doesn't exist and I have no CONTEXT.md"
-
-Create CLAUDE.md manually using the template in Step 4. Fill in:
-- Project name from `package.json`, directory name, or README
-- Commands from `package.json` scripts or Makefile
-- Any known constraints or conventions
-
-### "My STATUS.md has a different format"
-
-The v6.0 format is simpler. Extract key information (objective, current work, next steps, blockers) and reformat. Don't worry about losing v5.x fields like Quick Reference - they're no longer needed.
-
-### "I want to keep my artifacts/"
-
-If you have v5.x audit reports in `artifacts/` that you want to preserve, back them up before running the migration:
-
-```bash
-cp -r artifacts/ artifacts-backup/
-```
-
-The migration will delete `artifacts/` since v6.0 doesn't use it.
-
----
-
-## Schema Versioning
-
-STATUS.md includes `SchemaVersion: 1` to enable future format changes.
-
-**Current schema (v1):** Introduced in v6.0. If we change the STATUS.md format in a future release (e.g., adding fields, restructuring), we'll increment to SchemaVersion 2 and document the transformation here.
-
-**Philosophy:** Schema changes should be rare and backward-compatible when possible. The `/update-context-system` command will handle schema migrations automatically.
-
----
-
-## Future Migrations
-
-Space reserved for v6.x → v6.y migrations as needed.
