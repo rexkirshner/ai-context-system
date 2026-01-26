@@ -86,6 +86,8 @@ Objective: [current goal - update if changed during session]
 - **Next Actions**: Actionable items for next session
 - **Blocked On**: External dependencies, questions, or "(None)"
 
+**Note:** STATUS.md captures current state only and is **replaced** each session—it is not a log. Session history is preserved in git commits. For context that should persist across sessions (architectural decisions, tradeoffs, rationale), add entries to DECISIONS.md.
+
 ### context/DECISIONS.md (if applicable)
 
 Autonomously determine if any decisions from this session should be recorded. You have full session context—use your judgment.
