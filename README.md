@@ -1,6 +1,6 @@
 # AI Context System
 
-**Version 6.0.0** — Radical Simplification
+**Version 6.0** — Radical Simplification
 
 > **Externalize AI context. Enable session continuity. Keep it simple.**
 
@@ -47,7 +47,7 @@ your-project/
     └── DECISIONS.md       # Why we made choices
 ```
 
-**Note:** The repo also has a root `VERSION` file for release tagging. Only `.claude/VERSION` is copied to your project.
+**Note:** Only `.claude/VERSION` is used. The root `VERSION` file (if present) is for repo tagging only.
 
 ### CLAUDE.md
 
@@ -86,7 +86,7 @@ This is the only file that captures *why* decisions were made.
 
 **`/save`** — End of session:
 1. Updates STATUS.md (all fields)
-2. Asks: "Any decisions worth recording?" → If yes, appends to DECISIONS.md
+2. Autonomously records decisions worth preserving to DECISIONS.md
 
 ### Maintenance (1 command)
 
@@ -159,16 +159,18 @@ They produce reports. They don't edit code.
 
 ## Upgrading from v5.x (or earlier)
 
-See [MIGRATIONS.md](./MIGRATIONS.md) for step-by-step migration instructions.
+See [MIGRATIONS.md](./MIGRATIONS.md) for detailed instructions.
 
-Quick summary:
-1. Backup existing files
-2. Delete legacy artifacts (scripts/, templates/, .claude/agents/, etc.)
-3. Copy new v6.0 commands
-4. Create CLAUDE.md if missing (synthesize from CONTEXT.md, README, package.json)
-5. Add Session Loop to existing CLAUDE.md
-6. Transform STATUS.md (new simpler format)
-7. Optional: Add [Area] prefixes to DECISIONS.md
+**Quick summary:**
+
+```bash
+# Download and run the migration script
+curl -O https://raw.githubusercontent.com/rexkirshner/ai-context-system/main/migrate-to-v6.sh
+chmod +x migrate-to-v6.sh
+./migrate-to-v6.sh
+```
+
+The script creates a backup, deletes v5.x artifacts, and installs v6.0 commands. After running, restart Claude Code and ask Claude to migrate your context files to v6.0 format.
 
 ---
 
