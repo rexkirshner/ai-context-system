@@ -91,7 +91,7 @@ rm -rf /tmp/acs-update
 ### 8. Verify
 
 Run these checks:
-- `ls .claude/commands/` — Should have 8 files
+- `ls .claude/commands/` — Should have 8 command files (*.md)
 - `cat .claude/VERSION` — Should show new version
 
 ## Error Handling
