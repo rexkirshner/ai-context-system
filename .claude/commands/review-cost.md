@@ -45,45 +45,44 @@ Skip sections that don't apply to your deployment model.
 - **Read replicas**: Not using replicas for read-heavy workloads
 
 ### API Usage
-- Unnecessary calls to paid APIs
-- Missing caching for API responses
-- Batch operations not utilized
-- Rate limit handling (retries adding cost)
-- Cheaper API tier opportunities
+- **Unnecessary calls**: Calling paid APIs when cached data would suffice
+- **Missing response caching**: Repeated identical requests
+- **No batching**: Multiple calls where one batch call would work
+- **Retry costs**: Rate limit retries without backoff
+- **Tier mismatch**: Paying for higher tier than needed
 
 ### Caching
-- Missing cache layers causing repeated expensive operations
-- Cache invalidation inefficiencies
-- In-memory vs external cache decisions
-- TTL optimization
+- **Missing cache layers**: Repeated expensive operations that could be cached
+- **Invalidation overhead**: Over-aggressive invalidation causing cache misses
+- **Wrong cache type**: In-memory when distributed needed, or vice versa
+- **TTL tuning**: Too short (wasted recomputation) or too long (stale data)
 
 ### Code Patterns
-- **N+1 queries**: Loops that make database/API calls (cost multiplier)
-- Polling vs webhooks
-- Synchronous vs async for expensive operations
-- Retry storms
-- Missing circuit breakers
+- **Polling vs webhooks**: Polling wastes requests; webhooks are event-driven
+- **Sync vs async**: Blocking on expensive operations wastes function time
+- **Retry storms**: Exponential backoff missing, causing cascade failures
+- **Missing circuit breakers**: Failed services hammered repeatedly
 
 ### Traditional Infrastructure (VMs, Containers, Kubernetes)
 Skip this section for serverless deployments.
-- Over-provisioned instances or services
-- Unused resources still incurring costs
-- Reserved vs on-demand opportunities
-- Region selection inefficiencies
-- Auto-scaling configuration
+- **Over-provisioned instances**: More CPU/RAM than workload needs
+- **Zombie resources**: Unused instances, volumes, or IPs still incurring costs
+- **Reserved capacity**: On-demand pricing when reserved would save money
+- **Region costs**: Running in expensive regions without need
+- **Auto-scaling gaps**: Not scaling down during low traffic
 
 ### Storage
-- Large files that could be compressed
-- Unused assets consuming storage
-- Missing CDN for static assets
-- Storage tier optimization (hot vs cold)
-- Duplicate data
+- **Uncompressed assets**: Large files that could be gzipped/brotli
+- **Unused assets**: Old uploads, orphaned files still consuming storage
+- **Missing CDN**: Static assets served from origin instead of edge
+- **Wrong storage tier**: Hot storage for cold data, or vice versa
+- **Duplicate data**: Same content stored multiple times
 
 ### Third-Party Services
-- Unused paid features
-- Tier optimization opportunities
-- Alternative cheaper services
-- License optimization
+- **Unused features**: Paying for features not being used
+- **Over-tiered**: On a higher plan than usage warrants
+- **Cheaper alternatives**: Equivalent services at lower cost
+- **License waste**: Unused seats or over-provisioned licenses
 
 ## Output Format
 
