@@ -5,6 +5,33 @@ All notable changes to the AI Context System will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.0.2] - 2026-01-25
+
+### Fixed
+
+- **Pre-v6 migration failures** - v5.x users running `/update-context-system` encountered broken upgrades due to script dependencies being deleted mid-execution
+- **`/save` corrupting v5.x STATUS.md** - Now detects v5.x format and provides migration instructions instead of corrupting files
+
+### Added
+
+- **`migrate-to-v6.sh`** - One-time bootstrap script for pre-v6 → v6.0 migration
+  - Detects and refuses v6.0+ projects (directs to `/update-context-system`)
+  - Detects and refuses fresh projects (directs to `/init-context`)
+  - Creates timestamped backup before migration
+  - Deletes all v5.x artifacts (scripts/, agents/, templates/, etc.)
+  - Downloads v6.0 commands from GitHub
+  - Deletes itself after successful completion
+- **Format guard in `/save`** - Detects v5.x STATUS.md format and stops with clear migration instructions
+- **Pre-v6 detection in `/update-context-system`** - Refuses pre-v6 systems with migration script instructions
+
+### Changed
+
+- **Two upgrade paths** - Clear separation:
+  - Pre-v6 → v6.0: Run `migrate-to-v6.sh` script
+  - v6.x → v6.y: Run `/update-context-system` command
+- **`/update-context-system` simplified** - Now only handles v6.x → v6.y upgrades (migration logic moved to script)
+- **MIGRATIONS.md rewritten** - Documents two upgrade paths with troubleshooting
+
 ## [6.0.1] - 2026-01-25
 
 ### Fixed
