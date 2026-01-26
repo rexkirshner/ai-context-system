@@ -78,7 +78,16 @@ echo ""
 # 3. Download v6.0 commands
 echo "Downloading v6.0 commands..."
 TEMP_DIR=$(mktemp -d)
-git clone --depth 1 https://github.com/rexkirshner/ai-context-system.git "$TEMP_DIR" 2>/dev/null
+
+if ! git clone --depth 1 https://github.com/rexkirshner/ai-context-system.git "$TEMP_DIR"; then
+    echo ""
+    echo "ERROR: Failed to download v6.0 commands from GitHub."
+    echo ""
+    echo "Check your internet connection and try again."
+    echo "Your backup is safe in $BACKUP_DIR/"
+    rm -rf "$TEMP_DIR"
+    exit 1
+fi
 
 rm -rf .claude/commands/
 mkdir -p .claude
