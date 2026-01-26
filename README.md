@@ -90,7 +90,7 @@ This is the only file that captures *why* decisions were made.
 
 ### Maintenance (1 command)
 
-**`/update-context-system`** — Updates prompt files from repo and runs migrations.
+**`/update-context-system`** — Updates command files from the repo (v6.x → v6.y upgrades only).
 
 ### Optional Reviews (5 commands)
 
@@ -178,7 +178,7 @@ The script creates a backup, deletes v5.x artifacts, and installs v6.0 commands.
 
 - Claude Code CLI (for slash commands)
 - Any project (language/framework agnostic)
-- Git (optional - enables HeadCommit staleness detection; works without it)
+- Git (required for installation and updates; optional for daily use if HeadCommit detection not needed)
 - macOS, Linux, or Windows with WSL/Git Bash (commands use `/tmp/` for temp files)
 
 Works with any AI tool that can read markdown files.
