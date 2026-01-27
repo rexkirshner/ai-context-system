@@ -24,7 +24,8 @@ cp -r ai-context-system/.claude/commands /path/to/your/project/.claude/
 cp ai-context-system/.claude/VERSION /path/to/your/project/.claude/
 rm -rf ai-context-system
 
-# In Claude Code, initialize
+# Restart Claude Code (required for new commands to load)
+# Then initialize:
 /init-context
 ```
 

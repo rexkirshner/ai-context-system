@@ -5,6 +5,13 @@ All notable changes to the AI Context System will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.0.4] - 2026-01-27
+
+### Fixed
+
+- **`/init-context` now handles existing CLAUDE.md** - When CLAUDE.md already exists but lacks the Session Loop block, the command now displays the snippet and instructs users to add it. Previously, existing CLAUDE.md files were silently preserved without the core ACS mechanism, leaving future sessions unaware of context/STATUS.md and `/save`.
+- **Installation docs clarify session restart requirement** - Added note that Claude Code must be restarted after copying command files for new commands to be available. Previously, users encountered "Unknown skill" errors when running `/init-context` immediately after installation.
+
 ## [6.0.3] - 2026-01-26
 
 ### Changed
