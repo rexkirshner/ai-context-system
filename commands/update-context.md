@@ -26,16 +26,18 @@ Do NOT include things true only about right now:
 
 ## Hard Rules
 
-- **No guessing.** Only record commands/conventions verified from repo files or session evidence. If unsure, omit.
+- **No guessing.** Only record commands/conventions verified from repo files or session evidence. If unsure, omit. Evidence: README, package scripts, Makefile, CI config, tool output, successful command runs.
+- **No secrets.** Never write API keys, tokens, private URLs, or credentials into context files.
 - **Idempotent.** Running twice with no new learnings = zero changes.
+- **Minimal diff.** Don't reorder sections or reformat unless needed to add/merge/remove a bullet.
 - **Deduplicate.** Merge near-duplicates; keep the most specific version.
-- **Tight bullets.** Short, imperative. ≤120 chars. No paragraphs.
+- **Tight bullets.** Short, imperative. ≤120 chars when possible. No paragraphs.
 - **No filler.** If it's not repo-specific, don't add it.
 - **Repo-scoped preferences only.** Skip personal preferences unless they change how the codebase should be handled.
 
 ## Do
 
-1. Read CLAUDE.md and AGENTS.md (create both if missing)
+1. Read CLAUDE.md and AGENTS.md (if missing, create both — use repo folder name as Project Name, or "Project" if unknown)
 2. Extract candidate learnings; filter out ephemeral items
 3. Update content:
    - Add new learnings to appropriate section
@@ -64,6 +66,7 @@ Do NOT include things true only about right now:
 - Run: `...`
 - Test: `...`
 - Build: `...`
+- Deploy: `...`  # only if verified
 
 ## Constraints
 - ...
