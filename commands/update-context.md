@@ -1,35 +1,39 @@
 # /update-context
 
-Update CLAUDE.md (and AGENTS.md) with permanent learnings from this session.
+Update CLAUDE.md and AGENTS.md with permanent learnings from this session.
 
-Run this before `/compact` or when context is getting long. It captures what was learned about the project so future sessions benefit.
+Run before `/compact` or when context is long.
 
-**Supports both Claude Code and OpenAI Codex.**
+## Extract (permanent)
 
-## What to Extract
+Things true about the PROJECT:
+- **Commands** — how to run, test, build, deploy
+- **Constraints** — "don't modify X", "always use Y"
+- **Patterns** — conventions, architecture decisions
+- **Quirks** — non-obvious gotchas
+- **Preferences** — how the user likes to work
 
-**Permanent learnings** — things true about the PROJECT:
+## Ignore (ephemeral)
 
-| Type | Examples |
-|------|----------|
-| Commands | `npm run dev`, `pytest -x`, how to build/test/deploy |
-| Constraints | "Don't modify X", "Always use Y pattern", "Keep Z under N lines" |
-| Patterns | Conventions used in this codebase, architectural decisions |
-| Quirks | Non-obvious things, "config is in weird place because...", gotchas |
-| Preferences | User's stated preferences for how they like to work |
+Things true about the MOMENT:
+- Current task, temporary state, session-specific blockers
 
-**Ignore ephemeral stuff** — things true about the MOMENT:
+**Heuristic:** Affects future sessions → permanent. About right now → ephemeral.
 
-- What we're currently working on
-- Temporary state ("tests are failing right now")
-- This session's specific task
-- Blockers that will be resolved
+## Do
 
-**The heuristic:** If it affects how future sessions should work, it's permanent. If it's about right now, it's ephemeral.
+1. Read CLAUDE.md and AGENTS.md (if they exist)
+2. Reflect: what was learned about this project?
+3. Update both files:
+   - Add new learnings
+   - Update outdated info
+   - Remove stale items
+4. Mirror: keep CLAUDE.md and AGENTS.md identical
+   - If only one exists, create the other
+   - If both exist but differ, merge them
+5. Report what changed
 
 ## File Structure
-
-Use this structure for the context file:
 
 ```markdown
 # [Project Name]
@@ -37,66 +41,17 @@ Use this structure for the context file:
 [One-line description]
 
 ## Commands
-
-- Run: `[command]`
-- Test: `[command]`
-- Build: `[command]`
+- Run: `...`
+- Test: `...`
+- Build: `...`
 
 ## Constraints
-
-- [Constraint 1]
-- [Constraint 2]
+- [Constraint]
 
 ## Notes
-
-- [Quirk or pattern worth knowing]
+- [Quirk or pattern]
 ```
 
-## Instructions
+**Keep it tight:** Under 50 lines for small projects, under 100 for complex. Instructions, not documentation.
 
-1. **Read** both CLAUDE.md and AGENTS.md (if they exist)
-
-2. **Reflect** on this session:
-   - What commands were used or discovered?
-   - What constraints emerged? (things to do or avoid)
-   - What patterns or conventions were followed?
-   - What non-obvious things were learned about the codebase?
-   - What preferences did the user express?
-
-3. **Filter** — only keep permanent learnings, discard ephemeral stuff
-
-4. **Update** the context files:
-   - Add new learnings to appropriate sections
-   - Update anything that's now outdated or wrong
-   - Remove anything no longer relevant
-   - Keep it concise — instructions, not documentation
-
-5. **Mirror** CLAUDE.md ↔ AGENTS.md:
-   - Both files should have identical content
-   - If only one exists, create the other as a copy
-   - If both exist but differ, merge them (combine unique content from each)
-
-6. **Report** what changed:
-   ```
-   Updated context files:
-   + Added: npm run test:watch command
-   + Added: Constraint about not modifying legacy auth
-   ~ Updated: Build command (was wrong)
-
-   CLAUDE.md: [N] lines
-   AGENTS.md: [N] lines (mirrored)
-   ```
-
-## Keep It Tight
-
-Context files should be concise. Aim for:
-- Under 50 lines for small projects
-- Under 100 lines for complex projects
-
-If it's growing too long, consolidate or remove less important items. This is an instruction file, not documentation.
-
-## If Nothing to Update
-
-```
-No new permanent learnings to add. Context files unchanged.
-```
+If nothing new: "No new learnings. Context files unchanged."
