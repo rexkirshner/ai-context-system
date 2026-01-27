@@ -26,12 +26,14 @@ Do NOT include things true only about right now:
 
 ## Hard Rules
 
-- **No guessing.** Only record commands/conventions verified from repo files or session evidence. If unsure, omit. Evidence: README, package scripts, Makefile, CI config, tool output, successful command runs.
+- **No guessing.** Only record commands/conventions verified from repo files or session evidence. If unsure, omit. Evidence: README, package scripts, Makefile, CI config, tool output, successful command runs. If the only "evidence" is the agent's assumption, treat as unverified → omit.
 - **No secrets.** Never write API keys, tokens, private URLs, or credentials into context files.
+- **No logs/traces.** Never paste stack traces, logs, or long error output; summarize the takeaway in one bullet.
 - **No placeholders.** If a section would be empty, omit the section entirely.
 - **Preserve header.** Keep existing project name + one-line description unchanged unless missing or clearly wrong.
 - **Idempotent.** Running twice with no new learnings = zero changes.
 - **Minimal diff.** Don't reorder sections or reformat unless needed to add/merge/remove a bullet.
+- **Fixed section order.** When adding a missing section, insert in this order: Commands → Constraints → Patterns → Quirks → Preferences.
 - **Append new bullets.** Add new items to the end of the section; don't reorder existing bullets unless deduping or enforcing size limits.
 - **Deduplicate.** Merge near-duplicates; keep the most specific version.
 - **Tight bullets.** Short, imperative. ≤120 chars when possible. No paragraphs.
@@ -74,7 +76,7 @@ Do NOT include things true only about right now:
 - Build: `<command>`
 - Deploy: `<command>`
 ```
-Use exactly these labels: `Run:`, `Test:`, `Build:`, `Deploy:` (each at most once, only if verified). Omit any that don't apply.
+Use exactly these labels: `Run:`, `Test:`, `Build:`, `Deploy:` (each at most once, only if verified). Omit any that don't apply. In monorepos, record only root-level canonical commands.
 
 ```markdown
 ## Constraints
