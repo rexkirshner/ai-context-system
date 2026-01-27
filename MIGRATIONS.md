@@ -47,13 +47,19 @@ chmod +x migrate-to-v6.sh
 
 The script keeps your old context files so Claude can extract valuable information. Copy and paste this prompt:
 
-> Complete the v6.0 migration:
-> 1. Read context/SESSIONS.md and context/CONTEXT.md (if they exist)
-> 2. Extract any valuable project context, decisions, or history
-> 3. Update context/STATUS.md to v6.0 format
-> 4. Update context/DECISIONS.md to v6.0 format (preserve existing decisions)
-> 5. Delete the old files (if they exist): context/SESSIONS.md, context/CONTEXT.md
-> 6. Verify with /save
+> Complete the v6.0 migration. Read any old context files that exist, extract valuable information, create/update v6.0 files, then delete the old files.
+>
+> **STEP 1:** Read old files (if they exist): `context/SESSIONS.md`, `context/CONTEXT.md`, `context/STATUS.md`, `context/DECISIONS.md`
+>
+> **STEP 2:** Create/update `context/STATUS.md` to v6.0 format (see format below)
+>
+> **STEP 3:** Create/update `context/DECISIONS.md` to v6.0 format (preserve existing decisions, see format below)
+>
+> **STEP 4:** Check `CLAUDE.md` has the Session Loop block at the top. If missing, add it.
+>
+> **STEP 5:** Delete old files: `context/SESSIONS.md`, `context/CONTEXT.md`
+>
+> **STEP 6:** Verify with `/save`
 
 **4. Verify with `/save`**
 
