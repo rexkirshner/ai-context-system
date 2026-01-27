@@ -6,7 +6,16 @@ Comprehensive code review. Output: `docs/audits/CODE-REVIEW-NN.md`
 
 - **Read-only.** Do not modify any code, config, or lockfiles.
 - **Only allowed writes:** create `docs/audits/` if missing + write the report file.
-- **No secrets.** If evidence snippet contains a secret/PII, replace value with `[REDACTED]`, still cite `path:line`, describe the pattern.
+- **No secrets.** If evidence snippet contains a secret/PII, replace value with `[REDACTED]`, still cite `path:line`, describe the pattern. If unsure whether something is sensitive, err on redacting.
+
+## Allowed Actions
+
+- Reading files
+- Searching (ripgrep, grep, glob)
+- Listing directories
+- Running tests/build commands to verify behavior
+
+**Not allowed:** Writing or modifying anything except the report file.
 
 ## Stop & Ask
 
@@ -34,14 +43,14 @@ If codebase is large:
 - Prioritize: API handlers, DB layer, rendering boundaries, background jobs
 - Note sampling limitations in report
 
-## Review Dimensions (prioritize by impact)
+## Review Dimensions
 
 - **Performance** — hot paths, renders, loops, queries, caching, memory, bundle size
-- **Cloud/Cost** — serverless patterns, Prisma/db ops, Vercel usage, API call volume
+- **Cloud-Cost** — serverless patterns, Prisma/db ops, Vercel usage, API call volume
 - **Reliability** — timeouts, retries, error boundaries, idempotency
 - **Security** — authz/authn, input validation, secrets, injection risks
 - **Maintainability** — complexity, duplication, naming, dead code, consistency
-- **Docs/Types** — type coverage, comments for complex logic, README accuracy
+- **Docs-Types** — type coverage, comments for complex logic, README accuracy
 - **Accessibility** — only if UI exists (semantic HTML, ARIA, keyboard nav)
 
 ## Do
@@ -55,27 +64,28 @@ If codebase is large:
    - Extract highest N; next = N+1; zero-pad to 2 digits
    - If none exist, start at 01
 6. Write report to `docs/audits/CODE-REVIEW-NN.md`
-7. Summarize to user (constrained format — see below)
+7. Summarize to user (exactly 5 bullets — see Chat Summary Format)
 
-## Finding Requirements (every finding must have evidence)
+## Finding Requirements
 
-For each finding include:
+For each finding:
 - **ID:** F1, F2, F3... (sequential)
 - **Priority:** P0 (prod/security), P1 (major perf/cost), P2 (maintainability), P3 (nice-to-have)
+- **Dimension:** Performance / Cloud-Cost / Reliability / Security / Maintainability / Docs-Types / Accessibility
 - **Effort:** S (< 1 hr), M (1-4 hrs), L (> 4 hrs)
 - **Confidence:** High / Med / Low (if suspected but unconfirmed, use Low + explain how to confirm)
-- **Evidence:** `path:line` + ≤10-line snippet, OR symbol reference
+- **Evidence:** `path:line` + ≤10-line snippet, OR symbol reference (`path :: export/function :: member`)
 - **Impact:** Why it matters (for Cost findings, estimate: Low/Med/High)
 - **Suggested fix:** Clear steps (no code changes performed)
 - **Verify:** How to prove it's fixed (test, benchmark, query count, bundle analyzer, etc.)
 
-**Symbol reference format:** `path :: export/function/ClassName :: member` (+ optional grep pattern)
-
-**Secrets in evidence:** If snippet contains secret/PII, use `[REDACTED]` for value, keep path:line, describe pattern.
+**Secrets in evidence:** Use `[REDACTED]` for value, keep path:line, describe pattern.
 
 **Cap:** Max 12 findings. Merge duplicates into themes.
 
 ## Output Format
+
+Write exactly this structure:
 
 ```markdown
 # Code Review #NN
@@ -87,16 +97,15 @@ For each finding include:
 - [3-6 bullets: biggest risks/opportunities]
 
 ## Top 5 Actions
-1. [Action] (See F1)
+1. [Outcome-oriented action, e.g., "Reduce DB queries in X by batching"] (See F1)
 2. [Action] (See F3)
-3. ...
-```
-Each action must reference the corresponding finding ID.
+3. [Action] (See FN)
+4. [Action] (See FN)
+5. [Action] (See FN)
 
-```markdown
 ## Findings
 
-### F1 [P0] Title
+### F1 [P0] [Security] Title
 **Evidence:** `path:line`
 ```
 [≤10 line snippet, secrets redacted]
@@ -106,8 +115,15 @@ Each action must reference the corresponding finding ID.
 **Suggested fix:** ...
 **Verify:** ...
 
-### F2 [P1] Title
-...
+### F2 [P1] [Performance] Title
+**Evidence:** `path:line`
+```
+[snippet]
+```
+**Problem:** ...
+**Impact:** ...
+**Suggested fix:** ...
+**Verify:** ...
 
 ## Notes
 - Good patterns worth keeping
@@ -122,14 +138,17 @@ Each action must reference the corresponding finding ID.
 
 ## Chat Summary Format
 
-After writing the report, reply to user with exactly:
-- 3 bullets: biggest risks/opportunities
-- 1 bullet: biggest cost/perf lever (if any)
-- 1 bullet: what you need from the user (if anything, otherwise omit)
+After writing the report, reply to user with exactly 5 bullets:
+1. [Biggest risk/opportunity #1]
+2. [Biggest risk/opportunity #2]
+3. [Biggest risk/opportunity #3]
+4. [Biggest cost/perf lever, or "None spotted"]
+5. [What you need from user, or "Nothing needed"]
 
 ## Guidance
 
 - Actionable > comprehensive. Every issue should have a clear fix.
+- Actions must be outcomes ("Reduce X by Y") not tasks ("Refactor X").
 - Skip nitpicks unless they indicate a pattern.
 - Praise good patterns when you see them.
 - If unsure about a bug, mark Confidence=Low and propose how to confirm.
