@@ -102,6 +102,8 @@ If update fails and user wants to restore, use git:
 git checkout .claude/commands/ .claude/VERSION
 ```
 
+**Note:** This assumes `.claude/` is committed to your repository. If not, commit it before running updates.
+
 ## Done
 
 Report:
