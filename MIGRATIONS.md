@@ -31,6 +31,8 @@ Note: A missing `.claude/VERSION` file alone doesn't indicate pre-v6 (fresh proj
 
 ### Migration Steps
 
+**Before you start:** Commit your files to git. The script doesn't create backups — use `git checkout` to rollback if needed.
+
 **1. Download and run the migration script:**
 
 ```bash
@@ -41,25 +43,34 @@ chmod +x migrate-to-v6.sh
 
 **2. Restart Claude Code** (exit and reopen)
 
-**3. Ask Claude to migrate your context files:**
+**3. Complete the migration with Claude:**
 
-The script installs v6.0 commands and deletes v5.x artifacts, but leaves context file migration to Claude. Ask:
+The script keeps your old context files so Claude can extract valuable information. Copy and paste this prompt:
 
-> "Please migrate context/STATUS.md and context/DECISIONS.md to v6.0 format. Backup is in context-backup-YYYYMMDD/"
+> Complete the v6.0 migration:
+> 1. Read context/SESSIONS.md and context/CONTEXT.md (if they exist)
+> 2. Extract any valuable project context, decisions, or history
+> 3. Update context/STATUS.md to v6.0 format
+> 4. Update context/DECISIONS.md to v6.0 format (preserve existing decisions)
+> 5. Delete the old files (if they exist): context/SESSIONS.md, context/CONTEXT.md
+> 6. Verify with /save
 
 **4. Verify with `/save`**
 
 ### What the Script Does
 
 1. **Verifies pre-v6 installation** — Refuses to run on fresh or v6.0+ projects
-2. **Creates backup** in `context-backup-YYYYMMDD-HHMMSS/`
-3. **Deletes all v5.x artifacts:**
+2. **Deletes v5.x infrastructure** (no valuable content):
    - `scripts/`, `templates/`, `config/`, `test/`, `reference/`, `artifacts/`
    - `.claude/agents/`, `.claude/skills/`, `.claude/schemas/`, `.claude/hooks/`, `.claude/docs/`
-   - `context/SESSIONS.md`, `context/CONTEXT.md`, and other legacy files
    - `install.sh`, `VERSION` (root level)
+3. **Keeps context files for migration:**
+   - `context/SESSIONS.md`, `context/CONTEXT.md` — Claude extracts value, then deletes
+   - `context/STATUS.md`, `context/DECISIONS.md` — Claude updates to v6.0 format
 4. **Downloads v6.0 commands** from GitHub
-5. **Deletes itself** — The script is no longer needed after migration
+5. **Deletes itself** — The script is no longer needed
+
+**No backup is created.** Use `git checkout` to rollback if needed.
 
 ### Context File Formats
 
@@ -103,14 +114,14 @@ RevisitWhen: [trigger to revisit]
 
 ### If Something Goes Wrong
 
-Your backup is in `context-backup-YYYYMMDD-HHMMSS/`. To restore:
+Use git to restore the previous state:
 
 ```bash
-# Remove partially migrated state and restore from backup
-rm -rf context/ .claude/
-cp -r context-backup-YYYYMMDD-HHMMSS/context .
-cp -r context-backup-YYYYMMDD-HHMMSS/.claude .
-cp context-backup-YYYYMMDD-HHMMSS/CLAUDE.md .
+# Restore all deleted files
+git checkout -- .
+
+# Or restore specific files
+git checkout -- context/ .claude/ CLAUDE.md
 ```
 
 ---
