@@ -5,27 +5,33 @@ Remove AI Context System artifacts from this project.
 ## Preflight
 
 Before scanning, verify:
-1. We're in a git repo (run `git rev-parse --show-toplevel`)
+1. Run `git rev-parse --show-toplevel` to get repo root (all paths are relative to this)
 2. At least one ACS marker exists: `context/`, `.claude/acs-settings.json`, `.claude/VERSION`
 
-If not a git repo: warn but continue (deletions won't be reversible via git).
+If not a git repo: warn that deletions are **irreversible**, then require confirmation before any deletion.
 If no ACS markers found: output **"No ACS artifacts found."** and stop.
+
+## Safety Rules
+
+- **Stay in repo root.** All targets are relative to repo root. Never delete outside it.
+- **Don't follow symlinks.** If a target is a symlink, skip it and report as "Skipped — symlink."
+- **Plan before delete.** Always print the deletion plan before asking for confirmation.
 
 ## Targets
 
-**High-confidence** (safe to remove if present):
+**High-confidence** (directories/files to remove entirely if present):
 - `context/`
 - `.claude/commands/`, `.claude/agents/`, `.claude/skills/`, `.claude/schemas/`, `.claude/hooks/`, `.claude/docs/`
 - `.claude/VERSION`, `.claude/acs-settings.json`, `.claude/.last-update-check`
 - Root-level `install.sh`, `VERSION`
 
-**Conditional** (common names — only remove if they contain ACS content):
-- `scripts/` — remove only if contains ACS scripts (e.g., `acs-*.sh`, `install-acs.sh`)
-- `templates/` — remove only if contains `.claude/` or `context/` templates
-- `config/` — remove only if contains `acs-*.json` or ACS config files
-- `reference/`, `artifacts/` — remove only if contains ACS documentation or outputs
+**Conditional** (remove only ACS files within, not the directory itself):
+- `scripts/` — delete only: `acs-*.sh`, `install-acs.sh`, `migrate-*.sh`
+- `templates/` — delete only: files referencing `.claude/` or `context/` in content, or `acs/` subdirs
+- `config/` — delete only: `acs-*.json`, `context-config.json`
+- `reference/`, `artifacts/` — delete only: files with "acs" or "context-system" in name or content
 
-If unsure whether a conditional dir is ACS-only: skip it and note in report.
+If unsure whether a file is ACS-related: skip it and note in report.
 
 ## Keep (never remove)
 
@@ -34,14 +40,15 @@ If unsure whether a conditional dir is ACS-only: skip it and note in report.
 
 ## Procedure
 
-1. **Preflight** — run checks above
-2. **Scan** — for each target, check: exists? git-tracked?
-3. **Plan** — list what will be deleted (high-confidence vs conditional)
-4. **Delete**
+1. **Preflight** — run checks above; stop if no markers
+2. **Scan** — for each target: exists? symlink? git-tracked?
+3. **Plan** — print deletion plan grouped by high-confidence vs conditional
+4. **Confirm** — ask user to type `DELETE` to proceed; if not received, stop after plan
+5. **Delete**
    - Use `git rm -r` for git-tracked items
-   - Use `rm -rf` for untracked items
-5. **Verify** — re-scan to confirm deletion
-6. **Report** — structured output:
+   - Use `rm -rf` for untracked items (never follows symlinks due to step 2)
+6. **Verify** — re-scan to confirm deletion
+7. **Report** — structured output:
    ```
    Removed:
    - path (git rm)
@@ -58,6 +65,6 @@ If unsure whether a conditional dir is ACS-only: skip it and note in report.
    - path
    ```
 
-If nothing to remove after preflight: **"No ACS artifacts found."**
+If scan finds 0 deletable items: **"No ACS artifacts found."**
 
 **Restore:** Run `git restore` or `git checkout` to undo tracked deletions.
