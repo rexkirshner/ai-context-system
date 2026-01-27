@@ -54,7 +54,8 @@ fi
 
 echo "Detected pre-v6 installation"
 echo ""
-echo "NOTE: No backup created. Use 'git checkout' to rollback if needed."
+echo "IMPORTANT: Ensure your files are committed to git before proceeding."
+echo "           Use 'git checkout' to rollback if needed."
 echo ""
 
 # 1. Delete v5.x INFRASTRUCTURE (no valuable content)
@@ -84,10 +85,12 @@ echo ""
 
 # 2. List context files that need migration (NOT deleted yet)
 echo "Context files kept for migration:"
-[ -f "context/SESSIONS.md" ] && echo "  - context/SESSIONS.md (session history)"
-[ -f "context/CONTEXT.md" ] && echo "  - context/CONTEXT.md (project context)"
-[ -f "context/STATUS.md" ] && echo "  - context/STATUS.md (needs format update)"
-[ -f "context/DECISIONS.md" ] && echo "  - context/DECISIONS.md (needs format update)"
+FOUND_FILES=0
+[ -f "context/SESSIONS.md" ] && echo "  - context/SESSIONS.md (session history)" && FOUND_FILES=1
+[ -f "context/CONTEXT.md" ] && echo "  - context/CONTEXT.md (project context)" && FOUND_FILES=1
+[ -f "context/STATUS.md" ] && echo "  - context/STATUS.md (needs format update)" && FOUND_FILES=1
+[ -f "context/DECISIONS.md" ] && echo "  - context/DECISIONS.md (needs format update)" && FOUND_FILES=1
+[ "$FOUND_FILES" -eq 0 ] && echo "  (none found - Claude will create fresh context files)"
 echo ""
 
 # 3. Download v6.0 commands
@@ -144,7 +147,7 @@ echo "   ## Next Actions"
 echo "   ## Blocked On"
 echo ""
 echo "4. Update context/DECISIONS.md to v6.0 format (preserve existing decisions)"
-echo "5. Delete the old files: context/SESSIONS.md, context/CONTEXT.md"
+echo "5. Delete the old files (if they exist): context/SESSIONS.md, context/CONTEXT.md"
 echo "6. Verify with /save"
 echo "---"
 echo ""
