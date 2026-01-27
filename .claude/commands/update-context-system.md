@@ -71,7 +71,7 @@ Compare as semantic version strings (e.g., "6.0.1" vs "6.0.2").
 
 ```bash
 rm -rf .claude/commands/
-cp -r /tmp/acs-update/.claude/commands/ .claude/commands/
+cp -r /tmp/acs-update/.claude/commands .claude/
 cp /tmp/acs-update/.claude/VERSION .claude/VERSION
 ```
 
