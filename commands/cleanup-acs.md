@@ -13,8 +13,8 @@ If no ACS markers found: output **"No ACS artifacts found."** and stop.
 
 ## Safety Rules
 
-- **Stay in repo root.** All targets are relative to repo root. If any path resolves outside repo root, STOP entirely (this indicates a bug or symlink traversal).
-- **Don't follow symlinks.** If a target is a symlink, skip it and report as "Skipped — symlink."
+- **Stay in repo root.** All targets are relative to repo root. Resolve `repo_root` and each candidate via `realpath` (or equivalent) and verify the candidate starts with `repo_root/`. If any path resolves outside, STOP entirely.
+- **Don't follow symlinks.** Skip symlink targets during Scan; deletion commands only run on non-symlink paths. Report skipped symlinks as "Skipped — symlink."
 - **Always confirm.** Never delete without user typing `DELETE`, regardless of git status.
 - **Plan before delete.** Always print the deletion plan before asking for confirmation.
 
@@ -48,13 +48,16 @@ If unsure whether a file is ACS-related: skip it and note in report.
 
 1. **Preflight** — run checks above; stop if no markers
 2. **Scan** — for each target: exists? symlink? git-tracked?
-3. **Plan** — print deletion plan grouped by high-confidence vs conditional
+3. **Plan** — print deletion plan:
+   - Group by high-confidence vs conditional
+   - Sort paths lexicographically within each group
+   - Include `reason` for each item (e.g., "high-confidence list", "matches acs-*.sh", "content contains .claude/")
 4. **Confirm** — ask user to type `DELETE` to proceed; if not received, stop after plan
 5. **Delete**
-   - Use `git rm -r` for git-tracked items
-   - Use `rm -rf` for untracked items (never follows symlinks due to step 2)
+   - Use `git rm -r -- <path>` for git-tracked items
+   - Use `rm -rf -- <path>` for untracked items
 6. **Verify** — re-scan to confirm deletion
-7. **Report** — structured output:
+7. **Report** — structured output (sort paths lexicographically in each section):
    ```
    Removed:
    - path (git rm)
