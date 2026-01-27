@@ -8,13 +8,14 @@ Before scanning, verify:
 1. Run `git rev-parse --show-toplevel` to get repo root (all paths are relative to this)
 2. At least one ACS marker exists: `context/`, `.claude/acs-settings.json`, `.claude/VERSION`
 
-If not a git repo: warn that deletions are **irreversible**, then require confirmation before any deletion.
+If not a git repo: warn that deletions are **irreversible** (cannot be restored).
 If no ACS markers found: output **"No ACS artifacts found."** and stop.
 
 ## Safety Rules
 
-- **Stay in repo root.** All targets are relative to repo root. Never delete outside it.
+- **Stay in repo root.** All targets are relative to repo root. If any path resolves outside repo root, STOP entirely (this indicates a bug or symlink traversal).
 - **Don't follow symlinks.** If a target is a symlink, skip it and report as "Skipped — symlink."
+- **Always confirm.** Never delete without user typing `DELETE`, regardless of git status.
 - **Plan before delete.** Always print the deletion plan before asking for confirmation.
 
 ## Targets
@@ -30,6 +31,11 @@ If no ACS markers found: output **"No ACS artifacts found."** and stop.
 - `templates/` — delete only: files referencing `.claude/` or `context/` in content, or `acs/` subdirs
 - `config/` — delete only: `acs-*.json`, `context-config.json`
 - `reference/`, `artifacts/` — delete only: files with "acs" or "context-system" in name or content
+
+**Content scanning constraints** (for rules that check file content):
+- Only scan text files (`.md`, `.json`, `.sh`, `.txt`, `.yaml`, `.yml`)
+- Skip files > 1 MB
+- Skip vendor/build dirs inside conditional paths: `node_modules/`, `.git/`, `dist/`, `build/`, `vendor/`
 
 If unsure whether a file is ACS-related: skip it and note in report.
 
@@ -63,8 +69,10 @@ If unsure whether a file is ACS-related: skip it and note in report.
 
    Not found:
    - path
+
+   Totals: removed=N kept=N skipped=N not_found=N
    ```
 
 If scan finds 0 deletable items: **"No ACS artifacts found."**
 
-**Restore:** Run `git restore` or `git checkout` to undo tracked deletions.
+**Restore:** `git restore` or `git checkout` undoes tracked deletions. Untracked deletions cannot be restored via git.
