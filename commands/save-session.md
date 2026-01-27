@@ -20,8 +20,16 @@ Run before `/compact` or when context is long.
    - `git diff --name-status HEAD` (files changed vs last commit; fallback: `git status --porcelain`)
    - `git log --oneline -n 5` (recent commits)
    - If git unavailable: use structured fallback (see below)
-4. Write `docs/sessions/SESSION-NNN.md` using format below
-5. Reply to user with:
+4. Draft session file content using format below
+5. **Secrets scan (mandatory):** Before finalizing, scan draft for secrets. Redact any matches with `[REDACTED]`. Patterns to catch:
+   - API key prefixes: `sk-`, `ghp_`, `xoxb-`, `AKIA`, `AIza`
+   - Private keys: `-----BEGIN`
+   - JWT-like: `xxxxx.yyyyy.zzzzz`
+   - High-entropy strings (≥20 chars) after `=` or `:` in config-like contexts
+   - Anything that looks like a password, token, bearer, cookie, or connection string
+   - If unsure, redact.
+6. Write `docs/sessions/SESSION-NNN.md`
+7. Reply to user with:
    - File path created
    - Session number
    - Note if git info couldn't be verified
@@ -29,7 +37,11 @@ Run before `/compact` or when context is long.
 ## Hard Rules
 
 - **Verify from git.** Commits and Files Changed must come from actual git commands. If unverifiable, write "Unknown" — never guess.
-- **No secrets.** Never include tokens, keys, private URLs, credentials, or PII. Reference generically ("API key", "prod DB") without values.
+- **No secrets (enforced).**
+  - Never write secrets into session files: tokens, API keys, passwords, private keys, cookies, connection strings, auth URLs, or PII.
+  - If you need to reference one, describe generically and use `[REDACTED]` for any value.
+  - Never paste raw `.env` contents or config values.
+  - Commit messages: if they contain suspected secrets, keep the SHA but redact the message.
 - **Stay concise.** Follow the caps below. Scannable > thorough.
 
 ## Output Format
@@ -77,7 +89,7 @@ From `git diff --name-status HEAD` (preferred) or `git status --porcelain`. Stat
 ## Commits
 - `sha` — message
 ```
-From `git log`. If none this session: "None this session." If not a git repo: "Unable to verify (no git)."
+From `git log`. If message contains suspected secret, keep SHA but write `[REDACTED]`. If none this session: "None this session." If not a git repo: "Unable to verify (no git)."
 
 ```markdown
 ## Decisions
@@ -95,7 +107,7 @@ Max 5 items. Skip if nothing notable.
 ## Pointers
 - `path/to/relevant/file`
 ```
-3-7 file paths or docs most relevant to resume work. Not just what changed — what's important context.
+3-7 file paths or docs most relevant to resume work. Not just what changed — what's important context. **Never include secret-bearing files:** `.env*`, `secrets.*`, `*.pem`, `id_rsa*`, `credentials.*`, keyfiles.
 
 ```markdown
 ## Unfinished
