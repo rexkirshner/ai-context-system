@@ -7,16 +7,19 @@ Comprehensive code review. Output: `docs/audits/CODE-REVIEW-NN.md`
 - **Read-only.** Do not modify any code, config, or lockfiles.
 - **Only allowed writes:** create `docs/audits/` if missing + write the report file.
 - **No installs.** Don't run dependency installs or commands that mutate lockfiles/generate artifacts (e.g., `npm install`, `prisma migrate`, `pod install`).
-- **No network.** Avoid networked commands unless user explicitly asks.
+- **No network.** Avoid commands that fetch remote resources: `curl`/`wget`, package manager fetches, remote DB calls, telemetry-heavy CLIs. If unsure whether a command is networked, skip it and write "Not run (network)" in Verify.
 - **No secrets.** If evidence snippet contains a secret/PII, replace value with `[REDACTED]`, still cite `path:line`, describe the pattern. If unsure whether something is sensitive, err on redacting.
+- **Skip binaries/huge files.** Don't open binaries (`.png`, `.mp4`, `.pdf`, `.zip`, `.wasm`, etc.) or very large files. Note in Appendix if relevant files were skipped.
 
 ## Allowed Actions
 
-- Reading files
-- Searching (ripgrep, grep, glob)
+- Reading files (text only, reasonable size)
+- Searching (ripgrep preferred; if `rg` not available, use `grep`)
 - Listing directories
 - Running tests/build commands to verify behavior (if they don't install or mutate)
   - Prefer the fastest non-mutating checks; don't run long suites unless necessary
+
+**Tooling fallback:** If `git` not available, follow the "no git" sampling rule and explicitly state it in Appendix.
 
 **Not allowed:** Writing or modifying anything except the report file.
 
@@ -60,7 +63,7 @@ If codebase is large:
 
 ## Do
 
-1. Identify stack + entrypoints (framework, DB, runtime, deployment)
+1. Identify stack + entrypoints (framework, DB, runtime, deployment) — record evidence
 2. Map hot surfaces: API routes, DB access, rendering boundaries, jobs/cron
 3. Scan for obvious hotspots (N+1, unbounded loops, missing pagination, repeated fetches)
 4. Deep dive into chosen scope and collect evidence
@@ -82,11 +85,11 @@ For each finding:
 - **Evidence:** `path:line` + ≤10-line snippet, OR symbol reference (`path :: export/function :: member`)
 - **Impact:** Why it matters (for Cost findings, estimate: Low/Med/High)
 - **Suggested fix:** Clear steps (no code changes performed)
-- **Verify:** How to prove it's fixed (test, benchmark, query count, bundle analyzer, etc.)
+- **Verify:** How to prove it's fixed. If you can't run verification (timebox/missing deps/no network), provide the exact command(s) the user should run and what signal to look for.
 
 **Secrets in evidence:** Use `[REDACTED]` for value, keep path:line, describe pattern.
 
-**Cap:** Max 12 findings. Merge duplicates into themes.
+**Cap:** Max 12 findings. If more than 12 issues exist, collapse extras into 3-5 themes with representative evidence + a checklist of affected locations.
 
 ## Output Format
 
@@ -137,8 +140,10 @@ Write exactly this structure (use ~~~ for inner code blocks):
 
 ## Appendix
 **Stack detected:** [Framework], [Runtime], [DB/ORM], [Deployment platform]
+**Stack evidence:** [List specific files/imports used to infer stack, e.g., "package.json shows next@14", "prisma/ directory"]
 **Files/areas reviewed:** ...
 **Areas skipped (if sampling):** ...
+**Binaries/large files skipped:** ...
 **Assumptions:** ...
 ```
 
