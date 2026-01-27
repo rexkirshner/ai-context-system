@@ -171,7 +171,7 @@ chmod +x migrate-to-v6.sh
 ./migrate-to-v6.sh
 ```
 
-The script creates a backup, deletes v5.x artifacts, and installs v6.0 commands. After running, restart Claude Code and ask Claude to migrate your context files to v6.0 format.
+The script deletes v5.x infrastructure (but keeps your context files), installs v6.0 commands, then Claude migrates your context to the new format. Use `git checkout` to rollback if needed.
 
 ---
 
