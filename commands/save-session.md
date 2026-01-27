@@ -21,13 +21,17 @@ Run before `/compact` or when context is long.
    - `git log --oneline -n 5` (recent commits)
    - If git unavailable: use structured fallback (see below)
 4. Draft session file content using format below
-5. **Secrets scan (mandatory):** Before finalizing, scan draft for secrets. Redact any matches with `[REDACTED]`. Patterns to catch:
-   - API key prefixes: `sk-`, `ghp_`, `xoxb-`, `AKIA`, `AIza`
-   - Private keys: `-----BEGIN`
+5. **Secrets scan (mandatory):** Before finalizing, scan draft for secrets. Redact any matches with `[REDACTED]`. If unsure, redact.
+
+   **Patterns to catch:**
+   - API key prefixes: `sk-`, `ghp_`, `github_pat_`, `xoxb-`, `xoxp-`, `xoxa-`, `xapp-`, `AKIA`, `AIza`
+   - Private keys: `-----BEGIN`, `BEGIN OPENSSH PRIVATE KEY`, `ssh-rsa`
    - JWT-like: `xxxxx.yyyyy.zzzzz`
-   - High-entropy strings (≥20 chars) after `=` or `:` in config-like contexts
-   - Anything that looks like a password, token, bearer, cookie, or connection string
-   - If unsure, redact.
+   - Auth headers: `Authorization: Bearer`, `Authorization: Basic`
+   - URLs with credentials: `://user:pass@`, `://...@`
+   - Connection strings: `postgres://`, `mongodb://`, `mysql://`, `redis://`
+   - High-entropy tokens: any contiguous string ≥20 chars containing `[A-Za-z0-9_-]` that appears after `=` or `:`, inside quotes, or near words like key/token/secret/password/bearer/cookie
+
 6. Write `docs/sessions/SESSION-NNN.md`
 7. Reply to user with:
    - File path created
@@ -39,8 +43,8 @@ Run before `/compact` or when context is long.
 - **Verify from git.** Commits and Files Changed must come from actual git commands. If unverifiable, write "Unknown" — never guess.
 - **No secrets (enforced).**
   - Never write secrets into session files: tokens, API keys, passwords, private keys, cookies, connection strings, auth URLs, or PII.
-  - If you need to reference one, describe generically and use `[REDACTED]` for any value.
-  - Never paste raw `.env` contents or config values.
+  - Never paste raw output of `printenv`, `.env` files, secret managers, CI logs, cloud console dumps, or full config files. Summarize instead: "Configured env var for X (value redacted)."
+  - If you need to reference a secret, describe generically and use `[REDACTED]` for any value.
   - Commit messages: if they contain suspected secrets, keep the SHA but redact the message.
 - **Stay concise.** Follow the caps below. Scannable > thorough.
 
