@@ -30,7 +30,8 @@ Remove all AI Context System artifacts from this project.
 
 ## What to Keep
 
-- `CLAUDE.md` — This is your project instructions file. Keep it.
+- `CLAUDE.md` — Your Claude Code instructions file. Keep it.
+- `AGENTS.md` — Your OpenAI Codex instructions file. Keep it.
 - `.claude/settings.local.json` — Your Claude Code settings. Keep it.
 - Any non-ACS files in `.claude/`
 
@@ -54,6 +55,7 @@ Remove all AI Context System artifacts from this project.
 
    Kept:
    - CLAUDE.md
+   - AGENTS.md
    - .claude/settings.local.json
 
    ACS cleanup complete.
@@ -68,5 +70,5 @@ No ACS artifacts found in this project.
 ## Notes
 
 - This removes ALL versions of ACS (v1 through v6+)
-- CLAUDE.md is preserved — edit or delete it manually if you don't want it
+- CLAUDE.md and AGENTS.md are preserved — edit or delete them manually if you don't want them
 - This is a one-way operation, use git to restore if needed
