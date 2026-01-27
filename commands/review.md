@@ -6,7 +6,15 @@ Comprehensive code review. Output: `docs/audits/CODE-REVIEW-NN.md`
 
 - **Read-only.** Do not modify any code, config, or lockfiles.
 - **Only allowed writes:** create `docs/audits/` if missing + write the report file.
-- **No secrets.** Never include tokens, keys, credentials, or PII in the report.
+- **No secrets.** If evidence snippet contains a secret/PII, replace value with `[REDACTED]`, still cite `path:line`, describe the pattern.
+
+## Stop & Ask
+
+Before proceeding, stop and ask the user if:
+- Scope is ambiguous AND "recent changes" can't be determined (no git + no clear directories)
+- Repo is enormous AND you can't identify entrypoints (no package.json, no main files found)
+
+Don't do random scanning when you can't locate "hot surfaces."
 
 ## Scope
 
@@ -47,18 +55,23 @@ If codebase is large:
    - Extract highest N; next = N+1; zero-pad to 2 digits
    - If none exist, start at 01
 6. Write report to `docs/audits/CODE-REVIEW-NN.md`
-7. Summarize top findings to user
+7. Summarize to user (constrained format — see below)
 
 ## Finding Requirements (every finding must have evidence)
 
 For each finding include:
+- **ID:** F1, F2, F3... (sequential)
 - **Priority:** P0 (prod/security), P1 (major perf/cost), P2 (maintainability), P3 (nice-to-have)
 - **Effort:** S (< 1 hr), M (1-4 hrs), L (> 4 hrs)
 - **Confidence:** High / Med / Low (if suspected but unconfirmed, use Low + explain how to confirm)
-- **Evidence:** `path:line` + ≤10-line snippet or precise symbol reference
+- **Evidence:** `path:line` + ≤10-line snippet, OR symbol reference
 - **Impact:** Why it matters (for Cost findings, estimate: Low/Med/High)
 - **Suggested fix:** Clear steps (no code changes performed)
 - **Verify:** How to prove it's fixed (test, benchmark, query count, bundle analyzer, etc.)
+
+**Symbol reference format:** `path :: export/function/ClassName :: member` (+ optional grep pattern)
+
+**Secrets in evidence:** If snippet contains secret/PII, use `[REDACTED]` for value, keep path:line, describe pattern.
 
 **Cap:** Max 12 findings. Merge duplicates into themes.
 
@@ -74,36 +87,45 @@ For each finding include:
 - [3-6 bullets: biggest risks/opportunities]
 
 ## Top 5 Actions
-1. [Most important fix — with effort estimate]
-2. ...
+1. [Action] (See F1)
+2. [Action] (See F3)
 3. ...
-4. ...
-5. ...
+```
+Each action must reference the corresponding finding ID.
 
+```markdown
 ## Findings
 
-### [P0] Title
+### F1 [P0] Title
 **Evidence:** `path:line`
 ```
-[≤10 line snippet]
+[≤10 line snippet, secrets redacted]
 ```
 **Problem:** ...
 **Impact:** ...
 **Suggested fix:** ...
 **Verify:** ...
 
-### [P1] Title
+### F2 [P1] Title
 ...
 
 ## Notes
 - Good patterns worth keeping
 - Repeated themes observed
-- Assumptions made
 
 ## Appendix
-- Files/areas reviewed
-- Areas skipped (if sampling)
+**Stack detected:** [Framework], [Runtime], [DB/ORM], [Deployment platform]
+**Files/areas reviewed:** ...
+**Areas skipped (if sampling):** ...
+**Assumptions:** ...
 ```
+
+## Chat Summary Format
+
+After writing the report, reply to user with exactly:
+- 3 bullets: biggest risks/opportunities
+- 1 bullet: biggest cost/perf lever (if any)
+- 1 bullet: what you need from the user (if anything, otherwise omit)
 
 ## Guidance
 
