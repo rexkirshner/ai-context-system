@@ -1,7 +1,7 @@
 # v7 Rethink: Radical Simplification
 
 **Date:** 2026-01-27
-**Status:** Exploration - capturing direction before potential context loss
+**Status:** Implemented
 
 ## The Problem with Current Approach
 
@@ -15,7 +15,7 @@ Core uncertainty: **Is any of this actually helping Claude?**
 
 ## What We Know Works
 
-**CLAUDE.md auto-loads.** Claude Code reads it at session start. Instructions there ARE followed. This is the one reliable mechanism.
+**Context files auto-load.** Both Claude Code (CLAUDE.md) and OpenAI Codex (AGENTS.md) read their respective files at session start. Instructions there ARE followed. This is the one reliable mechanism.
 
 **Git history exists.** Commits document what happened and (if messages are good) why.
 
@@ -25,93 +25,87 @@ Core uncertainty: **Is any of this actually helping Claude?**
 - Is "externalized context" even the right approach?
 - Are we solving a problem that doesn't exist?
 
-## New Direction: One Command
+## The Solution: Two Commands
 
-Instead of multiple files and ceremony, what if we had:
+Instead of a framework, we have two global commands that work with any project:
 
-**One file:** CLAUDE.md (auto-loads, guaranteed to be seen)
+### `/update-context`
 
-**One command:** "Update CLAUDE.md to be as useful as possible"
+Updates CLAUDE.md and AGENTS.md with permanent learnings from the session.
 
-Run before compaction to capture permanent project learnings.
-
-### What the Command Does
-
-**Inputs:**
-- Current conversation (what happened this session)
-- Current CLAUDE.md (what's already there)
-
-**Extracts permanent learnings:**
+**What it extracts (permanent):**
 - Commands that work (npm run dev, etc.)
 - Constraints discovered ("don't modify X because Y")
 - Patterns/conventions used in this codebase
 - Quirks ("auth is in a weird place because...")
 - User preferences ("small commits", "no emojis")
 
-**Ignores ephemeral stuff:**
+**What it ignores (ephemeral):**
 - What we're currently working on
 - Temporary state ("tests are failing")
 - Session-specific context
 
-**Updates CLAUDE.md:**
-- Adds new learnings to appropriate sections
-- Updates outdated info
-- Keeps it concise - instructions, not documentation
+**Heuristic:** If it affects how future sessions should work, it's permanent.
 
-### What About Decisions?
+**Dual-tool support:** Keeps CLAUDE.md and AGENTS.md mirrored so projects work with both Claude Code and OpenAI Codex.
 
-User already has Claude commit liberally. Git history IS the decision log.
+### `/cleanup-acs`
 
-CLAUDE.md instruction:
-```markdown
-## Commits
-- Commit after every logical unit of work
-- Message format: what (why)
-- The commit history is our documentation
-```
+Removes all AI Context System artifacts (v1-v6) from a project:
+- context/ directory
+- .claude/commands/, .claude/VERSION
+- v5.x infrastructure (scripts/, agents/, schemas/, etc.)
+
+Preserves CLAUDE.md (the actual instructions file).
+
+## What About Decisions?
+
+Git history IS the decision log. Liberal commits with good messages capture the "why."
 
 No separate DECISIONS.md needed.
 
-### What About Session Continuity?
+## What About Session Continuity?
 
 Maybe it doesn't matter. When you start a new session:
-- Claude reads CLAUDE.md (auto-loads)
-- Claude has access to the codebase
-- Claude can read git history
-- You tell Claude what you want to work on
+- AI reads CLAUDE.md/AGENTS.md (auto-loads)
+- AI has access to the codebase
+- AI can read git history
+- You tell it what you want to work on
 
-The "Session Loop" and STATUS.md may have been solving a non-problem.
+The "Session Loop" and STATUS.md were solving a non-problem.
 
-## Proposed Structure
+## Final Structure
 
 ```
+~/.claude/commands/          # Claude Code global commands
+├── cleanup-acs.md
+└── update-context.md
+
+~/.codex/prompts/            # OpenAI Codex global commands
+├── cleanup-acs.md
+└── update-context.md
+
 project/
-├── CLAUDE.md           # The one file (auto-loads)
-└── .claude/
-    └── commands/
-        └── save.md     # The one command (or maybe /update-claude-md?)
+├── CLAUDE.md                # Claude Code instructions (auto-loads)
+└── AGENTS.md                # OpenAI Codex instructions (auto-loads, mirrored)
 ```
 
-That's it. No context/ directory. No STATUS.md. No DECISIONS.md. No Session Loop.
+That's it. No context/ directory. No STATUS.md. No DECISIONS.md. No Session Loop. No framework.
 
-## Open Questions
+## Installation
 
-1. What sections should CLAUDE.md have?
-2. How do we prevent it from growing unboundedly?
-3. What's the right heuristic for "permanent vs ephemeral"?
-4. Should the command be /save or something else?
-5. Do we need any other commands at all?
+```bash
+git clone https://github.com/rexkirshner/ai-context-system.git
+cd ai-context-system
+./install.sh
+```
 
-## The Test
+Installs to both `~/.claude/commands/` and `~/.codex/prompts/`.
 
-Before committing to this direction, we should test:
-1. Does the current Session Loop actually work? (Does Claude read STATUS.md unprompted?)
-2. Would a well-crafted CLAUDE.md alone be enough?
-3. Is there actually a continuity problem we're solving?
+## Key Insights
 
-## Next Steps
-
-- Decide if this direction is worth pursuing
-- If yes, prototype the single command
-- Test on real projects
-- Deprecate v6 complexity if v7 works
+1. **You can't solve a problem you don't understand by adding complexity**
+2. **"Make everything available" doesn't work** - more noise, not more signal
+3. **Build on what you know works** - context files auto-load, that's the leverage point
+4. **Simple beats comprehensive** - two commands beat 22
+5. **Tool-agnostic is better** - support Claude Code AND OpenAI Codex with the same approach

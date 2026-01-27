@@ -105,9 +105,10 @@ The AI Context System started as a simple idea and grew into a monster before we
 ## Part 5: What We Actually Know
 
 **What works (verified):**
-- CLAUDE.md auto-loads at session start
-- Instructions in CLAUDE.md are followed
-- This is the ONE reliable mechanism
+- CLAUDE.md auto-loads at session start (Claude Code)
+- AGENTS.md auto-loads at session start (OpenAI Codex)
+- Instructions in these files are followed
+- This is the ONE reliable mechanism (and it works across tools)
 
 **What's uncertain:**
 - Does Claude read STATUS.md unprompted? (Session Loop is just an instruction)
@@ -170,25 +171,27 @@ CLAUDE.md auto-loads. That's it. Build on what you know works, not on what might
 
 **What we ended up with:**
 
-Two commands in `~/.claude/commands/`:
+Two global commands (installed to both `~/.claude/commands/` and `~/.codex/prompts/`):
 
-1. **Cleanup command** - Remove all ACS artifacts from any project
-2. **Update CLAUDE.md command** - Extract permanent learnings, update CLAUDE.md
+1. **`/cleanup-acs`** - Remove all ACS artifacts from any project
+2. **`/update-context`** - Extract permanent learnings, update CLAUDE.md and AGENTS.md
 
-That's it. No framework. No installation. No versions. No migration paths.
+That's it. No framework. No installation per-project. No versions. No migration paths.
+
+**Tool-agnostic:** Works with both Claude Code and OpenAI Codex. CLAUDE.md and AGENTS.md are kept mirrored.
 
 **The new philosophy:**
 
-- CLAUDE.md is the one file (auto-loads, guaranteed to be seen)
-- The command makes it better over time by extracting permanent learnings
+- One context file per tool (CLAUDE.md / AGENTS.md) - auto-loads, guaranteed to be seen
+- One command makes it better over time by extracting permanent learnings
 - Git history captures decisions (through good commit messages)
-- Session continuity is handled by: CLAUDE.md + codebase + telling Claude what you're working on
+- Session continuity is handled by: context file + codebase + telling the AI what you're working on
 
-**What "update CLAUDE.md" does:**
+**What `/update-context` does:**
 
 Inputs:
 - Current conversation
-- Current CLAUDE.md
+- Current CLAUDE.md and AGENTS.md
 
 Extracts permanent learnings:
 - Commands that work
@@ -202,10 +205,11 @@ Ignores ephemeral stuff:
 - Temporary state
 - Session-specific context
 
-Updates CLAUDE.md:
+Updates both files:
 - Adds new learnings
 - Updates outdated info
 - Keeps it concise
+- Mirrors CLAUDE.md ↔ AGENTS.md
 
 ---
 
@@ -217,11 +221,13 @@ Updates CLAUDE.md:
 
 3. **Complexity is not free** - Every file, command, and pattern has maintenance cost and cognitive load.
 
-4. **Build on what you know works** - CLAUDE.md auto-loads. That's verified. Build there.
+4. **Build on what you know works** - Context files auto-load. That's verified. Build there.
 
 5. **Simple beats comprehensive** - Two commands beat 22. One file beats five.
 
-6. **Sometimes the answer is "do less"** - The best version of ACS might be almost nothing.
+6. **Tool-agnostic is better** - Claude Code and OpenAI Codex use the same pattern. Build for both.
+
+7. **Sometimes the answer is "do less"** - The best version of ACS might be almost nothing.
 
 ---
 
@@ -231,7 +237,7 @@ Updates CLAUDE.md:
 - Self-deprecating humor is okay ("padding my github stats")
 - Acknowledge the journey had value even if the destination is minimal
 - Share the insights genuinely - others might be building similar over-engineered systems
-- The punchline: we built a complex system to manage AI context, and the answer was basically "just use CLAUDE.md"
+- The punchline: we built a complex system to manage AI context, and the answer was basically "just use the context file that already auto-loads"
 
 ---
 
