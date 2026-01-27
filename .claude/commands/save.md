@@ -35,15 +35,20 @@ Before updating, verify `context/STATUS.md` is in v6.0 format.
 ```
 STATUS.md is in v5.x format and cannot be updated.
 
-This project needs migration to v6.0. Download and run the migration script:
+Option 1: Run the migration script:
 
-curl -O https://raw.githubusercontent.com/rexkirshner/ai-context-system/main/migrate-to-v6.sh
-chmod +x migrate-to-v6.sh
-./migrate-to-v6.sh
+  curl -O https://raw.githubusercontent.com/rexkirshner/ai-context-system/main/migrate-to-v6.sh
+  chmod +x migrate-to-v6.sh
+  ./migrate-to-v6.sh
 
-Do NOT run /update-context-system - that command is for v6.x to v6.y upgrades only.
+Option 2: If the script says "no v5.x installation detected", manually update STATUS.md:
 
-See: https://github.com/rexkirshner/ai-context-system/blob/main/MIGRATIONS.md
+  Replace your STATUS.md with v6.0 format:
+  - Add SchemaVersion: 1 at the top
+  - Add ## Working Set, ## Next Actions, ## Blocked On sections
+  - Remove old sections like ## Quick Reference, ## Current Phase
+
+See format: https://github.com/rexkirshner/ai-context-system/blob/main/MIGRATIONS.md
 ```
 
 Do NOT attempt to update a v5.x format file.
