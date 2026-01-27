@@ -16,6 +16,7 @@ Comprehensive code review. Output: `docs/audits/CODE-REVIEW-NN.md`
 - Searching (ripgrep, grep, glob)
 - Listing directories
 - Running tests/build commands to verify behavior (if they don't install or mutate)
+  - Prefer the fastest non-mutating checks; don't run long suites unless necessary
 
 **Not allowed:** Writing or modifying anything except the report file.
 
@@ -27,11 +28,13 @@ Before proceeding, stop and ask the user if:
 
 Don't do random scanning when you can't locate "hot surfaces."
 
+**Hot surfaces** = code paths that run per request/interaction or per job tick (API handlers, DB access, render loops, cron).
+
 ## Scope
 
 Ask user what to review:
 - **(A) Specific files/directories** — user provides paths
-- **(B) Recent changes** — staged + unstaged diff, plus last 1-3 commits, with rename detection
+- **(B) Recent changes** — staged + unstaged diff (with rename detection), plus last 1-3 commits
 - **(C) Full codebase** — warn if large; use sampling strategy
 
 **Default (if user is vague):** (B) Recent changes.
@@ -58,14 +61,14 @@ If codebase is large:
 ## Do
 
 1. Identify stack + entrypoints (framework, DB, runtime, deployment)
-2. Map "hot surfaces": API routes, DB access, rendering boundaries, jobs/cron
+2. Map hot surfaces: API routes, DB access, rendering boundaries, jobs/cron
 3. Scan for obvious hotspots (N+1, unbounded loops, missing pagination, repeated fetches)
 4. Deep dive into chosen scope and collect evidence
 5. Determine next review number:
    - List existing `docs/audits/CODE-REVIEW-*.md`
    - Extract highest N; next = N+1; zero-pad to 2 digits
    - If none exist, start at 01
-6. Write report to `docs/audits/CODE-REVIEW-NN.md`
+6. Write report to `docs/audits/CODE-REVIEW-NN.md` (use today's date in user timezone)
 7. Summarize to user (exactly 5 bullets with finding refs — see Chat Summary Format)
 
 ## Finding Requirements
@@ -92,7 +95,7 @@ Write exactly this structure (use ~~~ for inner code blocks):
 ```markdown
 # Code Review #NN
 
-**Date:** YYYY-MM-DD
+**Date:** YYYY-MM-DD (use today's date)
 **Scope:** [what was reviewed]
 
 ## Executive Summary
@@ -128,8 +131,9 @@ Write exactly this structure (use ~~~ for inner code blocks):
 **Verify:** ...
 
 ## Notes
-- Good patterns worth keeping
-- Repeated themes observed
+- [At least 1 "keep doing this" positive pattern]
+- [Other good patterns worth keeping]
+- [Repeated themes observed]
 
 ## Appendix
 **Stack detected:** [Framework], [Runtime], [DB/ORM], [Deployment platform]
@@ -152,5 +156,5 @@ After writing the report, reply to user with exactly 5 bullets (include finding 
 - Actionable > comprehensive. Every issue should have a clear fix.
 - Actions must be outcomes ("Reduce X by Y") not tasks ("Refactor X").
 - Skip nitpicks unless they indicate a pattern.
-- Praise good patterns when you see them.
+- Praise good patterns when you see them — include at least 1 positive in Notes.
 - If unsure about a bug, mark Confidence=Low and propose how to confirm.
