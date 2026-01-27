@@ -78,7 +78,13 @@ cp /tmp/acs-update/.claude/VERSION .claude/VERSION
 ### 6. Cleanup
 
 ```bash
+# Remove temp clone
 rm -rf /tmp/acs-update
+
+# Remove legacy backup files from previous versions
+rm -rf .claude/commands-backup-*/
+rm -f .claude/VERSION.backup-*
+rm -rf .claude-backup-*/
 ```
 
 ### 7. Verify
