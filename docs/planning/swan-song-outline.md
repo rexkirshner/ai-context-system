@@ -272,3 +272,104 @@ Updates both files:
 - End with the simple solution
 
 **Recommendation:** Option A (Chronological) feels most natural for a "swan song" - it's a story with a beginning, middle, and end.
+
+---
+
+## Appendix: Evidence from the Codebase
+
+### The Peak of Complexity (v5.x)
+
+From the archived changelogs, here's what v5.x actually had:
+
+**9 Specialist Agents:**
+- Security reviewer, performance reviewer, accessibility reviewer
+- SEO reviewer, cost reviewer, library-adoption reviewer
+- Each with JSON output conforming to schemas
+- Finding IDs like SEC-001, PERF-003, LIB-001
+
+**Code Review Synthesis:**
+- "Two-layer deduplication (location-based + pattern grouping)"
+- "Weighted grade calculation with severity caps (A-F scale)"
+- "Merged findings preserve highest severity and track all detecting agents"
+
+**Session Index for Scalability:**
+- "Auto-archival prompt when file exceeds 2000 lines"
+- "Keeps SESSIONS.md under 20,000 tokens for AI context limits"
+- Migration script: `scripts/migrate-sessions-index.sh`
+
+**Working Directory Detection:**
+- `find_project_root()` function
+- "Searches up to 5 levels deep"
+- "Respects git boundaries"
+
+**Config Management:**
+- `.context-config.json` with per-file staleness thresholds
+- Config drift detection for TBD placeholders
+- `acs-settings.json` (renamed from settings.json due to Claude Code conflicts)
+
+**Testing:**
+- "All 80 unit tests pass (11 modules)"
+- "Session numbering tests (12/12)"
+
+**Other Features:**
+- Tech stack detection (+7 technologies: Tailwind, Turso, NextAuth.js, etc.)
+- Loading strategy for large files (small/medium/large thresholds)
+- Nested repository detection
+- Context Restoration sections for AI handoffs
+
+### The Simplification Attempt (v6.0)
+
+**What v6.0 removed:**
+- All 9 specialist agents → simple review prompts
+- 150KB of shell scripts → 0 scripts
+- 22 commands → 8 commands
+- JSON schemas → nothing
+- Session Index, archival, thresholds → just use git
+- 80 unit tests → no tests needed (it's just prompts)
+
+**What v6.0 kept:**
+- CLAUDE.md (entry point)
+- STATUS.md (current state)
+- DECISIONS.md (decision log)
+- Session Loop pattern
+
+**Anti-Bloat Rules (v6.0 README):**
+1. "30-second rule: If a feature can't be used in <30 seconds, it doesn't ship"
+2. "Minimal commands: Daily workflow stays at 2 commands"
+3. "No scripts: Claude handles logic"
+4. "Advisory, not mechanical: Guidelines, not enforcement"
+
+### The Final Realization (v7 / Today)
+
+Even v6.0's "radical simplification" was still:
+- 8 commands (3 core + 5 reviews)
+- 3 context files
+- Session Loop ceremony
+- Installation per project
+- Migration paths and version tracking
+
+**What we actually need:**
+- CLAUDE.md / AGENTS.md (auto-loads - verified to work)
+- One command to make it better over time
+- Git history for decisions
+- That's it
+
+### Version Timeline
+
+| Version | Commands | Agents | Scripts | Context Files |
+|---------|----------|--------|---------|---------------|
+| v5.x | 22 | 14 (9 specialists + 5 others) | 150KB+ | 5-8 |
+| v6.0 | 8 | 0 | 0 | 3 |
+| v7 | 2 (global) | 0 | 1 (install.sh) | 1-2 (CLAUDE.md, AGENTS.md) |
+
+### Memorable Over-Engineering Moments
+
+- "Two-layer deduplication (location-based + pattern grouping)"
+- "Weighted grade calculation with severity caps (A-F scale)"
+- "Auto-archival prompt when file exceeds 2000 lines"
+- "Searches up to 5 levels deep for project root"
+- "All 80 unit tests pass (11 modules)"
+- "noThreshold config respect for append-only files"
+- "Loading strategy visibility (small/medium/large with line thresholds)"
+
+These quotes illustrate solving problems that didn't need solving.
