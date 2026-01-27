@@ -28,12 +28,14 @@ Do NOT include things true only about right now:
 
 - **No guessing.** Only record commands/conventions verified from repo files or session evidence. If unsure, omit. Evidence: README, package scripts, Makefile, CI config, tool output, successful command runs.
 - **No secrets.** Never write API keys, tokens, private URLs, or credentials into context files.
+- **No placeholders.** If a section would be empty, omit the section entirely.
 - **Idempotent.** Running twice with no new learnings = zero changes.
 - **Minimal diff.** Don't reorder sections or reformat unless needed to add/merge/remove a bullet.
 - **Deduplicate.** Merge near-duplicates; keep the most specific version.
 - **Tight bullets.** Short, imperative. ≤120 chars when possible. No paragraphs.
 - **No filler.** If it's not repo-specific, don't add it.
 - **Repo-scoped preferences only.** Skip personal preferences unless they change how the codebase should be handled.
+- **Size limit enforcement.** If over limit (<50 small, <100 complex): merge bullets, remove low-signal items first (Preferences → Quirks → Patterns), always keep Constraints and verified Commands.
 
 ## Do
 
@@ -45,7 +47,8 @@ Do NOT include things true only about right now:
    - Remove stale/incorrect bullets
    - Normalize phrasing + dedupe
 4. Mirror: produce ONE canonical markdown text, write byte-for-byte to both files
-5. Report changes (structured):
+5. Verify: re-read both files and confirm identical; if not, fix
+6. Report changes (structured):
    ```
    + Added: [section] → [bullet]
    - Removed: [section] → [bullet]
@@ -66,8 +69,11 @@ Do NOT include things true only about right now:
 - Run: `...`
 - Test: `...`
 - Build: `...`
-- Deploy: `...`  # only if verified
+- Deploy: `...`
+```
+Use exactly these labels: `Run:`, `Test:`, `Build:`, `Deploy:` (each at most once, only if verified). Omit any that don't apply.
 
+```markdown
 ## Constraints
 - ...
 
@@ -80,7 +86,6 @@ Do NOT include things true only about right now:
 ## Preferences
 - ...
 ```
-
-**Size limit:** <50 lines small repos, <100 lines complex.
+Omit any section that would be empty.
 
 If nothing new: "No new learnings. Context files unchanged."
