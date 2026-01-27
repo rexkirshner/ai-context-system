@@ -1,6 +1,6 @@
 # /save-session
 
-Record what happened this context window. Output: `docs/sessions/SESSION-NNN.md`
+Record what happened in this context window. Output: `docs/sessions/SESSION-NNN.md`
 
 Run before `/compact` or when context is long.
 
@@ -14,11 +14,12 @@ Run before `/compact` or when context is long.
    - If computed filename exists (collision), increment until free
    - Use zero-padded 3-digit format: `SESSION-001.md`
 3. Collect verified repo state:
-   - `git branch --show-current`
+   - `git rev-parse --short HEAD` (current commit)
+   - `git branch --show-current` (current branch)
    - `git status` (clean/dirty)
-   - `git diff --name-status` (files changed)
+   - `git diff --name-status HEAD` (files changed vs last commit; fallback: `git status --porcelain`)
    - `git log --oneline -n 5` (recent commits)
-   - If git unavailable or can't verify, write "Unknown" (don't guess)
+   - If git unavailable: use structured fallback (see below)
 4. Write `docs/sessions/SESSION-NNN.md` using format below
 5. Reply to user with:
    - File path created
@@ -37,7 +38,10 @@ Run before `/compact` or when context is long.
 # Session NNN
 
 **Date:** YYYY-MM-DD
+```
+Use today's local date.
 
+```markdown
 ## Summary
 [2-3 sentences: what this session was about and the outcome]
 
@@ -48,22 +52,32 @@ Max 5-7 bullets. Concrete outcomes only.
 
 ```markdown
 ## Repo State
+- **HEAD:** <short sha or Unknown>
 - **Branch:** <name or Unknown>
 - **Working tree:** <clean/dirty/Unknown>
 - **Notes:** <optional: failing tests, build status if known>
+```
+If not a git repo:
+```markdown
+## Repo State
+- **HEAD:** Not a git repo
+- **Branch:** Not a git repo
+- **Working tree:** Unknown
+```
 
+```markdown
 ## Files Changed
 | File | Status |
 |------|--------|
-| `path` | added/modified/deleted — what changed |
+| `path` | A/M/D/R/untracked |
 ```
-From `git diff --name-status` or `git status`. If unverifiable: "Unable to verify — no git or uncommitted state unknown."
+From `git diff --name-status HEAD` (preferred) or `git status --porcelain`. Status = A (added), M (modified), D (deleted), R (renamed), or "untracked". Add short note only if directly observed (e.g., from diff), otherwise omit. If not a git repo: "Unable to verify (no git)."
 
 ```markdown
 ## Commits
 - `sha` — message
 ```
-From `git log`. If none this session or unverifiable: "None this session" or "Unable to verify."
+From `git log`. If none this session: "None this session." If not a git repo: "Unable to verify (no git)."
 
 ```markdown
 ## Decisions
@@ -76,6 +90,12 @@ Max 5 items. Include tradeoff if relevant.
 - [Notable insight, user preference, or important exchange]
 ```
 Max 5 items. Skip if nothing notable.
+
+```markdown
+## Pointers
+- `path/to/relevant/file`
+```
+3-7 file paths or docs most relevant to resume work. Not just what changed — what's important context.
 
 ```markdown
 ## Unfinished
