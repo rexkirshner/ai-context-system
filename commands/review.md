@@ -6,6 +6,8 @@ Comprehensive code review. Output: `docs/audits/CODE-REVIEW-NN.md`
 
 - **Read-only.** Do not modify any code, config, or lockfiles.
 - **Only allowed writes:** create `docs/audits/` if missing + write the report file.
+- **No installs.** Don't run dependency installs or commands that mutate lockfiles/generate artifacts (e.g., `npm install`, `prisma migrate`, `pod install`).
+- **No network.** Avoid networked commands unless user explicitly asks.
 - **No secrets.** If evidence snippet contains a secret/PII, replace value with `[REDACTED]`, still cite `path:line`, describe the pattern. If unsure whether something is sensitive, err on redacting.
 
 ## Allowed Actions
@@ -13,7 +15,7 @@ Comprehensive code review. Output: `docs/audits/CODE-REVIEW-NN.md`
 - Reading files
 - Searching (ripgrep, grep, glob)
 - Listing directories
-- Running tests/build commands to verify behavior
+- Running tests/build commands to verify behavior (if they don't install or mutate)
 
 **Not allowed:** Writing or modifying anything except the report file.
 
@@ -21,7 +23,7 @@ Comprehensive code review. Output: `docs/audits/CODE-REVIEW-NN.md`
 
 Before proceeding, stop and ask the user if:
 - Scope is ambiguous AND "recent changes" can't be determined (no git + no clear directories)
-- Repo is enormous AND you can't identify entrypoints (no package.json, no main files found)
+- Repo is enormous AND you can't identify entrypoints (no `package.json`, `pyproject.toml`, `requirements.txt`, `go.mod`, `Cargo.toml`, `pom.xml`, or similar root files)
 
 Don't do random scanning when you can't locate "hot surfaces."
 
@@ -29,7 +31,7 @@ Don't do random scanning when you can't locate "hot surfaces."
 
 Ask user what to review:
 - **(A) Specific files/directories** — user provides paths
-- **(B) Recent changes** — uncommitted diff + last 1-3 commits
+- **(B) Recent changes** — staged + unstaged diff, plus last 1-3 commits, with rename detection
 - **(C) Full codebase** — warn if large; use sampling strategy
 
 **Default (if user is vague):** (B) Recent changes.
@@ -64,7 +66,7 @@ If codebase is large:
    - Extract highest N; next = N+1; zero-pad to 2 digits
    - If none exist, start at 01
 6. Write report to `docs/audits/CODE-REVIEW-NN.md`
-7. Summarize to user (exactly 5 bullets — see Chat Summary Format)
+7. Summarize to user (exactly 5 bullets with finding refs — see Chat Summary Format)
 
 ## Finding Requirements
 
@@ -85,7 +87,7 @@ For each finding:
 
 ## Output Format
 
-Write exactly this structure:
+Write exactly this structure (use ~~~ for inner code blocks):
 
 ```markdown
 # Code Review #NN
@@ -107,9 +109,9 @@ Write exactly this structure:
 
 ### F1 [P0] [Security] Title
 **Evidence:** `path:line`
-```
+~~~
 [≤10 line snippet, secrets redacted]
-```
+~~~
 **Problem:** ...
 **Impact:** ...
 **Suggested fix:** ...
@@ -117,9 +119,9 @@ Write exactly this structure:
 
 ### F2 [P1] [Performance] Title
 **Evidence:** `path:line`
-```
+~~~
 [snippet]
-```
+~~~
 **Problem:** ...
 **Impact:** ...
 **Suggested fix:** ...
@@ -138,11 +140,11 @@ Write exactly this structure:
 
 ## Chat Summary Format
 
-After writing the report, reply to user with exactly 5 bullets:
-1. [Biggest risk/opportunity #1]
-2. [Biggest risk/opportunity #2]
-3. [Biggest risk/opportunity #3]
-4. [Biggest cost/perf lever, or "None spotted"]
+After writing the report, reply to user with exactly 5 bullets (include finding refs):
+1. [Biggest risk/opportunity #1] (F1)
+2. [Biggest risk/opportunity #2] (F3)
+3. [Biggest risk/opportunity #3] (FN)
+4. [Biggest cost/perf lever, or "None spotted"] (FN if applicable)
 5. [What you need from user, or "Nothing needed"]
 
 ## Guidance
