@@ -6,7 +6,13 @@
 #   - This is a fresh install (use /init-context instead)
 #   - You're already on v6.0+ (use /update-context-system instead)
 #
-# This script DELETES ITSELF after successful migration.
+# This script:
+#   1. Deletes v5.x infrastructure (scripts, agents, schemas, etc.)
+#   2. KEEPS old context files for Claude to migrate
+#   3. Installs v6.0 commands
+#   4. Instructs Claude to extract value and complete cleanup
+#
+# No backups are created — use git to rollback if needed.
 #
 
 set -e
@@ -48,40 +54,40 @@ fi
 
 echo "Detected pre-v6 installation"
 echo ""
-
-# 1. Backup
-BACKUP_DIR="context-backup-$(date +%Y%m%d-%H%M%S)"
-echo "Creating backup in $BACKUP_DIR/"
-mkdir -p "$BACKUP_DIR"
-[ -d "context" ] && cp -r context "$BACKUP_DIR/"
-[ -d ".claude" ] && cp -r .claude "$BACKUP_DIR/"
-[ -f "CLAUDE.md" ] && cp CLAUDE.md "$BACKUP_DIR/"
-echo "  Backup complete"
+echo "NOTE: No backup created. Use 'git checkout' to rollback if needed."
 echo ""
 
-# 2. Delete v5.x artifacts
-echo "Removing v5.x artifacts..."
+# 1. Delete v5.x INFRASTRUCTURE (no valuable content)
+echo "Removing v5.x infrastructure..."
 
-# Scripts and templates
+# Scripts and templates (no user content)
 rm -rf scripts/ templates/ config/ test/ reference/ artifacts/
 
-# Old .claude directories
+# Old .claude directories (no user content)
 rm -rf .claude/agents/ .claude/skills/ .claude/schemas/ .claude/hooks/ .claude/docs/
 rm -f .claude/acs-settings.json .claude/.last-update-check
 
-# Old context files
-rm -f context/SESSIONS.md context/CONTEXT.md context/.context-config.json
+# Old AI-specific files (no user content)
 rm -f context/cursor.md context/aider.md context/codex.md
 rm -f context/generic-ai-header.md context/context-feedback.md
 rm -f context/ai-context-system-feedback.md
+rm -f context/.context-config.json
 
-# Old docs
+# Old docs directories
 rm -rf docs/audits/ docs/skills/ docs/migration/ docs/archive/
 
 # Root level files
 rm -f install.sh VERSION
 
-echo "  v5.x artifacts removed"
+echo "  Infrastructure removed"
+echo ""
+
+# 2. List context files that need migration (NOT deleted yet)
+echo "Context files kept for migration:"
+[ -f "context/SESSIONS.md" ] && echo "  - context/SESSIONS.md (session history)"
+[ -f "context/CONTEXT.md" ] && echo "  - context/CONTEXT.md (project context)"
+[ -f "context/STATUS.md" ] && echo "  - context/STATUS.md (needs format update)"
+[ -f "context/DECISIONS.md" ] && echo "  - context/DECISIONS.md (needs format update)"
 echo ""
 
 # 3. Download v6.0 commands
@@ -93,7 +99,7 @@ if ! git clone --depth 1 https://github.com/rexkirshner/ai-context-system.git "$
     echo "ERROR: Failed to download v6.0 commands from GitHub."
     echo ""
     echo "Check your internet connection and try again."
-    echo "Your backup is safe in $BACKUP_DIR/"
+    echo "Use 'git checkout' to restore deleted files if needed."
     rm -rf "$TEMP_DIR"
     exit 1
 fi
@@ -107,42 +113,39 @@ rm -rf "$TEMP_DIR"
 echo "  v6.0 commands installed"
 echo ""
 
-# 4. Report next steps
-echo "==============================================================="
-echo "  MANUAL STEPS REQUIRED"
-echo "==============================================================="
+# 4. Delete self before Claude session
+echo "Removing migration script..."
+rm -f "$0"
+echo "  Done"
 echo ""
-echo "v6.0 commands are installed, but your context files need"
-echo "migration to v6.0 format."
+
+# 5. Instructions for Claude
+echo "==============================================================="
+echo "  NEXT: Restart Claude Code and run the migration"
+echo "==============================================================="
 echo ""
 echo "1. Restart Claude Code (exit and reopen)"
 echo ""
-echo "2. Ask Claude to migrate your context files:"
-echo "   \"Please migrate context/STATUS.md and context/DECISIONS.md"
-echo "    to v6.0 format. Backup is in $BACKUP_DIR/\""
+echo "2. Copy and paste this prompt to Claude:"
 echo ""
-echo "STATUS.md v6.0 format:"
-echo "  # Status"
-echo "  SchemaVersion: 1"
-echo "  LastUpdated: YYYY-MM-DD"
-echo "  HeadCommit: [git SHA]"
-echo "  Objective: [goal]"
-echo "  ## Working Set"
-echo "  ## Next Actions"
-echo "  ## Blocked On"
+echo "---"
+echo "Complete the v6.0 migration:"
 echo ""
-echo "DECISIONS.md v6.0 format:"
-echo "  ## YYYY-MM-DD: [Area] Title"
-echo "  Why: [reason]"
-echo "  Tradeoff: [cost]"
-echo "  RevisitWhen: [trigger]"
+echo "1. Read context/SESSIONS.md and context/CONTEXT.md (if they exist)"
+echo "2. Extract any valuable project context, decisions, or history"
+echo "3. Update context/STATUS.md to v6.0 format:"
+echo "   # Status"
+echo "   SchemaVersion: 1"
+echo "   LastUpdated: YYYY-MM-DD"
+echo "   HeadCommit: [git SHA]"
+echo "   Objective: [extracted from old files]"
+echo "   ## Working Set"
+echo "   ## Next Actions"
+echo "   ## Blocked On"
 echo ""
-
-# 5. Delete self
-echo "Removing migration script (no longer needed)..."
-rm -f "$0"
-echo "  Migration script removed"
+echo "4. Update context/DECISIONS.md to v6.0 format (preserve existing decisions)"
+echo "5. Delete the old files: context/SESSIONS.md, context/CONTEXT.md"
+echo "6. Verify with /save"
+echo "---"
 echo ""
-echo "==============================================================="
-echo "  Migration complete. Restart Claude Code now."
 echo "==============================================================="
