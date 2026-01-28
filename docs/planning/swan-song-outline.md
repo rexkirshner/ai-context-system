@@ -424,7 +424,8 @@ Running count of ACS removal across projects:
 | meeting-scheduler | 2026-01-27 | 3 | 283 | Minimal install, clean run |
 | prompt-library | 2026-01-27 | 118 | 50,999 | Largest cleanup, 64 files in backup dirs |
 | scratch-space | 2026-01-27 | 47 | 15,929 | Clean run, no issues |
-| **TOTAL** | | **834** | **303,742** | |
+| inevitable-eth | 2026-01-27 | 70 | 32,461 | Clean run |
+| **TOTAL** | | **904** | **336,203** | |
 
 *Update this table after each `/cleanup-acs` run.*
 
