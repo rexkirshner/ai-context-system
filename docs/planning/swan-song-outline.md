@@ -415,8 +415,8 @@ Running count of ACS removal across projects:
 
 | Project | Date | Files Removed | Lines Removed | Notes |
 |---------|------|---------------|---------------|-------|
-| *(none yet)* | | | | |
-| **TOTAL** | | **0** | **0** | |
+| running-visualizer | 2026-01-27 | 30 | 12,523 | QA test run, generated feedback that improved the command |
+| **TOTAL** | | **30** | **12,523** | |
 
 *Update this table after each `/cleanup-acs` run.*
 
