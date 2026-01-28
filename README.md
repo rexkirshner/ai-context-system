@@ -1,7 +1,5 @@
 # The AI Context System: A Swan Song
 
-**By Rex Kirshner**
-
 I spent three months building a system to help AI coding assistants maintain context across sessions. It grew to 22 commands, 14 agents, 150KB of shell scripts, and 80 unit tests. Then I deleted all of it from 15 projects—1,120 files, 436,000 lines of code—and felt nothing but relief.
 
 This is the story of what I built, why I killed it, and what I actually learned.
