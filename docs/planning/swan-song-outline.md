@@ -419,7 +419,8 @@ Running count of ACS removal across projects:
 | personal-website | 2026-01-27 | 377 | 120,162 | Surfaced untracked/modified file edge cases + missed .claude-backup-* dirs (305 files, 94k lines) |
 | rbk-strategies | 2026-01-27 | 46 | 17,432 | Clean run, surfaced .DS_Store blocking rmdir |
 | journal-website | 2026-01-27 | 72 | 27,052 | Clean run, noted zsh glob quirks |
-| **TOTAL** | | **525** | **177,169** | |
+| video-website | 2026-01-27 | 68 | 25,234 | Found missing .install-manifest.json target |
+| **TOTAL** | | **593** | **202,403** | |
 
 *Update this table after each `/cleanup-acs` run.*
 
