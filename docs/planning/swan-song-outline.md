@@ -427,7 +427,8 @@ Running count of ACS removal across projects:
 | inevitable-eth | 2026-01-27 | 70 | 32,461 | Clean run |
 | portfolio-tracking | 2026-01-27 | 33 | 15,926 | Found missing script patterns (*-helper.sh) |
 | kex-financial-tracker | 2026-01-27 | 86 | 34,507 | Session crash mid-run, noted CLAUDE.md stale references |
-| **TOTAL** | | **1,023** | **386,636** | |
+| notification-hub | 2026-01-27 | 11 | 913 | Clean run, minimal install |
+| **TOTAL** | | **1,034** | **387,549** | |
 
 *Update this table after each `/cleanup-acs` run.*
 
