@@ -425,7 +425,8 @@ Running count of ACS removal across projects:
 | prompt-library | 2026-01-27 | 118 | 50,999 | Largest cleanup, 64 files in backup dirs |
 | scratch-space | 2026-01-27 | 47 | 15,929 | Clean run, no issues |
 | inevitable-eth | 2026-01-27 | 70 | 32,461 | Clean run |
-| **TOTAL** | | **904** | **336,203** | |
+| portfolio-tracking | 2026-01-27 | 33 | 15,926 | Found missing script patterns (*-helper.sh) |
+| **TOTAL** | | **937** | **352,129** | |
 
 *Update this table after each `/cleanup-acs` run.*
 

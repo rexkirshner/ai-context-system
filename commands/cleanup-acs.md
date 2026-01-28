@@ -36,7 +36,7 @@ If no ACS markers found: output **"No ACS artifacts found."** and stop.
 
 | Directory | Pattern match | Content grep (case-insensitive) |
 |-----------|---------------|--------------------------------|
-| `scripts/` | `acs-*.sh`, `install-acs.sh`, `migrate-*.sh` | — |
+| `scripts/` | `acs-*.sh`, `install-acs.sh`, `migrate-*.sh`, `*-helper.sh`, `common-functions.sh` | — |
 | `templates/` | `acs/**` (entire subdir) | `grep -il '\.claude/\|context/' *.md *.json` |
 | `config/` | `acs-*.json`, `*context-config*.json` | — |
 | `reference/` | `*acs*`, `*context-system*` | `grep -il 'ai-context-system\|acs-settings' *` |
