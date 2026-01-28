@@ -2,7 +2,7 @@
 
 **By Rex Kirshner**
 
-I spent three months building a system to help AI coding assistants maintain context across sessions. It grew to 22 commands, 14 agents, 150KB of shell scripts, and 80 unit tests. Then I deleted all of it from 15 projects—1,102 files, 427,000 lines of code—and felt nothing but relief.
+I spent three months building a system to help AI coding assistants maintain context across sessions. It grew to 22 commands, 14 agents, 150KB of shell scripts, and 80 unit tests. Then I deleted all of it from 15 projects—1,120 files, 436,000 lines of code—and felt nothing but relief.
 
 This is the story of what I built, why I killed it, and what I actually learned.
 
@@ -151,11 +151,11 @@ I built `/cleanup-acs` and used Claude as a QA engineer to test it. Each cleanup
 | Project I | 47 | 15,929 |
 | Project J | 70 | 32,461 |
 | Project K | 33 | 15,926 |
-| Project L | 86 | 34,507 |
+| Project L | 104 | 43,475 |
 | Project M | 11 | 913 |
 | Project N | 21 | 10,731 |
 | Project O | 47 | 28,713 |
-| **TOTAL** | **1,102** | **426,993** |
+| **TOTAL** | **1,120** | **435,961** |
 
 Nearly half a million lines of code, deleted in an afternoon. The largest single project had 377 files and 120,000 lines of ACS artifacts—most of it backup directories from migrations between versions I'd already abandoned.
 
@@ -191,7 +191,7 @@ The answer was: just use the context file that already auto-loads.
 
 The journey wasn't wasted—I learned how to use commands effectively, how nested context files work, and most importantly, how easy it is to get tricked into building more when the AI is your only feedback loop.
 
-Now I have four commands, one context file, and the calm that comes from knowing I'm not carrying around 427,000 lines of machinery I don't need.
+Now I have four commands, one context file, and the calm that comes from knowing I'm not carrying around 436,000 lines of machinery I don't need.
 
 ---
 

@@ -426,11 +426,11 @@ Running count of ACS removal across projects:
 | scratch-space | 2026-01-27 | 47 | 15,929 | Clean run, no issues |
 | inevitable-eth | 2026-01-27 | 70 | 32,461 | Clean run |
 | portfolio-tracking | 2026-01-27 | 33 | 15,926 | Found missing script patterns (*-helper.sh) |
-| kex-financial-tracker | 2026-01-27 | 86 | 34,507 | Session crash mid-run, noted CLAUDE.md stale references |
+| kex-financial-tracker | 2026-01-27 | 104 | 43,475 | Session crash mid-run, noted CLAUDE.md stale references, second pass for backups |
 | notification-hub | 2026-01-27 | 11 | 913 | Clean run, minimal install |
 | ncl | 2026-01-27 | 21 | 10,731 | Clean run, 10 backup dirs removed |
 | project-zebra | 2026-01-27 | 47 | 28,713 | Found nested .claude/ in subdirectory (app/.claude/) |
-| **TOTAL** | | **1,102** | **426,993** | |
+| **TOTAL** | | **1,120** | **435,961** | |
 
 *Update this table after each `/cleanup-acs` run.*
 
