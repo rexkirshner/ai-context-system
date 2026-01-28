@@ -1,199 +1,190 @@
 # AI Context System
 
-**Version 6.0** — Radical Simplification
-
-> **Externalize AI context. Enable session continuity. Keep it simple.**
+**Version 7.0** — The End
 
 ---
 
-## The Pitch
+## The Short Version
 
-v5.x had 22 commands, 14 agents, and 150KB of shell scripts. It was overengineered.
-
-v6.0 has **3 files** and **8 commands** (3 core + 5 optional reviews). That's it.
-
----
-
-## Quick Start
+This project started as a simple idea, grew into a 22-command monster, got simplified to 8 commands, and finally became what it should have been from the start: **4 global commands** that make your AI context files better over time.
 
 ```bash
-# Clone and copy to your project
-git clone --depth 1 https://github.com/rexkirshner/ai-context-system.git
-mkdir -p /path/to/your/project/.claude
-cp -r ai-context-system/.claude/commands /path/to/your/project/.claude/
-cp ai-context-system/.claude/VERSION /path/to/your/project/.claude/
-rm -rf ai-context-system
-
-# Restart Claude Code (required for new commands to load)
-# Then initialize:
-/init-context
+./install.sh
 ```
 
-This creates three files: `CLAUDE.md` (project entry point), `context/STATUS.md` (current state), and `context/DECISIONS.md` (decision log).
-
----
-
-## The Files
-
-After installation and running `/init-context`:
-
-```
-your-project/
-├── .claude/
-│   ├── VERSION            # Tracks installed version for /update-context-system
-│   └── commands/          # 8 slash command prompts
-├── CLAUDE.md              # Entry point (auto-loaded by Claude Code)
-└── context/
-    ├── STATUS.md          # Where we are now
-    └── DECISIONS.md       # Why we made choices
-```
-
-**Note:** Only `.claude/VERSION` is used. The root `VERSION` file (if present) is for repo tagging only.
-
-### CLAUDE.md
-
-Your project's entry point. Contains:
-- **Session Loop**: The core pattern—read STATUS.md at session start to resume context, run `/save` at end to persist it. This enables continuity across sessions and AI-to-AI handoffs.
-- Project description
-- Commands (run, test, build)
-- Constraints
-- Links to context files
-
-### STATUS.md
-
-Current state. Updated every session:
-- **Objective**: What you're working toward
-- **Working Set**: Files/directories you're touching (3-7 items)
-- **Next Actions**: Concrete next steps
-- **Blocked On**: Blockers or "(None)"
-- **HeadCommit**: Git SHA for staleness detection
-
-### DECISIONS.md
-
-Append-only log of decisions with:
-- **Why**: Reason for the decision
-- **Tradeoff**: What you gave up
-- **RevisitWhen**: Trigger to reconsider
-
-This is the only file that captures *why* decisions were made.
+This installs 4 commands to `~/.claude/commands/` (Claude Code) and `~/.codex/prompts/` (OpenAI Codex). No per-project setup. No versions to track. No migration paths.
 
 ---
 
 ## The Commands
 
-### Daily Workflow (2 commands)
+| Command | Purpose |
+|---------|---------|
+| `/update-context` | Extract permanent learnings from this session into CLAUDE.md and AGENTS.md |
+| `/save-session` | Record what happened this session to `docs/sessions/SESSION-NNN.md` |
+| `/review` | Comprehensive code review to `docs/audits/CODE-REVIEW-NN.md` |
+| `/cleanup-acs` | Remove old AI Context System artifacts from a project |
 
-**`/init-context`** — Creates the three files if they don't exist. Never overwrites.
-
-**`/save`** — End of session:
-1. Updates STATUS.md (all fields)
-2. Autonomously records decisions worth preserving to DECISIONS.md
-
-### Maintenance (1 command)
-
-**`/update-context-system`** — Updates command files from the repo (v6.x → v6.y upgrades only).
-
-### Optional Reviews (5 commands)
-
-Use when relevant:
-- `/review-security` — Security audit
-- `/review-performance` — Performance check
-- `/review-accessibility` — Accessibility review
-- `/review-seo` — SEO review
-- `/review-cost` — Cost optimization review
-
-They produce reports. They don't edit code.
+That's it. Four commands. All global. Works with both Claude Code and OpenAI Codex.
 
 ---
 
-## Workflow
+## The Philosophy
 
-### Session Start
-1. Claude Code auto-loads CLAUDE.md
-2. Read `context/STATUS.md`
-3. If HeadCommit doesn't match current HEAD, STATUS might be stale—update first
+**CLAUDE.md auto-loads. That's the leverage point.**
 
-### Session End
-1. Run `/save`
-2. STATUS.md updated, decisions recorded if any
+Both Claude Code and OpenAI Codex automatically read their context files (CLAUDE.md and AGENTS.md respectively) at session start. This is the one reliable mechanism. Build on what works.
 
-### AI-to-AI Handoff
-1. Run `/save` to capture current state
-2. New agent reads CLAUDE.md + STATUS.md
-3. Picks up exactly where you left off
+**What belongs in context files:**
+- Commands: how to run, test, build, deploy
+- Constraints: what to do / not do
+- Patterns: architecture, naming, conventions
+- Quirks: non-obvious gotchas
+- Preferences: workflow choices that affect this repo
 
----
+**What doesn't belong:**
+- Current task (just tell the AI)
+- Temporary state (it'll figure it out)
+- Information available from the codebase (it can read files)
 
-## Philosophy
-
-### Keep It Simple
-- **3 files** instead of 8
-- **8 commands** instead of 22 (3 core + 5 optional reviews)
-- **0 scripts** — Claude handles logic, not shell scripts
-
-### Advisory, Not Mechanical
-- Guidelines agents should follow, not enforcement machinery
-- Visual inspection over complex validation
-- "Use your judgment" over auto-refresh
-
-### Working Set as Boundary
-- 3-7 items you're actively touching (enough to be useful, few enough to review at a glance)
-- If you need to edit outside, add to Working Set first
-- No EditScope machinery—just a simple list
+**Session continuity:**
+- Context file + codebase + telling the AI what you're working on
+- That's enough. The Session Loop was solving a non-problem.
 
 ---
 
-## What We Cut (from v5.x)
+## The Story
 
-| v5.x | v6.0 |
-|------|------|
-| SESSIONS.md | Gone. Git history is enough. |
-| CONTEXT.md | Merged into CLAUDE.md |
-| 22 commands | 8 commands (3 core + 5 optional reviews) |
-| 14 agents | Gone (reviews are just prompts now) |
-| 150KB scripts | 0 scripts |
-| `/save-full` (10-15 min) | Just `/save` |
-| Complex validation | Visual inspection |
-| Auto-refresh machinery | "Use your judgment" |
+### It Started Simple
+
+The itch: copy/pasting the same CLAUDE.md content into every project. The realization that Claude Code reads CLAUDE.md automatically. The question: what if we could maintain continuity between sessions?
+
+### It Got Complicated (v1-v5)
+
+The philosophy (flawed):
+> "I don't know what Claude Code needs to be effective, so I'll make everything available and let Claude pick what's useful."
+
+What this led to:
+- 22 commands
+- 14 agents (9 specialist reviewers)
+- 150KB+ of shell scripts
+- JSON schemas for validation
+- Multiple context files (SESSIONS.md, CONTEXT.md, STATUS.md, DECISIONS.md)
+- Two-layer deduplication
+- Weighted grade calculation with severity caps (A-F scale)
+- Auto-archival when files exceed 2000 lines
+- 80 unit tests across 11 modules
+
+We were solving problems that didn't exist.
+
+### We Tried to Simplify (v6)
+
+Cut from 22 commands to 8. Removed all agents and scripts. Kept CLAUDE.md, STATUS.md, DECISIONS.md. Added a "Session Loop" pattern.
+
+Still 8 commands. Still per-project installation. Still migration paths and version tracking.
+
+### The Honest Conversation
+
+> "I am really concerned that we are not in a good place right now."
+
+Three concerns:
+1. Pre-v6 versions left clutter everywhere
+2. No good migration path
+3. v6 might just be "slimmed down clutter" - still not doing anything useful
+
+The hard question:
+> "Is any of this actually helping Claude?"
+
+The uncomfortable admission:
+> "The actual issue is that I can't really understand what Claude Code needs in order to be effective."
+
+We built a system to solve a problem we didn't understand.
+
+### What We Actually Know
+
+**Verified:**
+- CLAUDE.md auto-loads (Claude Code)
+- AGENTS.md auto-loads (OpenAI Codex)
+- Instructions in these files are followed
+
+**Uncertain:**
+- Does Claude read STATUS.md unprompted? (Session Loop is just an instruction)
+- Is "externalized context" even the right approach?
+- Is session continuity actually a problem?
+
+### The Answer
+
+One command to make context files better over time. A few utilities for common tasks. No framework. No installation per-project. No versions.
 
 ---
 
-## Upgrading from v5.x (or earlier)
+## What `/update-context` Does
 
-See [MIGRATIONS.md](./MIGRATIONS.md) for detailed instructions.
+Run it before `/compact` or when context is long.
 
-**Quick summary:**
+**Extracts permanent learnings:**
+- Commands that work
+- Constraints discovered
+- Patterns and conventions
+- Quirks
+- User preferences
 
-```bash
-# Download and run the migration script
-curl -O https://raw.githubusercontent.com/rexkirshner/ai-context-system/main/migrate-to-v6.sh
-chmod +x migrate-to-v6.sh
-./migrate-to-v6.sh
+**Ignores ephemeral stuff:**
+- Current task
+- Temporary state
+- Session-specific context
+
+**Updates both files:**
+- Adds new learnings
+- Updates outdated info
+- Keeps it concise
+- Mirrors CLAUDE.md ↔ AGENTS.md (byte-for-byte identical)
+
+---
+
+## Cleaning Up Old Versions
+
+If you have ACS artifacts in your projects:
+
+```
+/cleanup-acs
 ```
 
-The script deletes v5.x infrastructure (but keeps your context files), installs v6.0 commands, then Claude migrates your context to the new format. Use `git checkout` to rollback if needed.
+This removes:
+- `context/` directory
+- `.claude/commands/`, `.claude/agents/`, `.claude/skills/`, etc.
+- `.claude/VERSION`, `.claude/acs-settings.json`
+- Old install scripts and templates
+
+It keeps:
+- `CLAUDE.md`, `AGENTS.md` (your actual context)
+- `.claude/settings.local.json` (Claude Code settings)
 
 ---
 
-## Requirements
+## Lessons Learned
 
-- Claude Code CLI (for slash commands)
-- Any project (language/framework agnostic)
-- Git (required for installation and updates; optional for daily use if HeadCommit detection not needed)
-- macOS, Linux, or Windows with WSL/Git Bash (commands use `/tmp/` for temp files)
+1. **Start with the problem, not the solution.** We built tools hoping they'd reveal the problem. They didn't.
 
-Works with any AI tool that can read markdown files.
+2. **Test your assumptions.** We never verified that Claude read STATUS.md or that externalized context helped.
+
+3. **Complexity is not free.** Every file, command, and pattern has maintenance cost.
+
+4. **Build on what you know works.** Context files auto-load. That's verified. Build there.
+
+5. **Simple beats comprehensive.** Four commands beat 22. One file beats five.
+
+6. **Sometimes the answer is "do less."** The best version of ACS is almost nothing.
 
 ---
 
-## Anti-Bloat Rules
+## Version History
 
-To prevent v6 from becoming v7:
-
-1. **30-second rule**: If a feature can't be used in <30 seconds, it doesn't ship
-2. **Minimal commands**: Daily workflow stays at 2 commands
-3. **No scripts**: Claude handles logic
-4. **Advisory, not mechanical**: Guidelines, not enforcement
+| Version | Commands | Agents | Scripts | Context Files |
+|---------|----------|--------|---------|---------------|
+| v5.x | 22 | 14 | 150KB+ | 5-8 |
+| v6.0 | 8 | 0 | 0 | 3 |
+| v7.0 | 4 (global) | 0 | 1 | 1-2 |
 
 ---
 
@@ -203,4 +194,4 @@ MIT License. See [LICENSE](./LICENSE) for details.
 
 ---
 
-**Remember:** The value is in the subtraction.
+**The value is in the subtraction.**
