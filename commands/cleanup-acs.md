@@ -27,6 +27,7 @@ If no ACS markers found: output **"No ACS artifacts found."** and stop.
 
 **High-confidence** (directories/files to remove entirely if present):
 - `context/`
+- `.claude-backup-*/` (migration backups, glob pattern)
 - `.claude/commands/`, `.claude/agents/`, `.claude/skills/`, `.claude/schemas/`, `.claude/hooks/`, `.claude/docs/`
 - `.claude/VERSION`, `.claude/acs-settings.json`, `.claude/.last-update-check`
 - Root-level `install.sh`, `VERSION`
