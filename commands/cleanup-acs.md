@@ -73,7 +73,7 @@ If a file doesn't match both pattern AND grep (when grep applies): skip it.
    - Print summary: "About to remove N files. Type DELETE to confirm."
    - If `--dry-run`: print plan and summary, then exit (no confirmation prompt)
    - If `--force`: proceed to Delete without prompting
-   - Otherwise: wait for user to type `DELETE` to proceed
+   - Otherwise: wait for user to type `DELETE` (case-sensitive, all caps) to proceed
 5. **Delete**
    - Use `git rm -rf -- <path>` for git-tracked items (force flag handles modified files)
    - Use `rm -rf -- <path>` for untracked items
