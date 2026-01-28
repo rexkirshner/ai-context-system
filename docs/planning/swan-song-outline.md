@@ -423,7 +423,8 @@ Running count of ACS removal across projects:
 | palisades-fire | 2026-01-27 | 73 | 34,128 | Found git rm leaves empty dir shells on filesystem |
 | meeting-scheduler | 2026-01-27 | 3 | 283 | Minimal install, clean run |
 | prompt-library | 2026-01-27 | 118 | 50,999 | Largest cleanup, 64 files in backup dirs |
-| **TOTAL** | | **787** | **287,813** | |
+| scratch-space | 2026-01-27 | 47 | 15,929 | Clean run, no issues |
+| **TOTAL** | | **834** | **303,742** | |
 
 *Update this table after each `/cleanup-acs` run.*
 
