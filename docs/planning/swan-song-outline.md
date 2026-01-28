@@ -171,10 +171,12 @@ CLAUDE.md auto-loads. That's it. Build on what you know works, not on what might
 
 **What we ended up with:**
 
-Two global commands (installed to both `~/.claude/commands/` and `~/.codex/prompts/`):
+Four global commands (installed to both `~/.claude/commands/` and `~/.codex/prompts/`):
 
-1. **`/cleanup-acs`** - Remove all ACS artifacts from any project
-2. **`/update-context`** - Extract permanent learnings, update CLAUDE.md and AGENTS.md
+1. **`/update-context`** - Extract permanent learnings, update CLAUDE.md and AGENTS.md
+2. **`/save-session`** - Record session history to `docs/sessions/SESSION-NNN.md`
+3. **`/review`** - Comprehensive code review to `docs/audits/CODE-REVIEW-NN.md`
+4. **`/cleanup-acs`** - Remove all ACS artifacts from any project
 
 That's it. No framework. No installation per-project. No versions. No migration paths.
 
@@ -183,7 +185,9 @@ That's it. No framework. No installation per-project. No versions. No migration 
 **The new philosophy:**
 
 - One context file per tool (CLAUDE.md / AGENTS.md) - auto-loads, guaranteed to be seen
-- One command makes it better over time by extracting permanent learnings
+- `/update-context` makes it better over time by extracting permanent learnings
+- `/save-session` captures session history when needed
+- `/review` provides comprehensive code review
 - Git history captures decisions (through good commit messages)
 - Session continuity is handled by: context file + codebase + telling the AI what you're working on
 
@@ -360,7 +364,7 @@ Even v6.0's "radical simplification" was still:
 |---------|----------|--------|---------|---------------|
 | v5.x | 22 | 14 (9 specialists + 5 others) | 150KB+ | 5-8 |
 | v6.0 | 8 | 0 | 0 | 3 |
-| v7 | 2 (global) | 0 | 1 (install.sh) | 1-2 (CLAUDE.md, AGENTS.md) |
+| v7.0 | 4 (global) | 0 | 1 (install.sh) | 1-2 (CLAUDE.md, AGENTS.md) |
 
 ### Memorable Over-Engineering Moments
 
@@ -373,3 +377,52 @@ Even v6.0's "radical simplification" was still:
 - "Loading strategy visibility (small/medium/large with line thresholds)"
 
 These quotes illustrate solving problems that didn't need solving.
+
+---
+
+## Part 9: The Cleanup
+
+The final act: removing ACS from every project it touched.
+
+### QA Process
+
+We used Claude itself as a QA engineer to test `/cleanup-acs`. Key learnings from that process:
+
+**What worked well in the command:**
+- Preflight checks and symlink detection are solid safeguards
+- Plan-before-delete pattern is good UX
+- Git-aware deletion (`git rm` for tracked files) enables easy recovery
+- Explicit `DELETE` confirmation prevents accidents
+
+**What the QA process revealed:**
+- Vague rules like "files referencing X in content" are ambiguous — different runs could produce different results
+- Need explicit grep patterns, not prose descriptions
+- Standard CLI conventions were missing (`--dry-run`, `--force`)
+- Edge cases matter: what happens to directories left empty after conditional deletions?
+
+**Improvements made based on QA:**
+- Added `--dry-run` flag for preview without confirmation
+- Added `--force` flag for CI/automation
+- Replaced prose content rules with explicit grep patterns in table format
+- Added empty directory cleanup step
+- Fixed config/ pattern to match actual filenames
+
+**Meta-lesson:** Dogfooding with AI as QA works. The feedback was structured, actionable, and caught real issues.
+
+### Uninstall Tracker
+
+Running count of ACS removal across projects:
+
+| Project | Date | Files Removed | Lines Removed | Notes |
+|---------|------|---------------|---------------|-------|
+| *(none yet)* | | | | |
+| **TOTAL** | | **0** | **0** | |
+
+*Update this table after each `/cleanup-acs` run.*
+
+### How to Update
+
+After running `/cleanup-acs` on a project:
+1. Count files: `git diff --stat HEAD~1` (if committed)
+2. Count lines: `git diff --stat HEAD~1 | tail -1`
+3. Add row to the tracker above
