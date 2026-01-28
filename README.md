@@ -1,6 +1,6 @@
 # The AI Context System: A Swan Song
 
-I spent three months building a system to help AI coding assistants maintain context across sessions. It grew to 22 commands, 14 agents, 150KB of shell scripts, and 80 unit tests. Then I deleted all of it from 15 projects—1,120 files, 436,000 lines of code—and felt nothing but relief.
+I spent three months building a system to help AI coding assistants maintain context across sessions. It grew to 22 commands, 14 agents, and 150KB of shell scripts. Then I deleted all of it from 15 projects—over 1,100 files and 436,000 lines of code—and felt nothing but relief.
 
 This is the story of what I built, why I killed it, and what I actually learned.
 
@@ -67,7 +67,7 @@ I called it "radical simplification." I wrote anti-bloat rules: "If a feature ca
 But v6 still had:
 - 8 commands (3 core + 5 reviews)
 - 3 context files
-- A "Session Loop" ceremony (start by reading STATUS.md, end by running /save)
+- A "Session Loop" ceremony (start by reading STATUS.md, end by running /save-session)
 - Installation per project
 - Version tracking and migration paths
 
@@ -134,7 +134,7 @@ Once I made the decision, I felt an overwhelming urge to clean up the mess I'd m
 
 I built `/cleanup-acs` and used Claude as a QA engineer to test it. Each cleanup surfaced bugs—missing targets, edge cases, files I'd forgotten about. The command got better as I went.
 
-**The final count:**
+**The final count** (project names redacted)**:**
 
 | Project | Files Removed | Lines Removed |
 |---------|---------------|---------------|
