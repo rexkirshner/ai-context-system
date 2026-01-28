@@ -428,7 +428,8 @@ Running count of ACS removal across projects:
 | portfolio-tracking | 2026-01-27 | 33 | 15,926 | Found missing script patterns (*-helper.sh) |
 | kex-financial-tracker | 2026-01-27 | 86 | 34,507 | Session crash mid-run, noted CLAUDE.md stale references |
 | notification-hub | 2026-01-27 | 11 | 913 | Clean run, minimal install |
-| **TOTAL** | | **1,034** | **387,549** | |
+| ncl | 2026-01-27 | 21 | 10,731 | Clean run, 10 backup dirs removed |
+| **TOTAL** | | **1,055** | **398,280** | |
 
 *Update this table after each `/cleanup-acs` run.*
 
