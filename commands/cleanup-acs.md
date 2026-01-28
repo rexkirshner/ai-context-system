@@ -2,6 +2,11 @@
 
 Remove AI Context System artifacts from this project.
 
+## Flags
+
+- `--dry-run` — Show deletion plan without prompting for confirmation, then exit
+- `--force` — Skip confirmation prompt (for CI/automation). Requires explicit flag, never infer.
+
 ## Preflight
 
 Before scanning, verify:
@@ -15,8 +20,8 @@ If no ACS markers found: output **"No ACS artifacts found."** and stop.
 
 - **Stay in repo root.** All targets are relative to repo root. Resolve `repo_root` and each candidate via `realpath` (or equivalent) and verify the candidate starts with `repo_root/`. If any path resolves outside, STOP entirely.
 - **Don't follow symlinks.** Skip symlink targets during Scan; deletion commands only run on non-symlink paths. Report skipped symlinks as "Skipped — symlink."
-- **Always confirm.** Never delete without user typing `DELETE`, regardless of git status.
-- **Plan before delete.** Always print the deletion plan before asking for confirmation.
+- **Always confirm.** Unless `--force` is set, never delete without user typing `DELETE`.
+- **Plan before delete.** Always print the deletion plan before asking for confirmation (or before exiting if `--dry-run`).
 
 ## Targets
 
@@ -26,18 +31,23 @@ If no ACS markers found: output **"No ACS artifacts found."** and stop.
 - `.claude/VERSION`, `.claude/acs-settings.json`, `.claude/.last-update-check`
 - Root-level `install.sh`, `VERSION`
 
-**Conditional** (remove only ACS files within, not the directory itself):
-- `scripts/` — delete only: `acs-*.sh`, `install-acs.sh`, `migrate-*.sh`
-- `templates/` — delete only: files referencing `.claude/` or `context/` in content, or `acs/` subdirs
-- `config/` — delete only: `acs-*.json`, `context-config.json`
-- `reference/`, `artifacts/` — delete only: files with "acs" or "context-system" in name or content
+**Conditional** (remove only matching files within, preserve the directory):
 
-**Content scanning constraints** (for rules that check file content):
-- Only scan text files (`.md`, `.json`, `.sh`, `.txt`, `.yaml`, `.yml`)
+| Directory | Pattern match | Content grep (case-insensitive) |
+|-----------|---------------|--------------------------------|
+| `scripts/` | `acs-*.sh`, `install-acs.sh`, `migrate-*.sh` | — |
+| `templates/` | `acs/**` (entire subdir) | `grep -il '\.claude/\|context/' *.md *.json` |
+| `config/` | `acs-*.json`, `*context-config*.json` | — |
+| `reference/` | `*acs*`, `*context-system*` | `grep -il 'ai-context-system\|acs-settings' *` |
+| `artifacts/` | `*acs*`, `*context-system*` | `grep -il 'ai-context-system\|acs-settings' *` |
+
+**Content scanning constraints:**
+- Only scan text files: `.md`, `.json`, `.sh`, `.txt`, `.yaml`, `.yml`
 - Skip files > 1 MB
-- Skip vendor/build dirs inside conditional paths: `node_modules/`, `.git/`, `dist/`, `build/`, `vendor/`
+- Skip vendor/build subdirs: `node_modules/`, `.git/`, `dist/`, `build/`, `vendor/`
+- Grep is non-recursive (current dir only) unless pattern specifies otherwise
 
-If unsure whether a file is ACS-related: skip it and note in report.
+If a file doesn't match both pattern AND grep (when grep applies): skip it.
 
 ## Keep (never remove)
 
@@ -47,21 +57,26 @@ If unsure whether a file is ACS-related: skip it and note in report.
 ## Procedure
 
 1. **Preflight** — run checks above; stop if no markers
-2. **Scan** — for each target: exists? symlink? git-tracked?
+2. **Scan** — for each target: exists? symlink? git-tracked? Run grep patterns where specified.
 3. **Plan** — print deletion plan:
    - Group by high-confidence vs conditional
    - Sort paths lexicographically within each group
-   - Include `reason` for each item (e.g., "high-confidence list", "matches acs-*.sh", "content contains .claude/")
-4. **Confirm** — ask user to type `DELETE` to proceed; if not received, stop after plan
+   - Include `reason` for each item (e.g., "high-confidence", "matches acs-*.sh", "grep matched: .claude/")
+4. **Confirm**
+   - If `--dry-run`: print plan and exit (no confirmation prompt)
+   - If `--force`: proceed to Delete without prompting
+   - Otherwise: ask user to type `DELETE` to proceed
 5. **Delete**
    - Use `git rm -r -- <path>` for git-tracked items
    - Use `rm -rf -- <path>` for untracked items
-6. **Verify** — re-scan to confirm deletion
-7. **Report** — structured output (sort paths lexicographically in each section):
+6. **Empty directories** — after conditional deletions, check if `scripts/`, `templates/`, `config/`, `reference/`, `artifacts/` are now empty. If empty, remove them and note in report as "removed (empty after cleanup)".
+7. **Verify** — re-scan to confirm deletion
+8. **Report** — structured output (sort paths lexicographically in each section):
    ```
    Removed:
    - path (git rm)
    - path (rm)
+   - path (empty after cleanup)
 
    Kept:
    - CLAUDE.md
