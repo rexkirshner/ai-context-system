@@ -107,3 +107,5 @@ If a file doesn't match both pattern AND grep (when grep applies): skip it.
 If scan finds 0 deletable items: **"No ACS artifacts found."**
 
 **Restore:** `git restore` or `git checkout` undoes tracked deletions. Untracked deletions cannot be restored via git.
+
+**Post-cleanup:** Check CLAUDE.md for stale references to deleted files (e.g., context/STATUS.md, .claude/docs/). Remove or update these manually.
