@@ -67,17 +67,20 @@ If a file doesn't match both pattern AND grep (when grep applies): skip it.
    - Group by high-confidence vs conditional
    - Sort paths lexicographically within each group
    - Include `reason` for each item (e.g., "high-confidence", "matches acs-*.sh", "grep matched: .claude/")
+   - Mark untracked items with "(untracked)" — these use `rm`, not `git rm`
    - **Warn about modified files**: If any tracked files have uncommitted changes, list them with "(modified)" and note they will be force-deleted
 4. **Confirm**
-   - If `--dry-run`: print plan and exit (no confirmation prompt)
+   - Print summary: "About to remove N files. Type DELETE to confirm."
+   - If `--dry-run`: print plan and summary, then exit (no confirmation prompt)
    - If `--force`: proceed to Delete without prompting
-   - Otherwise: ask user to type `DELETE` to proceed
+   - Otherwise: wait for user to type `DELETE` to proceed
 5. **Delete**
    - Use `git rm -rf -- <path>` for git-tracked items (force flag handles modified files)
    - Use `rm -rf -- <path>` for untracked items
 6. **Empty directories** — after deletions:
    - Recursively find empty subdirs within conditional directories (e.g., `artifacts/feedback/`)
    - Check if top-level conditional dirs (`scripts/`, `templates/`, `config/`, `reference/`, `artifacts/`) are now empty
+   - Treat directories containing only `.DS_Store` as empty (delete the `.DS_Store` first)
    - Remove all empty dirs (bottom-up) and note in report as "removed (empty after cleanup)"
 7. **Verify** — re-scan to confirm deletion
 8. **Report** — structured output (sort paths lexicographically in each section):
