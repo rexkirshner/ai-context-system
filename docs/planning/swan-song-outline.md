@@ -422,7 +422,8 @@ Running count of ACS removal across projects:
 | video-website | 2026-01-27 | 68 | 25,234 | Found missing .install-manifest.json target |
 | palisades-fire | 2026-01-27 | 73 | 34,128 | Found git rm leaves empty dir shells on filesystem |
 | meeting-scheduler | 2026-01-27 | 3 | 283 | Minimal install, clean run |
-| **TOTAL** | | **669** | **236,814** | |
+| prompt-library | 2026-01-27 | 118 | 50,999 | Largest cleanup, 64 files in backup dirs |
+| **TOTAL** | | **787** | **287,813** | |
 
 *Update this table after each `/cleanup-acs` run.*
 
