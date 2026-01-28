@@ -61,6 +61,7 @@ If a file doesn't match both pattern AND grep (when grep applies): skip it.
 2. **Scan** — for each target:
    - Check: exists? symlink? git-tracked? modified?
    - Include BOTH tracked and untracked files (use `git status` + filesystem scan)
+   - Also scan for nested `.claude/` directories in subdirectories (e.g., `app/.claude/`, `src/.claude/`)
    - Run grep patterns where specified
    - Flag modified files for warning in plan
 3. **Plan** — print deletion plan:
