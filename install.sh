@@ -9,7 +9,6 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 # Active commands (delete old versions, install new)
 ACTIVE_COMMANDS=(
-  "cleanup-acs.md"
   "review.md"
   "save-session.md"
   "update-context.md"
@@ -17,8 +16,7 @@ ACTIVE_COMMANDS=(
 
 # Inactive commands (delete, don't replace)
 INACTIVE_COMMANDS=(
-  # Add removed commands here, e.g.:
-  # "old-command.md"
+  "cleanup-acs.md"
 )
 
 install_to() {
