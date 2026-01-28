@@ -115,12 +115,11 @@ Here's the thing: I don't feel like I wasted three months. I learned things that
 
 ## What We Ended Up With
 
-Four global commands, installed to `~/.claude/commands/` and `~/.codex/prompts/`:
+Three global commands, installed to `~/.claude/commands/` and `~/.codex/prompts/`:
 
 1. **`/update-context`** — Extracts permanent learnings from the conversation and updates CLAUDE.md and AGENTS.md
 2. **`/save-session`** — Records session history when you want it (not automatically)
 3. **`/review`** — Comprehensive code review
-4. **`/cleanup-acs`** — Removes all ACS artifacts from any project
 
 That's it. No framework. No installation per-project. No versions. No migration paths.
 
@@ -173,7 +172,7 @@ If you're building tools to help AI assistants work better, here's what I'd tell
 
 4. **AI feedback will always suggest more building.** Claude will never tell you to stop. That signal has to come from you.
 
-5. **Simple beats comprehensive.** Four commands beat 22. One file beats five.
+5. **Simple beats comprehensive.** Three commands beat 22. One file beats five.
 
 6. **Build on verified mechanisms.** CLAUDE.md auto-loads. That's proven. Build there.
 
@@ -189,10 +188,10 @@ The answer was: just use the context file that already auto-loads.
 
 The journey wasn't wasted—I learned how to use commands effectively, how nested context files work, and most importantly, how easy it is to get tricked into building more when the AI is your only feedback loop.
 
-Now I have four commands, one context file, and the calm that comes from knowing I'm not carrying around 436,000 lines of machinery I don't need.
+Now I have three commands, one context file, and the calm that comes from knowing I'm not carrying around 436,000 lines of machinery I don't need.
 
 ---
 
 *The podcast episode that sparked this reckoning: [Signaling Theory Episode 14](https://sigtheory.com/episodes/sigtheory14/) (available January 29, 2026)*
 
-*The cleanup command that removed it all: `/cleanup-acs` — still available if you need to undo your own over-engineering*
+*The cleanup command that removed it all is archived in git history — the job is done.*
