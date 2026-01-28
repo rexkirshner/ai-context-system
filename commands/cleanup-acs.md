@@ -75,8 +75,9 @@ If a file doesn't match both pattern AND grep (when grep applies): skip it.
    - If `--force`: proceed to Delete without prompting
    - Otherwise: wait for user to type `DELETE` (case-sensitive, all caps) to proceed
 5. **Delete**
-   - Use `git rm -rf -- <path>` for git-tracked items (force flag handles modified files)
-   - Use `rm -rf -- <path>` for untracked items
+   - For git-tracked directories: run `git rm -rf -- <path>` then `rm -rf -- <path>` (git rm leaves empty dir shells on filesystem)
+   - For git-tracked files: run `git rm -f -- <path>`
+   - For untracked items: run `rm -rf -- <path>`
 6. **Empty directories** — after deletions:
    - Recursively find empty subdirs within conditional directories (e.g., `artifacts/feedback/`)
    - Check if top-level conditional dirs (`scripts/`, `templates/`, `config/`, `reference/`, `artifacts/`) are now empty
