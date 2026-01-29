@@ -21,6 +21,7 @@ Ensure context files describe the project **as it exists now** — not as it was
 
 1. **Scan the codebase**
    - package.json / Makefile / pyproject.toml (commands, scripts, dependencies)
+   - Lock files (package-lock.json, pnpm-lock.yaml, yarn.lock) to identify package manager
    - Directory structure (src/, tests/, docs/, etc.)
    - Config files (.eslintrc, tsconfig, CI configs)
    - README for stated conventions
@@ -81,6 +82,7 @@ Only **permanent, repo-specific facts**:
 If the project is a monorepo:
 - Document root-level workspace commands (install, build, test from root)
 - Only include package-specific commands if they're common across packages
+- Clearly note the working directory for commands (e.g., "Run from apps/web/")
 - Don't explode into per-package minutiae
 
 ## Default Structure
