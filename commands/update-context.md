@@ -1,69 +1,91 @@
 # /update-context
 
-Update CLAUDE.md and AGENTS.md with **permanent, repo-specific learnings** from this session.
-
-Run before `/compact` or when context is long.
+Audit the project and update CLAUDE.md and AGENTS.md to accurately reflect its current state.
 
 ## Goal
 
-Make future sessions faster by capturing only what will still matter later.
+Ensure context files describe the project **as it exists now** — not as it was documented months ago or during a single session.
 
-## Extract (permanent)
+## Scope
 
-Only include items true about the PROJECT that will remain useful:
-- **Commands** — actually used/verified (run, test, build, deploy)
-- **Constraints** — "don't touch X", "must use Y"
-- **Patterns** — architecture, naming, folder structure conventions
-- **Quirks** — non-obvious gotchas
-- **Preferences** — workflow choices that affect *this repo* (formatting, tools, review style)
+**Only modify CLAUDE.md and AGENTS.md.** Do not edit any other files as part of this command.
 
-## Ignore (ephemeral)
+## When to Run
 
-Do NOT include things true only about right now:
-- Current task, temporary blockers, WIP state, TODOs, timestamps, debugging notes
+- After major refactors or restructuring
+- When onboarding to a project you haven't touched in a while
+- Periodically to catch documentation drift
+- Before handing off to another developer or agent
 
-**Heuristic:** Affects future sessions → keep. About this moment → drop.
+## Audit Process
+
+1. **Scan the codebase**
+   - package.json / Makefile / pyproject.toml (commands, scripts, dependencies)
+   - Directory structure (src/, tests/, docs/, etc.)
+   - Config files (.eslintrc, tsconfig, CI configs)
+   - README for stated conventions
+
+2. **Read existing CLAUDE.md and AGENTS.md**
+   - If missing, create both using the default structure below
+   - If both exist but differ, merge only verified items (drop anything you can't verify from the codebase)
+
+3. **Identify drift**
+   - Commands that changed or no longer exist
+   - New directories or patterns not documented
+   - Constraints that are no longer true
+   - Missing information that would help future sessions
+
+4. **Update content**
+   - Preserve existing section order and bullet order
+   - Append new bullets at the end of the relevant section
+   - Remove stale/incorrect information
+   - When deduping, keep the earliest occurrence
+
+5. **Write both files**
+   - Generate the final content once
+   - Write to both CLAUDE.md and AGENTS.md from the same buffer
+   - Confirm they are identical before finishing
+
+## What to Include
+
+Only **permanent, repo-specific facts**:
+- **Commands** — verified from package.json, Makefile, or safe execution. Prefer verification from config files; only execute read-only commands when needed.
+- **Constraints** — "don't touch X", "must use Y", architectural boundaries
+- **Patterns** — folder structure, naming conventions, data flow
+- **Quirks** — non-obvious gotchas discovered through use
+- **Preferences** — workflow choices that affect this repo
+
+## What to Exclude
+
+- Session-specific state, TODOs, WIP notes
+- Timestamps or "last updated" markers
+- Secrets, API keys, tokens, credentials
+- Stack traces or error logs (summarize the takeaway instead)
+- Personal preferences not tied to the repo
+- Anything you're guessing rather than verifying
 
 ## Hard Rules
 
-- **No guessing.** Only record commands/conventions verified from repo files or session evidence. If unsure, omit. Evidence: README, package scripts, Makefile, CI config, tool output, successful command runs. If the only "evidence" is the agent's assumption, treat as unverified → omit.
-- **No secrets.** Never write API keys, tokens, private URLs, or credentials into context files.
-- **No logs/traces.** Never paste stack traces, logs, or long error output; summarize the takeaway in one bullet.
-- **No placeholders.** If a section would be empty, omit the section entirely.
-- **Preserve header.** Keep existing project name + one-line description unchanged unless missing or clearly wrong.
-- **Idempotent.** Running twice with no new learnings = zero changes.
-- **Minimal diff.** Don't reorder sections or reformat unless needed to add/merge/remove a bullet.
-- **Fixed section order.** When adding a missing section, insert in this order: Commands → Constraints → Patterns → Quirks → Preferences.
-- **Append new bullets.** Add new items to the end of the section; don't reorder existing bullets unless deduping or enforcing size limits.
-- **Deduplicate.** Merge near-duplicates; keep the most specific version.
-- **Tight bullets.** Short, imperative. ≤120 chars when possible. No paragraphs.
-- **No filler.** If it's not repo-specific, don't add it.
-- **Repo-scoped preferences only.** Skip personal preferences unless they change how the codebase should be handled.
-- **Size limit enforcement.** Small repos <50 lines, complex repos <100 lines. (Complex = monorepo, multiple packages, or >3 services; otherwise small.) If over: merge bullets, remove low-signal items first (Preferences → Quirks → Patterns), always keep Constraints and verified Commands.
+- **No guessing.** Only record what's verified from files or execution. If unsure, omit.
+- **No risky execution.** Don't run commands that can mutate state (migrate, seed, deploy, reset) to verify them. Treat any command that writes to disk, DB, or network as risky unless clearly documented as dry-run. Prefer inspecting config files. If executing, use `--help`, `--version`, `--dry-run`, or equivalent.
+- **No secrets.** Never write credentials into context files.
+- **Scope boundary.** Only modify CLAUDE.md and AGENTS.md. Do not edit other files.
+- **Idempotent.** Running twice with no project changes = zero file changes.
+- **Preserve order.** Don't reorder sections or bullets. Append new items at the end of each section.
+- **Preserve header.** Keep project name + description unless clearly wrong.
+- **Flexible structure.** Match the project's existing organization if it's already comprehensive. Don't force a rigid template onto rich documentation.
+- **Size targets.** Aim for <50 lines (small repos) or <100 lines (complex repos). If over: merge bullets, keep the most-used commands, remove low-signal items.
 
-## Do
+## Monorepo Guidance
 
-1. Read CLAUDE.md and AGENTS.md (if missing, create both — use repo folder name as Project Name, or "Project" if unknown)
-2. If both exist but differ: merge by union + dedupe (don't just pick one)
-3. Extract candidate learnings; filter out ephemeral items
-4. Update content:
-   - Add new learnings to end of appropriate section
-   - Edit outdated bullets (minimal edits)
-   - Remove stale/incorrect bullets
-   - Normalize phrasing + dedupe
-5. Mirror: produce ONE canonical markdown text, write byte-for-byte to both files
-6. Verify: re-read both files and confirm identical; if not, fix
-7. Report changes (structured):
-   ```
-   + Added: [section] → [bullet]
-   - Removed: [section] → [bullet]
-   ~ Edited: [before] → [after]
+If the project is a monorepo:
+- Document root-level workspace commands (install, build, test from root)
+- Only include package-specific commands if they're common across packages
+- Don't explode into per-package minutiae
 
-   CLAUDE.md: N lines
-   AGENTS.md: N lines (identical)
-   ```
+## Default Structure
 
-## File Structure
+Use this structure only when **creating from scratch**. Don't force it onto existing comprehensive documentation.
 
 ```markdown
 # [Project Name]
@@ -71,19 +93,38 @@ Do NOT include things true only about right now:
 [One-line description]
 
 ## Commands
+
 - Run: `<command>`
 - Test: `<command>`
 - Build: `<command>`
-- Deploy: `<command>`
-```
-Use exactly these labels: `Run:`, `Test:`, `Build:`, `Deploy:` (each at most once, only if verified). Omit any that don't apply. In monorepos, record only root-level canonical commands.
 
-```markdown
+## Structure
+
+- `src/` — [purpose]
+- `tests/` — [purpose]
+
 ## Constraints
-## Patterns
+
+- [constraint]
+
 ## Quirks
-## Preferences
+
+- [gotcha]
 ```
+
 Omit any section that would be empty.
 
-If nothing new: "No new learnings. Context files unchanged."
+## Report Format
+
+```
+Audited: package.json, src/, tests/, .github/
+
++ Added: [section] → [bullet]
+- Removed: [section] → [bullet]
+~ Edited: [before] → [after]
+
+CLAUDE.md: N lines
+AGENTS.md: N lines (identical)
+```
+
+If nothing changed: "Audit complete. Context files already accurate (no drift found in scripts, structure, or config)."
