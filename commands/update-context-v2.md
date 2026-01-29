@@ -49,7 +49,7 @@ Ensure context files describe the project **as it exists now** — not as it was
 ## What to Include
 
 Only **permanent, repo-specific facts**:
-- **Commands** — verified from package.json, Makefile, or safe execution (see Hard Rules)
+- **Commands** — verified from package.json, Makefile, or safe execution. Prefer verification from config files; only execute read-only commands when needed.
 - **Constraints** — "don't touch X", "must use Y", architectural boundaries
 - **Patterns** — folder structure, naming conventions, data flow
 - **Quirks** — non-obvious gotchas discovered through use
