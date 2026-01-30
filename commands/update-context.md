@@ -6,6 +6,8 @@ Audit the project and update CLAUDE.md and AGENTS.md to accurately reflect its c
 
 Ensure context files describe the project **as it exists now** — not as it was documented months ago or during a single session.
 
+**Discovery is the primary job.** Finding undocumented commands, patterns, and structure matters more than syncing files.
+
 ## Scope
 
 **Only modify CLAUDE.md and AGENTS.md.** Do not edit any other files as part of this command.
