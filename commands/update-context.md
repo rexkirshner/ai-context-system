@@ -24,7 +24,7 @@ Ensure context files describe the project **as it exists now** — not as it was
 1. **Scan the codebase**
    - package.json / Makefile / pyproject.toml (commands, scripts, dependencies)
    - Lock files (package-lock.json, pnpm-lock.yaml, yarn.lock) to identify package manager
-   - Directory structure (src/, tests/, docs/, etc.)
+   - Directory structure and contents (don't just note existence - check what's inside)
    - Config files (.eslintrc, tsconfig, CI configs)
    - README for stated conventions
 
