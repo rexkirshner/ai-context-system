@@ -33,6 +33,7 @@ Ensure context files describe the project **as it exists now** — not as it was
    - If both exist but differ, merge only verified items (drop anything you can't verify from the codebase)
 
 3. **Identify drift**
+   - Compare package.json scripts to documented commands - flag any undocumented scripts
    - Commands that changed or no longer exist
    - New directories or patterns not documented
    - Constraints that are no longer true
