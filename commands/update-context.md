@@ -19,6 +19,8 @@ Ensure context files describe the project **as it exists now** — not as it was
 
 ## Audit Process
 
+**Always scan fresh.** Don't rely on session context or what you "already know" - actually read the files.
+
 1. **Scan the codebase**
    - package.json / Makefile / pyproject.toml (commands, scripts, dependencies)
    - Lock files (package-lock.json, pnpm-lock.yaml, yarn.lock) to identify package manager
