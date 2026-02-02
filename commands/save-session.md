@@ -93,7 +93,7 @@ From `git diff --name-status HEAD` (preferred) or `git status --porcelain`. Stat
 ## Commits
 - `sha` — message
 ```
-From `git log`. If message contains suspected secret, keep SHA but write `[REDACTED]`. If none this session: "None this session." If not a git repo: "Unable to verify (no git)."
+From `git log`. Max 5-7 commits; if more, summarize as "N commits this session, key ones:" and list the most significant. If message contains suspected secret, keep SHA but write `[REDACTED]`. If none this session: "None this session." If not a git repo: "Unable to verify (no git)."
 
 ```markdown
 ## Decisions
