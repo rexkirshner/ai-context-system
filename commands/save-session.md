@@ -54,8 +54,9 @@ Run before `/compact` or when context is long.
 # Session NNN
 
 **Date:** YYYY-MM-DD
+**Continues from:** SESSION-NNN (if applicable)
 ```
-Use today's local date.
+Use today's local date. Link to previous session if this is a continuation of earlier work. Omit "Continues from" if this is a fresh start.
 
 ```markdown
 ## Summary
