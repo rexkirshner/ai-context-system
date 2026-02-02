@@ -114,10 +114,16 @@ Max 5 items. Skip if nothing notable.
 3-7 file paths or docs most relevant to resume work. Not just what changed — what's important context. **Never include secret-bearing files:** `.env*`, `secrets.*`, `*.pem`, `id_rsa*`, `credentials.*`, keyfiles.
 
 ```markdown
+## Blocked On
+- [What external input/response/access is needed]
+```
+Waiting for external input (user decision, API access, review, etc.). Distinct from Unfinished. Omit if nothing blocked.
+
+```markdown
 ## Unfinished
 - [ ] [Actionable task]
 ```
-Max 5-10 items. Phrased as tasks someone can pick up.
+Max 5-10 items. Phrased as tasks someone can pick up. These are not blocked, just not done yet.
 
 ```markdown
 ## Next Session
