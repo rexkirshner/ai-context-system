@@ -55,8 +55,9 @@ Run before `/compact` or when context is long.
 
 **Date:** YYYY-MM-DD
 **Continues from:** SESSION-NNN (if applicable)
+**Tags:** #tag1, #tag2 (optional)
 ```
-Use today's local date. Link to previous session if this is a continuation of earlier work. Omit "Continues from" if this is a fresh start.
+Use today's local date. Link to previous session if this is a continuation of earlier work. Omit "Continues from" if this is a fresh start. Tags are optional - use for filtering later (e.g., #drafting, #debugging, #refactor, #research, #review).
 
 ```markdown
 ## Summary
